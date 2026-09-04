@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
+
+<h3 class="mb-3">Chat con {{ other.username }}</h3>
+
+<input type="hidden" id="chatUsername" value="{{ other.username }}">
+<input type="hidden" id="currentUser" value="{{ user.username }}">
+
+<div id="chatBox" class="chat-container">
+    {% for msg in messages %}
+        <div class="message {% if msg.sender_id == user.id %}sent{% else %}received{% endif %}">
+            {{ msg.text }}
+            <div class="message-time">{{ msg.created_at|date:"d/m/Y H:i" }}</div>
+        </div>
+    {% empty %}
+        <p class="text-muted">No hay mensajes todavía.</p>
+    {% endfor %}
+</div>
+
+<div class="chat-input">
+    <div class="input-group">
+        <input type="text" id="chatMessageInput" class="form-control" placeholder="Escribe un mensaje...">
+        <button id="chatSendButton" class="btn btn-primary">Enviar</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/messages_ws.js' %}"></script>
+{% endblock %}

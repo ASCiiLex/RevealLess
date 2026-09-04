@@ -1,0 +1,119 @@
+/* Contenedor principal del chat */
+.chat-container {
+    height: calc(100vh - 300px);
+    overflow-y: auto;
+    padding: 20px;
+    background: #f0ebe5;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+}
+
+/* Mensajes */
+.message {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    position: relative;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Mensajes enviados */
+.sent {
+    background: #dcf8c6;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+/* Mensajes recibidos */
+.received {
+    background: #ffffff;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+/* Hora del mensaje */
+.message-time {
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* Barra inferior de entrada */
+.chat-input {
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+/* Input + botón */
+.chat-input .input-group {
+    display: flex;
+    gap: 10px;
+}
+
+#chatMessageInput {
+    flex: 1;
+}
+
+/* Botón enviar */
+#chatSendButton {
+    white-space: nowrap;
+}
+
+/* Scrollbar más elegante */
+.chat-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: #c1b7ae;
+    border-radius: 4px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: #e5ddd5;
+}
+
+/* Responsive */
+
+/* TABLET */
+@media (min-width: 768px) {
+    .chat-container {
+        height: calc(100vh - 180px);
+        padding: 12px;
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        border-radius: 0;
+    }
+
+    .message {
+        max-width: 85%;
+        font-size: 0.9rem;
+    }
+}
+/* DESKTOP */
+@media (min-width: 1024px) {
+    .chat-container {
+        height: calc(100vh - 220px);
+    }
+}
+
+/* DESKTOP XL */
+@media (min-width: 1024px) {
+    h3 {
+        padding-top: 20px;
+    }
+    .chat-container {
+        height: calc(100vh - 320px);
+    }
+}

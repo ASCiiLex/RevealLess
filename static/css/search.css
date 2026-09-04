@@ -1,0 +1,49 @@
+/* CONTENEDOR RESULTADOS */
+#globalSearchResults {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    width: 100%;
+
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+
+    max-height: 300px;
+    overflow-y: auto;
+
+    display: none;
+    z-index: 9999;
+}
+
+/* ITEMS */
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 6px 10px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.85rem;
+}
+
+.search-item:hover {
+    background: #f5f5f5;
+}
+
+/* AVATAR USER */
+.search-item img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* THUMB POSTS */
+.search-thumb {
+    width: 40px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 4px;
+}

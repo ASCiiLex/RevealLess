@@ -1,0 +1,18 @@
+venv/
+__pycache__/
+*.pyc
+
+
+# Base de datos local
+db.sqlite3
+
+# Archivos multimedia locales
+media/
+
+# Variables de entorno
+.env
+.env.*
+
+# Archivos de IDE
+.vscode/
+.idea/

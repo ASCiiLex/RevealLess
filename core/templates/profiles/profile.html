@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- CSS específico del perfil -->
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+
+<div class="profile-header">
+
+    <!-- Avatar -->
+    <img 
+        src="{% if profile.image %}{{ profile.image.url }}{% else %}{% static 'img/default_profile.jpg' %}{% endif %}" 
+        alt="Avatar"
+    >
+
+    <div class="profile-info">
+
+        <!-- Nombre -->
+        <h2>{{ profile_user.username }}</h2>
+
+        <!-- Bio -->
+        <p class="profile-bio">{{ profile.bio }}</p>
+
+        <!-- Contadores -->
+        <div class="profile-stats">
+            <span>
+                <strong>{{ posts.count }}</strong> publicaciones
+            </span>
+
+            <span>
+                <a href="{% url 'followers' profile_user.username %}"
+                   class="text-decoration-none"
+                   style="color: inherit;">
+                    <strong>{{ followers_count }}</strong> seguidores
+                </a>
+            </span>
+
+            <span>
+                <a href="{% url 'following' profile_user.username %}"
+                   class="text-decoration-none"
+                   style="color: inherit;">
+                    <strong>{{ following_count }}</strong> seguidos
+                </a>
+            </span>
+        </div>
+
+        <!-- Botón Editar perfil -->
+        {% if request.user == profile_user %}
+            <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary mt-2">
+                Editar perfil
+            </a>
+        {% endif %}
+
+
+        <!-- Botón seguir / dejar de seguir -->
+        {% if request.user.is_authenticated and request.user != profile_user %}
+            {% if is_following %}
+                <form action="/follows/unfollow/{{ profile_user.username }}/" method="post" class="follow-btn">
+                    {% csrf_token %}
+                    <button class="btn btn-secondary">Dejar de seguir</button>
+                </form>
+            {% else %}
+                <form action="/follows/follow/{{ profile_user.username }}/" method="post" class="follow-btn">
+                    {% csrf_token %}
+                    <button class="btn btn-primary">Seguir</button>
+                </form>
+            {% endif %}
+        {% endif %}
+
+        <!-- Botón enviar mensaje -->
+        {% if request.user.is_authenticated and request.user != profile_user %}
+            <a href="{% url 'chat' profile_user.username %}" class="btn btn-success follow-btn">
+                Enviar mensaje
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+
+<hr>
+
+<!-- POSTS DEL USUARIO -->
+<h3>Publicaciones</h3>
+
+<div class="profile-grid">
+    {% for post in posts %}
+        <div class="profile-grid-card">
+            <a href="/posts/{{ post.id }}/">
+                <img src="{{ post.image_url }}" alt="Post">
+            </a>
+        </div>
+    {% empty %}
+        <p>Este usuario aún no tiene publicaciones.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

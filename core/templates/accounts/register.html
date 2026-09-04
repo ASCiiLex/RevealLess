@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4" style="max-width: 500px;">
+    <h2 class="mb-3 text-center">Registro</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- USERNAME -->
+        {{ form.username }}
+        {% for error in form.username.errors %}
+            <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+
+        <!-- EMAIL -->
+        {{ form.email }}
+        {% for error in form.email.errors %}
+            <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+
+        <!-- PASSWORD -->
+        {{ form.password }}
+        {% for error in form.password.errors %}
+            <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+
+        <!-- PASSWORD2 -->
+        {{ form.password2 }}
+        {% for error in form.password2.errors %}
+            <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+
+        <!-- AVATAR -->
+        <div class="mb-3">
+            <label class="form-label">Avatar (opcional)</label>
+            {{ form.image }}
+        </div>
+
+        <button class="btn btn-success w-100">Crear cuenta</button>
+    </form>
+
+    <div class="text-center mt-3">
+        <small>
+            ¿Ya tienes cuenta?
+            <a href="/cuentas/login/">Inicia sesión</a>
+        </small>
+    </div>
+</div>
+
+{% endblock %}

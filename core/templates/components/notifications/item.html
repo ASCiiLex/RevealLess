@@ -1,0 +1,30 @@
+<a href="{{ n.url }}" style="text-decoration: none; color: inherit;">
+    <div class="notification-item">
+
+        <img src="{{ n.avatar }}" class="notification-avatar">
+
+        <div class="notification-text">
+
+            {% if n.reaction %}
+                <span class="notification-icon">
+                    {% if n.reaction == 'like' %}👍{% endif %}
+                    {% if n.reaction == 'love' %}❤️{% endif %}
+                    {% if n.reaction == 'funny' %}😂{% endif %}
+                    {% if n.reaction == 'wow' %}😮{% endif %}
+                    {% if n.reaction == 'sad' %}😢{% endif %}
+                </span>
+            {% endif %}
+
+            {{ n.actor.username }} {{ n.verb }}
+
+            <div class="notification-time">
+                {{ n.created_at }}
+            </div>
+        </div>
+
+        {% if n.post_thumbnail %}
+            <img src="{{ n.post_thumbnail }}" class="notification-thumbnail">
+        {% endif %}
+
+    </div>
+</a>

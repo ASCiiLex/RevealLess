@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4" style="max-width: 400px;">
+    <h2 class="mb-3 text-center">Iniciar sesión</h2>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <input name="username"
+               value="{{ request.POST.username }}"
+               class="form-control mb-2"
+               placeholder="Usuario"
+               required>
+
+        <input name="password"
+               type="password"
+               class="form-control mb-3"
+               placeholder="Contraseña"
+               required>
+
+        <button class="btn btn-primary w-100">Entrar</button>
+    </form>
+
+    <div class="text-center mt-3">
+        <small>
+            ¿No tienes cuenta?
+            <a href="{% url 'register' %}">Regístrate aquí</a>
+        </small>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,5 @@
+<div id="commentsList">
+    {% for comment in comments %}
+        {% include "comments/_comment_item.html" with comment=comment user_comment_reactions=user_comment_reactions %}
+    {% endfor %}
+</div>

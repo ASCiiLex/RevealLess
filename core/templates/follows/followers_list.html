@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-4">Seguidores de {{ profile_user.username }}</h2>
+
+    {% if followers %}
+        <ul class="list-group">
+            {% for f in followers %}
+                <li class="list-group-item d-flex align-items-center">
+
+                    <img 
+                        src="{% if f.follower.profile.image %}{{ f.follower.profile.image.url }}{% else %}{% static 'img/default_profile.jpg' %}{% endif %}"
+                        class="rounded-circle me-3"
+                        width="45" height="45"
+                    >
+
+                    <a href="{% url 'profile' f.follower.username %}"
+                       class="fw-bold text-decoration-none">
+                        @{{ f.follower.username }}
+                    </a>
+
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Este usuario aún no tiene seguidores.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

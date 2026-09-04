@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/feed.css' %}">
+
+<h2 class="mb-4">Feed</h2>
+
+{% if posts %}
+    <div class="feed-grid">
+        {% for post in posts %}
+            {% include "components/feed/post_card.html" %}
+        {% endfor %}
+    </div>
+
+    {% include "components/feed/pagination.html" %}
+
+{% else %}
+    <p class="text-muted">No hay publicaciones aún.</p>
+{% endif %}
+
+{% include "components/feed/reaction_modal.html" %}
+
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'js/likes.js' %}"></script>
+{% endblock scripts %}

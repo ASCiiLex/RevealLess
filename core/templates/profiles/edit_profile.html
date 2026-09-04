@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4" style="max-width: 500px;">
+    <h2 class="mb-3 text-center">Editar perfil</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-2">
+            <label>Usuario</label>
+            {{ form.username }}
+        </div>
+
+        <div class="mb-2">
+            <label>Email</label>
+            {{ form.email }}
+        </div>
+
+        <div class="mb-2">
+            <label>Bio</label>
+            {{ form.bio }}
+        </div>
+
+        <div class="mb-2">
+            <label>Intereses</label>
+            {{ form.interests }}
+        </div>
+
+        <div class="mb-3">
+            <label>Avatar</label>
+            {{ form.image }}
+        </div>
+
+        <button class="btn btn-primary w-100">Guardar cambios</button>
+    </form>
+</div>
+
+{% endblock %}

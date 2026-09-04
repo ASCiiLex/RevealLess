@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+
+<h2>Mensajes</h2>
+
+{% if users %}
+    <ul class="inbox-list">
+        {% for u in users %}
+            <li class="inbox-item">
+                <a href="{% url 'chat' u.username %}" class="inbox-link">
+
+                    <img src="{{ u.avatar }}" class="inbox-avatar">
+
+                    <div class="inbox-text">
+                        <span class="inbox-username">@{{ u.username }}</span>
+
+                        {% if u.last_message %}
+                            <span class="inbox-last-message">
+                                {{ u.last_message|truncatechars:40 }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if u.unread_count > 0 %}
+                        <span class="inbox-unread">{{ u.unread_count }}</span>
+                    {% endif %}
+
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No tienes conversaciones todavía.</p>
+{% endif %}
+
+{% endblock %}

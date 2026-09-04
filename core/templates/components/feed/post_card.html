@@ -1,0 +1,68 @@
+<div class="feed-card">
+
+    <a href="/posts/{{ post.id }}/" class="text-decoration-none text-dark">
+        {% if post.image %}
+            <img src="{{ post.image_url }}">
+        {% else %}
+            <img src="/static/img/default_post.jpg">
+        {% endif %}
+    </a>
+
+    <div class="feed-footer">
+
+        <div class="feed-footer-left">
+            <a href="{% url 'profile' post.author.username %}">
+                @{{ post.author.username }}
+            </a>
+        </div>
+
+        <div class="feed-footer-right">
+
+            {% if user.is_authenticated %}
+                <button class="react-btn"
+                        data-type="post"
+                        data-id="{{ post.id }}">
+                    <span class="reaction-icon">
+                        {% if post.user_reaction == 'like' %}👍{% endif %}
+                        {% if post.user_reaction == 'love' %}❤️{% endif %}
+                        {% if post.user_reaction == 'funny' %}😂{% endif %}
+                        {% if post.user_reaction == 'wow' %}😮{% endif %}
+                        {% if post.user_reaction == 'sad' %}😢{% endif %}
+                        {% if not post.user_reaction %}🤍{% endif %}
+                    </span>
+                </button>
+
+                <div class="reaction-menu">
+                    <span class="reaction-option" data-type="post" data-id="{{ post.id }}" data-reaction="like">👍</span>
+                    <span class="reaction-option" data-type="post" data-id="{{ post.id }}" data-reaction="love">❤️</span>
+                    <span class="reaction-option" data-type="post" data-id="{{ post.id }}" data-reaction="funny">😂</span>
+                    <span class="reaction-option" data-type="post" data-id="{{ post.id }}" data-reaction="wow">😮</span>
+                    <span class="reaction-option" data-type="post" data-id="{{ post.id }}" data-reaction="sad">😢</span>
+                </div>
+            {% endif %}
+
+            <button class="reaction-count"
+                    data-type="post"
+                    data-id="{{ post.id }}">
+                <span class="count">{{ post.reactions.count }}</span> reacciones
+            </button>
+
+        </div>
+
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="feed-actions">
+            {% if post.id in saved_posts_ids %}
+                <a href="{% url 'unsave_post' post.id %}" class="btn btn-sm btn-warning">
+                    Guardado
+                </a>
+            {% else %}
+                <a href="{% url 'save_post' post.id %}" class="btn btn-sm btn-outline-warning">
+                    Guardar
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+</div>

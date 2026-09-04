@@ -1,0 +1,247 @@
+/* --------------------------------------------- */
+/* CAJA DE COMENTARIOS */
+/* --------------------------------------------- */
+
+.comment-box {
+    margin-top: 30px;
+}
+
+.comment {
+    margin-bottom: 15px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fafafa;
+    border: 1px solid #eee;
+}
+
+.comment-header {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.comment-meta {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.comment-actions {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.comment-actions button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.comment-replies {
+    margin-left: 25px;
+    margin-top: 10px;
+    border-left: 2px solid #ddd;
+    padding-left: 12px;
+}
+
+.reply-form {
+    margin-top: 10px;
+}
+
+.delete-btn {
+    color: #d9534f;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.sort-buttons {
+    margin-bottom: 15px;
+}
+
+.sort-buttons button {
+    margin-right: 10px;
+}
+
+/* --------------------------------------------- */
+/* CORAZÓN BASE */
+/* --------------------------------------------- */
+
+.heart-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+}
+
+.heart-icon.filled {
+    transform: scale(1.15);
+}
+
+/* --------------------------------------------- */
+/* CAJA "X REACCIONES" */
+/* --------------------------------------------- */
+
+.comment-actions .like-box,
+.post-likes-trigger.like-box {
+    display: inline-block;
+    padding: 4px 10px !important;
+    border-radius: 999px;
+    background: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+    font-size: 0.85rem;
+    color: #555 !important;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.comment-actions .like-box:hover,
+.post-likes-trigger.like-box:hover {
+    background: #e9e9e9 !important;
+    border-color: #ccc !important;
+    transform: translateY(-1px);
+}
+
+/* --------------------------------------------- */
+/* MODAL LISTA DE REACCIONES */
+/* --------------------------------------------- */
+
+#likesModalBody {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.like-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+}
+
+.like-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ddd;
+}
+
+.like-user-username {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* --------------------------------------------- */
+/* SISTEMA DE REACCIONES ESTILO FACEBOOK */
+/* --------------------------------------------- */
+
+/* Botón principal */
+.react-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+}
+
+.reaction-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Menú flotante */
+.reaction-menu {
+    position: absolute;
+    display: none;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 6px 8px;
+    z-index: 20;
+    gap: 4px;
+}
+
+.reaction-menu.show {
+    display: inline-flex;
+    animation: reaction-menu-in 120ms ease-out;
+}
+
+/* Opciones del menú */
+.reaction-option {
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.reaction-option:hover {
+    transform: translateY(-2px) scale(1.15);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Contador unificado */
+.reaction-count {
+    border: none;
+    background: none;
+    padding: 0;
+    color: #555;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* Animación */
+@keyframes reaction-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Icono en la lista del modal */
+.reaction-icon-list {
+    font-size: 18px;
+}
+
+.reaction-totals-bar {
+    display: flex;
+    gap: 12px;
+    padding: 6px 4px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+
+.reaction-total-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 999px;
+    transition: background 0.15s ease;
+    font-size: 0.9rem;
+}
+
+.reaction-total-item:hover {
+    background: #f2f2f2;
+}
+
+.reaction-total-item.active {
+    background: #e6e6e6;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .comment {
+        padding: 10px 12px;
+    }
+
+    .comment-replies {
+        margin-left: 15px;
+    }
+}

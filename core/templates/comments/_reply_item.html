@@ -1,0 +1,58 @@
+{% load static %}
+{% load text_filters %}
+
+<div class="comment" data-id="{{ reply.id }}">
+
+    <div class="comment-header">
+        <a href="{% url 'profile' reply.user.username %}">
+            @{{ reply.user.username }}
+        </a>
+    </div>
+
+    <div>{{ reply.text|urlize_mentions|urlize_hashtags|safe }}</div>
+    <div class="comment-meta">{{ reply.created_at }}</div>
+
+    <div class="comment-actions">
+
+        {% if user.is_authenticated %}
+            <button class="react-btn"
+                    data-type="comment"
+                    data-id="{{ reply.id }}">
+                <span class="reaction-icon">
+                    {% if reply.user_reaction == 'like' %}👍{% endif %}
+                    {% if reply.user_reaction == 'love' %}❤️{% endif %}
+                    {% if reply.user_reaction == 'funny' %}😂{% endif %}
+                    {% if reply.user_reaction == 'wow' %}😮{% endif %}
+                    {% if reply.user_reaction == 'sad' %}😢{% endif %}
+                    {% if not reply.user_reaction %}
+                        <svg class="heart-icon" viewBox="0 0 24 24">
+                            <path d="M12.1 8.64l-.1.1-.11-.1C9.14 6.09 5.6 6.7 3.6 9.05c-2.04 2.39-1.67 5.97.83 8.05L12 21l7.57-3.9c2.5-2.08 2.87-5.66.83-8.05-2-2.35-5.54-2.96-8.3-.41z"
+                                  fill="none" stroke="#e0245e" stroke-width="2"/>
+                        </svg>
+                    {% endif %}
+                </span>
+            </button>
+
+            <div class="reaction-menu">
+                <span class="reaction-option" data-type="comment" data-id="{{ reply.id }}" data-reaction="like">👍</span>
+                <span class="reaction-option" data-type="comment" data-id="{{ reply.id }}" data-reaction="love">❤️</span>
+                <span class="reaction-option" data-type="comment" data-id="{{ reply.id }}" data-reaction="funny">😂</span>
+                <span class="reaction-option" data-type="comment" data-id="{{ reply.id }}" data-reaction="wow">😮</span>
+                <span class="reaction-option" data-type="comment" data-id="{{ reply.id }}" data-reaction="sad">😢</span>
+            </div>
+
+            {% if reply.user == user %}
+                <span class="delete-btn delete-comment" data-id="{{ reply.id }}">Eliminar</span>
+            {% endif %}
+        {% endif %}
+
+        <button class="reaction-count ms-2"
+                data-type="comment"
+                data-id="{{ reply.id }}"
+                style="border:none;background:none;padding:0;color:#555;cursor:pointer;">
+            <span class="count likes-count">{{ reply.reactions.count }}</span> reacciones
+        </button>
+
+    </div>
+
+</div>
