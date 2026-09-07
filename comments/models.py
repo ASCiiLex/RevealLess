@@ -6,14 +6,16 @@ from notifications.utils import send_ws_notification, extract_mentions, extract_
 
 
 class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
+    )
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ["created_at"]
 
     def __str__(self):
         return f"{self.user.username}: {self.text[:20]}"
@@ -38,22 +40,14 @@ class Comment(models.Model):
                         target_type="comment",
                         target_id=self.id,
                     )
-                    send_ws_notification(
-                        mentioned_user,
-                        {
-                            "id": notif.id,
-                            "actor": self.user.username,
-                            "verb": "mentioned",
-                            "target_type": "comment",
-                            "target_id": self.id,
-                        },
-                    )
+                    send_ws_notification(mentioned_user, notif)
                 except User.DoesNotExist:
                     pass
 
             tags = extract_hashtags(self.text)
             if tags:
                 from posts.models import Hashtag, PostHashtag
+
                 for tag in tags:
                     hashtag, _ = Hashtag.objects.get_or_create(name=tag)
                     PostHashtag.objects.get_or_create(post=self.post, hashtag=hashtag)
@@ -66,16 +60,7 @@ class Comment(models.Model):
                 target_type="post",
                 target_id=self.post.id,
             )
-            send_ws_notification(
-                self.post.author,
-                {
-                    "id": notif.id,
-                    "actor": self.user.username,
-                    "verb": "commented",
-                    "target_type": "post",
-                    "target_id": self.post.id,
-                },
-            )
+            send_ws_notification(self.post.author, notif)
 
         if is_new and self.is_reply and self.parent.user != self.user:
             notif = Notification.objects.create(
@@ -85,35 +70,30 @@ class Comment(models.Model):
                 target_type="comment",
                 target_id=self.parent.id,
             )
-            send_ws_notification(
-                self.parent.user,
-                {
-                    "id": notif.id,
-                    "actor": self.user.username,
-                    "verb": "replied",
-                    "target_type": "comment",
-                    "target_id": self.parent.id,
-                },
-            )
+            send_ws_notification(self.parent.user, notif)
 
 
 class CommentReaction(models.Model):
     REACTION_CHOICES = [
-        ('like', 'Me gusta'),
-        ('love', 'Me encanta'),
-        ('funny', 'Me divierte'),
-        ('wow', 'Me sorprende'),
-        ('sad', 'Me entristece'),
+        ("like", "Me gusta"),
+        ("love", "Me encanta"),
+        ("funny", "Me divierte"),
+        ("wow", "Me sorprende"),
+        ("sad", "Me entristece"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment_reactions')
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='reactions')
-    reaction = models.CharField(max_length=10, choices=REACTION_CHOICES, default='like')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="comment_reactions"
+    )
+    comment = models.ForeignKey(
+        Comment, on_delete=models.CASCADE, related_name="reactions"
+    )
+    reaction = models.CharField(max_length=10, choices=REACTION_CHOICES, default="like")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'comment')
-        ordering = ['-created_at']
+        unique_together = ("user", "comment")
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f'{self.user.username} reaccionó "{self.reaction}" al comentario {self.comment.id}'
@@ -131,14 +111,4 @@ class CommentReaction(models.Model):
                 target_id=self.comment.id,
                 reaction=self.reaction,
             )
-            send_ws_notification(
-                self.comment.user,
-                {
-                    "id": notif.id,
-                    "actor": self.user.username,
-                    "verb": "reacted",
-                    "target_type": "comment",
-                    "target_id": self.comment.id,
-                    "reaction": self.reaction,
-                },
-            )
+            send_ws_notification(self.comment.user, notif)

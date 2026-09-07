@@ -11,35 +11,40 @@ from .models import PostReaction
 @login_required
 @require_POST
 def toggle_reaction_post(request):
-    post_id = request.POST.get('post_id')
-    reaction_type = request.POST.get('reaction')
+    post_id = request.POST.get("post_id")
+    reaction_type = request.POST.get("reaction")
+
+    # 🔒 Validar reacción contra choices del modelo
+    valid_reactions = dict(PostReaction.REACTION_CHOICES)
+    if reaction_type not in valid_reactions:
+        return JsonResponse({"error": "Reacción no válida"}, status=400)
 
     post = get_object_or_404(Post, id=post_id)
 
     reaction, created = PostReaction.objects.get_or_create(
-        user=request.user,
-        post=post,
-        defaults={'reaction': reaction_type}
+        user=request.user, post=post, defaults={"reaction": reaction_type}
     )
 
     if not created:
         if reaction.reaction == reaction_type:
             reaction.delete()
-            return JsonResponse({'removed': True})
+            return JsonResponse({"removed": True})
         reaction.reaction = reaction_type
         reaction.save()
 
-    return JsonResponse({
-        'removed': False,
-        'reaction': reaction_type,
-        'counts': {
-            'like': post.reactions.filter(reaction='like').count(),
-            'love': post.reactions.filter(reaction='love').count(),
-            'funny': post.reactions.filter(reaction='funny').count(),
-            'wow': post.reactions.filter(reaction='wow').count(),
-            'sad': post.reactions.filter(reaction='sad').count(),
+    return JsonResponse(
+        {
+            "removed": False,
+            "reaction": reaction_type,
+            "counts": {
+                "like": post.reactions.filter(reaction="like").count(),
+                "love": post.reactions.filter(reaction="love").count(),
+                "funny": post.reactions.filter(reaction="funny").count(),
+                "wow": post.reactions.filter(reaction="wow").count(),
+                "sad": post.reactions.filter(reaction="sad").count(),
+            },
         }
-    })
+    )
 
 
 @login_required
@@ -48,21 +53,23 @@ def post_reactions_list(request, post_id):
 
     users_data = []
 
-    for r in post.reactions.select_related('user').order_by('-created_at'):
+    for r in post.reactions.select_related("user").order_by("-created_at"):
         user = r.user
-        profile_url = reverse('profile', args=[user.username])
+        profile_url = reverse("profile", args=[user.username])
 
         avatar = (
             request.build_absolute_uri(user.profile.image.url)
-            if hasattr(user, 'profile') and user.profile.image
-            else request.build_absolute_uri('/static/img/default_profile.jpg')
+            if hasattr(user, "profile") and user.profile.image
+            else request.build_absolute_uri("/static/img/default_profile.jpg")
         )
 
-        users_data.append({
-            'username': user.username,
-            'profile_url': profile_url,
-            'avatar_url': avatar,
-            'reaction': r.reaction,
-        })
+        users_data.append(
+            {
+                "username": user.username,
+                "profile_url": profile_url,
+                "avatar_url": avatar,
+                "reaction": r.reaction,
+            }
+        )
 
-    return JsonResponse({'users': users_data})
+    return JsonResponse({"users": users_data})
