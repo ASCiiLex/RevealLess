@@ -20,15 +20,19 @@
 
         {% if user.is_authenticated and user != profile_user %}
             {% if is_following %}
-                <a href="{% url 'unfollow' profile_user.username %}"
-                   class="btn btn-danger follow-btn">
-                    Dejar de seguir
-                </a>
+                <form method="post" action="{% url 'unfollow' profile_user.username %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger follow-btn">
+                        Dejar de seguir
+                    </button>
+                </form>
             {% else %}
-                <a href="{% url 'follow' profile_user.username %}"
-                   class="btn btn-primary follow-btn">
-                    Seguir
-                </a>
+                <form method="post" action="{% url 'follow' profile_user.username %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary follow-btn">
+                        Seguir
+                    </button>
+                </form>
             {% endif %}
         {% endif %}
     </div>
