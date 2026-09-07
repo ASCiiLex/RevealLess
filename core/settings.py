@@ -7,36 +7,46 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SEGURIDAD
 # ==========================================================
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-inseguro")
-DEBUG = False
+SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-inseguro')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ["redsocialaficiones.fly.dev", ".fly.dev", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = [
+    'redsocialaficiones.fly.dev',
+    '.fly.dev',
+    'localhost',
+    '127.0.0.1'
+]
 
-CSRF_TRUSTED_ORIGINS = ["https://redsocialaficiones.fly.dev"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://redsocialaficiones.fly.dev"
+]
 
 # ==========================================================
 # APLICACIONES
 # ==========================================================
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
     "django_extensions",
-    "profiles",
-    "posts",
-    "comments",
-    "likes",
-    "follows",
-    "feed",
-    "accounts",
-    "notifications",
-    "messages_app",
-    "saved_posts",
-    "channels",
+
+    'profiles',
+    'posts',
+    'comments',
+    'likes',
+    'follows',
+    'feed',
+    'accounts',
+    'notifications',
+    'messages_app',
+    'saved_posts',
+
+    'channels',
 ]
 
 # ==========================================================
@@ -44,35 +54,36 @@ INSTALLED_APPS = [
 # ==========================================================
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 # ==========================================================
 # URLS / TEMPLATES
 # ==========================================================
 
-ROOT_URLCONF = "core.urls"
+ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "core" / "templates"],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "notifications.context_processors.unread_notifications",
-                "messages_app.context_processors.unread_messages",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'core' / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+
+                'notifications.context_processors.unread_notifications',
+                'messages_app.context_processors.unread_messages',
             ],
         },
     },
@@ -82,17 +93,17 @@ TEMPLATES = [
 # ASGI / WSGI
 # ==========================================================
 
-ASGI_APPLICATION = "core.asgi.application"
-WSGI_APPLICATION = "core.wsgi.application"
+ASGI_APPLICATION = 'core.asgi.application'
+WSGI_APPLICATION = 'core.wsgi.application'
 
 # ==========================================================
 # BASE DE DATOS
 # ==========================================================
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.environ.get("DATABASE_PATH", BASE_DIR / "db.sqlite3"),
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.environ.get('DATABASE_PATH', BASE_DIR / 'db.sqlite3'),
     }
 }
 
@@ -101,20 +112,18 @@ DATABASES = {
 # ==========================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # ==========================================================
 # INTERNACIONALIZACIÓN
 # ==========================================================
 
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
@@ -122,22 +131,22 @@ USE_TZ = True
 # STATIC / MEDIA
 # ==========================================================
 
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 SERVE_MEDIA = True
 
 # ==========================================================
 # LOGIN
 # ==========================================================
 
-LOGIN_URL = "/cuentas/login/"
-LOGIN_REDIRECT_URL = "/feed/"
-LOGOUT_REDIRECT_URL = "/cuentas/login/"
+LOGIN_URL = '/cuentas/login/'
+LOGIN_REDIRECT_URL = '/feed/'
+LOGOUT_REDIRECT_URL = '/cuentas/login/'
 
 # ==========================================================
 # CHANNELS (REDIS EN PRODUCCIÓN / MEMORY EN LOCAL)
@@ -165,4 +174,4 @@ else:
 # DEFAULTS
 # ==========================================================
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
