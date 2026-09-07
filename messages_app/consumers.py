@@ -1,9 +1,12 @@
 import json
+import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 
 from .models import Message
+
+logger = logging.getLogger(__name__)
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -22,11 +25,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         await self.accept()
 
-        print(f"🟢 ChatConsumer CONNECT {self.user.username} -> {self.room_name}")
+        logger.info("ChatConsumer connect %s -> %s", self.user.username, self.room_name)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
-        print(f"🔴 ChatConsumer DISCONNECT {self.user.username}")
+        logger.info("ChatConsumer disconnect %s", self.user.username)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -46,7 +49,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "created_at": message.created_at.isoformat(),
         }
 
-        # Chat realtime
         await self.channel_layer.group_send(
             self.room_name,
             {
@@ -55,10 +57,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             },
         )
 
-        print(f"📩 MENSAJE creado: {message.sender} -> {message.receiver}")
+        logger.info("Mensaje creado %s -> %s", message.sender, message.receiver)
 
-        # 🔥 ALERTA MENSAJES
-        print(f"🚀 ENVIANDO ALERTA A messages_{message.receiver.id}")
         await self.channel_layer.group_send(
             f"messages_{message.receiver.id}",
             {
@@ -91,21 +91,19 @@ class MessagesAlertConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
-        print(f"🟢 MessagesAlert CONNECT -> {self.group_name}")
+        logger.info("MessagesAlert connect -> %s", self.group_name)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
-        print(f"🔴 MessagesAlert DISCONNECT -> {self.group_name}")
+        logger.info("MessagesAlert disconnect -> %s", self.group_name)
 
     async def new_message_alert(self, event):
-        print(f"📨 ALERTA RECIBIDA en {self.group_name}: {event}")
         await self.send(text_data=json.dumps({
             "type": "new_message",
             "count": event.get("count", 1)
         }))
 
     async def reset_alert(self, event):
-        print(f"♻️ RESET ALERT en {self.group_name}")
         await self.send(text_data=json.dumps({
             "type": "reset"
         }))

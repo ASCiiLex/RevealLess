@@ -14,15 +14,12 @@ def home_redirect(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # 🔥 ROOT CONTROLADO
     path('', home_redirect, name='home'),
 
-    # Apps
     path('cuentas/', include('accounts.urls')),
     path('feed/', include('feed.urls')),
     path('perfil/', include('profiles.urls')),
     path('posts/', include('posts.urls')),
-    path('likes/', include('likes.urls')),
     path('follows/', include('follows.urls')),
     path('comments/', include('comments.urls')),
     path('notificaciones/', include('notifications.urls')),
@@ -30,7 +27,6 @@ urlpatterns = [
     path('guardados/', include('saved_posts.urls')),
 ]
 
-# 🔥 SERVIR MEDIA EN PRODUCCIÓN (CLAVE PARA FLY + GUNICORN)
 urlpatterns += [
     re_path(r'^media/(?P<path>.*)$', serve, {
         'document_root': settings.MEDIA_ROOT

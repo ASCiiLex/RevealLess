@@ -53,19 +53,26 @@ class Notification(models.Model):
         return "/static/img/default_profile.jpg"
 
     @property
+    def _related_post(self):
+        # Cachea la query: post_thumbnail y url ya no piden 2 veces el mismo Post.
+        if not hasattr(self, "_post_cache"):
+            self._post_cache = None
+            if self.target_type in ("post", "comment", "reply") and self.target_id:
+                from posts.models import Post
+                self._post_cache = Post.objects.only("id", "image").filter(id=self.target_id).first()
+        return self._post_cache
+
+    @property
     def post_thumbnail(self):
-        if self.target_type == "post" and self.target_id:
-            from posts.models import Post
-            post = Post.objects.only("id", "image").filter(id=self.target_id).first()
-            if post and post.image:
-                return post.image_url
+        post = self._related_post
+        if post and post.image:
+            return post.image_url
         return "/static/img/default_post.jpg"
 
     @property
     def url(self):
         if self.target_type in ("post", "comment", "reply"):
-            from posts.models import Post
-            if Post.objects.filter(id=self.target_id).exists():
+            if self._related_post:
                 return f"/posts/{self.target_id}/"
             return f"/notificaciones/post-no-existe/{self.id}/"
 
