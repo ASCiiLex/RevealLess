@@ -8,21 +8,16 @@ from profiles.models import Profile
 from .forms import ProfileForm
 
 
-# 🔹 PERFIL
 def profile_view(request, username):
-    # Usuario
     profile_user = get_object_or_404(User, username=username)
 
-    # Perfil (optimizado)
     profile = get_object_or_404(
         Profile.objects.select_related('user'),
         user=profile_user
     )
 
-    # Posts (optimizado)
-    posts = profile_user.posts.all().select_related('author')
+    posts = profile_user.posts.all().select_related('author', 'obra').visible_for(request.user)
 
-    # Follow state
     is_following = False
     if request.user.is_authenticated and request.user != profile_user:
         is_following = Follow.objects.filter(
@@ -30,7 +25,6 @@ def profile_view(request, username):
             followed=profile_user
         ).exists()
 
-    # Contadores
     followers_count = Follow.objects.filter(
         followed=profile_user
     ).count()
@@ -39,7 +33,6 @@ def profile_view(request, username):
         follower=profile_user
     ).count()
 
-    # Guardados
     saved_posts_ids = []
     if request.user.is_authenticated:
         saved_posts_ids = list(
@@ -59,7 +52,6 @@ def profile_view(request, username):
     return render(request, 'profiles/profile.html', context)
 
 
-# 🔹 SEARCH
 def search_view(request):
     query = request.GET.get("q", "").strip()
     results = []
@@ -76,7 +68,6 @@ def search_view(request):
     })
 
 
-# 🔹 FOLLOWERS
 def followers_view(request, username):
     profile_user = get_object_or_404(User, username=username)
 
@@ -90,7 +81,6 @@ def followers_view(request, username):
     })
 
 
-# 🔹 FOLLOWING
 def following_view(request, username):
     profile_user = get_object_or_404(User, username=username)
 
@@ -104,10 +94,8 @@ def following_view(request, username):
     })
 
 
-# 🔹 EDIT PROFILE
 @login_required
 def edit_profile(request):
-    # 🔥 seguridad extra (aunque debería existir siempre)
     profile = getattr(request.user, 'profile', None)
 
     if not profile:

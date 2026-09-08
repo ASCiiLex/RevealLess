@@ -5,9 +5,12 @@ from posts.models import Post
 from notifications.models import Notification
 from notifications.utils import send_ws_notification, extract_mentions, extract_hashtags
 from narrative.models import ClasificacionNarrativa
+from .managers import CommentQuerySet
 
 
 class Comment(ClasificacionNarrativa, models.Model):
+    objects = CommentQuerySet.as_manager()
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     parent = models.ForeignKey(
@@ -16,7 +19,6 @@ class Comment(ClasificacionNarrativa, models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Override del campo del mixin: en Comment sí tiene un default sensato.
     frontera_origen = models.CharField(
         max_length=20,
         choices=ClasificacionNarrativa.ORIGEN_CHOICES,

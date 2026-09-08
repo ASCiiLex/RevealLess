@@ -7,8 +7,7 @@ from likes.models import PostReaction
 def get_user_feed(user):
     followed_users = user.following.values_list('followed', flat=True)
 
-    comments_qs = Comment.objects.select_related("user")
-    replies_qs = Comment.objects.select_related("user")
+    visible_comments = Comment.objects.visible_for(user).select_related("user")
     comment_reactions_qs = CommentReaction.objects.select_related("user")
     reactions_qs = PostReaction.objects.select_related("user")
 
@@ -17,8 +16,8 @@ def get_user_feed(user):
         .filter(author__in=followed_users)
         .select_related("author")
         .prefetch_related(
-            Prefetch("comments", queryset=comments_qs),
-            Prefetch("comments__replies", queryset=replies_qs),
+            Prefetch("comments", queryset=visible_comments),
+            Prefetch("comments__replies", queryset=visible_comments),
             Prefetch("comments__reactions", queryset=comment_reactions_qs),
             Prefetch("reactions", queryset=reactions_qs),
             "post_hashtags__hashtag",

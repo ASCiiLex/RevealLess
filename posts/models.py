@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from narrative.models import ClasificacionNarrativa
+from .managers import PostQuerySet
 
 
 def post_image_path(instance, filename):
@@ -9,6 +10,8 @@ def post_image_path(instance, filename):
 
 
 class Post(ClasificacionNarrativa, models.Model):
+    objects = PostQuerySet.as_manager()
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

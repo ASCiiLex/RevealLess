@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 
 from comments.models import Comment, CommentReaction
 from likes.models import PostReaction
@@ -7,10 +7,10 @@ from ..models import Post
 
 
 def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
     sort = request.GET.get('sort', 'recent')
 
-    comments = get_sorted_comments(post, sort)
+    comments = get_sorted_comments(request.user, post, sort)
     post_reaction = apply_user_reactions(request, comments, post)
 
     return render(request, 'posts/post_detail.html', {
@@ -21,12 +21,14 @@ def post_detail(request, post_id):
     })
 
 
-def get_sorted_comments(post, sort):
-    qs = Comment.objects.filter(
+def get_sorted_comments(user, post, sort):
+    visible_replies = Comment.objects.visible_for(user)
+
+    qs = Comment.objects.visible_for(user).filter(
         post=post,
         parent__isnull=True
     ).prefetch_related(
-        'replies',
+        Prefetch('replies', queryset=visible_replies),
         'replies__user',
         'replies__reactions',
         'reactions',

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="text-center mb-5">
+        <h1>RevealLess</h1>
+        <p class="lead">Disfruta sin spoilers. Habla de tus series, libros y pelis a tu propio ritmo.</p>
+        <a href="/cuentas/login/" class="btn btn-primary btn-lg">Iniciar sesión</a>
+    </div>
+
+    <div class="row text-center mb-5">
+        <div class="col">
+            <h3>{{ stats.obras_count }}</h3>
+            <p class="text-muted">obras en el catálogo</p>
+        </div>
+        <div class="col">
+            <h3>{{ stats.posts_count }}</h3>
+            <p class="text-muted">publicaciones</p>
+        </div>
+        <div class="col">
+            <h3>{{ stats.usuarios_count }}</h3>
+            <p class="text-muted">usuarios</p>
+        </div>
+    </div>
+
+    <h2 class="mb-3">Catálogo</h2>
+    <div class="row">
+        {% for obra in obras %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ obra.titulo }}</h5>
+                    <p class="card-text">{{ obra.sinopsis|default:"Sin sinopsis todavía." }}</p>
+                    <p class="text-muted small">{{ obra.posts_total }} publicaciones</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">Todavía no hay obras en el catálogo.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
