@@ -2,7 +2,7 @@
 
 Plataforma social orientada al seguimiento y conversación sobre obras narrativas que adapta la visibilidad del contenido al progreso individual de cada usuario.
 
-RevealLess nace como una evolución profunda de un proyecto previo de red social desarrollado con Django, incorporando un nuevo dominio de negocio basado en una idea central:
+RevealLess nace como una evolución profunda de un proyecto previo de red social desarrollado con Django (`RedSocial_Django`), incorporando un nuevo dominio de negocio basado en una idea central:
 
 > **PROGRESO → SPOILER → VISIBILIDAD**
 
@@ -14,7 +14,7 @@ El objetivo es permitir que los usuarios puedan compartir y descubrir contenido 
 
 RevealLess combina las funcionalidades sociales de una red tradicional con un sistema de control de spoilers basado en el progreso narrativo de cada usuario.
 
-Entre las funcionalidades previstas se encuentran:
+Funcionalidades implementadas:
 
 - 👤 Usuarios y perfiles
 - 👥 Seguidores y relaciones sociales
@@ -22,11 +22,16 @@ Entre las funcionalidades previstas se encuentran:
 - ❤️ Reacciones
 - 💬 Mensajería privada en tiempo real
 - 🔔 Notificaciones en tiempo real
-- 📺 Obras narrativas y temporadas
-- ▶️ Seguimiento del progreso individual
-- 🛡️ Control automático de visibilidad según progreso
-- 🤖 Inteligencia artificial como asistente de clasificación de contenido
-- ⚛️ Integración de React en las vistas principales del producto
+- 📺 Obras narrativas, con jerarquía de profundidad variable (temporadas, arcos, episodios...)
+- ▶️ Seguimiento del progreso individual, con confirmación explícita para saltos grandes
+- 🛡️ Motor de visibilidad anti-spoiler aplicado en feed, perfil y detalle de post
+- 🤖 Asistente de IA (Anthropic Claude) para proponer clasificación narrativa
+- 🔌 API REST (Django REST Framework) como base para las vistas React
+
+Pendiente (ver Roadmap):
+
+- ⚛️ Vistas React que consuman la API
+- 🌐 Despliegue de la versión RevealLess en producción
 
 La característica diferencial del proyecto es que la visibilidad de una publicación no depende únicamente de quién la ha publicado, sino también de **hasta dónde ha progresado el usuario dentro de la obra asociada**.
 
@@ -60,53 +65,58 @@ REGLA DE VISIBILIDAD
 CONTENIDO VISIBLE / BLOQUEADO
 ```
 
+Regla nuclear del motor de visibilidad:
+
+```text
+progreso_usuario >= frontera_contenido → visible
+```
+
 Por ejemplo:
 
 ```text
 Usuario A → S02E08
 Usuario B → S02E03
 
-Publicación → S02E07
+Publicación → frontera S02E07
 
 Usuario A → ✅ Puede verla
 Usuario B → 🔒 Contenido bloqueado
 ```
 
-Cuando el usuario B alcanza posteriormente el episodio 7, la publicación pasa a estar disponible.
+Cuando el usuario B alcanza posteriormente el episodio 7, la publicación pasa a estar disponible automáticamente.
+
+El autor de un contenido siempre puede ver lo que él mismo ha publicado, incluso si su frontera de spoiler está por delante de su propio progreso (por ejemplo, al comentar información externa como entrevistas o adelantos oficiales). Un usuario sin sesión iniciada no ve ningún contenido narrativo — solo un catálogo público de obras y estadísticas agregadas, sin información de trama.
 
 ---
 
 ## 🤖 Inteligencia Artificial
 
-La inteligencia artificial se utilizará como **asistente de clasificación**, no como autoridad absoluta.
+La IA (Anthropic Claude) se utiliza como **asistente de clasificación**, no como autoridad absoluta. La jerarquía de asignación de la frontera de spoiler de una publicación es:
 
-Ante una nueva publicación, el sistema podrá analizar su contenido y proponer información como:
+```text
+1. Usuario indica explícitamente
+        ↓ (si no)
+2. IA propone (con nivel de confianza)
+        ↓ (si falla o confianza insuficiente)
+3. Fallback: progreso del autor en el instante de creación (congelado)
+```
 
-- Obra a la que pertenece
-- Temporada
-- Episodio o posición narrativa
-- Nivel de spoiler
-- Elementos narrativos detectados
-- Nivel de confianza de la clasificación
+Ante una publicación sin clasificación explícita, la IA analiza el texto junto con las unidades narrativas de la obra y propone cuál debería usarse como frontera, junto a un nivel de confianza (0–1). Si la confianza no alcanza el umbral mínimo, o la llamada a la API falla o hace timeout, el sistema no bloquea la publicación: aplica el fallback automáticamente.
 
-El usuario podrá revisar y corregir la clasificación cuando sea necesario.
-
-Este enfoque permite combinar automatización con control humano y evitar que una clasificación incorrecta determine de forma irreversible la visibilidad del contenido.
+Este enfoque combina automatización con una red de seguridad, evitando que un fallo de la IA deje contenido sin proteger.
 
 ---
 
 ## 🏗️ Arquitectura
 
-La arquitectura definitiva del proyecto se establecerá durante la fase de diseño y análisis técnico.
-
-Como punto de partida, RevealLess reutiliza parte de la infraestructura desarrollada en el proyecto RedSocial_Django:
+RevealLess reutiliza la infraestructura social heredada de `RedSocial_Django` y añade una app de dominio propia (`narrative`) de la que dependen `posts` y `comments`:
 
 ```text
 Cliente
    ↓
-Django
+Django (vistas HTML + API REST)
    ↓
-ASGI / Channels
+ASGI / Channels (chat, notificaciones en tiempo real)
    ↓
 Redis
    ↓
@@ -115,21 +125,19 @@ WebSocket Consumers
 Base de datos
 ```
 
-La nueva arquitectura incorporará progresivamente los componentes específicos del dominio RevealLess, especialmente:
+Flujo del dominio propio:
 
 ```text
-Obras
+Obra
    ↓
-Progreso del usuario
+UnidadNarrativa (jerarquía autorreferenciada: parte/saga/arco/episodio...)
    ↓
-Contexto narrativo
+ProgresoUsuario (por usuario y obra, declarativo, no puede retroceder)
    ↓
-Clasificación de publicaciones
+ClasificacionNarrativa (mixin abstracto: Post y Comment)
    ↓
-Motor de visibilidad
+Motor de visibilidad (Post.objects.visible_for / Comment.objects.visible_for)
 ```
-
-La arquitectura final será documentada una vez concluida la fase de análisis y diseño.
 
 ---
 
@@ -137,37 +145,31 @@ La arquitectura final será documentada una vez concluida la fase de análisis y
 
 ### Backend
 
-- Python
-- Django
+- Python / Django 5.2
 - Django ORM
-- Django Channels
-- Daphne
-- channels_redis
+- Django REST Framework (API para React)
+- Django Channels + Daphne + channels_redis
 
 ### Frontend
 
 - Django Templates
-- JavaScript
-- Fetch API
-- WebSockets
-- React
+- JavaScript / Fetch API / WebSockets
+- React (en desarrollo, consumiendo la API REST)
 
 ### Inteligencia Artificial
 
-- Servicio de IA para clasificación asistida de contenido
-- Sistema de confianza y revisión
+- Anthropic Claude (Haiku) para clasificación asistida de contenido
+- Sistema de confianza y fallback automático
 
 ### Infraestructura
 
 - Redis
-- Docker
 - Fly.io
-- PostgreSQL / SQLite según entorno
+- SQLite (desarrollo) / PostgreSQL (a valorar en producción)
 
 ### Otros
 
-- WhiteNoise
-- Pillow
+- WhiteNoise, Pillow
 
 ---
 
@@ -175,117 +177,63 @@ La arquitectura final será documentada una vez concluida la fase de análisis y
 
 RevealLess mantiene las capacidades de comunicación en tiempo real heredadas del proyecto base.
 
-Entre las funcionalidades previstas:
-
 | Feature | Tecnología | Descripción |
 | -------- | ---------- | ----------- |
 | Chat | WebSockets | Mensajería privada en tiempo real |
 | Notificaciones | WebSockets | Eventos y avisos en vivo |
 | Reacciones | WebSockets | Actualización de reacciones |
-| Contadores | WebSockets / JS | Sincronización dinámica |
 
-El objetivo es mantener un enfoque orientado a eventos y evitar el polling innecesario.
+**Nota:** `manage.py runserver` sirve WSGI puro y no atiende rutas `/ws/`; para probar tiempo real localmente hace falta levantar el servidor en modo ASGI (Daphne/uvicorn).
 
 ---
 
 ## ⚛️ Integración React
 
-El proyecto incorporará React en las partes del sistema donde aporte mayor valor y permita demostrar la integración entre frontend y backend.
+La API REST que consumirá React ya está construida y probada:
 
-Las primeras vistas candidatas son:
+- `GET /narrative/api/feed/` — feed anti-spoiler, ya filtrado por el motor de visibilidad.
+- `GET /narrative/api/progreso/<slug>/` — unidades narrativas de una obra + progreso actual del usuario.
+- `POST /narrative/api/progreso/<slug>/` — actualiza el progreso (requiere `confirmado: true` si el salto es grande).
 
-- Feed personalizado con control de spoilers
-- Gestión del progreso del usuario
+Autenticación por sesión (misma cookie que el resto de la app); las peticiones de escritura requieren el token CSRF estándar de Django, leído de la cookie `csrftoken` y enviado como cabecera `X-CSRFToken`.
 
-Estas vistas consumirán datos reales proporcionados por el backend Django.
-
-La integración no pretende sustituir innecesariamente toda la interfaz existente, sino utilizar React de forma estratégica dentro de la arquitectura del proyecto.
+Las vistas React que consumen estos endpoints están pendientes de implementación.
 
 ---
 
 ## 🧩 Funcionalidades principales
 
 ### 👤 Usuarios
-
-- Registro e inicio de sesión
-- Perfiles
-- Seguidores
-- Relaciones sociales
+Registro e inicio de sesión, perfiles, seguidores.
 
 ### 📚 Obras
-
-- Obras narrativas
-- Temporadas
-- Episodios
-- Información contextual
+`Obra` + `UnidadNarrativa` (jerarquía de profundidad variable), con portada opcional en ambos niveles.
 
 ### ▶️ Progreso
-
-- Registro del progreso individual
-- Actualización del progreso
-- Asociación entre usuario y obra
+`ProgresoUsuario`: declarativo, no puede retroceder, exige confirmación explícita para saltos grandes (umbral configurable).
 
 ### 📝 Publicaciones
-
-- Creación de publicaciones
-- Asociación con una obra
-- Clasificación narrativa
-- Comentarios
-- Reacciones
+Creación asociada obligatoriamente a una obra; requiere progreso declarado antes de publicar; clasificación narrativa (explícita, IA o fallback); comentarios con herencia de frontera del post padre por defecto.
 
 ### 🛡️ Protección frente a spoilers
-
-El sistema comparará:
-
-```text
-Progreso del usuario
-        +
-Contexto narrativo de la publicación
-        ↓
-Visibilidad permitida
-```
-
-Una publicación podrá mostrarse, ocultarse o bloquearse dependiendo del progreso del usuario.
+Motor de visibilidad aplicado en feed, perfil y detalle de post: `progreso_lector >= frontera_orden`.
 
 ### 🤖 Clasificación asistida por IA
-
-La IA podrá proponer la clasificación narrativa de una publicación y su nivel de confianza.
-
-Las clasificaciones podrán ser revisadas o corregidas antes de determinar definitivamente su visibilidad.
+Ver sección "Inteligencia Artificial" arriba.
 
 ---
 
 ## 🧪 Testing
 
-El sistema deberá incluir pruebas orientadas especialmente a las reglas de negocio relacionadas con spoilers y visibilidad.
+El dominio anti-spoiler está cubierto por tests automatizados (`narrative/tests.py`, `posts/tests.py`, `comments/tests.py`):
 
-Ejemplos:
-
-```text
-Usuario → E03
-Post    → E07
-Resultado → 🔒 Bloqueado
-
-Usuario → E08
-Post    → E07
-Resultado → ✅ Visible
-
-Usuario → E03
-Post    → E03
-Resultado → ✅ Visible
-
-Usuario → E03
-Post    → E04
-Resultado → 🔒 Bloqueado
+```bash
+python manage.py test narrative posts comments
 ```
 
-También se contemplarán escenarios de:
+Cobertura actual: recálculo de orden narrativo (incluyendo `orden_manual` y desempates), progreso (avance, no-retroceso, saltos grandes), clasificación narrativa y sus constraints, motor de visibilidad (post visible/bloqueado, autor viendo su propio contenido, usuario anónimo, herencia y bloqueo lateral de comentarios).
 
-- Clasificación incorrecta
-- Baja confianza de IA
-- Fallos del servicio de IA
-- Corrección manual de una clasificación
-- Cambios en el progreso del usuario
+No cubierto todavía: llamadas reales a la API de IA (se prueban manualmente; un mock queda pendiente para no depender de cuota real en cada ejecución).
 
 ---
 
@@ -308,17 +256,18 @@ pip install -r requirements.txt
 
 ## ⚙️ Configuración
 
-Las variables de entorno necesarias se definirán durante la fase de configuración del proyecto.
-
-Ejemplo:
+Variables de entorno usadas por el proyecto:
 
 ```bash
 SECRET_KEY=your_secret_key
-DEBUG=True
-REDIS_URL=redis://127.0.0.1:6379
+DJANGO_DEBUG=True
+DATABASE_PATH=db.sqlite3          # opcional, por defecto usa db.sqlite3 en la raíz
+REDIS_URL=redis://127.0.0.1:6379  # opcional en local; sin ella usa InMemoryChannelLayer
+ANTHROPIC_API_KEY=sk-ant-...      # necesaria para que el asistente de IA funcione;
+                                   # sin ella, cae automáticamente al fallback
 ```
 
-Las credenciales y secretos reales no forman parte del repositorio.
+Las credenciales y secretos reales no forman parte del repositorio (`.env` está en `.gitignore`).
 
 ---
 
@@ -326,6 +275,7 @@ Las credenciales y secretos reales no forman parte del repositorio.
 
 ```bash
 python manage.py migrate
+python manage.py createsuperuser
 ```
 
 ---
@@ -336,7 +286,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Cuando sean necesarias funcionalidades de tiempo real, Redis deberá estar disponible.
+Cuando sean necesarias funcionalidades de tiempo real, Redis deberá estar disponible:
 
 ```bash
 redis-server
@@ -344,25 +294,13 @@ redis-server
 
 ---
 
-## 🐳 Docker
-
-El proyecto incluye configuración Docker heredada del proyecto base y será adaptada progresivamente a las necesidades específicas de RevealLess.
-
----
-
 ## 🌐 Despliegue
 
-El proyecto está preparado para mantener una estrategia de despliegue mediante contenedores.
-
-El entorno de producción definitivo y sus servicios asociados se establecerán durante la fase de arquitectura y despliegue del PFM.
+El fork original (`RedSocial_Django`) ya cuenta con configuración para Fly.io (volumen persistente para SQLite, `SECURE_*` pendiente de revisión final). El despliegue de la versión RevealLess, incluyendo `ANTHROPIC_API_KEY` como secret de Fly, está pendiente.
 
 ---
 
 ## 📁 Estructura del proyecto
-
-La estructura actual parte del proyecto RedSocial_Django y será reorganizada durante la evolución del sistema.
-
-Entre los componentes iniciales se encuentran:
 
 ```text
 RevealLess/
@@ -371,17 +309,19 @@ RevealLess/
 ├── comments/
 ├── likes/
 ├── follows/
+├── feed/
+├── profiles/
 ├── notifications/
 ├── messages_app/
+├── saved_posts/
+├── narrative/          # dominio propio: Obra, UnidadNarrativa, ProgresoUsuario,
+│                        # ClasificacionNarrativa, motor de visibilidad, API REST, IA
 ├── media/
 ├── static/
-├── templates/
 ├── core/
 ├── manage.py
 └── requirements.txt
 ```
-
-La estructura definitiva reflejará la separación entre funcionalidades sociales heredadas y el nuevo dominio RevealLess.
 
 ---
 
@@ -389,34 +329,31 @@ La estructura definitiva reflejará la separación entre funcionalidades sociale
 
 ### PFM — V1
 
-- Sistema de usuarios y perfiles
-- Obras, temporadas y episodios
-- Seguimiento de progreso
-- Publicaciones asociadas a contexto narrativo
-- Motor de visibilidad anti-spoiler
-- Clasificación asistida mediante IA
-- Integración React
-- Testing
-- Seguridad
-- Despliegue
-- Documentación técnica
+- [x] Sistema de usuarios y perfiles
+- [x] Obras, unidades narrativas y jerarquía
+- [x] Seguimiento de progreso (con confirmación de saltos grandes)
+- [x] Publicaciones asociadas a contexto narrativo
+- [x] Motor de visibilidad anti-spoiler
+- [x] Clasificación asistida mediante IA
+- [x] Tests del dominio anti-spoiler
+- [x] Base de API REST para React
+- [ ] Integración React (vistas de feed y progreso)
+- [ ] Seguridad de producción (`SECURE_*`, revisión final)
+- [ ] Despliegue de la versión RevealLess
+- [ ] Documentación técnica (memoria del proyecto) y vídeo
 
 ### V2 / Futuras evoluciones
 
-Posibles líneas de evolución:
-
-- Clasificación narrativa más avanzada
+- Clasificación narrativa más avanzada (`FamiliaNarrativa` extendida)
+- Clasificación propia de comentarios vía interfaz (hoy solo heredan del post por defecto)
 - Sistemas de recomendación
-- RAG
-- Agentes inteligentes
-- Más tipos de obras
+- RAG, agentes inteligentes
+- Más tipos de obras (libro, manga)
 - Notificaciones push
-- Persistencia avanzada de media
 - Aplicación móvil
 - Gamificación
-- Integraciones con servicios externos
 
-Estas funcionalidades quedan inicialmente fuera del alcance del PFM.
+Estas funcionalidades quedan fuera del alcance del PFM.
 
 ---
 
