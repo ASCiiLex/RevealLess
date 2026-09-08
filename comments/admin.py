@@ -4,10 +4,10 @@ from .models import Comment, CommentReaction
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'post', 'created_at')
-    list_filter = ('created_at', 'user')
+    list_display = ('id', 'user', 'post', 'frontera_origen', 'created_at')
+    list_filter = ('created_at', 'user', 'frontera_origen')
     search_fields = ('user__username', 'text')
-    readonly_fields = ('user', 'post', 'parent', 'created_at')
+    readonly_fields = ('user', 'post', 'parent', 'created_at', 'frontera_orden')
 
 
 @admin.register(CommentReaction)

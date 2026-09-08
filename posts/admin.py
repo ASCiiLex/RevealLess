@@ -12,15 +12,19 @@ class CommentInline(admin.TabularInline):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('id', 'author', 'short_text', 'created_at', 'likes_count', 'comments_count')
+    list_display = (
+        'id', 'author', 'obra', 'short_text', 'frontera_origen',
+        'created_at', 'likes_count', 'comments_count'
+    )
     search_fields = ('author__username', 'text')
-    list_filter = ('created_at',)
+    list_filter = ('created_at', 'obra', 'frontera_origen')
+    readonly_fields = ('frontera_orden',)
     inlines = [CommentInline]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return (
-            qs.select_related("author")
+            qs.select_related("author", "obra")
             .prefetch_related("comments")
             .annotate(
                 likes_total=Count("reactions", distinct=True),
@@ -30,5 +34,4 @@ class PostAdmin(admin.ModelAdmin):
 
     def short_text(self, obj):
         return obj.text[:40] + "..." if len(obj.text) > 40 else obj.text
-
     short_text.short_description = "Texto"

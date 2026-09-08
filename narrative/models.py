@@ -46,7 +46,6 @@ class Obra(models.Model):
         manuales = [u for u in hojas_dfs if u.orden_manual is not None]
         automaticas = [u for u in hojas_dfs if u.orden_manual is None]
 
-        # Empate en el índice pedido: gana quien aparece antes en el DFS natural.
         manuales.sort(key=lambda u: (u.orden_manual, hojas_dfs.index(u)))
 
         secuencia = list(automaticas)
@@ -96,8 +95,6 @@ class UnidadNarrativa(models.Model):
     orden_inicio = models.PositiveIntegerField(editable=False, default=0)
     orden_fin = models.PositiveIntegerField(editable=False, default=0)
 
-    # Índice de inserción (1-based) en la secuencia final. Solo tiene efecto
-    # en hojas; en nodos intermedios se ignora durante el recálculo.
     orden_manual = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
@@ -127,3 +124,54 @@ class ProgresoUsuario(models.Model):
 
     def __str__(self):
         return f'{self.usuario.username} · {self.obra.titulo} · {self.orden_absoluto}'
+
+
+class ClasificacionNarrativa(models.Model):
+    """Mixin abstracto compartido por Post y Comment. frontera_orden es el
+    único valor que debe consultar el motor de visibilidad."""
+
+    ORIGEN_EXPLICITO = 'explicito'
+    ORIGEN_IA = 'ia'
+    ORIGEN_FALLBACK = 'fallback'
+    ORIGEN_HEREDADO_POST = 'heredado_post'
+    ORIGEN_ADMIN = 'admin'
+    ORIGEN_CHOICES = [
+        (ORIGEN_EXPLICITO, 'Explícito'),
+        (ORIGEN_IA, 'IA'),
+        (ORIGEN_FALLBACK, 'Fallback'),
+        (ORIGEN_HEREDADO_POST, 'Heredado del post'),
+        (ORIGEN_ADMIN, 'Corrección administrativa'),
+    ]
+
+    NIVEL_MENOR = 'menor'
+    NIVEL_IMPORTANTE = 'importante'
+    NIVEL_TRAMA_CENTRAL = 'trama_central'
+    NIVEL_CHOICES = [
+        (NIVEL_MENOR, 'Menor'),
+        (NIVEL_IMPORTANTE, 'Importante'),
+        (NIVEL_TRAMA_CENTRAL, 'Trama central'),
+    ]
+
+    referencia_narrativa = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.PROTECT,
+        related_name='%(class)s_referenciados',
+    )
+    frontera_spoiler = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.PROTECT, null=True, blank=True,
+        related_name='%(class)s_frontera',
+    )
+    frontera_orden = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    frontera_origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES)
+    nivel_spoiler = models.CharField(max_length=20, choices=NIVEL_CHOICES, default=NIVEL_MENOR)
+    ia_confianza = models.FloatField(null=True, blank=True)
+    clasificado_en = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if self.frontera_origen == self.ORIGEN_HEREDADO_POST:
+            self.frontera_orden = None
+        elif self.frontera_spoiler_id:
+            self.frontera_orden = self.frontera_spoiler.orden_fin
+        super().save(*args, **kwargs)

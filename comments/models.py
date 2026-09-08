@@ -1,11 +1,13 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from posts.models import Post
 from notifications.models import Notification
 from notifications.utils import send_ws_notification, extract_mentions, extract_hashtags
+from narrative.models import ClasificacionNarrativa
 
 
-class Comment(models.Model):
+class Comment(ClasificacionNarrativa, models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     parent = models.ForeignKey(
@@ -14,8 +16,24 @@ class Comment(models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Override del campo del mixin: en Comment sí tiene un default sensato.
+    frontera_origen = models.CharField(
+        max_length=20,
+        choices=ClasificacionNarrativa.ORIGEN_CHOICES,
+        default=ClasificacionNarrativa.ORIGEN_HEREDADO_POST,
+    )
+
     class Meta:
         ordering = ["created_at"]
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(frontera_origen=ClasificacionNarrativa.ORIGEN_HEREDADO_POST, frontera_spoiler__isnull=True)
+                    | (~models.Q(frontera_origen=ClasificacionNarrativa.ORIGEN_HEREDADO_POST) & models.Q(frontera_spoiler__isnull=False))
+                ),
+                name='comment_frontera_consistency',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.user.username}: {self.text[:20]}"
@@ -23,6 +41,19 @@ class Comment(models.Model):
     @property
     def is_reply(self):
         return self.parent is not None
+
+    def clean(self):
+        super().clean()
+        if self.referencia_narrativa_id and self.referencia_narrativa.obra_id != self.post.obra_id:
+            raise ValidationError({'referencia_narrativa': 'Debe pertenecer a la obra del post.'})
+        if self.frontera_spoiler_id and self.frontera_spoiler.obra_id != self.post.obra_id:
+            raise ValidationError({'frontera_spoiler': 'Debe pertenecer a la obra del post.'})
+
+    @property
+    def frontera_efectiva_orden(self):
+        if self.frontera_origen == self.ORIGEN_HEREDADO_POST:
+            return self.post.frontera_orden
+        return self.frontera_orden
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
