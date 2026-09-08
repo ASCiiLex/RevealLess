@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'notifications',
     'messages_app',
     'saved_posts',
+    'narrative',
 
     'channels',
 ]
