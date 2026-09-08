@@ -8,12 +8,10 @@ from feed.utils import get_user_feed
 from posts.models import Post
 from .models import Obra, ProgresoUsuario, UnidadNarrativa
 from .serializers import PostSerializer, ProgresoUsuarioSerializer, UnidadNarrativaSerializer
-from .services import actualizar_progreso
+from .services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
 
 
 class FeedAPIView(generics.ListAPIView):
-    """Feed anti-spoiler: mismos datos que feed_view, ya filtrados por el
-    motor de visibilidad."""
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
@@ -25,8 +23,6 @@ class FeedAPIView(generics.ListAPIView):
 
 
 class ProgresoAPIView(APIView):
-    """GET: unidades de la obra + progreso actual del usuario (o null).
-    POST: actualiza el progreso. Body JSON: {"unidad_actual": <id>}."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, obra_slug):
@@ -45,10 +41,17 @@ class ProgresoAPIView(APIView):
         unidad = get_object_or_404(
             UnidadNarrativa, id=request.data.get('unidad_actual'), obra=obra
         )
+        confirmado = bool(request.data.get('confirmado', False))
 
         try:
-            progreso = actualizar_progreso(request.user, obra, unidad)
+            progreso = actualizar_progreso(request.user, obra, unidad, confirmado=confirmado)
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except SaltoGrandeRequiereConfirmacion as exc:
+            return Response({
+                'detail': str(exc),
+                'requiere_confirmacion': True,
+                'salto': exc.salto,
+            }, status=status.HTTP_409_CONFLICT)
 
         return Response(ProgresoUsuarioSerializer(progreso).data)

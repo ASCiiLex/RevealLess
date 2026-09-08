@@ -1,5 +1,6 @@
 from django import forms
 from .models import Obra, UnidadNarrativa
+from .services import actualizar_progreso
 
 
 class SeleccionarObraForm(forms.Form):
@@ -11,6 +12,10 @@ class ProgresoForm(forms.Form):
         queryset=UnidadNarrativa.objects.none(),
         label='¿Por dónde vas? (puede ser un episodio concreto o un bloque como una temporada)',
     )
+    confirmar_salto = forms.BooleanField(
+        required=False,
+        label='Confirmo que quiero saltar directamente a este punto (necesario solo para saltos grandes)',
+    )
 
     def __init__(self, *args, obra=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,5 +26,7 @@ class ProgresoForm(forms.Form):
             )
 
     def guardar(self, usuario):
-        from .services import actualizar_progreso
-        return actualizar_progreso(usuario, self.obra, self.cleaned_data['unidad_actual'])
+        return actualizar_progreso(
+            usuario, self.obra, self.cleaned_data['unidad_actual'],
+            confirmado=self.cleaned_data.get('confirmar_salto', False),
+        )

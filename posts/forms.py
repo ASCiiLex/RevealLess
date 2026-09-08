@@ -10,6 +10,10 @@ class PostForm(forms.ModelForm):
         required=False,
         label='Actualizar mi progreso a (opcional)',
     )
+    confirmar_salto_progreso = forms.BooleanField(
+        required=False,
+        label='Confirmo el salto de progreso si es grande',
+    )
 
     class Meta:
         model = Post
@@ -35,11 +39,9 @@ class PostForm(forms.ModelForm):
             self.fields['nuevo_progreso'].queryset = unidades
 
     def _post_clean(self):
-        # No dejamos que ModelForm valide la instancia aquí: 'obra' no es
-        # un campo del formulario y 'frontera_spoiler' puede quedar vacío
-        # a propósito (lo completa la IA/fallback en la vista). Solo
-        # construimos la instancia con los datos del formulario; la
-        # validación completa del modelo (clean() + constraints) se hace
-        # explícitamente en la vista, una vez el post está completo.
+        # Ver nota en la versión anterior: 'obra' no es campo del form y
+        # 'frontera_spoiler' puede quedar vacío a propósito (lo completa la
+        # IA/fallback en la vista), así que la validación de instancia
+        # completa se hace explícitamente ahí, no aquí.
         opts = self._meta
         construct_instance(self, self.instance, opts.fields, opts.exclude)

@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .models import Obra, ProgresoUsuario
 from .forms import SeleccionarObraForm, ProgresoForm
+from .services import SaltoGrandeRequiereConfirmacion
 
 
 @login_required
@@ -40,8 +41,15 @@ def declarar_progreso(request, obra_slug):
     if request.method == 'POST':
         form = ProgresoForm(request.POST, obra=obra)
         if form.is_valid():
-            form.guardar(request.user)
-            return redirect(next_url)
+            try:
+                form.guardar(request.user)
+            except SaltoGrandeRequiereConfirmacion as exc:
+                form.add_error(
+                    'confirmar_salto',
+                    f'Vas a saltar {exc.salto} posiciones de golpe. Marca la casilla para confirmarlo.'
+                )
+            else:
+                return redirect(next_url)
     else:
         form = ProgresoForm(obra=obra)
 

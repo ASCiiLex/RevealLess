@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from .models import Obra, UnidadNarrativa, ProgresoUsuario
-from .services import actualizar_progreso, calcular_orden_absoluto
+from .services import actualizar_progreso, calcular_orden_absoluto, SaltoGrandeRequiereConfirmacion
 
 
 class RecalcularOrdenTests(TestCase):
@@ -130,3 +130,32 @@ class ProgresoUsuarioTests(TestCase):
         progreso = actualizar_progreso(self.user, self.obra, self.e2)
         self.assertEqual(progreso.unidad_actual, self.e2)
         self.assertEqual(progreso.orden_absoluto, self.e2.orden_inicio)
+
+
+class SaltoGrandeTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user('lector2', password='x')
+        self.obra = Obra.objects.create(titulo='Serie C', slug='serie-c')
+        self.episodios = []
+        for i in range(1, 6):
+            self.episodios.append(UnidadNarrativa.objects.create(
+                obra=self.obra, tipo='episodio', nombre=f'E{i}', orden_local=i,
+            ))
+        self.obra.recalcular_orden()
+        for e in self.episodios:
+            e.refresh_from_db()
+
+    def test_salto_pequeno_no_requiere_confirmacion(self):
+        actualizar_progreso(self.user, self.obra, self.episodios[0])
+        progreso = actualizar_progreso(self.user, self.obra, self.episodios[1])
+        self.assertEqual(progreso.unidad_actual, self.episodios[1])
+
+    def test_salto_grande_requiere_confirmacion(self):
+        actualizar_progreso(self.user, self.obra, self.episodios[0])
+        with self.assertRaises(SaltoGrandeRequiereConfirmacion):
+            actualizar_progreso(self.user, self.obra, self.episodios[4])
+
+    def test_salto_grande_confirmado_se_aplica(self):
+        actualizar_progreso(self.user, self.obra, self.episodios[0])
+        progreso = actualizar_progreso(self.user, self.obra, self.episodios[4], confirmado=True)
+        self.assertEqual(progreso.unidad_actual, self.episodios[4])

@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from ..forms import PostForm
 from narrative.models import Obra, ProgresoUsuario, ClasificacionNarrativa
-from narrative.services import actualizar_progreso
+from narrative.services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
 from narrative.ai_assistant import proponer_clasificacion
 
 
@@ -22,6 +22,20 @@ def create_post(request, obra_slug):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES, obra=obra)
         if form.is_valid():
+            nuevo_progreso = form.cleaned_data.get('nuevo_progreso')
+            if nuevo_progreso:
+                try:
+                    progreso = actualizar_progreso(
+                        request.user, obra, nuevo_progreso,
+                        confirmado=form.cleaned_data.get('confirmar_salto_progreso', False),
+                    )
+                except SaltoGrandeRequiereConfirmacion as exc:
+                    form.add_error(
+                        'confirmar_salto_progreso',
+                        f'Vas a saltar {exc.salto} posiciones de golpe. Marca la casilla para confirmarlo.'
+                    )
+                    return render(request, 'posts/create_post.html', {'form': form, 'obra': obra})
+
             new_post = form.save(commit=False)
             new_post.author = request.user
             new_post.obra = obra
@@ -45,11 +59,6 @@ def create_post(request, obra_slug):
                 form.add_error(None, exc)
             else:
                 new_post.save()
-
-                nuevo_progreso = form.cleaned_data.get('nuevo_progreso')
-                if nuevo_progreso:
-                    actualizar_progreso(request.user, obra, nuevo_progreso)
-
                 return redirect('profile', username=request.user.username)
     else:
         form = PostForm(obra=obra)
