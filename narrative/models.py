@@ -40,7 +40,8 @@ class Obra(models.Model):
         """Recalcula orden_inicio/orden_fin de todas sus unidades narrativas.
         orden_manual es un índice de inserción (1-based) sobre la secuencia
         final, no un valor absoluto: el resto de hojas se renumera a su
-        alrededor sin huecos ni colisiones."""
+        alrededor sin huecos ni colisiones. Empates en el mismo índice se
+        desempatan por orden de aparición en el DFS natural."""
         unidades = list(self.unidades.all())
         por_padre = {}
         for u in unidades:
@@ -67,9 +68,12 @@ class Obra(models.Model):
         manuales.sort(key=lambda u: (u.orden_manual, hojas_dfs.index(u)))
 
         secuencia = list(automaticas)
+        usados = {}
         for unidad in manuales:
+            base = unidad.orden_manual + usados.get(unidad.orden_manual, 0)
+            usados[unidad.orden_manual] = usados.get(unidad.orden_manual, 0) + 1
             total = len(secuencia) + 1
-            indice = min(max(unidad.orden_manual, 1), total)
+            indice = min(max(base, 1), total)
             secuencia.insert(indice - 1, unidad)
 
         posiciones = {u.id: i + 1 for i, u in enumerate(secuencia)}

@@ -17,7 +17,7 @@ class CommentQuerySet(models.QuerySet):
         ).values('orden_absoluto')[:1]
 
         return self.annotate(
-            frontera_efectiva_orden=Coalesce('frontera_orden', 'post__frontera_orden'),
+            frontera_efectiva_calculada=Coalesce('frontera_orden', 'post__frontera_orden'),
             progreso_lector=Coalesce(
                 Subquery(progreso_lector, output_field=models.IntegerField()),
                 Value(0),
@@ -25,5 +25,5 @@ class CommentQuerySet(models.QuerySet):
         ).filter(
             post__in=visible_posts,
         ).filter(
-            Q(user=user) | Q(progreso_lector__gte=F('frontera_efectiva_orden'))
+            Q(user=user) | Q(progreso_lector__gte=F('frontera_efectiva_calculada'))
         )
