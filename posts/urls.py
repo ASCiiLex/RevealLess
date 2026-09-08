@@ -13,7 +13,7 @@ from .views.search import (
 
 urlpatterns = [
     path('<int:post_id>/', post_detail, name='post_detail'),
-    path('crear/', create_post, name='create_post'),
+    path('crear/<slug:obra_slug>/', create_post, name='create_post'),
     path('react/', toggle_reaction_post, name='toggle_reaction_post'),
     path('reactions/<int:post_id>/', post_reactions_list, name='post_reactions_list'),
 

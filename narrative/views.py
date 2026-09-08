@@ -1,0 +1,50 @@
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from .models import Obra, ProgresoUsuario
+from .forms import SeleccionarObraForm, ProgresoForm
+
+
+@login_required
+def seleccionar_obra(request):
+    if request.method == 'POST':
+        form = SeleccionarObraForm(request.POST)
+        if form.is_valid():
+            obra = form.cleaned_data['obra']
+            tiene_progreso = ProgresoUsuario.objects.filter(
+                usuario=request.user, obra=obra
+            ).exists()
+
+            create_url = reverse('create_post', kwargs={'obra_slug': obra.slug})
+            if tiene_progreso:
+                return redirect(create_url)
+
+            progreso_url = reverse('narrative_declarar_progreso', kwargs={'obra_slug': obra.slug})
+            return redirect(f'{progreso_url}?next={create_url}')
+    else:
+        form = SeleccionarObraForm()
+    return render(request, 'narrative/select_obra.html', {'form': form})
+
+
+@login_required
+def declarar_progreso(request, obra_slug):
+    obra = get_object_or_404(Obra, slug=obra_slug)
+
+    next_url = request.GET.get('next', '')
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        next_url = reverse('feed')
+
+    if request.method == 'POST':
+        form = ProgresoForm(request.POST, obra=obra)
+        if form.is_valid():
+            form.guardar(request.user)
+            return redirect(next_url)
+    else:
+        form = ProgresoForm(obra=obra)
+
+    return render(request, 'narrative/set_progreso.html', {
+        'form': form, 'obra': obra, 'next': next_url,
+    })

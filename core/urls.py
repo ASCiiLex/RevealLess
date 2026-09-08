@@ -25,6 +25,7 @@ urlpatterns = [
     path('notificaciones/', include('notifications.urls')),
     path('mensajes/', include('messages_app.urls')),
     path('guardados/', include('saved_posts.urls')),
+    path('narrative/', include('narrative.urls')),
 ]
 
 urlpatterns += [
