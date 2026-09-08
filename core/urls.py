@@ -28,8 +28,9 @@ urlpatterns = [
     path('narrative/', include('narrative.urls')),
 ]
 
-urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', serve, {
-        'document_root': settings.MEDIA_ROOT
-    }),
-]
+if settings.SERVE_MEDIA:
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {
+            'document_root': settings.MEDIA_ROOT
+        }),
+    ]

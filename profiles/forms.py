@@ -1,11 +1,13 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from .models import Profile
 
 
 class ProfileForm(forms.ModelForm):
     username = forms.CharField(
+        validators=[UnicodeUsernameValidator()],
         widget=forms.TextInput(attrs={
             'class': 'form-control mb-2',
             'placeholder': 'Usuario',
@@ -47,11 +49,9 @@ class ProfileForm(forms.ModelForm):
         user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
 
-        # 🔥 Inicializamos datos actuales
         self.fields['username'].initial = user.username
         self.fields['email'].initial = user.email
 
-        # 🔥 Traducción limpia del widget (SIN hacks)
         self.fields['image'].widget.clear_checkbox_label = "Eliminar"
         self.fields['image'].widget.initial_text = "Avatar actual"
         self.fields['image'].widget.input_text = "Cambiar"
@@ -62,12 +62,10 @@ class ProfileForm(forms.ModelForm):
         username = cleaned.get('username')
         email = cleaned.get('email')
 
-        # 🔥 Evitar duplicados de username
-        if User.objects.filter(username=username).exclude(pk=self.instance.user.pk).exists():
+        if username and User.objects.filter(username=username).exclude(pk=self.instance.user.pk).exists():
             raise ValidationError("Este nombre de usuario ya está en uso.")
 
-        # 🔥 Evitar duplicados de email
-        if User.objects.filter(email=email).exclude(pk=self.instance.user.pk).exists():
+        if email and User.objects.filter(email=email).exclude(pk=self.instance.user.pk).exists():
             raise ValidationError("Este email ya está en uso.")
 
         return cleaned
@@ -75,7 +73,6 @@ class ProfileForm(forms.ModelForm):
     def save(self, user, commit=True):
         profile = super().save(commit=False)
 
-        # 🔥 Actualizar usuario
         user.username = self.cleaned_data['username']
         user.email = self.cleaned_data['email']
         user.save()

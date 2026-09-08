@@ -21,6 +21,21 @@ CSRF_TRUSTED_ORIGINS = [
     "https://redsocialaficiones.fly.dev"
 ]
 
+# Fly.io termina TLS en el edge y reenvía por X-Forwarded-Proto.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+
 # ==========================================================
 # APLICACIONES
 # ==========================================================
@@ -140,7 +155,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-SERVE_MEDIA = True
+
+# django.views.static.serve() no es apto para producción (sin caché HTTP,
+# sin streaming eficiente). Desactivado por defecto fuera de DEBUG; solo se
+# reactiva si se fija SERVE_MEDIA=True explícitamente como riesgo aceptado.
+SERVE_MEDIA = os.environ.get('SERVE_MEDIA', 'True' if DEBUG else 'False') == 'True'
 
 # ==========================================================
 # LOGIN

@@ -19,6 +19,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
+        if not await self.other_user_exists(self.other_username):
+            await self.close()
+            return
+
         usernames = sorted([self.user.username, self.other_username])
         self.room_name = f"chat_{usernames[0]}_{usernames[1]}"
 
@@ -69,6 +73,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event["data"]))
+
+    @database_sync_to_async
+    def other_user_exists(self, username):
+        return User.objects.filter(username=username).exists()
 
     @database_sync_to_async
     def create_message(self, sender_username, receiver_username, text):
