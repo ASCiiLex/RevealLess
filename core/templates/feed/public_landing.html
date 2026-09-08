@@ -27,6 +27,7 @@
         {% for obra in obras %}
         <div class="col-md-4 mb-4">
             <div class="card h-100">
+                <img src="{{ obra.image_url }}" class="card-img-top" alt="{{ obra.titulo }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ obra.titulo }}</h5>
                     <p class="card-text">{{ obra.sinopsis|default:"Sin sinopsis todavía." }}</p>

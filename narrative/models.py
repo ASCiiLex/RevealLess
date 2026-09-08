@@ -2,6 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+def obra_image_path(instance, filename):
+    return f'narrative/obras/{instance.slug}/{filename}'
+
+
+def unidad_image_path(instance, filename):
+    return f'narrative/unidades/{instance.obra.slug}/{filename}'
+
+
 class Obra(models.Model):
     TIPO_CHOICES = [
         ('serie', 'Serie'),
@@ -11,12 +19,22 @@ class Obra(models.Model):
     slug = models.SlugField(unique=True)
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='serie')
     sinopsis = models.TextField(blank=True)
+    imagen = models.ImageField(upload_to=obra_image_path, blank=True, null=True)
 
     class Meta:
         ordering = ['titulo']
 
     def __str__(self):
         return self.titulo
+
+    @property
+    def image_url(self):
+        try:
+            if self.imagen and hasattr(self.imagen, 'url'):
+                return self.imagen.url
+        except ValueError:
+            pass
+        return '/static/img/default_post.jpg'
 
     def recalcular_orden(self):
         """Recalcula orden_inicio/orden_fin de todas sus unidades narrativas.
@@ -91,6 +109,7 @@ class UnidadNarrativa(models.Model):
     tipo = models.CharField(max_length=50)
     nombre = models.CharField(max_length=200)
     orden_local = models.PositiveIntegerField()
+    imagen = models.ImageField(upload_to=unidad_image_path, blank=True, null=True)
 
     orden_inicio = models.PositiveIntegerField(editable=False, default=0)
     orden_fin = models.PositiveIntegerField(editable=False, default=0)
@@ -110,6 +129,15 @@ class UnidadNarrativa(models.Model):
     @property
     def etiqueta(self):
         return self.nombre
+
+    @property
+    def image_url(self):
+        try:
+            if self.imagen and hasattr(self.imagen, 'url'):
+                return self.imagen.url
+        except ValueError:
+            pass
+        return self.obra.image_url
 
 
 class ProgresoUsuario(models.Model):
