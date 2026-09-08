@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.models import construct_instance
 from .models import Post
 from narrative.models import UnidadNarrativa
 
@@ -32,3 +33,13 @@ class PostForm(forms.ModelForm):
             self.fields['referencia_narrativa'].queryset = unidades
             self.fields['frontera_spoiler'].queryset = unidades
             self.fields['nuevo_progreso'].queryset = unidades
+
+    def _post_clean(self):
+        # No dejamos que ModelForm valide la instancia aquí: 'obra' no es
+        # un campo del formulario y 'frontera_spoiler' puede quedar vacío
+        # a propósito (lo completa la IA/fallback en la vista). Solo
+        # construimos la instancia con los datos del formulario; la
+        # validación completa del modelo (clean() + constraints) se hace
+        # explícitamente en la vista, una vez el post está completo.
+        opts = self._meta
+        construct_instance(self, self.instance, opts.fields, opts.exclude)
