@@ -24,6 +24,6 @@ class PostQuerySet(models.QuerySet):
 
     def with_feed_stats(self):
         return self.annotate(
-            likes_count=Count('reactions', distinct=True),
-            comments_count=Count('comments', distinct=True),
+            likes_total=Count('reactions', distinct=True),
+            comments_total=Count('comments', distinct=True),
         )

@@ -5,6 +5,8 @@ from django.test import TestCase
 
 from narrative.models import Obra, UnidadNarrativa, ProgresoUsuario, ClasificacionNarrativa
 from narrative.services import actualizar_progreso
+from likes.models import PostReaction
+from comments.models import Comment, CommentReaction
 from .models import Post
 
 
@@ -97,8 +99,6 @@ class VisibilidadPostTests(TestCase):
         actualizar_progreso(self.lector_avanzado, self.obra, self.e3)
         actualizar_progreso(self.lector_atrasado, self.obra, self.e1)
 
-        # El autor va por E2 pero publica sobre algo que exige E3
-        # (caso legítimo: información externa, ver reglas de dominio 13.3).
         self.post = Post.objects.create(
             author=self.autor, obra=self.obra, text='spoiler gordo',
             referencia_narrativa=self.e1, frontera_spoiler=self.e3,
@@ -117,3 +117,73 @@ class VisibilidadPostTests(TestCase):
     def test_usuario_anonimo_no_ve_nada(self):
         visibles = Post.objects.visible_for(AnonymousUser())
         self.assertFalse(visibles.exists())
+
+
+class FeedStatsQuerySetTests(TestCase):
+    def setUp(self):
+        self.autor = User.objects.create_user('autor_stats', password='x')
+        self.otro = User.objects.create_user('otro_stats', password='x')
+        self.tercero = User.objects.create_user('tercero_stats', password='x')
+
+        self.obra = Obra.objects.create(titulo='Serie Stats', slug='serie-stats')
+        self.e1 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='E1', orden_local=1)
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+
+        self.post = Post.objects.create(
+            author=self.autor, obra=self.obra, text='post con stats',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+    def test_post_sin_interacciones_tiene_conteos_a_cero(self):
+        post = Post.objects.with_feed_stats().get(pk=self.post.pk)
+        self.assertEqual(post.likes_count, 0)
+        self.assertEqual(post.comments_count, 0)
+
+    def test_conteos_correctos_con_likes_y_comentarios(self):
+        PostReaction.objects.create(user=self.otro, post=self.post, reaction='like')
+        PostReaction.objects.create(user=self.tercero, post=self.post, reaction='love')
+
+        Comment.objects.create(
+            user=self.otro, post=self.post, text='comentario 1',
+            referencia_narrativa=self.e1,
+        )
+        Comment.objects.create(
+            user=self.tercero, post=self.post, text='comentario 2',
+            referencia_narrativa=self.e1,
+        )
+        Comment.objects.create(
+            user=self.autor, post=self.post, text='comentario 3',
+            referencia_narrativa=self.e1,
+        )
+
+        post = Post.objects.with_feed_stats().get(pk=self.post.pk)
+        self.assertEqual(post.likes_count, 2)
+        self.assertEqual(post.comments_count, 3)
+
+    def test_conteos_no_se_inflan_con_reacciones_a_comentarios(self):
+        # Riesgo conocido: Count combinados sobre relaciones distintas puede
+        # generar joins cartesianos. Este test vigila que reacciones a
+        # comentarios (relación distinta) no contaminen los conteos del post.
+        comment = Comment.objects.create(
+            user=self.otro, post=self.post, text='comentario',
+            referencia_narrativa=self.e1,
+        )
+        CommentReaction.objects.create(user=self.tercero, comment=comment, reaction='like')
+        PostReaction.objects.create(user=self.otro, post=self.post, reaction='like')
+
+        post = Post.objects.with_feed_stats().get(pk=self.post.pk)
+        self.assertEqual(post.likes_count, 1)
+        self.assertEqual(post.comments_count, 1)
+
+    def test_visible_for_y_with_feed_stats_se_combinan_sin_perder_anotaciones(self):
+        PostReaction.objects.create(user=self.otro, post=self.post, reaction='like')
+        Comment.objects.create(
+            user=self.otro, post=self.post, text='comentario',
+            referencia_narrativa=self.e1,
+        )
+
+        post = Post.objects.visible_for(self.autor).with_feed_stats().get(pk=self.post.pk)
+        self.assertEqual(post.likes_count, 1)
+        self.assertEqual(post.comments_count, 1)
