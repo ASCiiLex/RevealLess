@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import F, OuterRef, Q, Subquery, Value
+from django.db.models import Count, F, OuterRef, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from narrative.models import ProgresoUsuario
 
@@ -20,4 +20,10 @@ class PostQuerySet(models.QuerySet):
             )
         ).filter(
             Q(author=user) | Q(progreso_lector__gte=F('frontera_orden'))
+        )
+
+    def with_feed_stats(self):
+        return self.annotate(
+            likes_count=Count('reactions', distinct=True),
+            comments_count=Count('comments', distinct=True),
         )

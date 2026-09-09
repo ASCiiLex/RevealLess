@@ -1,10 +1,10 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from feed.utils import get_user_feed
 from posts.models import Post
 from .models import Obra, ProgresoUsuario, UnidadNarrativa
 from .serializers import PostSerializer, ProgresoUsuarioSerializer, UnidadNarrativaSerializer
@@ -17,9 +17,17 @@ class FeedAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        base_posts = get_user_feed(user)
-        own_posts = Post.objects.filter(author=user)
-        return (base_posts | own_posts).distinct().visible_for(user).order_by('-created_at')
+        followed_users = user.following.values_list('followed', flat=True)
+        condiciones_del_feed = Q(author=user) | Q(author__in=followed_users)
+
+        return (
+            Post.objects
+            .filter(condiciones_del_feed)
+            .select_related('author', 'obra', 'referencia_narrativa')
+            .visible_for(user)
+            .with_feed_stats()
+            .order_by('-created_at')
+        )
 
 
 class ProgresoAPIView(APIView):
