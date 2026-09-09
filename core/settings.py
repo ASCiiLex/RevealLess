@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -7,8 +8,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SEGURIDAD
 # ==========================================================
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-inseguro')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'clave-solo-para-desarrollo-local'
+    else:
+        sys.exit("SECRET_KEY no definida en el entorno de producción.")
 
 ALLOWED_HOSTS = [
     'redsocialaficiones.fly.dev',
@@ -29,6 +36,10 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 días
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
@@ -156,9 +167,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# django.views.static.serve() no es apto para producción (sin caché HTTP,
-# sin streaming eficiente). Desactivado por defecto fuera de DEBUG; solo se
-# reactiva si se fija SERVE_MEDIA=True explícitamente como riesgo aceptado.
 SERVE_MEDIA = os.environ.get('SERVE_MEDIA', 'True' if DEBUG else 'False') == 'True'
 
 # ==========================================================
