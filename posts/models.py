@@ -1,7 +1,9 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.contrib.auth.models import User
 from narrative.models import ClasificacionNarrativa
+from core.validators import validate_image_size
 from .managers import PostQuerySet
 
 
@@ -26,7 +28,11 @@ class Post(ClasificacionNarrativa, models.Model):
     image = models.ImageField(
         upload_to=post_image_path,
         blank=True,
-        null=True
+        null=True,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+            validate_image_size,
+        ],
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
