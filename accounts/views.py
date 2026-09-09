@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django_ratelimit.decorators import ratelimit
 from .forms import RegisterForm
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST, request.FILES)
@@ -14,7 +16,6 @@ def register_view(request):
 
             profile = user.profile
 
-            # 🔥 SOLO ESTO
             if form.cleaned_data.get('image'):
                 profile.image = form.cleaned_data['image']
 
@@ -28,6 +29,7 @@ def register_view(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
+@ratelimit(key='ip', rate='10/m', method='POST', block=True)
 def login_view(request):
     error = None
 
