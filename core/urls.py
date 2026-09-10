@@ -4,6 +4,8 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.views.static import serve
 
+from .api_views import MeAPIView
+
 
 def home_redirect(request):
     if request.user.is_authenticated:
@@ -26,6 +28,8 @@ urlpatterns = [
     path('mensajes/', include('messages_app.urls')),
     path('guardados/', include('saved_posts.urls')),
     path('narrative/', include('narrative.urls')),
+
+    path('api/me/', MeAPIView.as_view(), name='api_me'),
 ]
 
 if settings.SERVE_MEDIA:
