@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from posts.models import Post
+from subscriptions.services import filtro_posts_suscripciones
 from .models import Obra, ProgresoUsuario, UnidadNarrativa
 from .serializers import PostSerializer, ProgresoUsuarioSerializer, UnidadNarrativaSerializer
 from .services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
@@ -18,11 +19,18 @@ class FeedAPIView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         followed_users = user.following.values_list('followed', flat=True)
-        condiciones_del_feed = Q(author=user) | Q(author__in=followed_users)
+        subscription_q = filtro_posts_suscripciones(user)
+
+        condiciones_del_feed = (
+            Q(author=user)
+            | Q(author__in=followed_users)
+            | subscription_q
+        )
 
         return (
             Post.objects
             .filter(condiciones_del_feed)
+            .distinct()
             .select_related('author', 'obra', 'referencia_narrativa')
             .visible_for(user)
             .with_feed_stats()

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils import timezone
 
 from .models import Suscripcion
@@ -39,7 +40,8 @@ def _posts_de_suscripcion(suscripcion):
     """Resuelve qué posts pertenecen a una suscripción, sin aplicar
     todavía visible_for() — eso lo hace siempre la capa que consuma esto
     (feed, contador de no leídos), nunca aquí, para que sea imposible
-    usar esta función como vía lateral que se salte el motor anti-spoiler."""
+    usar una suscripción como vía lateral que se salte el motor
+    anti-spoiler."""
     from posts.models import Post  # import diferido: evita dependencia de carga entre apps
 
     qs = Post.objects.filter(obra=suscripcion.obra)
@@ -64,3 +66,34 @@ def posts_no_leidos_count(suscripcion):
     else:
         posts = posts.filter(created_at__gte=suscripcion.creado_en)
     return posts.count()
+
+
+def filtro_posts_suscripciones(usuario):
+    """Construye un único Q() que representa TODOS los posts
+    potencialmente accesibles por las suscripciones del usuario, en una
+    sola pasada (sin iterar suscripción a suscripción contra la BD).
+
+    Importante: esto NO aplica visible_for(). Devuelve qué contenido
+    entra en el feed por la vía de la suscripción; si ese contenido es
+    realmente visible para el usuario según su progreso es una decisión
+    posterior y separada, tomada siempre por PostQuerySet.visible_for().
+    Una suscripción decide qué podría interesarte; visible_for() decide
+    qué puedes ver de verdad."""
+    suscripciones = Suscripcion.objects.filter(usuario=usuario).select_related(
+        'obra', 'unidad', 'tema'
+    )
+
+    query = Q(pk__in=[])  # neutro: ninguna suscripción -> ningún post extra
+    for suscripcion in suscripciones:
+        if suscripcion.unidad_id:
+            query |= Q(
+                obra_id=suscripcion.obra_id,
+                referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
+                referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
+            )
+        elif suscripcion.tema_id:
+            query |= Q(obra_id=suscripcion.obra_id, temas_transversales=suscripcion.tema_id)
+        else:
+            query |= Q(obra_id=suscripcion.obra_id)
+
+    return query
