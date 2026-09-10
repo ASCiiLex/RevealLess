@@ -1,8 +1,12 @@
+import Header from './components/Header/Header'
+
 export default function App() {
   return (
-    <main>
-      <h1>RevealLess</h1>
-      <p>Scaffolding listo — siguiente paso: header y feed.</p>
-    </main>
+    <>
+      <Header />
+      <main className="container">
+        <p>Siguiente paso: carrusel y feed.</p>
+      </main>
+    </>
   )
 }

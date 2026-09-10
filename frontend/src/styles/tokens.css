@@ -12,6 +12,8 @@
 
   --radius: 6px;
   --max-line: 72ch;
+  --max-width: 1100px;
+  --gutter: 24px;
 }
 
 [data-theme='dark'] {
