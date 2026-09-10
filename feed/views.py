@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -51,3 +52,11 @@ def feed_view(request):
         'obras': obras,
         'stats': stats,
     })
+
+
+@login_required
+def feed_react_view(request):
+    """Vista mínima que solo monta el punto de entrada de React (Fase 4).
+    No reemplaza feed_view: convive con el feed HTML heredado. El HTML es
+    prácticamente vacío — toda la lógica de datos vive en narrative/api/."""
+    return render(request, 'feed/feed_react.html')

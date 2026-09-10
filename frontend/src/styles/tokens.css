@@ -1,0 +1,21 @@
+:root {
+  --paper: #F6F1E6;
+  --ink: #15130F;
+
+  --fog: #7C8B9B;
+  --gold: #B8902E;
+
+  --border: #D9D2C2;
+
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Public Sans', sans-serif;
+
+  --radius: 6px;
+  --max-line: 72ch;
+}
+
+[data-theme='dark'] {
+  --paper: #15130F;
+  --ink: #F6F1E6;
+  --border: #2A2823;
+}
