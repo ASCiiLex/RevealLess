@@ -1,5 +1,7 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.contrib.auth.models import User
+from core.validators import validate_image_size
 
 
 def obra_image_path(instance, filename):
@@ -19,7 +21,15 @@ class Obra(models.Model):
     slug = models.SlugField(unique=True)
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='serie')
     sinopsis = models.TextField(blank=True)
-    imagen = models.ImageField(upload_to=obra_image_path, blank=True, null=True)
+    imagen = models.ImageField(
+        upload_to=obra_image_path,
+        blank=True,
+        null=True,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+            validate_image_size,
+        ],
+    )
 
     class Meta:
         ordering = ['titulo']
@@ -113,7 +123,15 @@ class UnidadNarrativa(models.Model):
     tipo = models.CharField(max_length=50)
     nombre = models.CharField(max_length=200)
     orden_local = models.PositiveIntegerField()
-    imagen = models.ImageField(upload_to=unidad_image_path, blank=True, null=True)
+    imagen = models.ImageField(
+        upload_to=unidad_image_path,
+        blank=True,
+        null=True,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+            validate_image_size,
+        ],
+    )
 
     orden_inicio = models.PositiveIntegerField(editable=False, default=0)
     orden_fin = models.PositiveIntegerField(editable=False, default=0)
