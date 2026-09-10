@@ -35,7 +35,12 @@ SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
+# CSRF_COOKIE_HTTPONLY debe ser False: el patrón double-submit-cookie de
+# Django exige que JS pueda leer csrftoken para reenviarlo en la cabecera
+# X-CSRFToken. No es un secreto de sesión — su protección viene de la
+# Same-Origin Policy, no de ocultarlo a JS. Con HTTPONLY=True, todo POST
+# vía fetch (likes.js, y ahora React) llega sin token válido -> 403.
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 días
