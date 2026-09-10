@@ -1,11 +1,19 @@
 from django.contrib import admin
-from .models import Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal
+from .models import Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal, Categoria
+
+
+@admin.register(Categoria)
+class CategoriaAdmin(admin.ModelAdmin):
+    list_display = ('nombre',)
+    search_fields = ('nombre',)
 
 
 @admin.register(Obra)
 class ObraAdmin(admin.ModelAdmin):
     list_display = ('titulo', 'tipo', 'slug')
+    list_filter = ('categorias',)
     prepopulated_fields = {'slug': ('titulo',)}
+    filter_horizontal = ('categorias',)
 
 
 @admin.register(UnidadNarrativa)

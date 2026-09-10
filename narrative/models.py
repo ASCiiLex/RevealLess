@@ -12,6 +12,23 @@ def unidad_image_path(instance, filename):
     return f'narrative/unidades/{instance.obra.slug}/{filename}'
 
 
+class Categoria(models.Model):
+    """Etiqueta cosmética compartida entre obras (ej. 'anime', 'series',
+    'películas', 'novelas'). Puramente de búsqueda/filtro — no participa
+    en frontera_orden ni en ninguna regla de visibilidad, igual criterio
+    que FamiliaNarrativa en posts/comments."""
+
+    nombre = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name = 'Categoría'
+        verbose_name_plural = 'Categorías'
+
+    def __str__(self):
+        return self.nombre
+
+
 class Obra(models.Model):
     TIPO_CHOICES = [
         ('serie', 'Serie'),
@@ -30,6 +47,7 @@ class Obra(models.Model):
             validate_image_size,
         ],
     )
+    categorias = models.ManyToManyField(Categoria, blank=True, related_name='obras')
 
     class Meta:
         ordering = ['titulo']

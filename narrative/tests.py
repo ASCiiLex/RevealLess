@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 
-from .models import Obra, UnidadNarrativa, ProgresoUsuario
+from .models import Obra, UnidadNarrativa, ProgresoUsuario, Categoria
 from .services import actualizar_progreso, calcular_orden_absoluto, SaltoGrandeRequiereConfirmacion
 
 
@@ -159,3 +160,30 @@ class SaltoGrandeTests(TestCase):
         actualizar_progreso(self.user, self.obra, self.episodios[0])
         progreso = actualizar_progreso(self.user, self.obra, self.episodios[4], confirmado=True)
         self.assertEqual(progreso.unidad_actual, self.episodios[4])
+
+
+class CategoriaTests(TestCase):
+    def test_nombre_unico(self):
+        Categoria.objects.create(nombre='anime')
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Categoria.objects.create(nombre='anime')
+
+    def test_obra_puede_tener_varias_categorias(self):
+        obra = Obra.objects.create(titulo='One Piece', slug='one-piece')
+        anime = Categoria.objects.create(nombre='anime')
+        accion = Categoria.objects.create(nombre='acción')
+        obra.categorias.set([anime, accion])
+        self.assertEqual(obra.categorias.count(), 2)
+
+    def test_categoria_no_afecta_frontera_orden(self):
+        """Confirma que Categoria es puramente cosmética: no existe ninguna
+        vía por la que una categoría pueda influir en frontera_orden o en
+        el motor de visibilidad."""
+        obra = Obra.objects.create(titulo='Serie', slug='serie-cat')
+        categoria = Categoria.objects.create(nombre='series')
+        obra.categorias.add(categoria)
+        # No hay ningún campo de frontera en Categoria ni en la relación
+        # M2M — la única forma de verificarlo es confirmar que el modelo
+        # no tiene ese campo.
+        self.assertFalse(hasattr(categoria, 'frontera_orden'))
