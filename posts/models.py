@@ -38,6 +38,12 @@ class Post(ClasificacionNarrativa, models.Model):
 
     is_processed = models.BooleanField(default=False)
 
+    temas_transversales = models.ManyToManyField(
+        'narrative.TemaTransversal',
+        blank=True,
+        related_name='posts',
+    )
+
     class Meta:
         ordering = ['-created_at']
         constraints = [

@@ -3,34 +3,13 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class TemaTransversal(models.Model):
-    """Hilo temático que atraviesa una obra sin anclarse a una unidad
-    narrativa concreta (ej. 'Frutas del diablo' en One Piece, 'El Anillo
-    Único' en El Señor de los Anillos). Es una etiqueta de agrupación y
-    suscripción: no participa en el cálculo de frontera_orden. Cada post
-    sigue calculando su propia frontera vía referencia_narrativa/
-    frontera_spoiler, exactamente igual que sin tema."""
-
-    obra = models.ForeignKey(
-        'narrative.Obra', on_delete=models.CASCADE, related_name='temas_transversales'
-    )
-    nombre = models.CharField(max_length=150)
-
-    class Meta:
-        unique_together = ('obra', 'nombre')
-        ordering = ['nombre']
-
-    def __str__(self):
-        return f'{self.obra.titulo} · {self.nombre}'
-
-
 class Suscripcion(models.Model):
     """Una suscripción apunta a exactamente uno de estos tres niveles:
     - obra completa            (unidad=None, tema=None)
     - un nodo del árbol        (unidad=<UnidadNarrativa>, puede ser
                                  intermedio; incluye todo lo que cuelga
                                  por rango orden_inicio/orden_fin)
-    - un tema transversal      (tema=<TemaTransversal>)
+    - un tema transversal      (tema=<narrative.TemaTransversal>)
 
     No dispara notificación al crearse un post (a diferencia de Follow):
     es una fuente adicional de feed, siempre filtrada por
@@ -46,7 +25,7 @@ class Suscripcion(models.Model):
         related_name='suscripciones',
     )
     tema = models.ForeignKey(
-        TemaTransversal, on_delete=models.CASCADE, null=True, blank=True,
+        'narrative.TemaTransversal', on_delete=models.CASCADE, null=True, blank=True,
         related_name='suscripciones',
     )
     creado_en = models.DateTimeField(auto_now_add=True)

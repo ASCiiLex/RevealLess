@@ -1,11 +1,5 @@
 from django.contrib import admin
-from .models import Suscripcion, TemaTransversal
-
-
-@admin.register(TemaTransversal)
-class TemaTransversalAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'obra')
-    list_filter = ('obra',)
+from .models import Suscripcion
 
 
 @admin.register(Suscripcion)

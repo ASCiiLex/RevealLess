@@ -4,9 +4,9 @@ from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.utils import timezone
 
-from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
+from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa, TemaTransversal
 from posts.models import Post
-from .models import Suscripcion, TemaTransversal
+from .models import Suscripcion
 from .services import (
     crear_suscripcion,
     eliminar_suscripcion,
@@ -176,3 +176,48 @@ class PostsNoLeidosTests(TestCase):
         marcar_visto(suscripcion)
         self._post(self.e2)
         self.assertEqual(posts_no_leidos_count(suscripcion), 1)
+
+
+class PostsNoLeidosPorTemaTests(TestCase):
+    def setUp(self):
+        self.autor = User.objects.create_user('autor_tema', password='x')
+        self.lector = User.objects.create_user('lector_tema', password='x')
+        self.obra = Obra.objects.create(titulo='One Piece', slug='one-piece')
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.e2 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E2', orden_local=2,
+        )
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+        self.e2.refresh_from_db()
+
+        self.tema = TemaTransversal.objects.create(obra=self.obra, nombre='Frutas del diablo')
+        self.otro_tema = TemaTransversal.objects.create(obra=self.obra, nombre='Otro tema')
+
+    def _post(self, referencia, temas=None):
+        post = Post.objects.create(
+            author=self.autor, obra=self.obra, text='contenido',
+            referencia_narrativa=referencia, frontera_spoiler=referencia,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        if temas:
+            post.temas_transversales.set(temas)
+        return post
+
+    def test_suscripcion_a_tema_cuenta_solo_posts_etiquetados(self):
+        suscripcion = crear_suscripcion(self.lector, self.obra, tema=self.tema)
+        self._post(self.e1, temas=[self.tema])
+        self._post(self.e2, temas=[self.otro_tema])
+        self.assertEqual(posts_no_leidos_count(suscripcion), 1)
+
+    def test_post_con_varios_temas_no_se_duplica_en_conteo(self):
+        suscripcion = crear_suscripcion(self.lector, self.obra, tema=self.tema)
+        self._post(self.e1, temas=[self.tema, self.otro_tema])
+        self.assertEqual(posts_no_leidos_count(suscripcion), 1)
+
+    def test_post_sin_tema_no_cuenta_para_suscripcion_de_tema(self):
+        suscripcion = crear_suscripcion(self.lector, self.obra, tema=self.tema)
+        self._post(self.e1, temas=None)
+        self.assertEqual(posts_no_leidos_count(suscripcion), 0)

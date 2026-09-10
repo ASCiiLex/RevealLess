@@ -52,12 +52,9 @@ def _posts_de_suscripcion(suscripcion):
             referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
         )
     elif suscripcion.tema_id:
-        # Pendiente de Fase 4-paso 2: requiere el M2M Post.temas_transversales.
-        # No se usa todavía en producción (sin tests que lo ejerciten) hasta
-        # que ese campo exista.
         qs = qs.filter(temas_transversales=suscripcion.tema)
 
-    return qs
+    return qs.distinct()
 
 
 def posts_no_leidos_count(suscripcion):

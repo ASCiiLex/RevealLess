@@ -1,6 +1,6 @@
-from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
 from core.validators import validate_image_size
 
 
@@ -174,6 +174,28 @@ class ProgresoUsuario(models.Model):
 
     def __str__(self):
         return f'{self.usuario.username} · {self.obra.titulo} · {self.orden_absoluto}'
+
+
+class TemaTransversal(models.Model):
+    """Hilo temático que atraviesa una obra sin anclarse a una unidad
+    narrativa concreta (ej. 'Frutas del diablo' en One Piece, 'El Anillo
+    Único' en El Señor de los Anillos). Es una etiqueta de agrupación y
+    suscripción: no participa en el cálculo de frontera_orden. Cada post
+    sigue calculando su propia frontera vía referencia_narrativa/
+    frontera_spoiler, exactamente igual que sin tema.
+
+    Vive en narrative (no en subscriptions) porque es una propiedad de la
+    obra, igual que UnidadNarrativa — no del acto de suscribirse a ella."""
+
+    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='temas_transversales')
+    nombre = models.CharField(max_length=150)
+
+    class Meta:
+        unique_together = ('obra', 'nombre')
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f'{self.obra.titulo} · {self.nombre}'
 
 
 class ClasificacionNarrativa(models.Model):

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Obra, UnidadNarrativa, ProgresoUsuario
+from .models import Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal
 
 
 @admin.register(Obra)
@@ -20,3 +20,9 @@ class ProgresoUsuarioAdmin(admin.ModelAdmin):
     list_display = ('usuario', 'obra', 'unidad_actual', 'orden_absoluto', 'actualizado_en')
     list_filter = ('obra',)
     readonly_fields = ('orden_absoluto',)
+
+
+@admin.register(TemaTransversal)
+class TemaTransversalAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'obra')
+    list_filter = ('obra',)
