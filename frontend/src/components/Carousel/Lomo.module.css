@@ -20,6 +20,7 @@
   padding: 0;
   cursor: pointer;
   font: inherit;
+  order: 2;
 }
 
 .lomoActive {
@@ -88,6 +89,7 @@
   font-weight: 700;
   color: var(--ink);
   text-decoration: none;
+  order: 1;
 }
 
 .progressLink:hover,
@@ -103,6 +105,9 @@
 }
 
 .followButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: none;
   background: none;
   font-family: var(--font-body);
@@ -111,6 +116,7 @@
   color: var(--ink);
   cursor: pointer;
   padding: 0;
+  order: 3;
 }
 
 .followButton:hover,

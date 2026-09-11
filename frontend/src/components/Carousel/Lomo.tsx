@@ -9,6 +9,7 @@ export interface LomoObra {
   imagen_url: string
   categorias: string[]
   progreso_pct?: number
+  suscrito: boolean
 }
 
 interface Props {
@@ -16,11 +17,10 @@ interface Props {
   activa: boolean
   onSelect: (obra: LomoObra) => void
   mostrarProgreso: boolean
-  mostrarSeguir: boolean
 }
 
-export default function Lomo({ obra, activa, onSelect, mostrarProgreso, mostrarSeguir }: Props) {
-  const [siguiendo, setSiguiendo] = useState(false)
+export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props) {
+  const [siguiendo, setSiguiendo] = useState(obra.suscrito)
   const [cargando, setCargando] = useState(false)
 
   async function handleSeguir() {
@@ -58,15 +58,14 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, mostrarS
         </a>
       )}
 
-      {mostrarSeguir && (
-        <button
-          className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
-          onClick={handleSeguir}
-          disabled={siguiendo || cargando}
-        >
-          {siguiendo ? 'Siguiendo' : 'Seguir'}
-        </button>
-      )}
+      <button
+        className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
+        onClick={handleSeguir}
+        disabled={siguiendo || cargando}
+      >
+        <span className={styles.progressIcon} aria-hidden="true">{siguiendo ? '🔕' : '🔔'}</span>
+        <span>{siguiendo ? 'Siguiendo' : 'Seguir'}</span>
+      </button>
     </div>
   )
 }
