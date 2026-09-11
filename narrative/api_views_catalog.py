@@ -5,8 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 
 from subscriptions.models import Suscripcion
-from .models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa
-from .serializers import ObraResumenSerializer, UnidadNarrativaSerializer
+from .models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa, SolicitudTema
+from .serializers import ObraResumenSerializer, UnidadNarrativaSerializer, SolicitudTemaSerializer
 
 
 class CatalogoObrasAPIView(APIView):
@@ -54,3 +54,22 @@ class ObraDetalleAPIView(APIView):
             'unidades': UnidadNarrativaSerializer(unidades, many=True).data,
             'temas': [{'id': t.id, 'nombre': t.nombre} for t in temas],
         })
+
+
+class SolicitudTemaListCreateAPIView(APIView):
+    """GET lista las solicitudes del propio usuario (cualquier estado).
+    POST crea una nueva, siempre en estado pendiente -- nunca crea el
+    TemaTransversal directamente, eso solo ocurre vía la acción de admin
+    'Aprobar solicitudes'."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        solicitudes = SolicitudTema.objects.filter(usuario=request.user).select_related('obra')
+        return Response(SolicitudTemaSerializer(solicitudes, many=True).data)
+
+    def post(self, request):
+        serializer = SolicitudTemaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(usuario=request.user)
+        return Response(serializer.data, status=201)

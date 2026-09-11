@@ -216,6 +216,36 @@ class TemaTransversal(models.Model):
         return f'{self.obra.titulo} · {self.nombre}'
 
 
+class SolicitudTema(models.Model):
+    """Propuesta de un usuario para crear un TemaTransversal nuevo en una
+    obra. No crea el tema directamente — requiere aprobación explícita
+    (vía acción de admin), que entonces sí crea el TemaTransversal real.
+    Mismo criterio de 'admin como última instancia' que ya se usa con
+    frontera_origen=admin en ClasificacionNarrativa."""
+
+    ESTADO_PENDIENTE = 'pendiente'
+    ESTADO_APROBADA = 'aprobada'
+    ESTADO_RECHAZADA = 'rechazada'
+    ESTADO_CHOICES = [
+        (ESTADO_PENDIENTE, 'Pendiente'),
+        (ESTADO_APROBADA, 'Aprobada'),
+        (ESTADO_RECHAZADA, 'Rechazada'),
+    ]
+
+    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='solicitudes_tema')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='solicitudes_tema')
+    nombre = models.CharField(max_length=150)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)
+    creado_en = models.DateTimeField(auto_now_add=True)
+    resuelto_en = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-creado_en']
+
+    def __str__(self):
+        return f'{self.usuario.username} propone "{self.nombre}" en {self.obra.titulo} ({self.estado})'
+
+
 class ClasificacionNarrativa(models.Model):
     """Mixin abstracto compartido por Post y Comment. frontera_orden es el
     único valor que debe consultar el motor de visibilidad."""

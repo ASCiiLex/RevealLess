@@ -1,3 +1,7 @@
+from django.utils import timezone
+
+from .models import SolicitudTema, TemaTransversal
+
 UMBRAL_SALTO_GRANDE = 3
 
 
@@ -48,3 +52,35 @@ def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False):
     progreso.orden_absoluto = nuevo_orden
     progreso.save(update_fields=['unidad_actual', 'orden_absoluto'])
     return progreso
+
+
+def aprobar_solicitud_tema(solicitud):
+    """Lógica pura de aprobación, sin dependencias de Django admin o
+    HttpRequest: crea (o reutiliza, vía get_or_create) el TemaTransversal
+    real y marca la solicitud como aprobada. Ignora solicitudes que ya
+    no están pendientes (no las reabre ni las modifica).
+
+    Devuelve el TemaTransversal creado/reutilizado, o None si la
+    solicitud no estaba pendiente."""
+    if solicitud.estado != SolicitudTema.ESTADO_PENDIENTE:
+        return None
+
+    tema, _ = TemaTransversal.objects.get_or_create(
+        obra=solicitud.obra, nombre=solicitud.nombre,
+    )
+    solicitud.estado = SolicitudTema.ESTADO_APROBADA
+    solicitud.resuelto_en = timezone.now()
+    solicitud.save(update_fields=['estado', 'resuelto_en'])
+    return tema
+
+
+def rechazar_solicitud_tema(solicitud):
+    """Lógica pura de rechazo. Ignora solicitudes que ya no están
+    pendientes. Devuelve True si se rechazó, False si no aplicaba."""
+    if solicitud.estado != SolicitudTema.ESTADO_PENDIENTE:
+        return False
+
+    solicitud.estado = SolicitudTema.ESTADO_RECHAZADA
+    solicitud.resuelto_en = timezone.now()
+    solicitud.save(update_fields=['estado', 'resuelto_en'])
+    return True

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from posts.models import Post
-from .models import UnidadNarrativa, ProgresoUsuario, Obra
+from .models import UnidadNarrativa, ProgresoUsuario, Obra, SolicitudTema
 
 
 class UnidadNarrativaSerializer(serializers.ModelSerializer):
@@ -73,3 +73,12 @@ class ObraResumenSerializer(serializers.ModelSerializer):
         if ids_obras_suscritas is None:
             return False
         return obj.id in ids_obras_suscritas
+
+
+class SolicitudTemaSerializer(serializers.ModelSerializer):
+    obra_titulo = serializers.CharField(source='obra.titulo', read_only=True)
+
+    class Meta:
+        model = SolicitudTema
+        fields = ['id', 'obra', 'obra_titulo', 'nombre', 'estado', 'creado_en', 'resuelto_en']
+        read_only_fields = ['estado', 'creado_en', 'resuelto_en']
