@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import styles from './Lomo.module.css'
+import { crearSuscripcion } from '../../api/suscripciones'
 
 export interface LomoObra {
   id: number
@@ -14,9 +16,24 @@ interface Props {
   activa: boolean
   onSelect: (obra: LomoObra) => void
   mostrarProgreso: boolean
+  mostrarSeguir: boolean
 }
 
-export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props) {
+export default function Lomo({ obra, activa, onSelect, mostrarProgreso, mostrarSeguir }: Props) {
+  const [siguiendo, setSiguiendo] = useState(false)
+  const [cargando, setCargando] = useState(false)
+
+  async function handleSeguir() {
+    if (siguiendo || cargando) return
+    setCargando(true)
+    try {
+      await crearSuscripcion(obra.slug)
+      setSiguiendo(true)
+    } finally {
+      setCargando(false)
+    }
+  }
+
   return (
     <div className={styles.wrapper}>
       <button
@@ -39,6 +56,16 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props)
           <span className={styles.progressIcon} aria-hidden="true">📖</span>
           <span>Progreso</span>
         </a>
+      )}
+
+      {mostrarSeguir && (
+        <button
+          className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
+          onClick={handleSeguir}
+          disabled={siguiendo || cargando}
+        >
+          {siguiendo ? 'Siguiendo' : 'Seguir'}
+        </button>
       )}
     </div>
   )

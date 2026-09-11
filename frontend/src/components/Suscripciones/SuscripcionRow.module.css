@@ -1,0 +1,46 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--border);
+}
+
+.titulo {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.detalle {
+  font-size: 12px;
+  color: var(--fog);
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  color: var(--fog);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.removeButton:hover,
+.removeButton:focus-visible {
+  color: var(--gold);
+}
