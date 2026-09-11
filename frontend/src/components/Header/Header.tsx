@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './Header.module.css'
 import AvatarDropdown from './AvatarDropdown'
 import AvatarDrawer from './AvatarDrawer'
 import MobileSearchOverlay from './MobileSearchOverlay'
+import SearchResults from './SearchResults'
 import { fetchMe, type Me } from '../../api/me'
+import { buscar, type ResultadoBusqueda } from '../../api/buscar'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import logo from '../../assets/brand/logo-sf-ss.png'
 
@@ -11,12 +13,36 @@ export default function Header() {
   const [me, setMe] = useState<Me | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [resultado, setResultado] = useState<ResultadoBusqueda | null>(null)
   const isMobile = useIsMobile()
+  const searchWrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchMe()
       .then(setMe)
       .catch(() => setMe(null))
+  }, [])
+
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setResultado(null)
+      return
+    }
+    const id = setTimeout(() => {
+      buscar(query.trim()).then(setResultado)
+    }, 300)
+    return () => clearTimeout(id)
+  }, [query])
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target as Node)) {
+        setResultado(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   return (
@@ -26,12 +52,17 @@ export default function Header() {
           <img className={styles.logoImg} src={logo} alt="RevealLess" />
         </a>
 
-        <input
-          className={styles.search}
-          type="search"
-          placeholder="Buscar obras, temas..."
-          aria-label="Buscar"
-        />
+        <div className={styles.searchWrapper} ref={searchWrapperRef}>
+          <input
+            className={styles.search}
+            type="search"
+            placeholder="Buscar obras, temas..."
+            aria-label="Buscar"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {resultado && <SearchResults resultado={resultado} />}
+        </div>
 
         <div className={styles.right}>
           <a className={styles.createLink} href="/narrative/publicar/" aria-label="Crear publicación">

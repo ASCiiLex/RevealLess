@@ -28,9 +28,14 @@
   display: block;
 }
 
-.search {
+.searchWrapper {
+  position: relative;
   flex: 1;
   max-width: 420px;
+}
+
+.search {
+  width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -118,7 +123,7 @@
     height: 44px;
   }
 
-  .search,
+  .searchWrapper,
   .createLink {
     display: none;
   }
