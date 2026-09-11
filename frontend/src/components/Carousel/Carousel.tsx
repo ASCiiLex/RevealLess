@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styles from './Carousel.module.css'
 import Lomo, { type LomoObra } from './Lomo'
+import CategoryChips from './CategoryChips'
 import { fetchCatalogoObras } from '../../api/obras'
 import { useCatalogView } from '../../context/CatalogViewContext'
 
 export default function Carousel() {
-  const { view } = useCatalogView()
+  const { view, obraFiltro, setObraFiltro } = useCatalogView()
   const [obras, setObras] = useState<{ biblioteca: LomoObra[]; descubrir: LomoObra[] } | null>(
     null
   )
+  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
 
   useEffect(() => {
     fetchCatalogoObras()
@@ -16,24 +18,54 @@ export default function Carousel() {
       .catch(() => setObras({ biblioteca: [], descubrir: [] }))
   }, [])
 
+  useEffect(() => {
+    setCategoriaActiva(null)
+    setObraFiltro(null)
+  }, [view, setObraFiltro])
+
+  const listaCompleta = obras ? obras[view] : []
+
+  const categoriasDisponibles = useMemo(() => {
+    const set = new Set<string>()
+    listaCompleta.forEach((obra) => obra.categorias?.forEach((cat) => set.add(cat)))
+    return Array.from(set).sort()
+  }, [listaCompleta])
+
+  const listaFiltrada = categoriaActiva
+    ? listaCompleta.filter((obra) => obra.categorias?.includes(categoriaActiva))
+    : listaCompleta
+
+  function handleSelectObra(obra: LomoObra) {
+    setObraFiltro(obraFiltro === obra.id ? null : obra.id)
+  }
+
   if (!obras) {
     return null
   }
 
-  const lista = obras[view]
-
   return (
     <div className={styles.wrapper}>
-      {lista.length === 0 ? (
+      <CategoryChips
+        categorias={categoriasDisponibles}
+        activa={categoriaActiva}
+        onSelect={setCategoriaActiva}
+      />
+
+      {listaFiltrada.length === 0 ? (
         <p className={styles.empty}>
           {view === 'biblioteca'
-            ? 'Todavía no sigues ninguna obra. Explora en Descubrir.'
-            : 'No hay más obras que descubrir por ahora.'}
+            ? 'Todavía no sigues ninguna obra en esta categoría.'
+            : 'No hay obras que descubrir en esta categoría por ahora.'}
         </p>
       ) : (
         <div className={styles.track}>
-          {lista.map((obra) => (
-            <Lomo key={obra.id} obra={obra} />
+          {listaFiltrada.map((obra) => (
+            <Lomo
+              key={obra.id}
+              obra={obra}
+              activa={obraFiltro === obra.id}
+              onSelect={handleSelectObra}
+            />
           ))}
         </div>
       )}
