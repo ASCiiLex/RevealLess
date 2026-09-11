@@ -65,6 +65,7 @@ export default function Carousel() {
               obra={obra}
               activa={obraFiltro === obra.id}
               onSelect={handleSelectObra}
+              mostrarProgreso={view === 'biblioteca'}
             />
           ))}
         </div>
