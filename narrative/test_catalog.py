@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import Obra, UnidadNarrativa
+from narrative.models import Obra, UnidadNarrativa, TemaTransversal
 from narrative.services import actualizar_progreso
 from subscriptions.services import crear_suscripcion
 
@@ -70,7 +70,6 @@ class CatalogoObrasAPIViewTests(TestCase):
         obra_data = next(
             o for o in response.data['biblioteca'] if o['slug'] == 'con-progreso'
         )
-        # e1 es la única unidad -> orden_absoluto == orden_fin -> 100%
         self.assertEqual(obra_data['progreso_pct'], 100)
 
     def test_progreso_pct_es_none_sin_progreso_registrado(self):
@@ -86,3 +85,47 @@ class CatalogoObrasAPIViewTests(TestCase):
         response = self.client.get(reverse('narrative_api_obras'))
         obra_data = response.data['descubrir'][0]
         self.assertIsNone(obra_data['progreso_pct'])
+
+
+class ObraDetalleAPIViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.usuario = User.objects.create_user('lector_detalle', password='x')
+        self.obra = Obra.objects.create(titulo='Serie Detalle', slug='serie-detalle')
+        self.unidad = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='arco', nombre='Arco 1', orden_local=1,
+        )
+        self.tema = TemaTransversal.objects.create(obra=self.obra, nombre='Tema 1')
+
+    def test_requiere_autenticacion(self):
+        response = self.client.get(
+            reverse('narrative_api_obra_detalle', args=[self.obra.slug])
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_devuelve_404_si_la_obra_no_existe(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(
+            reverse('narrative_api_obra_detalle', args=['no-existe'])
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_incluye_unidades_y_temas_de_la_obra(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(
+            reverse('narrative_api_obra_detalle', args=[self.obra.slug])
+        )
+        unidad_ids = [u['id'] for u in response.data['unidades']]
+        tema_nombres = [t['nombre'] for t in response.data['temas']]
+        self.assertIn(self.unidad.id, unidad_ids)
+        self.assertIn('Tema 1', tema_nombres)
+
+    def test_no_requiere_progreso_previo_del_usuario(self):
+        """A diferencia de ProgresoAPIView, esta vista no depende de que
+        el usuario ya tenga progreso en la obra — sirve para elegir a que
+        suscribirse, incluso sin haber empezado a seguirla todavia."""
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(
+            reverse('narrative_api_obra_detalle', args=[self.obra.slug])
+        )
+        self.assertEqual(response.status_code, 200)

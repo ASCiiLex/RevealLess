@@ -2,10 +2,11 @@ from django.db.models import Max
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import get_object_or_404
 
 from subscriptions.models import Suscripcion
-from .models import Obra, ProgresoUsuario
-from .serializers import ObraResumenSerializer
+from .models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa
+from .serializers import ObraResumenSerializer, UnidadNarrativaSerializer
 
 
 class CatalogoObrasAPIView(APIView):
@@ -40,4 +41,24 @@ class CatalogoObrasAPIView(APIView):
                 biblioteca, many=True, context={'progreso_por_obra': progreso_por_obra}
             ).data,
             'descubrir': ObraResumenSerializer(descubrir, many=True).data,
+        })
+
+
+class ObraDetalleAPIView(APIView):
+    """Expone unidades y temas transversales de una obra, para construir
+    el selector de nivel de suscripción (obra completa / unidad concreta
+    / tema) en el frontend. No requiere progreso previo del usuario — a
+    diferencia de ProgresoAPIView, que es progreso-céntrica."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, obra_slug):
+        obra = get_object_or_404(Obra, slug=obra_slug)
+        unidades = UnidadNarrativa.objects.filter(obra=obra).order_by('orden_inicio')
+        temas = TemaTransversal.objects.filter(obra=obra).order_by('nombre')
+
+        return Response({
+            'obra': {'id': obra.id, 'titulo': obra.titulo, 'slug': obra.slug},
+            'unidades': UnidadNarrativaSerializer(unidades, many=True).data,
+            'temas': [{'id': t.id, 'nombre': t.nombre} for t in temas],
         })

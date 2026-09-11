@@ -28,6 +28,7 @@ urlpatterns = [
     path('mensajes/', include('messages_app.urls')),
     path('guardados/', include('saved_posts.urls')),
     path('narrative/', include('narrative.urls')),
+    path('', include('subscriptions.urls')),
 
     path('api/me/', MeAPIView.as_view(), name='api_me'),
 ]
