@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from posts.models import Post
-from .models import UnidadNarrativa, ProgresoUsuario
+from .models import UnidadNarrativa, ProgresoUsuario, Obra
 
 
 class UnidadNarrativaSerializer(serializers.ModelSerializer):
@@ -40,4 +40,20 @@ class PostSerializer(serializers.ModelSerializer):
         ]
 
     def get_imagen(self, obj):
+        return obj.image_url
+
+
+class ObraResumenSerializer(serializers.ModelSerializer):
+    """Vista ligera de Obra para el carrusel biblioteca/descubrir. No
+    incluye progreso ni unidades: si el frontend necesita ese detalle,
+    lo pide aparte vía narrative/api/progreso/<slug>/."""
+
+    imagen_url = serializers.SerializerMethodField()
+    categorias = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nombre')
+
+    class Meta:
+        model = Obra
+        fields = ['id', 'titulo', 'slug', 'imagen_url', 'categorias']
+
+    def get_imagen_url(self, obj):
         return obj.image_url
