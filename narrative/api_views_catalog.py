@@ -1,3 +1,4 @@
+from django.db.models import Max
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,20 +20,24 @@ class CatalogoObrasAPIView(APIView):
     def get(self, request):
         user = request.user
 
-        obras_con_progreso = ProgresoUsuario.objects.filter(
-            usuario=user
-        ).values_list('obra_id', flat=True)
+        progresos = ProgresoUsuario.objects.filter(usuario=user)
+        progreso_por_obra = {p.obra_id: p.orden_absoluto for p in progresos}
+
         obras_con_suscripcion = Suscripcion.objects.filter(
             usuario=user
         ).values_list('obra_id', flat=True)
 
-        ids_biblioteca = set(obras_con_progreso) | set(obras_con_suscripcion)
+        ids_biblioteca = set(progreso_por_obra.keys()) | set(obras_con_suscripcion)
 
-        todas = Obra.objects.prefetch_related('categorias')
+        todas = Obra.objects.prefetch_related('categorias').annotate(
+            longitud_total=Max('unidades__orden_fin')
+        )
         biblioteca = todas.filter(id__in=ids_biblioteca)
         descubrir = todas.exclude(id__in=ids_biblioteca)
 
         return Response({
-            'biblioteca': ObraResumenSerializer(biblioteca, many=True).data,
+            'biblioteca': ObraResumenSerializer(
+                biblioteca, many=True, context={'progreso_por_obra': progreso_por_obra}
+            ).data,
             'descubrir': ObraResumenSerializer(descubrir, many=True).data,
         })

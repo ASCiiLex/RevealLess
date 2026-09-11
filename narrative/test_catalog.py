@@ -63,3 +63,26 @@ class CatalogoObrasAPIViewTests(TestCase):
         obra_data = response.data['biblioteca'][0]
         self.assertIn('imagen_url', obra_data)
         self.assertIn('categorias', obra_data)
+
+    def test_progreso_pct_calculado_para_obra_con_progreso(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = next(
+            o for o in response.data['biblioteca'] if o['slug'] == 'con-progreso'
+        )
+        # e1 es la única unidad -> orden_absoluto == orden_fin -> 100%
+        self.assertEqual(obra_data['progreso_pct'], 100)
+
+    def test_progreso_pct_es_none_sin_progreso_registrado(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = next(
+            o for o in response.data['biblioteca'] if o['slug'] == 'con-suscripcion'
+        )
+        self.assertIsNone(obra_data['progreso_pct'])
+
+    def test_progreso_pct_es_none_en_descubrir(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = response.data['descubrir'][0]
+        self.assertIsNone(obra_data['progreso_pct'])
