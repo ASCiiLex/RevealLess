@@ -26,6 +26,9 @@ interface PaginatedResponse<T> {
   results: T[]
 }
 
-export function fetchFeed(): Promise<PaginatedResponse<FeedPost>> {
-  return api.get<PaginatedResponse<FeedPost>>('/narrative/api/feed/')
+export function fetchFeed(obraId?: number | null): Promise<PaginatedResponse<FeedPost>> {
+  const url = obraId
+    ? `/narrative/api/feed/?obra=${obraId}`
+    : '/narrative/api/feed/'
+  return api.get<PaginatedResponse<FeedPost>>(url)
 }
