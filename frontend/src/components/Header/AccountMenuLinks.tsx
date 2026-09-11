@@ -22,6 +22,9 @@ export default function AccountMenuLinks({ me, itemClassName, logoutClassName, d
       <a className={itemClassName} href="/guardados/" role="menuitem">
         Guardados
       </a>
+      <a className={itemClassName} href="/suscripciones/" role="menuitem">
+        Suscripciones
+      </a>
       <hr className={dividerClassName} />
       <a className={`${itemClassName} ${logoutClassName}`} href="/cuentas/logout/" role="menuitem">
         Cerrar sesión

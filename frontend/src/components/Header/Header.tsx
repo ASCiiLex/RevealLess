@@ -2,17 +2,15 @@ import { useEffect, useState } from 'react'
 import styles from './Header.module.css'
 import AvatarDropdown from './AvatarDropdown'
 import AvatarDrawer from './AvatarDrawer'
+import MobileSearchOverlay from './MobileSearchOverlay'
 import { fetchMe, type Me } from '../../api/me'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import logo from '../../assets/brand/logo-sf-ss.png'
 
-interface Props {
-  onToggleSearch: () => void
-}
-
-export default function Header({ onToggleSearch }: Props) {
+export default function Header() {
   const [me, setMe] = useState<Me | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const isMobile = useIsMobile()
 
   useEffect(() => {
@@ -39,7 +37,11 @@ export default function Header({ onToggleSearch }: Props) {
           <a className={styles.createLink} href="/narrative/publicar/" aria-label="Crear publicación">
             +
           </a>
-          <button className={styles.searchToggle} onClick={onToggleSearch} aria-label="Buscar">
+          <button
+            className={styles.searchToggle}
+            onClick={() => setSearchOpen((v) => !v)}
+            aria-label="Buscar"
+          >
             🔍
           </button>
 
@@ -61,6 +63,8 @@ export default function Header({ onToggleSearch }: Props) {
           {me && !isMobile && <AvatarDropdown me={me} />}
         </div>
       </div>
+
+      {searchOpen && <MobileSearchOverlay onClose={() => setSearchOpen(false)} />}
 
       {me && isMobile && drawerOpen && (
         <AvatarDrawer me={me} onClose={() => setDrawerOpen(false)} />
