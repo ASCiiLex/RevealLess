@@ -1,0 +1,38 @@
+.wrapper {
+  padding: 24px 0 40px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.backLink {
+  font-size: 13px;
+  color: var(--fog);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.currentProgress {
+  font-size: 14px;
+  color: var(--fog);
+  margin: 4px 0 0 0;
+}
+
+.error {
+  background: color-mix(in srgb, var(--gold) 12%, var(--paper));
+  color: var(--fog);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-bottom: 16px;
+}

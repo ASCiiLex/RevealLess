@@ -1,0 +1,81 @@
+.node {
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-align: left;
+}
+
+.headerActual {
+  background: color-mix(in srgb, var(--gold) 15%, var(--paper));
+}
+
+.nombre {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.chevron {
+  color: var(--fog);
+  font-size: 12px;
+}
+
+.children {
+  padding: 0 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scrollBox {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.leaf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.leafPast {
+  color: var(--fog);
+}
+
+.leafActual {
+  background: var(--gold);
+  color: var(--paper);
+  font-weight: 600;
+}
+
+.hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--fog);
+  padding: 4px 0 2px;
+}

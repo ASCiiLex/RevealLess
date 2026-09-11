@@ -11,9 +11,21 @@ interface CatalogViewContextValue {
 
 const CatalogViewContext = createContext<CatalogViewContextValue | null>(null)
 
+function leerViewInicial(): CatalogView {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('view') === 'descubrir' ? 'descubrir' : 'biblioteca'
+}
+
 export function CatalogViewProvider({ children }: { children: ReactNode }) {
-  const [view, setView] = useState<CatalogView>('biblioteca')
+  const [view, setViewState] = useState<CatalogView>(leerViewInicial)
   const [obraFiltro, setObraFiltro] = useState<number | null>(null)
+
+  function setView(nuevo: CatalogView) {
+    setViewState(nuevo)
+    const url = new URL(window.location.href)
+    url.searchParams.set('view', nuevo)
+    window.history.replaceState(null, '', url)
+  }
 
   return (
     <CatalogViewContext.Provider value={{ view, setView, obraFiltro, setObraFiltro }}>
@@ -28,4 +40,11 @@ export function useCatalogView() {
     throw new Error('useCatalogView debe usarse dentro de CatalogViewProvider')
   }
   return ctx
+}
+
+/** Igual que useCatalogView, pero devuelve null en vez de lanzar si no hay
+ * provider — para componentes compartidos (BottomNav) que se usan tanto
+ * dentro del feed (con provider) como en otras páginas React (sin él). */
+export function useOptionalCatalogView() {
+  return useContext(CatalogViewContext)
 }
