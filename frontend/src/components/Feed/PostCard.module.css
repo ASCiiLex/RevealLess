@@ -1,0 +1,39 @@
+.post {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fog);
+  margin-bottom: 8px;
+}
+
+.author {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.text {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0 0 12px 0;
+  max-width: var(--max-line);
+}
+
+.image {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--radius);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.stats {
+  font-size: 13px;
+  color: var(--fog);
+}

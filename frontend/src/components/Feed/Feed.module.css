@@ -1,0 +1,12 @@
+.feed {
+  max-width: var(--max-line);
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.empty {
+  color: var(--fog);
+  font-size: 14px;
+  text-align: center;
+  padding: 48px 0;
+}
