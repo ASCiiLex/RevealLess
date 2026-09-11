@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './AvatarDropdown.module.css'
+import AccountMenuLinks from './AccountMenuLinks'
 import type { Me } from '../../api/me'
 
 interface Props {
@@ -37,22 +38,12 @@ export default function AvatarDropdown({ me }: Props) {
 
       {open && (
         <div className={styles.menu} role="menu">
-          <a className={styles.item} href={`/perfil/${me.username}/`} role="menuitem">
-            Mi perfil
-          </a>
-          <a className={styles.item} href="/notificaciones/" role="menuitem">
-            Notificaciones
-          </a>
-          <a className={styles.item} href="/mensajes/" role="menuitem">
-            Mensajes
-          </a>
-          <a className={styles.item} href="/guardados/" role="menuitem">
-            Guardados
-          </a>
-          <hr className={styles.divider} />
-          <a className={`${styles.item} ${styles.logout}`} href="/cuentas/logout/" role="menuitem">
-            Cerrar sesión
-          </a>
+          <AccountMenuLinks
+            me={me}
+            itemClassName={styles.item}
+            logoutClassName={styles.logout}
+            dividerClassName={styles.divider}
+          />
         </div>
       )}
     </div>
