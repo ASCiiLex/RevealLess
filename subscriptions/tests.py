@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa, TemaTransversal
+from narrative.services import actualizar_progreso
 from posts.models import Post
 from .models import Suscripcion
 from .services import (
@@ -135,6 +136,12 @@ class PostsNoLeidosTests(TestCase):
         for u in (self.arco, self.e1, self.e2):
             u.refresh_from_db()
 
+        # El contador ahora exige visibilidad: el lector necesita
+        # progreso suficiente para ver los posts de e1/e2 en la mayoría
+        # de estos tests. Los tests que verifican justo lo contrario
+        # (bloqueo por frontera) declaran su propio progreso limitado.
+        actualizar_progreso(self.lector, self.obra, self.e2)
+
     def _post(self, referencia):
         return Post.objects.create(
             author=self.autor, obra=self.obra, text='contenido',
@@ -164,6 +171,7 @@ class PostsNoLeidosTests(TestCase):
         self.obra.recalcular_orden()
         otro_arco.refresh_from_db()
         e3.refresh_from_db()
+        actualizar_progreso(self.lector, self.obra, e3)
 
         suscripcion = crear_suscripcion(self.lector, self.obra, unidad=self.arco)
         self._post(self.e1)
@@ -176,6 +184,21 @@ class PostsNoLeidosTests(TestCase):
         marcar_visto(suscripcion)
         self._post(self.e2)
         self.assertEqual(posts_no_leidos_count(suscripcion), 1)
+
+    def test_no_cuenta_posts_fuera_de_la_frontera_del_lector(self):
+        """El contador no debe filtrar solo por pertenencia a la
+        suscripción: aunque el post exista y esté dentro del rango
+        suscrito, si el lector no ha alcanzado su frontera de spoiler,
+        no debe contar como pendiente de leer. Esto evita que el propio
+        número insinúe la existencia de contenido bloqueado."""
+        lector_atrasado = User.objects.create_user('lector_atrasado', password='x')
+        actualizar_progreso(lector_atrasado, self.obra, self.e1)
+
+        suscripcion = crear_suscripcion(lector_atrasado, self.obra)
+        # Post cuya frontera es e2: por delante del progreso de este lector.
+        self._post(self.e2)
+
+        self.assertEqual(posts_no_leidos_count(suscripcion), 0)
 
 
 class PostsNoLeidosPorTemaTests(TestCase):
@@ -195,6 +218,8 @@ class PostsNoLeidosPorTemaTests(TestCase):
 
         self.tema = TemaTransversal.objects.create(obra=self.obra, nombre='Frutas del diablo')
         self.otro_tema = TemaTransversal.objects.create(obra=self.obra, nombre='Otro tema')
+
+        actualizar_progreso(self.lector, self.obra, self.e2)
 
     def _post(self, referencia, temas=None):
         post = Post.objects.create(

@@ -54,13 +54,20 @@ def _posts_de_suscripcion(suscripcion):
             referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
         )
     elif suscripcion.tema_id:
-        qs = qs.filter(temas_transversales=suscripcion.tema)
+        qs = qs.filter(temas_transversales=suscripcion.tema_id)
 
     return qs.distinct()
 
 
 def posts_no_leidos_count(suscripcion):
-    posts = _posts_de_suscripcion(suscripcion)
+    """El contador de no leídos NUNCA debe filtrar solo por pertenencia
+    a la suscripción — eso sería una fuga de información: el número
+    insinuaría contenido futuro que el usuario aún no puede ver según su
+    progreso, aunque el propio post permanezca oculto. Todo post debe
+    pasar primero por visible_for(usuario), exactamente igual que en el
+    feed. 'Estoy suscrito' decide qué podría interesarme; 'puedo verlo'
+    decide qué cuenta como pendiente de leer."""
+    posts = _posts_de_suscripcion(suscripcion).visible_for(suscripcion.usuario)
     if suscripcion.ultima_visita:
         posts = posts.filter(created_at__gt=suscripcion.ultima_visita)
     else:
