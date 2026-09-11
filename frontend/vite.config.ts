@@ -14,16 +14,16 @@ export default defineConfig(({ command }) => ({
     outDir: '../static/frontend/dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: 'src/main.tsx',
+      input: {
+        main: 'src/main.tsx',
+        progreso: 'src/progreso.tsx',
+      },
     },
   },
   server: {
     port: 5173,
     strictPort: true,
     cors: true,
-    // La página que carga estos assets vive en localhost:8000 (Django),
-    // no en Vite: las rutas relativas de CSS (ej. @fontsource) se
-    // resolverían contra el origen equivocado sin esto.
     origin: 'http://localhost:5173',
   },
 }))

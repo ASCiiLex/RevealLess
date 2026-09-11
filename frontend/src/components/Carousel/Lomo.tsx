@@ -6,7 +6,7 @@ export interface LomoObra {
   slug: string
   imagen_url: string
   categorias: string[]
-  progreso_pct?: number // 0–100, opcional: solo obras con progreso lo traen
+  progreso_pct?: number
 }
 
 interface Props {
@@ -35,7 +35,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props)
       </button>
 
       {mostrarProgreso && (
-        <a className={styles.progressLink} href={`/narrative/progreso/${obra.slug}/`}>
+        <a className={styles.progressLink} href={`/narrative/progreso-react/${obra.slug}/`}>
           <span className={styles.progressIcon} aria-hidden="true">📖</span>
           <span>Progreso</span>
         </a>

@@ -56,3 +56,14 @@ def declarar_progreso(request, obra_slug):
     return render(request, 'narrative/set_progreso.html', {
         'form': form, 'obra': obra, 'next': next_url,
     })
+
+
+@login_required
+def progreso_react_view(request, obra_slug):
+    """Vista mínima que solo monta el punto de entrada de React para la
+    gestión de progreso (Fase 4). No reemplaza declarar_progreso: convive
+    con la vista HTML heredada. El slug se pasa al DOM vía data-attribute
+    para que src/progreso.tsx sepa qué obra cargar sin depender de
+    parsear la URL en JS."""
+    get_object_or_404(Obra, slug=obra_slug)
+    return render(request, 'narrative/progreso_react.html', {'obra_slug': obra_slug})
