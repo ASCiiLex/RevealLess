@@ -5,10 +5,11 @@ from .models import UnidadNarrativa, ProgresoUsuario, Obra
 
 class UnidadNarrativaSerializer(serializers.ModelSerializer):
     imagen = serializers.SerializerMethodField()
+    padre = serializers.IntegerField(source='padre_id', read_only=True, allow_null=True)
 
     class Meta:
         model = UnidadNarrativa
-        fields = ['id', 'nombre', 'tipo', 'etiqueta', 'orden_inicio', 'orden_fin', 'imagen']
+        fields = ['id', 'nombre', 'tipo', 'etiqueta', 'orden_inicio', 'orden_fin', 'imagen', 'padre']
 
     def get_imagen(self, obj):
         return obj.image_url

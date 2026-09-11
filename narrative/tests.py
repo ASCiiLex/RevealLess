@@ -3,6 +3,7 @@ from django.db import IntegrityError, transaction
 from django.test import TestCase
 
 from .models import Obra, UnidadNarrativa, ProgresoUsuario, Categoria
+from .serializers import UnidadNarrativaSerializer
 from .services import actualizar_progreso, calcular_orden_absoluto, SaltoGrandeRequiereConfirmacion
 
 
@@ -183,7 +184,20 @@ class CategoriaTests(TestCase):
         obra = Obra.objects.create(titulo='Serie', slug='serie-cat')
         categoria = Categoria.objects.create(nombre='series')
         obra.categorias.add(categoria)
-        # No hay ningún campo de frontera en Categoria ni en la relación
-        # M2M — la única forma de verificarlo es confirmar que el modelo
-        # no tiene ese campo.
         self.assertFalse(hasattr(categoria, 'frontera_orden'))
+
+
+class UnidadNarrativaSerializerTests(TestCase):
+    def test_incluye_padre_para_reconstruir_jerarquia_en_frontend(self):
+        obra = Obra.objects.create(titulo='Serie D', slug='serie-d')
+        saga = UnidadNarrativa.objects.create(
+            obra=obra, tipo='saga', nombre='Saga 1', orden_local=1,
+        )
+        arco = UnidadNarrativa.objects.create(
+            obra=obra, padre=saga, tipo='arco', nombre='Arco 1', orden_local=1,
+        )
+        raiz = UnidadNarrativaSerializer(saga).data
+        hijo = UnidadNarrativaSerializer(arco).data
+
+        self.assertIsNone(raiz['padre'])
+        self.assertEqual(hijo['padre'], saga.id)
