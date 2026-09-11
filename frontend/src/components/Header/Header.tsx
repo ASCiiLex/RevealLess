@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import styles from './Header.module.css'
 import AvatarDropdown from './AvatarDropdown'
 import { fetchMe, type Me } from '../../api/me'
+import logo from '../../assets/brand/logo-sf-ss.png'
 
 export default function Header() {
   const [me, setMe] = useState<Me | null>(null)
@@ -15,8 +16,8 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
-        <a className={styles.logo} href="/feed/">
-          RevealLess
+        <a className={styles.logoLink} href="/feed/">
+          <img className={styles.logoImg} src={logo} alt="RevealLess" />
         </a>
 
         <input

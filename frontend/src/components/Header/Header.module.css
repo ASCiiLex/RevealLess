@@ -1,6 +1,6 @@
 .header {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
   border-bottom: 1px solid var(--border);
 }
 
@@ -13,13 +13,16 @@
   padding-bottom: 20px;
 }
 
-.logo {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--paper);
+.logoLink {
+  display: flex;
+  align-items: center;
   text-decoration: none;
+}
+
+.logoImg {
+  height: 88px;
+  width: auto;
+  display: block;
 }
 
 .search {
@@ -52,7 +55,7 @@
   height: 36px;
   border-radius: 50%;
   background: var(--gold);
-  color: var(--ink);
+  color: var(--paper);
   text-decoration: none;
   font-size: 20px;
   line-height: 1;

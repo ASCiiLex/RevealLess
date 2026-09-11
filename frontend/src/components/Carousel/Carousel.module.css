@@ -1,0 +1,24 @@
+.wrapper {
+  padding: 16px 0;
+}
+
+.track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 4px;
+  /* Oculta la barra de scroll visualmente sin perder la funcionalidad
+     (el gesto de swipe/drag sigue funcionando en todos los navegadores). */
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.empty {
+  color: var(--fog);
+  font-size: 14px;
+  padding: 24px 0;
+}
