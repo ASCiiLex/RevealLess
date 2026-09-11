@@ -86,6 +86,22 @@ class CatalogoObrasAPIViewTests(TestCase):
         obra_data = response.data['descubrir'][0]
         self.assertIsNone(obra_data['progreso_pct'])
 
+    def test_suscrito_true_para_obra_con_suscripcion(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = next(
+            o for o in response.data['biblioteca'] if o['slug'] == 'con-suscripcion'
+        )
+        self.assertTrue(obra_data['suscrito'])
+
+    def test_suscrito_false_para_obra_solo_con_progreso(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = next(
+            o for o in response.data['biblioteca'] if o['slug'] == 'con-progreso'
+        )
+        self.assertFalse(obra_data['suscrito'])
+
 
 class ObraDetalleAPIViewTests(TestCase):
     def setUp(self):
@@ -121,9 +137,6 @@ class ObraDetalleAPIViewTests(TestCase):
         self.assertIn('Tema 1', tema_nombres)
 
     def test_no_requiere_progreso_previo_del_usuario(self):
-        """A diferencia de ProgresoAPIView, esta vista no depende de que
-        el usuario ya tenga progreso en la obra — sirve para elegir a que
-        suscribirse, incluso sin haber empezado a seguirla todavia."""
         self.client.force_authenticate(user=self.usuario)
         response = self.client.get(
             reverse('narrative_api_obra_detalle', args=[self.obra.slug])

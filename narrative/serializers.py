@@ -45,18 +45,14 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class ObraResumenSerializer(serializers.ModelSerializer):
-    """Vista ligera de Obra para el carrusel biblioteca/descubrir.
-    progreso_pct solo se calcula si el contexto trae progreso_por_obra
-    (pasado únicamente para la lista 'biblioteca'); en 'descubrir' viene
-    siempre None, sin coste de cálculo."""
-
     imagen_url = serializers.SerializerMethodField()
     categorias = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nombre')
     progreso_pct = serializers.SerializerMethodField()
+    suscrito = serializers.SerializerMethodField()
 
     class Meta:
         model = Obra
-        fields = ['id', 'titulo', 'slug', 'imagen_url', 'categorias', 'progreso_pct']
+        fields = ['id', 'titulo', 'slug', 'imagen_url', 'categorias', 'progreso_pct', 'suscrito']
 
     def get_imagen_url(self, obj):
         return obj.image_url
@@ -71,3 +67,9 @@ class ObraResumenSerializer(serializers.ModelSerializer):
         orden_absoluto = progreso_por_obra[obj.id]
         pct = round((orden_absoluto / longitud_total) * 100)
         return min(max(pct, 0), 100)
+
+    def get_suscrito(self, obj):
+        ids_obras_suscritas = self.context.get('ids_obras_suscritas')
+        if ids_obras_suscritas is None:
+            return False
+        return obj.id in ids_obras_suscritas
