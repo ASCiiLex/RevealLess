@@ -1,0 +1,41 @@
+.overlay {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .overlay {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper);
+    position: sticky;
+    top: 96px;
+    z-index: 15;
+  }
+}
+
+.input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.input::placeholder {
+  color: var(--fog);
+}
+
+.close {
+  background: none;
+  border: none;
+  color: var(--fog);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+}

@@ -2,6 +2,9 @@
   background: var(--paper);
   color: var(--ink);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .inner {
@@ -59,4 +62,33 @@
   text-decoration: none;
   font-size: 20px;
   line-height: 1;
+}
+
+.searchToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--ink);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .logoImg {
+    height: 56px;
+  }
+
+  .search,
+  .createLink {
+    display: none;
+  }
+
+  .searchToggle {
+    display: flex;
+  }
 }

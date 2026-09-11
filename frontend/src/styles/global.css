@@ -30,15 +30,19 @@ a {
   outline-offset: 2px;
 }
 
-/* Contenedor centrado reutilizable: SOLO controla ancho máximo y margen
-   horizontal. El padding vertical es responsabilidad de cada componente
-   (ej. Header.module.css .inner), para evitar que ambas clases compitan
-   por la misma propiedad en el mismo elemento. */
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
   padding-left: var(--gutter);
   padding-right: var(--gutter);
+}
+
+@media (max-width: 767px) {
+  /* Deja hueco para el BottomNav fixed (altura aprox: padding 10px*2 +
+     contenido ~24px = 64px), evitando que tape el último post del feed. */
+  main.container {
+    padding-bottom: 80px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,7 +4,11 @@ import AvatarDropdown from './AvatarDropdown'
 import { fetchMe, type Me } from '../../api/me'
 import logo from '../../assets/brand/logo-sf-ss.png'
 
-export default function Header() {
+interface Props {
+  onToggleSearch: () => void
+}
+
+export default function Header({ onToggleSearch }: Props) {
   const [me, setMe] = useState<Me | null>(null)
 
   useEffect(() => {
@@ -31,6 +35,9 @@ export default function Header() {
           <a className={styles.createLink} href="/narrative/publicar/" aria-label="Crear publicación">
             +
           </a>
+          <button className={styles.searchToggle} onClick={onToggleSearch} aria-label="Buscar">
+            🔍
+          </button>
           {me && <AvatarDropdown me={me} />}
         </div>
       </div>
