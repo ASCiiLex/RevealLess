@@ -27,15 +27,20 @@ class FeedAPIView(generics.ListAPIView):
             | subscription_q
         )
 
-        return (
+        queryset = (
             Post.objects
             .filter(condiciones_del_feed)
             .distinct()
             .select_related('author', 'obra', 'referencia_narrativa')
             .visible_for(user)
             .with_feed_stats()
-            .order_by('-created_at')
         )
+
+        obra_id = self.request.query_params.get('obra')
+        if obra_id is not None:
+            queryset = queryset.filter(obra_id=obra_id)
+
+        return queryset.order_by('-created_at')
 
 
 class ProgresoAPIView(APIView):

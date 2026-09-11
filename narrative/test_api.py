@@ -105,6 +105,38 @@ class FeedAPIViewTests(TestCase):
         self.assertEqual(post_data['likes_count'], 1)
         self.assertEqual(post_data['comments_count'], 1)
 
+    def test_filtra_por_obra_cuando_se_pasa_query_param(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'), {'obra': self.obra.id})
+        ids = [p['id'] for p in response.data['results']]
+        self.assertIn(self.post_propio.id, ids)
+        self.assertIn(self.post_seguido_visible.id, ids)
+
+    def test_filtro_por_obra_excluye_posts_de_otra_obra(self):
+        otra_obra = Obra.objects.create(titulo='Otra obra', slug='otra-obra-feed')
+        otra_unidad = UnidadNarrativa.objects.create(
+            obra=otra_obra, tipo='episodio', nombre='X1', orden_local=1,
+        )
+        otra_obra.recalcular_orden()
+        otra_unidad.refresh_from_db()
+
+        post_otra_obra = Post.objects.create(
+            author=self.usuario, obra=otra_obra, text='de otra obra',
+            referencia_narrativa=otra_unidad, frontera_spoiler=otra_unidad,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'), {'obra': self.obra.id})
+        ids = [p['id'] for p in response.data['results']]
+        self.assertNotIn(post_otra_obra.id, ids)
+
+    def test_sin_query_param_obra_devuelve_feed_completo(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'))
+        ids = [p['id'] for p in response.data['results']]
+        self.assertIn(self.post_propio.id, ids)
+
 
 class SuscripcionesEnFeedTests(TestCase):
     def setUp(self):
