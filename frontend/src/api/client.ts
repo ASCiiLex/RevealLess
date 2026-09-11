@@ -56,5 +56,6 @@ export class ApiError extends Error {
 export const api = {
   get: <T>(url: string) => request<T>(url),
   post: <T>(url: string, body?: unknown) => request<T>(url, { method: 'POST', body }),
+  patch: <T>(url: string, body?: unknown) => request<T>(url, { method: 'PATCH', body }),
   delete: <T>(url: string) => request<T>(url, { method: 'DELETE' }),
 }

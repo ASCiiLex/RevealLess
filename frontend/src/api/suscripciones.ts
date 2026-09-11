@@ -25,6 +25,7 @@ export interface Suscripcion {
   unidad: SuscripcionUnidad | null
   tema: SuscripcionTema | null
   nivel: NivelSuscripcion
+  activa: boolean
   no_leidos: number
   ultima_visita: string | null
 }
@@ -33,6 +34,18 @@ export interface ObraDetalle {
   obra: { id: number; titulo: string; slug: string }
   unidades: { id: number; etiqueta: string }[]
   temas: { id: number; nombre: string }[]
+}
+
+export type EstadoSolicitud = 'pendiente' | 'aprobada' | 'rechazada'
+
+export interface SolicitudTema {
+  id: number
+  obra: number
+  obra_titulo: string
+  nombre: string
+  estado: EstadoSolicitud
+  creado_en: string
+  resuelto_en: string | null
 }
 
 export function fetchSuscripciones(): Promise<Suscripcion[]> {
@@ -56,4 +69,15 @@ export function crearSuscripcion(
 
 export function eliminarSuscripcion(id: number): Promise<void> {
   return api.delete<void>(`/api/suscripciones/${id}/`)
+}
+
+export function toggleActivaSuscripcion(id: number, activa: boolean): Promise<Suscripcion> {
+  return api.patch<Suscripcion>(`/api/suscripciones/${id}/activa/`, { activa })
+}
+
+export function crearSolicitudTema(obraId: number, nombre: string): Promise<SolicitudTema> {
+  return api.post<SolicitudTema>('/narrative/api/solicitudes-tema/', {
+    obra: obraId,
+    nombre,
+  })
 }
