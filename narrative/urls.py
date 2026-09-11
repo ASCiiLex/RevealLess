@@ -1,7 +1,12 @@
 from django.urls import path
 from . import views
 from .api_views import FeedAPIView, ProgresoAPIView
-from .api_views_catalog import CatalogoObrasAPIView, ObraDetalleAPIView, SolicitudTemaListCreateAPIView
+from .api_views_catalog import (
+    CatalogoObrasAPIView,
+    ObraDetalleAPIView,
+    SolicitudTemaListCreateAPIView,
+    BuscarAPIView,
+)
 
 urlpatterns = [
     path('publicar/', views.seleccionar_obra, name='narrative_seleccionar_obra'),
@@ -13,4 +18,5 @@ urlpatterns = [
     path('api/obras/', CatalogoObrasAPIView.as_view(), name='narrative_api_obras'),
     path('api/obras/<slug:obra_slug>/detalle/', ObraDetalleAPIView.as_view(), name='narrative_api_obra_detalle'),
     path('api/solicitudes-tema/', SolicitudTemaListCreateAPIView.as_view(), name='narrative_api_solicitudes_tema'),
+    path('api/buscar/', BuscarAPIView.as_view(), name='narrative_api_buscar'),
 ]

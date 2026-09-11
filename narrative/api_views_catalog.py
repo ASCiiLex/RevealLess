@@ -1,4 +1,4 @@
-from django.db.models import Max
+from django.db.models import Max, Q
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -57,11 +57,6 @@ class ObraDetalleAPIView(APIView):
 
 
 class SolicitudTemaListCreateAPIView(APIView):
-    """GET lista las solicitudes del propio usuario (cualquier estado).
-    POST crea una nueva, siempre en estado pendiente -- nunca crea el
-    TemaTransversal directamente, eso solo ocurre vía la acción de admin
-    'Aprobar solicitudes'."""
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -73,3 +68,37 @@ class SolicitudTemaListCreateAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(usuario=request.user)
         return Response(serializer.data, status=201)
+
+
+class BuscarAPIView(APIView):
+    """Búsqueda combinada de obras y temas transversales por texto libre.
+    No incluye usuarios/hashtags/posts -- esa búsqueda ya existe en
+    Django clásico (global_search.js) y queda fuera de alcance aquí,
+    documentada como pendiente aparte."""
+
+    permission_classes = [IsAuthenticated]
+
+    MIN_CARACTERES = 2
+
+    def get(self, request):
+        q = request.query_params.get('q', '').strip()
+        if len(q) < self.MIN_CARACTERES:
+            return Response({'obras': [], 'temas': []})
+
+        obras = Obra.objects.filter(titulo__icontains=q)[:10]
+
+        temas = TemaTransversal.objects.filter(nombre__icontains=q).select_related('obra')[:10]
+
+        return Response({
+            'obras': ObraResumenSerializer(obras, many=True).data,
+            'temas': [
+                {
+                    'id': t.id,
+                    'nombre': t.nombre,
+                    'obra_id': t.obra_id,
+                    'obra_titulo': t.obra.titulo,
+                    'obra_slug': t.obra.slug,
+                }
+                for t in temas
+            ],
+        })
