@@ -36,7 +36,7 @@ class SuscripcionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Suscripcion
-        fields = ['id', 'obra', 'unidad', 'tema', 'nivel', 'no_leidos', 'ultima_visita']
+        fields = ['id', 'obra', 'unidad', 'tema', 'nivel', 'activa', 'no_leidos', 'ultima_visita']
 
     def get_no_leidos(self, obj):
         return posts_no_leidos_count(obj)

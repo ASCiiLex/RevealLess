@@ -36,6 +36,16 @@ def marcar_visto(suscripcion):
     suscripcion.save(update_fields=['ultima_visita'])
 
 
+def silenciar_suscripcion(suscripcion):
+    suscripcion.activa = False
+    suscripcion.save(update_fields=['activa'])
+
+
+def reactivar_suscripcion(suscripcion):
+    suscripcion.activa = True
+    suscripcion.save(update_fields=['activa'])
+
+
 def _posts_de_suscripcion(suscripcion):
     """Resuelve qué posts pertenecen a una suscripción, sin aplicar
     todavía visible_for() — eso lo hace siempre la capa que consuma esto
@@ -47,8 +57,6 @@ def _posts_de_suscripcion(suscripcion):
     qs = Post.objects.filter(obra=suscripcion.obra)
 
     if suscripcion.unidad_id:
-        # "sigue este nodo" incluye todo lo que cuelga por debajo en el
-        # árbol: mismo criterio de rango que ya usa recalcular_orden().
         qs = qs.filter(
             referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
             referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
@@ -67,6 +75,9 @@ def posts_no_leidos_count(suscripcion):
     pasar primero por visible_for(usuario), exactamente igual que en el
     feed. 'Estoy suscrito' decide qué podría interesarme; 'puedo verlo'
     decide qué cuenta como pendiente de leer."""
+    if not suscripcion.activa:
+        return 0
+
     posts = _posts_de_suscripcion(suscripcion).visible_for(suscripcion.usuario)
     if suscripcion.ultima_visita:
         posts = posts.filter(created_at__gt=suscripcion.ultima_visita)
@@ -77,20 +88,42 @@ def posts_no_leidos_count(suscripcion):
 
 def filtro_posts_suscripciones(usuario):
     """Construye un único Q() que representa TODOS los posts
-    potencialmente accesibles por las suscripciones del usuario, en una
-    sola pasada (sin iterar suscripción a suscripción contra la BD).
-
-    Importante: esto NO aplica visible_for(). Devuelve qué contenido
-    entra en el feed por la vía de la suscripción; si ese contenido es
-    realmente visible para el usuario según su progreso es una decisión
-    posterior y separada, tomada siempre por PostQuerySet.visible_for().
-    Una suscripción decide qué podría interesarte; visible_for() decide
-    qué puedes ver de verdad."""
-    suscripciones = Suscripcion.objects.filter(usuario=usuario).select_related(
+    potencialmente accesibles por las suscripciones ACTIVAS del usuario,
+    en una sola pasada. Las suscripciones silenciadas no aportan aquí —
+    su exclusión se resuelve aparte, en filtro_posts_silenciados()."""
+    suscripciones = Suscripcion.objects.filter(usuario=usuario, activa=True).select_related(
         'obra', 'unidad', 'tema'
     )
 
-    query = Q(pk__in=[])  # neutro: ninguna suscripción -> ningún post extra
+    query = Q(pk__in=[])
+    for suscripcion in suscripciones:
+        if suscripcion.unidad_id:
+            query |= Q(
+                obra_id=suscripcion.obra_id,
+                referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
+                referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
+            )
+        elif suscripcion.tema_id:
+            query |= Q(obra_id=suscripcion.obra_id, temas_transversales=suscripcion.tema_id)
+        else:
+            query |= Q(obra_id=suscripcion.obra_id)
+
+    return query
+
+
+def filtro_posts_silenciados(usuario):
+    """Q() del alcance de todas las suscripciones SILENCIADAS
+    (activa=False) del usuario. El feed debe excluir (.exclude()) los
+    posts que caigan aquí, de forma incondicional: el silencio prevalece
+    aunque el mismo post llegue por otra vía (seguido, suscripción
+    activa, o incluso autoría propia — silenciar un tema propio también
+    lo oculta de tu propio feed, por diseño: 'silenciar' significa dejar
+    de verlo, sin excepciones)."""
+    suscripciones = Suscripcion.objects.filter(usuario=usuario, activa=False).select_related(
+        'obra', 'unidad', 'tema'
+    )
+
+    query = Q(pk__in=[])
     for suscripcion in suscripciones:
         if suscripcion.unidad_id:
             query |= Q(

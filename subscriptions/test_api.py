@@ -75,6 +75,11 @@ class SuscripcionListCreateAPIViewTests(TestCase):
         response = self.client.post(reverse('subscriptions_api_list'), {'obra': self.obra.slug})
         self.assertIn('no_leidos', response.data)
 
+    def test_respuesta_incluye_activa_true_por_defecto(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.post(reverse('subscriptions_api_list'), {'obra': self.obra.slug})
+        self.assertTrue(response.data['activa'])
+
 
 class SuscripcionDeleteAPIViewTests(TestCase):
     def setUp(self):
@@ -106,3 +111,57 @@ class SuscripcionDeleteAPIViewTests(TestCase):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.delete(reverse('subscriptions_api_delete', args=[999999]))
         self.assertEqual(response.status_code, 404)
+
+
+class SuscripcionToggleActivaAPIViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.usuario = User.objects.create_user('lector_toggle', password='x')
+        self.otro_usuario = User.objects.create_user('otro_toggle', password='x')
+        self.obra = Obra.objects.create(titulo='Serie Toggle', slug='serie-toggle')
+
+    def test_requiere_autenticacion(self):
+        suscripcion = crear_suscripcion(self.usuario, self.obra)
+        response = self.client.patch(
+            reverse('subscriptions_api_toggle', args=[suscripcion.id]), {'activa': False},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_silencia_la_suscripcion(self):
+        suscripcion = crear_suscripcion(self.usuario, self.obra)
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.patch(
+            reverse('subscriptions_api_toggle', args=[suscripcion.id]), {'activa': False},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.data['activa'])
+        suscripcion.refresh_from_db()
+        self.assertFalse(suscripcion.activa)
+
+    def test_reactiva_la_suscripcion(self):
+        suscripcion = crear_suscripcion(self.usuario, self.obra)
+        suscripcion.activa = False
+        suscripcion.save(update_fields=['activa'])
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.patch(
+            reverse('subscriptions_api_toggle', args=[suscripcion.id]), {'activa': True},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data['activa'])
+
+    def test_no_permite_silenciar_suscripcion_de_otro_usuario(self):
+        suscripcion = crear_suscripcion(self.otro_usuario, self.obra)
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.patch(
+            reverse('subscriptions_api_toggle', args=[suscripcion.id]), {'activa': False},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_falta_campo_activa_devuelve_400(self):
+        suscripcion = crear_suscripcion(self.usuario, self.obra)
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.patch(
+            reverse('subscriptions_api_toggle', args=[suscripcion.id]), {},
+        )
+        self.assertEqual(response.status_code, 400)

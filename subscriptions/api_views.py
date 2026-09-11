@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from .models import Suscripcion
 from .serializers import SuscripcionSerializer, SuscripcionCreateSerializer
-from .services import crear_suscripcion, eliminar_suscripcion
+from .services import crear_suscripcion, eliminar_suscripcion, silenciar_suscripcion, reactivar_suscripcion
 
 
 class SuscripcionListCreateAPIView(APIView):
@@ -52,3 +52,46 @@ class SuscripcionDeleteAPIView(APIView):
             tema=suscripcion.tema,
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _parsear_booleano(valor):
+    """Interpreta 'activa' de forma robusta sea cual sea el formato de
+    entrada: JSON manda True/False nativos, pero multipart/form-encoded
+    (incluido el cliente de test de DRF por defecto) serializa todo como
+    texto -- 'False' como string es verdadero en Python si no se
+    normaliza antes de evaluarlo."""
+    if isinstance(valor, bool):
+        return valor
+    if isinstance(valor, str):
+        return valor.strip().lower() in ('true', '1', 'yes')
+    return bool(valor)
+
+
+class SuscripcionToggleActivaAPIView(APIView):
+    """PATCH activa/silencia una suscripción existente. Separado de
+    SuscripcionDeleteAPIView porque son acciones semánticamente distintas
+    (silenciar no borra nada, solo excluye del feed) y de
+    SuscripcionListCreateAPIView porque no es una creación."""
+
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        suscripcion = Suscripcion.objects.filter(pk=pk, usuario=request.user).first()
+        if not suscripcion:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if 'activa' not in request.data:
+            return Response(
+                {'detail': "Falta el campo 'activa' (true o false)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        activa = _parsear_booleano(request.data.get('activa'))
+
+        if activa:
+            reactivar_suscripcion(suscripcion)
+        else:
+            silenciar_suscripcion(suscripcion)
+
+        suscripcion.refresh_from_db()
+        return Response(SuscripcionSerializer(suscripcion).data)

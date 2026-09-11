@@ -9,6 +9,7 @@ from comments.models import Comment
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa, TemaTransversal
 from narrative.services import actualizar_progreso
 from posts.models import Post
+from subscriptions.models import Suscripcion
 from subscriptions.services import crear_suscripcion
 
 
@@ -245,3 +246,85 @@ class SuscripcionesEnFeedTests(TestCase):
         response = self.client.get(reverse('narrative_api_feed'))
         ids = [p['id'] for p in response.data['results']]
         self.assertNotIn(post_con_spoiler.id, ids)
+
+
+class SuscripcionesSilenciadasTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.usuario = User.objects.create_user('lector_silencio', password='x')
+        self.autor_seguido = User.objects.create_user('autor_silencio', password='x')
+
+        Follow.objects.create(follower=self.usuario, followed=self.autor_seguido)
+
+        self.obra = Obra.objects.create(titulo='Serie Silencio', slug='serie-silencio')
+        self.tema = TemaTransversal.objects.create(obra=self.obra, nombre='Tema silenciado')
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+
+    def test_post_de_seguido_se_oculta_si_coincide_con_tema_silenciado(self):
+        """El post llega por dos vias: es de un usuario seguido, Y ademas
+        pertenece a un tema con suscripcion silenciada. El silencio debe
+        prevalecer sobre la via del seguido, ocultando el post por
+        completo del feed."""
+        crear_suscripcion(self.usuario, self.obra, tema=self.tema)
+        suscripcion_tema = Suscripcion.objects.get(usuario=self.usuario, tema=self.tema)
+        suscripcion_tema.activa = False
+        suscripcion_tema.save(update_fields=['activa'])
+
+        post = Post.objects.create(
+            author=self.autor_seguido, obra=self.obra, text='sobre el tema silenciado',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        post.temas_transversales.set([self.tema])
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'))
+        ids = [p['id'] for p in response.data['results']]
+        self.assertNotIn(post.id, ids)
+
+    def test_post_del_mismo_tema_sin_silenciar_sigue_visible(self):
+        """Confirma que el silencio no oculta de más: solo afecta al
+        alcance exacto de la suscripcion silenciada."""
+        crear_suscripcion(self.usuario, self.obra, tema=self.tema)
+        suscripcion_tema = Suscripcion.objects.get(usuario=self.usuario, tema=self.tema)
+        suscripcion_tema.activa = False
+        suscripcion_tema.save(update_fields=['activa'])
+
+        otro_tema = TemaTransversal.objects.create(obra=self.obra, nombre='Tema sin silenciar')
+        post = Post.objects.create(
+            author=self.autor_seguido, obra=self.obra, text='sobre otro tema',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        post.temas_transversales.set([otro_tema])
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'))
+        ids = [p['id'] for p in response.data['results']]
+        self.assertIn(post.id, ids)
+
+    def test_post_propio_tambien_se_oculta_si_esta_silenciado(self):
+        """Confirmado explicitamente: silenciar un tema oculta incluso
+        los posts propios sobre ese tema, sin excepcion por autoria."""
+        crear_suscripcion(self.usuario, self.obra, tema=self.tema)
+        suscripcion_tema = Suscripcion.objects.get(usuario=self.usuario, tema=self.tema)
+        suscripcion_tema.activa = False
+        suscripcion_tema.save(update_fields=['activa'])
+
+        post_propio = Post.objects.create(
+            author=self.usuario, obra=self.obra, text='mi propio post sobre el tema',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        post_propio.temas_transversales.set([self.tema])
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'))
+        ids = [p['id'] for p in response.data['results']]
+        self.assertNotIn(post_propio.id, ids)

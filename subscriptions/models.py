@@ -14,7 +14,12 @@ class Suscripcion(models.Model):
     No dispara notificación al crearse un post (a diferencia de Follow):
     es una fuente adicional de feed, siempre filtrada por
     PostQuerySet.visible_for() como cualquier otra. Ver subscriptions/
-    services.py para la lógica de resolución de posts."""
+    services.py para la lógica de resolución de posts.
+
+    activa=False significa 'silenciada': el alcance de esta suscripción
+    queda excluido activamente del feed (no solo deja de aportar, sino
+    que bloquea el contenido aunque llegue por otra vía como un usuario
+    seguido). Prevalece el silencio sobre cualquier otra fuente."""
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='suscripciones')
     obra = models.ForeignKey(
@@ -28,6 +33,7 @@ class Suscripcion(models.Model):
         'narrative.TemaTransversal', on_delete=models.CASCADE, null=True, blank=True,
         related_name='suscripciones',
     )
+    activa = models.BooleanField(default=True)
     creado_en = models.DateTimeField(auto_now_add=True)
     ultima_visita = models.DateTimeField(null=True, blank=True)
 
@@ -42,7 +48,8 @@ class Suscripcion(models.Model):
 
     def __str__(self):
         objetivo = self.unidad or self.tema or self.obra
-        return f'{self.usuario.username} → {objetivo}'
+        estado = '' if self.activa else ' (silenciada)'
+        return f'{self.usuario.username} → {objetivo}{estado}'
 
     def clean(self):
         super().clean()

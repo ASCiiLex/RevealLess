@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from posts.models import Post
-from subscriptions.services import filtro_posts_suscripciones
+from subscriptions.services import filtro_posts_suscripciones, filtro_posts_silenciados
 from .models import Obra, ProgresoUsuario, UnidadNarrativa
 from .serializers import PostSerializer, ProgresoUsuarioSerializer, UnidadNarrativaSerializer
 from .services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
@@ -20,6 +20,7 @@ class FeedAPIView(generics.ListAPIView):
         user = self.request.user
         followed_users = user.following.values_list('followed', flat=True)
         subscription_q = filtro_posts_suscripciones(user)
+        silenciado_q = filtro_posts_silenciados(user)
 
         condiciones_del_feed = (
             Q(author=user)
@@ -30,6 +31,7 @@ class FeedAPIView(generics.ListAPIView):
         queryset = (
             Post.objects
             .filter(condiciones_del_feed)
+            .exclude(silenciado_q)
             .distinct()
             .select_related('author', 'obra', 'referencia_narrativa')
             .visible_for(user)
