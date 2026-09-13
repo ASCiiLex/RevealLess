@@ -1,9 +1,11 @@
-from django.db.models import Max
+from django.contrib.auth.models import User
+from django.db.models import Count, Max
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 
+from posts.models import Hashtag, Post
 from subscriptions.models import Suscripcion
 from .models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa, SolicitudTema
 from .serializers import ObraResumenSerializer, UnidadNarrativaSerializer, SolicitudTemaSerializer
@@ -85,20 +87,69 @@ class SolicitudTemaListCreateAPIView(APIView):
         return Response(serializer.data, status=201)
 
 
+def _usuario_data(user):
+    avatar = (
+        user.profile.image_url
+        if hasattr(user, 'profile')
+        else '/static/img/default_profile.jpg'
+    )
+    return {'username': user.username, 'avatar_url': avatar}
+
+
+def _post_data(post):
+    return {'id': post.id, 'text': post.text[:140], 'image': post.image_url}
+
+
 class BuscarAPIView(APIView):
+    """Búsqueda combinada: obras y temas (dominio narrativo, ya existía),
+    más usuarios, hashtags y posts (migrado desde global_search.js /
+    posts/views/search.py, con una corrección de seguridad importante:
+    la búsqueda de posts original NO aplicaba visible_for(), pudiendo
+    filtrar texto de posts bloqueados por frontera de spoiler. Aquí se
+    corrige exigiendo Post.objects.visible_for(request.user) como base.
+
+    Las vistas Django clásicas (mentions_search, hashtags_search,
+    global_search) NO se tocan ni se retiran -- siguen sirviendo a las
+    plantillas HTML heredadas hasta que se migren a React."""
+
     permission_classes = [IsAuthenticated]
 
     MIN_CARACTERES = 2
+    LIMITE_POR_TIPO = 5
 
     def get(self, request):
         q = request.query_params.get('q', '').strip()
+
         if len(q) < self.MIN_CARACTERES:
-            return Response({'obras': [], 'temas': []})
+            hashtags_sugeridos = Hashtag.objects.annotate(
+                num_posts=Count('posts')
+            ).order_by('-num_posts')[:self.LIMITE_POR_TIPO]
+            return Response({
+                'obras': [],
+                'temas': [],
+                'usuarios': [],
+                'hashtags': [{'name': h.name} for h in hashtags_sugeridos],
+                'posts': [],
+            })
 
         contexto_suscripcion = _contexto_suscripcion_obra(request.user)
 
-        obras = Obra.objects.filter(titulo__icontains=q)[:10]
-        temas = TemaTransversal.objects.filter(nombre__icontains=q).select_related('obra')[:10]
+        obras = Obra.objects.filter(titulo__icontains=q)[:self.LIMITE_POR_TIPO]
+        temas = TemaTransversal.objects.filter(nombre__icontains=q).select_related('obra')[:self.LIMITE_POR_TIPO]
+
+        usuarios = User.objects.filter(
+            username__icontains=q
+        ).select_related('profile').order_by('username')[:self.LIMITE_POR_TIPO]
+
+        hashtags = Hashtag.objects.filter(name__icontains=q).order_by('name')[:self.LIMITE_POR_TIPO]
+
+        posts = (
+            Post.objects
+            .filter(text__icontains=q)
+            .visible_for(request.user)
+            .select_related('author', 'obra')
+            .order_by('-created_at')[:self.LIMITE_POR_TIPO]
+        )
 
         return Response({
             'obras': ObraResumenSerializer(obras, many=True, context=contexto_suscripcion).data,
@@ -112,4 +163,7 @@ class BuscarAPIView(APIView):
                 }
                 for t in temas
             ],
+            'usuarios': [_usuario_data(u) for u in usuarios],
+            'hashtags': [{'name': h.name} for h in hashtags],
+            'posts': [_post_data(p) for p in posts],
         })
