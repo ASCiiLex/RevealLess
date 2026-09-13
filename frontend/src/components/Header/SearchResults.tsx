@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import styles from './SearchResults.module.css'
 import type { ResultadoBusqueda, TemaBusqueda } from '../../api/buscar'
-import { crearSuscripcion } from '../../api/suscripciones'
+import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
 import type { LomoObra } from '../Carousel/Lomo'
 
 interface Props {
@@ -44,14 +44,24 @@ export default function SearchResults({ resultado }: Props) {
 
 function ObraRow({ obra }: { obra: LomoObra }) {
   const [siguiendo, setSiguiendo] = useState(obra.suscrito)
+  const [suscripcionId, setSuscripcionId] = useState(obra.suscripcion_id)
   const [cargando, setCargando] = useState(false)
 
-  async function handleSeguir() {
-    if (siguiendo || cargando) return
+  async function handleToggle() {
+    if (cargando) return
     setCargando(true)
     try {
-      await crearSuscripcion(obra.slug)
-      setSiguiendo(true)
+      if (siguiendo) {
+        if (suscripcionId !== null) {
+          await eliminarSuscripcion(suscripcionId)
+        }
+        setSiguiendo(false)
+        setSuscripcionId(null)
+      } else {
+        const suscripcion = await crearSuscripcion(obra.slug)
+        setSiguiendo(true)
+        setSuscripcionId(suscripcion.id)
+      }
     } finally {
       setCargando(false)
     }
@@ -65,8 +75,8 @@ function ObraRow({ obra }: { obra: LomoObra }) {
       </div>
       <button
         className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
-        onClick={handleSeguir}
-        disabled={siguiendo || cargando}
+        onClick={handleToggle}
+        disabled={cargando}
       >
         {siguiendo ? 'Siguiendo' : 'Seguir'}
       </button>
@@ -75,15 +85,25 @@ function ObraRow({ obra }: { obra: LomoObra }) {
 }
 
 function TemaRow({ tema }: { tema: TemaBusqueda }) {
+  const [suscripcionId, setSuscripcionId] = useState<number | null>(null)
   const [siguiendo, setSiguiendo] = useState(false)
   const [cargando, setCargando] = useState(false)
 
-  async function handleSeguir() {
-    if (siguiendo || cargando) return
+  async function handleToggle() {
+    if (cargando) return
     setCargando(true)
     try {
-      await crearSuscripcion(tema.obra_slug, { temaId: tema.id })
-      setSiguiendo(true)
+      if (siguiendo) {
+        if (suscripcionId !== null) {
+          await eliminarSuscripcion(suscripcionId)
+        }
+        setSiguiendo(false)
+        setSuscripcionId(null)
+      } else {
+        const suscripcion = await crearSuscripcion(tema.obra_slug, { temaId: tema.id })
+        setSiguiendo(true)
+        setSuscripcionId(suscripcion.id)
+      }
     } finally {
       setCargando(false)
     }
@@ -99,8 +119,8 @@ function TemaRow({ tema }: { tema: TemaBusqueda }) {
       </div>
       <button
         className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
-        onClick={handleSeguir}
-        disabled={siguiendo || cargando}
+        onClick={handleToggle}
+        disabled={cargando}
       >
         {siguiendo ? 'Siguiendo' : 'Seguir'}
       </button>
