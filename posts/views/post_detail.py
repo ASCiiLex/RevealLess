@@ -72,3 +72,12 @@ def apply_user_reactions(request, comments, post):
     ).first()
 
     return pr.reaction if pr else None
+
+
+def post_detail_react_view(request, post_id):
+    """Vista mínima que monta el punto de entrada de React para el
+    detalle de post (Fase 4). No reemplaza post_detail. No requiere
+    login -- visible_for() ya filtra correctamente tanto para usuarios
+    autenticados como anónimos."""
+    get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
+    return render(request, 'posts/post_detail_react.html', {'post_id': post_id})

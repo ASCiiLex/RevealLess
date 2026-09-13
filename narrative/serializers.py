@@ -25,33 +25,39 @@ class ProgresoUsuarioSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     autor = serializers.CharField(source='author.username', read_only=True)
+    autor_avatar = serializers.SerializerMethodField()
     obra_titulo = serializers.CharField(source='obra.titulo', read_only=True)
     obra_slug = serializers.CharField(source='obra.slug', read_only=True)
     imagen = serializers.SerializerMethodField()
     referencia_narrativa = UnidadNarrativaSerializer(read_only=True)
     likes_count = serializers.IntegerField(read_only=True)
     comments_count = serializers.IntegerField(read_only=True)
+    user_reaction = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = [
-            'id', 'autor', 'obra_titulo', 'obra_slug', 'text', 'imagen',
+            'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'text', 'imagen',
             'referencia_narrativa', 'nivel_spoiler', 'created_at',
-            'likes_count', 'comments_count',
+            'likes_count', 'comments_count', 'user_reaction',
         ]
 
     def get_imagen(self, obj):
         return obj.image_url
 
+    def get_autor_avatar(self, obj):
+        return obj.author.profile.image_url if hasattr(obj.author, 'profile') else '/static/img/default_profile.jpg'
+
+    def get_user_reaction(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        from likes.models import PostReaction
+        reaction = PostReaction.objects.filter(user=request.user, post=obj).first()
+        return reaction.reaction if reaction else None
+
 
 class ObraResumenSerializer(serializers.ModelSerializer):
-    """Vista ligera de Obra para el carrusel biblioteca/descubrir y para
-    resultados de búsqueda. suscripcion_id permite deshacer una
-    suscripción a nivel obra sin necesidad de una consulta aparte
-    (crítico para el toggle Seguir/Siguiendo en Lomo y SearchResults,
-    donde la suscripción puede haber existido antes de cargar el
-    componente, no solo haberse creado en la sesión actual)."""
-
     imagen_url = serializers.SerializerMethodField()
     categorias = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nombre')
     progreso_pct = serializers.SerializerMethodField()

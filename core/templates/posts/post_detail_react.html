@@ -1,0 +1,10 @@
+{% extends "base_react.html" %}
+{% load vite_tags %}
+
+{% block content %}
+<div id="root" data-post-id="{{ post_id }}"></div>
+{% endblock %}
+
+{% block scripts %}
+{% vite_asset entry="src/post_detail.tsx" %}
+{% endblock %}

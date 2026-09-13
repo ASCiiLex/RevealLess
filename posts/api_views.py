@@ -2,29 +2,24 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 
+from comments.models import CommentReaction
+from comments.serializers import CommentSerializer
+from likes.models import PostReaction
 from narrative.models import Obra, ProgresoUsuario, ClasificacionNarrativa
 from narrative.services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
 from narrative.ai_assistant import proponer_clasificacion
 from narrative.serializers import PostSerializer
 from .models import Post
 from .serializers import PostCreateSerializer
+from .views.post_detail import get_sorted_comments
 
 
 class PostCreateAPIView(APIView):
-    """Réplica exacta de create_post (posts/views/create.py): exige
-    progreso previo en la obra (404 con detalle si no existe, en vez de
-    redirect -- el frontend decide qué hacer, ej. mostrar el paso de
-    declarar progreso), permite actualizar el progreso desde el propio
-    formulario, usa la IA para sugerir frontera si no se especifica
-    explícitamente, cae al fallback (progreso actual) si la IA no es
-    utilizable. Misma secuencia de pasos que la vista Django, sin
-    reordenar ni simplificar la lógica de negocio."""
-
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
@@ -85,4 +80,41 @@ class PostCreateAPIView(APIView):
             return Response({'detail': exc.message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
         post.save()
-        return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
+        return Response(PostSerializer(post, context={'request': request}).data, status=status.HTTP_201_CREATED)
+
+
+class PostDetailAPIView(APIView):
+    """Réplica de post_detail (posts/views/post_detail.py): mismo
+    filtrado por visible_for(), mismos criterios de ordenación de
+    comentarios (recent/oldest/popular via ?sort=), reutilizando
+    get_sorted_comments() tal cual en vez de duplicar esa lógica.
+
+    AllowAny porque visible_for(AnonymousUser()) ya devuelve queryset
+    vacío -- un visitante anónimo recibe 404 igual que en la vista
+    Django clásica, sin necesidad de bloquear el endpoint a nivel de
+    permisos."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, post_id):
+        post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
+        sort = request.query_params.get('sort', 'recent')
+
+        comments = get_sorted_comments(request.user, post, sort)
+
+        reaction_map = {}
+        post_reaction = None
+        if request.user.is_authenticated:
+            reaction_map = dict(
+                CommentReaction.objects.filter(
+                    user=request.user, comment__post=post
+                ).values_list('comment_id', 'reaction')
+            )
+            pr = PostReaction.objects.filter(user=request.user, post=post).first()
+            post_reaction = pr.reaction if pr else None
+
+        return Response({
+            'post': PostSerializer(post, context={'request': request}).data,
+            'post_reaction': post_reaction,
+            'comments': CommentSerializer(comments, many=True, context={'reaction_map': reaction_map}).data,
+        })
