@@ -13,6 +13,8 @@ export default defineConfig(({ command }) => ({
         main: 'src/main.tsx',
         progreso: 'src/progreso.tsx',
         suscripciones: 'src/suscripciones.tsx',
+        login: 'src/login.tsx',
+        register: 'src/register.tsx',
       },
     },
   },
