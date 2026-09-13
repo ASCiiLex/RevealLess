@@ -10,7 +10,7 @@ from .views.search import (
     suggested_hashtags,
     global_search,
 )
-from .api_views import PostCreateAPIView, PostDetailAPIView
+from .api_views import PostCreateAPIView, PostDetailAPIView, PostUpdateAPIView
 
 urlpatterns = [
     path('<int:post_id>/', post_detail, name='post_detail'),
@@ -19,6 +19,7 @@ urlpatterns = [
     path('crear-react/', publicar_react_view, name='publicar_react'),
     path('api/crear/<slug:obra_slug>/', PostCreateAPIView.as_view(), name='posts_api_create'),
     path('api/<int:post_id>/', PostDetailAPIView.as_view(), name='posts_api_detail'),
+    path('api/<int:post_id>/editar/', PostUpdateAPIView.as_view(), name='posts_api_update'),
     path('react/', toggle_reaction_post, name='toggle_reaction_post'),
     path('reactions/<int:post_id>/', post_reactions_list, name='post_reactions_list'),
 

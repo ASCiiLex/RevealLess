@@ -33,13 +33,14 @@ class PostSerializer(serializers.ModelSerializer):
     likes_count = serializers.IntegerField(read_only=True)
     comments_count = serializers.IntegerField(read_only=True)
     user_reaction = serializers.SerializerMethodField()
+    is_own_post = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = [
             'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'text', 'imagen',
             'referencia_narrativa', 'nivel_spoiler', 'created_at',
-            'likes_count', 'comments_count', 'user_reaction',
+            'likes_count', 'comments_count', 'user_reaction', 'is_own_post',
         ]
 
     def get_imagen(self, obj):
@@ -55,6 +56,10 @@ class PostSerializer(serializers.ModelSerializer):
         from likes.models import PostReaction
         reaction = PostReaction.objects.filter(user=request.user, post=obj).first()
         return reaction.reaction if reaction else None
+
+    def get_is_own_post(self, obj):
+        request = self.context.get('request')
+        return bool(request and request.user.is_authenticated and request.user == obj.author)
 
 
 class ObraResumenSerializer(serializers.ModelSerializer):

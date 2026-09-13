@@ -15,7 +15,7 @@ from narrative.services import actualizar_progreso, SaltoGrandeRequiereConfirmac
 from narrative.ai_assistant import proponer_clasificacion
 from narrative.serializers import PostSerializer
 from .models import Post
-from .serializers import PostCreateSerializer
+from .serializers import PostCreateSerializer, PostUpdateSerializer
 from .views.post_detail import get_sorted_comments
 
 
@@ -83,17 +83,50 @@ class PostCreateAPIView(APIView):
         return Response(PostSerializer(post, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
 
+class PostUpdateAPIView(APIView):
+    """Edita un post ya publicado. Solo el autor puede editarlo (403 si
+    no). No vuelve a consultar progreso ni dispara la IA -- si se envía
+    frontera_spoiler, se marca ORIGEN_EXPLICITO (edición manual
+    consciente); si no se envía, la frontera actual no se toca."""
+
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def patch(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+
+        if post.author != request.user:
+            return Response(
+                {'detail': 'No puedes editar publicaciones de otro usuario.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        entrada = PostUpdateSerializer(data=request.data, partial=True)
+        entrada.is_valid(raise_exception=True)
+        datos = entrada.validated_data
+
+        if 'text' in datos:
+            post.text = datos['text']
+        if 'image' in datos:
+            post.image = datos['image']
+        if 'referencia_narrativa' in datos:
+            post.referencia_narrativa = datos['referencia_narrativa']
+        if 'nivel_spoiler' in datos:
+            post.nivel_spoiler = datos['nivel_spoiler']
+        if 'frontera_spoiler' in datos:
+            post.frontera_spoiler = datos['frontera_spoiler']
+            post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
+
+        try:
+            post.full_clean()
+        except ValidationError as exc:
+            return Response({'detail': exc.message_dict}, status=status.HTTP_400_BAD_REQUEST)
+
+        post.save()
+        return Response(PostSerializer(post, context={'request': request}).data)
+
+
 class PostDetailAPIView(APIView):
-    """Réplica de post_detail (posts/views/post_detail.py): mismo
-    filtrado por visible_for(), mismos criterios de ordenación de
-    comentarios (recent/oldest/popular via ?sort=), reutilizando
-    get_sorted_comments() tal cual en vez de duplicar esa lógica.
-
-    AllowAny porque visible_for(AnonymousUser()) ya devuelve queryset
-    vacío -- un visitante anónimo recibe 404 igual que en la vista
-    Django clásica, sin necesidad de bloquear el endpoint a nivel de
-    permisos."""
-
     permission_classes = [AllowAny]
 
     def get(self, request, post_id):

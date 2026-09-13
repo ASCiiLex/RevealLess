@@ -294,3 +294,133 @@ class FeedUserReactionTests(TestCase):
         response = self.client.get(reverse('narrative_api_feed'))
         post_data = next(p for p in response.data['results'] if p['id'] == self.post.id)
         self.assertEqual(post_data['user_reaction'], 'funny')
+
+
+class PostUpdateAPIViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.autor = User.objects.create_user('editor_post', password='x')
+        self.otro_usuario = User.objects.create_user('otro_editor_post', password='x')
+
+        self.obra = Obra.objects.create(titulo='Serie Editar Post', slug='serie-editar-post')
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.e2 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E2', orden_local=2,
+        )
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+        self.e2.refresh_from_db()
+
+        self.post = Post.objects.create(
+            author=self.autor, obra=self.obra, text='texto original',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+    def test_requiere_autenticacion(self):
+        response = self.client.patch(
+            reverse('posts_api_update', args=[self.post.id]), {'text': 'nuevo'},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_solo_el_autor_puede_editar(self):
+        self.client.force_authenticate(user=self.otro_usuario)
+        response = self.client.patch(
+            reverse('posts_api_update', args=[self.post.id]), {'text': 'intento ajeno'},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_edita_el_texto(self):
+        self.client.force_authenticate(user=self.autor)
+        response = self.client.patch(
+            reverse('posts_api_update', args=[self.post.id]), {'text': 'texto editado'},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.text, 'texto editado')
+
+    def test_editar_frontera_marca_origen_explicito(self):
+        self.client.force_authenticate(user=self.autor)
+        self.client.patch(
+            reverse('posts_api_update', args=[self.post.id]), {'frontera_spoiler': self.e2.id},
+        )
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.frontera_spoiler, self.e2)
+        self.assertEqual(self.post.frontera_origen, ClasificacionNarrativa.ORIGEN_EXPLICITO)
+
+    def test_sin_enviar_frontera_no_se_modifica(self):
+        """Decision explicita: omitir frontera_spoiler en la edicion NO
+        dispara recalculo con IA (a diferencia de la creacion) -- se
+        interpreta como 'sin cambios'."""
+        frontera_original = self.post.frontera_spoiler
+        origen_original = self.post.frontera_origen
+
+        self.client.force_authenticate(user=self.autor)
+        self.client.patch(
+            reverse('posts_api_update', args=[self.post.id]), {'text': 'solo cambio el texto'},
+        )
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.frontera_spoiler, frontera_original)
+        self.assertEqual(self.post.frontera_origen, origen_original)
+
+    def test_devuelve_404_si_el_post_no_existe(self):
+        self.client.force_authenticate(user=self.autor)
+        response = self.client.patch(
+            reverse('posts_api_update', args=[999999]), {'text': 'x'},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_edicion_parcial_no_requiere_todos_los_campos(self):
+        self.client.force_authenticate(user=self.autor)
+        response = self.client.patch(
+            reverse('posts_api_update', args=[self.post.id]), {'nivel_spoiler': 'importante'},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.nivel_spoiler, 'importante')
+        self.assertEqual(self.post.text, 'texto original')
+
+
+class PostSerializerIsOwnPostTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.autor = User.objects.create_user('is_own_autor', password='x')
+        self.otro = User.objects.create_user('is_own_otro', password='x')
+
+        self.obra = Obra.objects.create(titulo='Serie Is Own', slug='serie-is-own')
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+        actualizar_progreso(self.autor, self.obra, self.e1)
+        actualizar_progreso(self.otro, self.obra, self.e1)
+
+        self.post = Post.objects.create(
+            author=self.autor, obra=self.obra, text='post propio',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+    def test_is_own_post_true_para_el_autor(self):
+        self.client.force_authenticate(user=self.autor)
+        response = self.client.get(reverse('posts_api_detail', args=[self.post.id]))
+        self.assertTrue(response.data['post']['is_own_post'])
+
+    def test_is_own_post_false_para_otro_usuario(self):
+        self.client.force_authenticate(user=self.otro)
+        response = self.client.get(reverse('posts_api_detail', args=[self.post.id]))
+        self.assertFalse(response.data['post']['is_own_post'])
+
+    def test_is_own_post_false_para_anonimo(self):
+        """Un anonimo tiene progreso 0 -- nunca alcanza frontera_orden
+        de un post con frontera > 0 (mismo comportamiento ya confirmado
+        en PostDetailAPIViewTests.test_anonimo_sin_progreso_recibe_404).
+        No se puede comprobar is_own_post en un post que el anonimo ni
+        siquiera puede ver -- el propio 404 ya demuestra que 'anonimo
+        != autor' se resuelve correctamente antes de llegar al
+        serializer."""
+        response = self.client.get(reverse('posts_api_detail', args=[self.post.id]))
+        self.assertEqual(response.status_code, 404)
