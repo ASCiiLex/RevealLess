@@ -4,6 +4,17 @@ import AuthLayout from './AuthLayout'
 import { login } from '../../api/auth'
 import { ApiError } from '../../api/client'
 
+function getRedirectDestino(): string {
+  const params = new URLSearchParams(window.location.search)
+  const next = params.get('next')
+  // Solo se acepta una ruta relativa que empiece por '/' -- evita un
+  // open redirect si 'next' llegara con una URL absoluta a otro dominio.
+  if (next && next.startsWith('/') && !next.startsWith('//')) {
+    return next
+  }
+  return '/feed/react/'
+}
+
 export default function LoginForm() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -16,7 +27,7 @@ export default function LoginForm() {
     setCargando(true)
     try {
       await login(username, password)
-      window.location.href = '/feed/react/'
+      window.location.href = getRedirectDestino()
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         setError('Usuario o contraseña incorrectos')

@@ -181,9 +181,9 @@ SERVE_MEDIA = os.environ.get('SERVE_MEDIA', 'True' if DEBUG else 'False') == 'Tr
 # LOGIN
 # ==========================================================
 
-LOGIN_URL = '/cuentas/login/'
-LOGIN_REDIRECT_URL = '/feed/'
-LOGOUT_REDIRECT_URL = '/cuentas/login/'
+LOGIN_URL = '/cuentas/login-react/'
+LOGIN_REDIRECT_URL = '/feed/react/'
+LOGOUT_REDIRECT_URL = '/cuentas/login-react/'
 
 # ==========================================================
 # CHANNELS (REDIS EN PRODUCCIÓN / MEMORY EN LOCAL)

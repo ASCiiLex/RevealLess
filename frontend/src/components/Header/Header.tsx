@@ -48,7 +48,7 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
-        <a className={styles.logoLink} href="/feed/">
+        <a className={styles.logoLink} href="/feed/react/">
           <img className={styles.logoImg} src={logo} alt="RevealLess" />
         </a>
 
