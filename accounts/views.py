@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django_ratelimit.decorators import ratelimit
 from .forms import RegisterForm
 
@@ -52,3 +53,23 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+@ensure_csrf_cookie
+def login_react_view(request):
+    """Vista mínima que monta el punto de entrada de React para el login
+    (Fase 4). No reemplaza login_view: convive con la vista HTML
+    heredada. ensure_csrf_cookie es necesario porque esta página no
+    renderiza {% csrf_token %} en ningún <form> Django -- sin el
+    decorador, un visitante anónimo nunca recibiría la cookie
+    csrftoken, y el POST desde React fallaría por CSRF."""
+    if request.user.is_authenticated:
+        return redirect('feed')
+    return render(request, 'accounts/login_react.html')
+
+
+@ensure_csrf_cookie
+def register_react_view(request):
+    if request.user.is_authenticated:
+        return redirect('feed')
+    return render(request, 'accounts/register_react.html')

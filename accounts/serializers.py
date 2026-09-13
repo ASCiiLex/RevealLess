@@ -1,0 +1,60 @@
+from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework import serializers
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+
+class RegisterSerializer(serializers.Serializer):
+    """Réplica de RegisterForm.clean(): mismas validaciones (contraseñas
+    coinciden, robustez via validate_password, username/email únicos),
+    para no divergir entre el flujo Django clásico (que sigue existiendo)
+    y este nuevo endpoint API."""
+
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+    image = serializers.ImageField(required=False, allow_null=True)
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError('Este usuario ya existe.')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Este email ya está registrado.')
+        return value
+
+    def validate(self, data):
+        if data.get('password') != data.get('password2'):
+            raise serializers.ValidationError({'password2': 'Las contraseñas no coinciden.'})
+
+        try:
+            validate_password(
+                data.get('password'),
+                user=User(username=data.get('username'), email=data.get('email')),
+            )
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({'password': list(exc.messages)})
+
+        return data
+
+    def create(self, validated_data):
+        image = validated_data.pop('image', None)
+        validated_data.pop('password2')
+        password = validated_data.pop('password')
+
+        user = User.objects.create_user(password=password, **validated_data)
+
+        if image:
+            profile = user.profile
+            profile.image = image
+            profile.save()
+
+        return user
