@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models import Q
 
 from follows.models import Follow
@@ -122,3 +122,16 @@ def edit_profile(request):
     return render(request, 'profiles/edit_profile.html', {
         'form': form
     })
+
+
+def profile_react_view(request, username):
+    """Vista mínima que monta el punto de entrada de React para el
+    perfil (Fase 4). No reemplaza profile_view: convive con la vista
+    HTML heredada. No requiere login -- los perfiles son públicos."""
+    get_object_or_404(User, username=username)
+    return render(request, 'profiles/profile_react.html', {'username': username})
+
+
+@login_required
+def edit_profile_react_view(request):
+    return render(request, 'profiles/edit_profile_react.html')
