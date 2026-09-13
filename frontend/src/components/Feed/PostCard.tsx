@@ -1,4 +1,5 @@
 import styles from './PostCard.module.css'
+import ReactionBar from './ReactionBar'
 import type { FeedPost } from '../../api/feed'
 
 interface Props {
@@ -14,13 +15,20 @@ export default function PostCard({ post }: Props) {
         <span>{post.obra_titulo}</span>
       </div>
 
-      <p className={styles.text}>{post.text}</p>
+      <a className={styles.textLink} href={`/posts/${post.id}/react/`}>
+        <p className={styles.text}>{post.text}</p>
+        {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
+      </a>
 
-      {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
+      <ReactionBar
+        postId={post.id}
+        reaccionInicial={post.user_reaction}
+        contadorInicial={post.likes_count}
+      />
 
-      <div className={styles.stats}>
-        {post.likes_count} reacciones · {post.comments_count} comentarios
-      </div>
+      <a className={styles.commentsLink} href={`/posts/${post.id}/react/`}>
+        {post.comments_count} comentarios
+      </a>
     </article>
   )
 }

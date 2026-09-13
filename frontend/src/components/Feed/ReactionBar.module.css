@@ -1,0 +1,27 @@
+.bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.reactionButton {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 999px;
+  opacity: 0.5;
+}
+
+.reactionButtonActive {
+  opacity: 1;
+  background: color-mix(in srgb, var(--gold) 15%, var(--paper));
+}
+
+.count {
+  font-size: 13px;
+  color: var(--fog);
+  align-self: center;
+  margin-left: 4px;
+}

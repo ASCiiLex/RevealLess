@@ -1,0 +1,80 @@
+.comment {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.username {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.text {
+  font-size: 14px;
+  color: var(--ink);
+  margin: 0 0 6px 32px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-left: 32px;
+  font-size: 12px;
+}
+
+.reactButton {
+  border: none;
+  background: none;
+  color: var(--fog);
+  cursor: pointer;
+  padding: 0;
+}
+
+.reactButtonActive {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.replyButton {
+  border: none;
+  background: none;
+  color: var(--fog);
+  cursor: pointer;
+  padding: 0;
+}
+
+.replies {
+  margin-left: 32px;
+  margin-top: 8px;
+}
+
+.replyForm {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 0 32px;
+}
+
+.replyInput {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+}

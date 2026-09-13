@@ -23,6 +23,7 @@ export default defineConfig(({ command }) => ({
         chat: 'src/chat.tsx',
         follow_list: 'src/follow_list.tsx',
         publicar: 'src/publicar.tsx',
+        post_detail: 'src/post_detail.tsx',
       },
     },
   },

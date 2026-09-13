@@ -28,7 +28,12 @@ def add_comment(request):
         parent = get_object_or_404(Comment, id=parent_id, post=post)
 
     comment = Comment.objects.create(
-        user=request.user, post=post, parent=parent, text=text
+        user=request.user, post=post, parent=parent, text=text,
+        # referencia_narrativa es obligatorio (ClasificacionNarrativa):
+        # un comentario hereda el contexto narrativo del post al que
+        # responde, coherente con frontera_origen=ORIGEN_HEREDADO_POST
+        # (default del modelo, que ya asume esta herencia).
+        referencia_narrativa=post.referencia_narrativa,
     )
 
     if parent is None and post.author != request.user:
@@ -66,7 +71,6 @@ def add_comment(request):
 def toggle_reaction_comment(request, comment_id):
     reaction_type = request.POST.get("reaction")
 
-    # 🔒 Validar reacción contra choices del modelo
     valid_reactions = dict(CommentReaction.REACTION_CHOICES)
     if reaction_type not in valid_reactions:
         return JsonResponse({"error": "Reacción no válida"}, status=400)

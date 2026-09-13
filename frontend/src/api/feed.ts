@@ -3,6 +3,7 @@ import { api } from './client'
 export interface FeedPost {
   id: number
   autor: string
+  autor_avatar: string
   obra_titulo: string
   obra_slug: string
   text: string
@@ -17,6 +18,7 @@ export interface FeedPost {
   created_at: string
   likes_count: number
   comments_count: number
+  user_reaction: string | null
 }
 
 interface PaginatedResponse<T> {

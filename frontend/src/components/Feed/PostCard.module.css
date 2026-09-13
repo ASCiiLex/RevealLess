@@ -17,6 +17,12 @@
   color: var(--ink);
 }
 
+.textLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .text {
   font-size: 15px;
   line-height: 1.5;
@@ -33,7 +39,14 @@
   margin-bottom: 12px;
 }
 
-.stats {
+.commentsLink {
+  display: block;
+  margin-top: 6px;
   font-size: 13px;
   color: var(--fog);
+  text-decoration: none;
+}
+
+.commentsLink:hover {
+  color: var(--gold);
 }
