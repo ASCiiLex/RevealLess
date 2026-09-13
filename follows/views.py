@@ -46,3 +46,15 @@ def following_list(request, username):
             "following": following,
         },
     )
+
+
+def followers_react_view(request, username):
+    """Vista mínima que monta el punto de entrada de React para la
+    lista de seguidores (Fase 4). No reemplaza followers_list."""
+    get_object_or_404(User, username=username)
+    return render(request, 'follows/followers_react.html', {'username': username})
+
+
+def following_react_view(request, username):
+    get_object_or_404(User, username=username)
+    return render(request, 'follows/following_react.html', {'username': username})

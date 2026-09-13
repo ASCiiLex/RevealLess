@@ -7,6 +7,7 @@ import SearchResults from './SearchResults'
 import { fetchMe, type Me } from '../../api/me'
 import { buscar, type ResultadoBusqueda } from '../../api/buscar'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { useMessagesAlertSocket } from '../../hooks/useMessagesAlertSocket'
 import logo from '../../assets/brand/logo-sf-ss.png'
 
 export default function Header() {
@@ -23,6 +24,18 @@ export default function Header() {
       .then(setMe)
       .catch(() => setMe(null))
   }, [])
+
+  useMessagesAlertSocket((delta) => {
+    setMe((prev) => {
+      if (!prev) return prev
+      const nuevoUnreadMessages = delta === 'reset' ? 0 : prev.unread_messages + delta
+      return {
+        ...prev,
+        unread_messages: nuevoUnreadMessages,
+        unread_count: prev.unread_notifications + nuevoUnreadMessages,
+      }
+    })
+  })
 
   useEffect(() => {
     if (query.trim().length < 2) {

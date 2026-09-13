@@ -61,3 +61,40 @@ class FollowToggleAPIViewTests(TestCase):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.delete(reverse('follows_api_toggle', args=['seguido']))
         self.assertEqual(response.status_code, 200)
+
+
+class FollowersFollowingListAPIViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.usuario = User.objects.create_user('lista_user', password='x')
+        self.seguidor = User.objects.create_user('lista_seguidor', password='x')
+        self.seguido = User.objects.create_user('lista_seguido', password='x')
+
+        Follow.objects.create(follower=self.seguidor, followed=self.usuario)
+        Follow.objects.create(follower=self.usuario, followed=self.seguido)
+
+    def test_followers_no_requiere_autenticacion(self):
+        response = self.client.get(reverse('follows_api_followers', args=['lista_user']))
+        self.assertEqual(response.status_code, 200)
+
+    def test_followers_lista_correctamente(self):
+        response = self.client.get(reverse('follows_api_followers', args=['lista_user']))
+        usernames = [u['username'] for u in response.data]
+        self.assertEqual(usernames, ['lista_seguidor'])
+
+    def test_following_no_requiere_autenticacion(self):
+        response = self.client.get(reverse('follows_api_following', args=['lista_user']))
+        self.assertEqual(response.status_code, 200)
+
+    def test_following_lista_correctamente(self):
+        response = self.client.get(reverse('follows_api_following', args=['lista_user']))
+        usernames = [u['username'] for u in response.data]
+        self.assertEqual(usernames, ['lista_seguido'])
+
+    def test_followers_devuelve_404_si_usuario_no_existe(self):
+        response = self.client.get(reverse('follows_api_followers', args=['no_existe']))
+        self.assertEqual(response.status_code, 404)
+
+    def test_followers_incluye_avatar_url(self):
+        response = self.client.get(reverse('follows_api_followers', args=['lista_user']))
+        self.assertIn('avatar_url', response.data[0])

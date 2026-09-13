@@ -1,0 +1,20 @@
+.wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 20px 0;
+}
+
+.empty {
+  color: var(--fog);
+  font-size: 14px;
+  padding: 24px 0;
+  text-align: center;
+}

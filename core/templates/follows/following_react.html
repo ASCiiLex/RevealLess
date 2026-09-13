@@ -1,0 +1,10 @@
+{% extends "base_react.html" %}
+{% load vite_tags %}
+
+{% block content %}
+<div id="root" data-username="{{ username }}" data-tipo="siguiendo"></div>
+{% endblock %}
+
+{% block scripts %}
+{% vite_asset entry="src/follow_list.tsx" %}
+{% endblock %}

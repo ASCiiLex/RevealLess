@@ -4,3 +4,8 @@ from .models import Follow
 
 class FollowToggleSerializer(serializers.Serializer):
     is_following = serializers.BooleanField()
+
+
+class FollowUserItemSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    avatar_url = serializers.CharField()
