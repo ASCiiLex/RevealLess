@@ -8,6 +8,7 @@ export interface ProfilePost {
 export interface ProfileDetail {
   username: string
   bio: string
+  interests: string
   avatar_url: string
   is_own_profile: boolean
   is_following: boolean

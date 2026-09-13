@@ -32,6 +32,12 @@
 .bio {
   font-size: 14px;
   color: var(--ink);
+  margin: 0 0 6px 0;
+}
+
+.interests {
+  font-size: 13px;
+  color: var(--fog);
   margin: 0 0 12px 0;
 }
 

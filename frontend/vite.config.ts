@@ -15,6 +15,8 @@ export default defineConfig(({ command }) => ({
         suscripciones: 'src/suscripciones.tsx',
         login: 'src/login.tsx',
         register: 'src/register.tsx',
+        profile: 'src/profile.tsx',
+        edit_profile: 'src/edit_profile.tsx',
       },
     },
   },

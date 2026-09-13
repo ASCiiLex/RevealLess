@@ -5,10 +5,6 @@ from .models import Profile
 
 
 class ProfilePostSerializer(serializers.Serializer):
-    """Vista mínima de un post para el grid del perfil -- solo lo que
-    la plantilla original usa (imagen, id), no el detalle completo que
-    ya expone PostSerializer en narrative."""
-
     id = serializers.IntegerField()
     image_url = serializers.CharField()
 
@@ -16,6 +12,7 @@ class ProfilePostSerializer(serializers.Serializer):
 class ProfileDetailSerializer(serializers.Serializer):
     username = serializers.CharField(source='profile_user.username')
     bio = serializers.CharField(source='profile.bio')
+    interests = serializers.CharField(source='profile.interests')
     avatar_url = serializers.CharField(source='profile.image_url')
     is_own_profile = serializers.SerializerMethodField()
     is_following = serializers.BooleanField()
@@ -32,9 +29,6 @@ class ProfileDetailSerializer(serializers.Serializer):
 
 
 class ProfileEditSerializer(serializers.ModelSerializer):
-    """Réplica de ProfileForm: mismas validaciones de username/email
-    únicos (excluyendo al propio usuario), mismos campos editables."""
-
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
 

@@ -25,6 +25,7 @@ export default function ProfileView({ username }: Props) {
         <div className={styles.info}>
           <h1 className={styles.username}>{profile.username}</h1>
           {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
+          {profile.interests && <p className={styles.interests}>🏷️ {profile.interests}</p>}
 
           <div className={styles.stats}>
             <span><strong>{profile.posts.length}</strong> publicaciones</span>

@@ -1,0 +1,92 @@
+.wrapper {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 20px 0;
+}
+
+.avatarPreview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.avatarImg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fog);
+}
+
+.input,
+.textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.error {
+  background: color-mix(in srgb, var(--gold) 12%, var(--paper));
+  color: var(--ink);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.success {
+  color: var(--fog);
+  font-size: 13px;
+}
+
+.submit {
+  margin-top: 6px;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--gold);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  background: var(--border);
+  cursor: default;
+}

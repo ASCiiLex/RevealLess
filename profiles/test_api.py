@@ -15,6 +15,7 @@ class ProfileDetailAPIViewTests(TestCase):
         self.usuario = User.objects.create_user('perfil_viewer', password='x')
         self.dueño = User.objects.create_user('perfil_dueño', password='x')
         self.dueño.profile.bio = 'Mi biografía'
+        self.dueño.profile.interests = 'anime, manga, tecnología'
         self.dueño.profile.save()
 
         Follow.objects.create(follower=self.usuario, followed=self.dueño)
@@ -47,6 +48,10 @@ class ProfileDetailAPIViewTests(TestCase):
         self.assertEqual(response.data['username'], 'perfil_dueño')
         self.assertEqual(response.data['bio'], 'Mi biografía')
 
+    def test_incluye_interests(self):
+        response = self.client.get(reverse('profiles_api_detail', args=['perfil_dueño']))
+        self.assertEqual(response.data['interests'], 'anime, manga, tecnología')
+
     def test_is_following_true_si_el_usuario_autenticado_sigue_al_perfil(self):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.get(reverse('profiles_api_detail', args=['perfil_dueño']))
@@ -67,8 +72,6 @@ class ProfileDetailAPIViewTests(TestCase):
         self.assertEqual(response.data['following_count'], 0)
 
     def test_posts_respetan_visible_for(self):
-        """Un post con frontera de spoiler adelantada respecto al
-        progreso del visitante no debe aparecer en su grid de perfil."""
         e2 = UnidadNarrativa.objects.create(
             obra=self.obra, tipo='episodio', nombre='E2', orden_local=2,
         )
@@ -118,6 +121,19 @@ class ProfileEditAPIViewTests(TestCase):
         self.usuario.profile.refresh_from_db()
         self.assertEqual(self.usuario.profile.bio, 'Nueva bio')
 
+    def test_patch_actualiza_interests(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.patch(
+            reverse('profiles_api_edit'),
+            {
+                'username': 'editor_perfil', 'email': 'editor@example.com',
+                'interests': 'cine, videojuegos',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.usuario.profile.refresh_from_db()
+        self.assertEqual(self.usuario.profile.interests, 'cine, videojuegos')
+
     def test_patch_rechaza_username_duplicado(self):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.patch(
@@ -135,8 +151,6 @@ class ProfileEditAPIViewTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_patch_permite_mantener_el_propio_username(self):
-        """No debe rechazarse por 'duplicado' el propio username/email
-        del usuario que edita -- exclude(pk=user.pk) debe cubrir esto."""
         self.client.force_authenticate(user=self.usuario)
         response = self.client.patch(
             reverse('profiles_api_edit'),
