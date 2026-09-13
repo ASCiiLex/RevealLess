@@ -21,6 +21,7 @@ export default defineConfig(({ command }) => ({
         notifications: 'src/notifications.tsx',
         inbox: 'src/inbox.tsx',
         chat: 'src/chat.tsx',
+        follow_list: 'src/follow_list.tsx',
       },
     },
   },

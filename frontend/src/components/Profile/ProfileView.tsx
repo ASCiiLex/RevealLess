@@ -29,10 +29,10 @@ export default function ProfileView({ username }: Props) {
 
           <div className={styles.stats}>
             <span><strong>{profile.posts.length}</strong> publicaciones</span>
-            <a href={`/perfil/${profile.username}/seguidores/`}>
+            <a href={`/follows/seguidores-react/${profile.username}/`}>
               <strong>{profile.followers_count}</strong> seguidores
             </a>
-            <a href={`/perfil/${profile.username}/seguidos/`}>
+            <a href={`/follows/siguiendo-react/${profile.username}/`}>
               <strong>{profile.following_count}</strong> seguidos
             </a>
           </div>
@@ -97,7 +97,7 @@ function FollowActions({
       >
         {siguiendo ? 'Dejar de seguir' : 'Seguir'}
       </button>
-      <a className={styles.button} href={`/mensajes/chat/${username}/`}>
+      <a className={styles.button} href={`/mensajes/chat-react/${username}/`}>
         Enviar mensaje
       </a>
     </>
