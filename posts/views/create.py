@@ -64,3 +64,14 @@ def create_post(request, obra_slug):
         form = PostForm(obra=obra)
 
     return render(request, 'posts/create_post.html', {'form': form, 'obra': obra})
+
+
+@login_required
+def publicar_react_view(request):
+    """Vista mínima que monta el punto de entrada de React para el
+    flujo unificado de publicar (Fase 4): seleccionar obra -> declarar
+    progreso si falta -> formulario de post, todo en una sola pantalla
+    con pasos internos, en vez de replicar los tres redirects
+    encadenados que tiene el flujo Django clásico (seleccionar_obra ->
+    declarar_progreso -> create_post)."""
+    return render(request, 'posts/publicar_react.html')
