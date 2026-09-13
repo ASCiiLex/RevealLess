@@ -32,6 +32,20 @@
   gap: 8px;
 }
 
+.rowLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.rowLink:hover,
+.rowLink:focus-visible {
+  background: color-mix(in srgb, var(--gold) 8%, var(--paper));
+}
+
 .rowMain {
   display: flex;
   align-items: center;
@@ -48,6 +62,15 @@
   flex-shrink: 0;
 }
 
+.avatarThumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
 .titulo {
   font-size: 13px;
   color: var(--ink);
@@ -59,6 +82,19 @@
 .subtitulo {
   font-size: 11px;
   color: var(--fog);
+}
+
+.postText {
+  font-size: 13px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  display: box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  box-orient: vertical;
 }
 
 .followButton {

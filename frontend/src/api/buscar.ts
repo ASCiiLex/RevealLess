@@ -9,9 +9,27 @@ export interface TemaBusqueda {
   obra_slug: string
 }
 
+export interface UsuarioBusqueda {
+  username: string
+  avatar_url: string
+}
+
+export interface HashtagBusqueda {
+  name: string
+}
+
+export interface PostBusqueda {
+  id: number
+  text: string
+  image: string
+}
+
 export interface ResultadoBusqueda {
   obras: LomoObra[]
   temas: TemaBusqueda[]
+  usuarios: UsuarioBusqueda[]
+  hashtags: HashtagBusqueda[]
+  posts: PostBusqueda[]
 }
 
 export function buscar(q: string): Promise<ResultadoBusqueda> {

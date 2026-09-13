@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import styles from './SearchResults.module.css'
-import type { ResultadoBusqueda, TemaBusqueda } from '../../api/buscar'
+import type { ResultadoBusqueda, TemaBusqueda, UsuarioBusqueda, HashtagBusqueda, PostBusqueda } from '../../api/buscar'
 import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
 import type { LomoObra } from '../Carousel/Lomo'
 
@@ -9,7 +9,12 @@ interface Props {
 }
 
 export default function SearchResults({ resultado }: Props) {
-  const sinResultados = resultado.obras.length === 0 && resultado.temas.length === 0
+  const sinResultados =
+    resultado.obras.length === 0 &&
+    resultado.temas.length === 0 &&
+    resultado.usuarios.length === 0 &&
+    resultado.hashtags.length === 0 &&
+    resultado.posts.length === 0
 
   if (sinResultados) {
     return (
@@ -35,6 +40,33 @@ export default function SearchResults({ resultado }: Props) {
           <div className={styles.groupLabel}>Temas</div>
           {resultado.temas.map((tema) => (
             <TemaRow key={tema.id} tema={tema} />
+          ))}
+        </>
+      )}
+
+      {resultado.usuarios.length > 0 && (
+        <>
+          <div className={styles.groupLabel}>Usuarios</div>
+          {resultado.usuarios.map((usuario) => (
+            <UsuarioRow key={usuario.username} usuario={usuario} />
+          ))}
+        </>
+      )}
+
+      {resultado.hashtags.length > 0 && (
+        <>
+          <div className={styles.groupLabel}>Hashtags</div>
+          {resultado.hashtags.map((hashtag) => (
+            <HashtagRow key={hashtag.name} hashtag={hashtag} />
+          ))}
+        </>
+      )}
+
+      {resultado.posts.length > 0 && (
+        <>
+          <div className={styles.groupLabel}>Posts</div>
+          {resultado.posts.map((post) => (
+            <PostRow key={post.id} post={post} />
           ))}
         </>
       )}
@@ -125,5 +157,31 @@ function TemaRow({ tema }: { tema: TemaBusqueda }) {
         {siguiendo ? 'Siguiendo' : 'Seguir'}
       </button>
     </div>
+  )
+}
+
+function UsuarioRow({ usuario }: { usuario: UsuarioBusqueda }) {
+  return (
+    <a className={styles.rowLink} href={`/perfil/${usuario.username}/`}>
+      <img className={styles.avatarThumb} src={usuario.avatar_url} alt="" />
+      <span className={styles.titulo}>@{usuario.username}</span>
+    </a>
+  )
+}
+
+function HashtagRow({ hashtag }: { hashtag: HashtagBusqueda }) {
+  return (
+    <a className={styles.rowLink} href={`/posts/hashtag/${hashtag.name}/`}>
+      <span className={styles.titulo}>#{hashtag.name}</span>
+    </a>
+  )
+}
+
+function PostRow({ post }: { post: PostBusqueda }) {
+  return (
+    <a className={styles.rowLink} href={`/posts/${post.id}/`}>
+      <img className={styles.thumb} src={post.image} alt="" />
+      <span className={styles.postText}>{post.text}</span>
+    </a>
   )
 }
