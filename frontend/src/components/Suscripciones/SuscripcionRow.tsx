@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import styles from './SuscripcionRow.module.css'
-import type { Suscripcion } from '../../api/suscripciones'
+import { toggleActivaSuscripcion, type Suscripcion } from '../../api/suscripciones'
 
 interface Props {
   suscripcion: Suscripcion
@@ -13,8 +14,25 @@ function etiquetaNivel(s: Suscripcion): string {
 }
 
 export default function SuscripcionRow({ suscripcion, onRemove }: Props) {
-  const noLeidosTexto =
-    suscripcion.no_leidos > 0 ? `${suscripcion.no_leidos} sin leer` : 'sin nuevos'
+  const [activa, setActiva] = useState(suscripcion.activa)
+  const [cargando, setCargando] = useState(false)
+
+  const noLeidosTexto = activa
+    ? suscripcion.no_leidos > 0
+      ? `${suscripcion.no_leidos} sin leer`
+      : 'sin nuevos'
+    : 'silenciada'
+
+  async function handleToggleSilencio() {
+    if (cargando) return
+    setCargando(true)
+    try {
+      const actualizada = await toggleActivaSuscripcion(suscripcion.id, !activa)
+      setActiva(actualizada.activa)
+    } finally {
+      setCargando(false)
+    }
+  }
 
   return (
     <div className={styles.row}>
@@ -27,13 +45,24 @@ export default function SuscripcionRow({ suscripcion, onRemove }: Props) {
           </div>
         </div>
       </div>
-      <button
-        className={styles.removeButton}
-        onClick={() => onRemove(suscripcion.id)}
-        aria-label={`Dejar de seguir ${suscripcion.obra.titulo}`}
-      >
-        ✕
-      </button>
+      <div className={styles.actions}>
+        <button
+          className={`${styles.silenceButton} ${!activa ? styles.silenceButtonActive : ''}`}
+          onClick={handleToggleSilencio}
+          disabled={cargando}
+          aria-label={activa ? 'Silenciar' : 'Reactivar'}
+          title={activa ? 'Silenciar' : 'Reactivar'}
+        >
+          {activa ? '🔔' : '🔕'}
+        </button>
+        <button
+          className={styles.removeButton}
+          onClick={() => onRemove(suscripcion.id)}
+          aria-label={`Dejar de seguir ${suscripcion.obra.titulo}`}
+        >
+          ✕
+        </button>
+      </div>
     </div>
   )
 }
