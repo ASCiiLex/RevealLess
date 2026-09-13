@@ -45,14 +45,25 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class ObraResumenSerializer(serializers.ModelSerializer):
+    """Vista ligera de Obra para el carrusel biblioteca/descubrir y para
+    resultados de búsqueda. suscripcion_id permite deshacer una
+    suscripción a nivel obra sin necesidad de una consulta aparte
+    (crítico para el toggle Seguir/Siguiendo en Lomo y SearchResults,
+    donde la suscripción puede haber existido antes de cargar el
+    componente, no solo haberse creado en la sesión actual)."""
+
     imagen_url = serializers.SerializerMethodField()
     categorias = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nombre')
     progreso_pct = serializers.SerializerMethodField()
     suscrito = serializers.SerializerMethodField()
+    suscripcion_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Obra
-        fields = ['id', 'titulo', 'slug', 'imagen_url', 'categorias', 'progreso_pct', 'suscrito']
+        fields = [
+            'id', 'titulo', 'slug', 'imagen_url', 'categorias',
+            'progreso_pct', 'suscrito', 'suscripcion_id',
+        ]
 
     def get_imagen_url(self, obj):
         return obj.image_url
@@ -69,10 +80,13 @@ class ObraResumenSerializer(serializers.ModelSerializer):
         return min(max(pct, 0), 100)
 
     def get_suscrito(self, obj):
-        ids_obras_suscritas = self.context.get('ids_obras_suscritas')
-        if ids_obras_suscritas is None:
-            return False
-        return obj.id in ids_obras_suscritas
+        return obj.id in (self.context.get('ids_obras_suscritas') or set())
+
+    def get_suscripcion_id(self, obj):
+        ids_por_obra = self.context.get('suscripcion_id_por_obra')
+        if not ids_por_obra:
+            return None
+        return ids_por_obra.get(obj.id)
 
 
 class SolicitudTemaSerializer(serializers.ModelSerializer):

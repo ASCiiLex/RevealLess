@@ -102,6 +102,50 @@ class CatalogoObrasAPIViewTests(TestCase):
         )
         self.assertFalse(obra_data['suscrito'])
 
+    def test_suscripcion_id_presente_para_suscripcion_de_obra_completa(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = next(
+            o for o in response.data['biblioteca'] if o['slug'] == 'con-suscripcion'
+        )
+        self.assertIsNotNone(obra_data['suscripcion_id'])
+
+    def test_suscripcion_id_es_none_sin_ninguna_suscripcion(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = next(
+            o for o in response.data['biblioteca'] if o['slug'] == 'con-progreso'
+        )
+        self.assertIsNone(obra_data['suscripcion_id'])
+
+    def test_suscripcion_id_es_none_si_la_suscripcion_es_de_nivel_fino(self):
+        """El campo suscripcion_id representa exclusivamente la
+        suscripción a nivel obra completa. Si el usuario solo está
+        suscrito a una unidad o tema de esa obra, suscrito puede ser
+        True (la obra entra en Biblioteca) pero suscripcion_id debe ser
+        None, porque no hay ninguna suscripción de obra completa que
+        el botón Seguir/Siguiendo del Lomo pueda deshacer."""
+        obra_solo_unidad = Obra.objects.create(titulo='Solo unidad', slug='solo-unidad')
+        unidad = UnidadNarrativa.objects.create(
+            obra=obra_solo_unidad, tipo='arco', nombre='Arco 1', orden_local=1,
+        )
+        crear_suscripcion(self.usuario, obra_solo_unidad, unidad=unidad)
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        obra_data = next(
+            o for o in response.data['biblioteca'] if o['slug'] == 'solo-unidad'
+        )
+        self.assertTrue(obra_data['suscrito'])
+        self.assertIsNone(obra_data['suscripcion_id'])
+
+    def test_una_obra_no_aparece_en_ambas_listas(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obras'))
+        slugs_biblioteca = {o['slug'] for o in response.data['biblioteca']}
+        slugs_descubrir = {o['slug'] for o in response.data['descubrir']}
+        self.assertEqual(slugs_biblioteca & slugs_descubrir, set())
+
 
 class ObraDetalleAPIViewTests(TestCase):
     def setUp(self):
