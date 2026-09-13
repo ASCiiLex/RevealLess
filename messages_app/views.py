@@ -127,3 +127,23 @@ def chat_view(request, username):
         'other': other,
         'messages': messages,
     })
+
+
+@login_required
+def inbox_react_view(request):
+    """Vista mínima que monta el punto de entrada de React para la
+    bandeja de mensajes (Fase 4). No reemplaza inbox_view."""
+    return render(request, 'messages/inbox_react.html')
+
+
+@login_required
+def chat_react_view(request, username):
+    """Vista mínima que monta el punto de entrada de React para el
+    chat (Fase 4). No reemplaza chat_view. El WebSocket de
+    /ws/chat/<username>/ y /ws/messages/ (ya registrados en
+    core/routing.py) funcionan igual desde esta página, sin cambios de
+    infraestructura -- mismo origen que la página HTML clásica."""
+    if username == request.user.username:
+        return redirect('inbox_react')
+    get_object_or_404(User, username=username)
+    return render(request, 'messages/chat_react.html', {'username': username})

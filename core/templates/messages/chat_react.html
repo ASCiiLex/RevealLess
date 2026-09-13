@@ -1,0 +1,10 @@
+{% extends "base_react.html" %}
+{% load vite_tags %}
+
+{% block content %}
+<div id="root" data-username="{{ username }}"></div>
+{% endblock %}
+
+{% block scripts %}
+{% vite_asset entry="src/chat.tsx" %}
+{% endblock %}
