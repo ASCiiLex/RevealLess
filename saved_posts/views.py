@@ -38,3 +38,11 @@ def saved_posts_view(request):
         "post", "post__author"
     )
     return render(request, "saved_posts/saved_posts.html", {"saved": saved})
+
+
+@login_required
+def saved_posts_react_view(request):
+    """Vista mínima que monta el punto de entrada de React para
+    Guardados (Fase 4). No reemplaza saved_posts_view: convive con la
+    vista HTML heredada."""
+    return render(request, 'saved_posts/saved_posts_react.html')
