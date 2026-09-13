@@ -79,7 +79,9 @@ function ObraRow({ obra }: { obra: LomoObra }) {
   const [suscripcionId, setSuscripcionId] = useState(obra.suscripcion_id)
   const [cargando, setCargando] = useState(false)
 
-  async function handleToggle() {
+  async function handleToggle(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
     if (cargando) return
     setCargando(true)
     try {
@@ -100,7 +102,7 @@ function ObraRow({ obra }: { obra: LomoObra }) {
   }
 
   return (
-    <div className={styles.row}>
+    <a className={styles.row} href={`/feed/react/?obra=${obra.id}`}>
       <div className={styles.rowMain}>
         <img className={styles.thumb} src={obra.imagen_url} alt="" />
         <span className={styles.titulo}>{obra.titulo}</span>
@@ -112,7 +114,7 @@ function ObraRow({ obra }: { obra: LomoObra }) {
       >
         {siguiendo ? 'Siguiendo' : 'Seguir'}
       </button>
-    </div>
+    </a>
   )
 }
 
@@ -171,7 +173,7 @@ function UsuarioRow({ usuario }: { usuario: UsuarioBusqueda }) {
 
 function HashtagRow({ hashtag }: { hashtag: HashtagBusqueda }) {
   return (
-    <a className={styles.rowLink} href={`/posts/hashtag/${hashtag.name}/`}>
+    <a className={styles.rowLink} href={`/feed/react/?hashtag=${encodeURIComponent(hashtag.name)}`}>
       <span className={styles.titulo}>#{hashtag.name}</span>
     </a>
   )

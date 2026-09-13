@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import Header from './components/Header/Header'
 import Tabs from './components/Carousel/Tabs'
 import Carousel from './components/Carousel/Carousel'
@@ -6,13 +7,26 @@ import BottomNav from './components/BottomNav/BottomNav'
 import { CatalogViewProvider } from './context/CatalogViewContext'
 
 export default function App() {
+  const filtroExterno = useMemo(() => {
+    const params = new URLSearchParams(window.location.search)
+    const obra = params.get('obra')
+    const hashtag = params.get('hashtag')
+    if (obra) return { tipo: 'obra' as const, valor: obra }
+    if (hashtag) return { tipo: 'hashtag' as const, valor: hashtag }
+    return null
+  }, [])
+
   return (
     <CatalogViewProvider>
       <Header />
       <main className="container">
-        <Tabs />
-        <Carousel />
-        <Feed />
+        {!filtroExterno && (
+          <>
+            <Tabs />
+            <Carousel />
+          </>
+        )}
+        <Feed filtroExterno={filtroExterno} />
       </main>
       <BottomNav />
     </CatalogViewProvider>

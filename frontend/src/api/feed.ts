@@ -29,9 +29,12 @@ interface PaginatedResponse<T> {
   results: T[]
 }
 
-export function fetchFeed(obraId?: number | null): Promise<PaginatedResponse<FeedPost>> {
-  const url = obraId
-    ? `/narrative/api/feed/?obra=${obraId}`
-    : '/narrative/api/feed/'
-  return api.get<PaginatedResponse<FeedPost>>(url)
+export function fetchFeed(obraId?: number | null, hashtag?: string): Promise<PaginatedResponse<FeedPost>> {
+  const params = new URLSearchParams()
+  if (obraId) params.set('obra', String(obraId))
+  if (hashtag) params.set('hashtag', hashtag)
+  const query = params.toString()
+  return api.get<PaginatedResponse<FeedPost>>(
+    `/narrative/api/feed/${query ? `?${query}` : ''}`
+  )
 }
