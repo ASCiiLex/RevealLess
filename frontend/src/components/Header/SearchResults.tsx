@@ -162,7 +162,7 @@ function TemaRow({ tema }: { tema: TemaBusqueda }) {
 
 function UsuarioRow({ usuario }: { usuario: UsuarioBusqueda }) {
   return (
-    <a className={styles.rowLink} href={`/perfil/${usuario.username}/`}>
+    <a className={styles.rowLink} href={`/perfil/${usuario.username}/react/`}>
       <img className={styles.avatarThumb} src={usuario.avatar_url} alt="" />
       <span className={styles.titulo}>@{usuario.username}</span>
     </a>
@@ -179,7 +179,7 @@ function HashtagRow({ hashtag }: { hashtag: HashtagBusqueda }) {
 
 function PostRow({ post }: { post: PostBusqueda }) {
   return (
-    <a className={styles.rowLink} href={`/posts/${post.id}/`}>
+    <a className={styles.rowLink} href={`/posts/${post.id}/react/`}>
       <img className={styles.thumb} src={post.image} alt="" />
       <span className={styles.postText}>{post.text}</span>
     </a>
