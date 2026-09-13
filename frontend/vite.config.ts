@@ -17,6 +17,7 @@ export default defineConfig(({ command }) => ({
         register: 'src/register.tsx',
         profile: 'src/profile.tsx',
         edit_profile: 'src/edit_profile.tsx',
+        saved_posts: 'src/saved_posts.tsx',
       },
     },
   },

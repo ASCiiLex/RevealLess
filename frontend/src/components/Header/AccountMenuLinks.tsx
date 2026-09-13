@@ -19,7 +19,7 @@ export default function AccountMenuLinks({ me, itemClassName, logoutClassName, d
       <a className={itemClassName} href="/mensajes/" role="menuitem">
         Mensajes
       </a>
-      <a className={itemClassName} href="/guardados/" role="menuitem">
+      <a className={itemClassName} href="/guardados/guardados-react/" role="menuitem">
         Guardados
       </a>
       <a className={itemClassName} href="/suscripciones/" role="menuitem">
