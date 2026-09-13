@@ -18,6 +18,7 @@ export default defineConfig(({ command }) => ({
         profile: 'src/profile.tsx',
         edit_profile: 'src/edit_profile.tsx',
         saved_posts: 'src/saved_posts.tsx',
+        notifications: 'src/notifications.tsx',
       },
     },
   },
