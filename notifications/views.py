@@ -31,3 +31,14 @@ def post_not_found_view(request, notif_id):
     return render(request, "notifications/post_not_found.html", {
         "notification": notif
     })
+
+
+@login_required
+def notifications_react_view(request):
+    """Vista mínima que monta el punto de entrada de React para
+    Notificaciones (Fase 4). No reemplaza notifications_view: convive
+    con la vista HTML heredada. El WebSocket de /ws/notifications/ ya
+    está registrado en core/routing.py y funciona igual desde React,
+    porque la página se sirve desde el mismo origen (Django, puerto
+    8000) que el WebSocket -- sin cambios de infraestructura."""
+    return render(request, 'notifications/notifications_react.html')
