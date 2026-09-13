@@ -62,3 +62,23 @@ class MeAPIViewTests(TestCase):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.get(reverse('api_me'))
         self.assertEqual(response.data['unread_count'], 0)
+
+    def test_expone_unread_notifications_por_separado(self):
+        Notification.objects.create(
+            user=self.usuario, actor=self.otro, verb='te ha seguido', target_type='follow',
+        )
+        Message.objects.create(sender=self.otro, receiver=self.usuario, text='hola')
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('api_me'))
+        self.assertEqual(response.data['unread_notifications'], 1)
+
+    def test_expone_unread_messages_por_separado(self):
+        Notification.objects.create(
+            user=self.usuario, actor=self.otro, verb='te ha seguido', target_type='follow',
+        )
+        Message.objects.create(sender=self.otro, receiver=self.usuario, text='hola')
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('api_me'))
+        self.assertEqual(response.data['unread_messages'], 1)

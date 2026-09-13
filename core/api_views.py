@@ -8,9 +8,11 @@ from notifications.models import Notification
 
 class MeAPIView(APIView):
     """Datos mínimos que necesita el header de React: identidad del
-    usuario y un único contador de no-leídos (notificaciones + mensajes
-    sin leer). No sustituye a notifications_view ni a inbox_view, que
-    siguen siendo las vistas HTML completas."""
+    usuario y contadores de no-leídos. unread_notifications y
+    unread_messages son fuentes independientes sin solape -- no existe
+    hoy ninguna Notification de tipo 'message' generándose realmente
+    (el choice existe en el modelo pero nadie lo dispara), así que
+    sumarlos en unread_count no duplica nada."""
 
     permission_classes = [IsAuthenticated]
 
@@ -27,5 +29,7 @@ class MeAPIView(APIView):
         return Response({
             'username': user.username,
             'avatar_url': avatar_url,
+            'unread_notifications': unread_notifications,
+            'unread_messages': unread_messages,
             'unread_count': unread_notifications + unread_messages,
         })
