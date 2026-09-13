@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import styles from './PostDetailView.module.css'
 import CommentItem from './CommentItem'
 import ReactionBar from '../Feed/ReactionBar'
+import EditPostForm from './EditPostForm'
 import { fetchPostDetail, addComment, type PostDetail } from '../../api/postDetail'
+import type { FeedPost } from '../../api/feed'
 
 interface Props {
   postId: number
@@ -11,6 +13,7 @@ interface Props {
 export default function PostDetailView({ postId }: Props) {
   const [detalle, setDetalle] = useState<PostDetail | null>(null)
   const [nuevoComentario, setNuevoComentario] = useState('')
+  const [editando, setEditando] = useState(false)
 
   useEffect(() => {
     fetchPostDetail(postId).then(setDetalle)
@@ -39,6 +42,12 @@ export default function PostDetailView({ postId }: Props) {
     setNuevoComentario('')
   }
 
+  function handlePostActualizado(postActualizado: FeedPost) {
+    if (!detalle) return
+    setDetalle({ ...detalle, post: postActualizado })
+    setEditando(false)
+  }
+
   if (!detalle) {
     return null
   }
@@ -50,9 +59,16 @@ export default function PostDetailView({ postId }: Props) {
       <div className={styles.postCard}>
         <div className={styles.meta}>
           <img className={styles.avatar} src={post.autor_avatar} alt="" />
-          <div>
-            <div className={styles.author}>@{post.autor}</div>
-            <div className={styles.obra}>{post.obra_titulo}</div>
+          <div className={styles.authorRow}>
+            <div>
+              <div className={styles.author}>@{post.autor}</div>
+              <div className={styles.obra}>{post.obra_titulo}</div>
+            </div>
+            {post.is_own_post && (
+              <button className={styles.editButton} onClick={() => setEditando(true)}>
+                Editar
+              </button>
+            )}
           </div>
         </div>
 
@@ -65,6 +81,14 @@ export default function PostDetailView({ postId }: Props) {
           contadorInicial={post.likes_count}
         />
       </div>
+
+      {editando && (
+        <EditPostForm
+          post={post}
+          onGuardado={handlePostActualizado}
+          onCancelar={() => setEditando(false)}
+        />
+      )}
 
       <h2 className={styles.commentsTitle}>Comentarios ({detalle.comments.length})</h2>
 

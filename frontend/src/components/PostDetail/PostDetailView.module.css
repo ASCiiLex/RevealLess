@@ -24,6 +24,13 @@
   object-fit: cover;
 }
 
+.authorRow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .author {
   font-size: 14px;
   font-weight: 600;
@@ -33,6 +40,19 @@
 .obra {
   font-size: 13px;
   color: var(--fog);
+}
+
+.editButton {
+  border: none;
+  background: none;
+  color: var(--fog);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.editButton:hover {
+  color: var(--gold);
 }
 
 .text {

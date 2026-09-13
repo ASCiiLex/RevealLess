@@ -28,10 +28,6 @@ function getCsrfToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-/** Reutiliza el endpoint JSON existente de Django clasico
- * (toggle_reaction_post), no un endpoint DRF nuevo -- ya devuelve JSON,
- * ya valida CSRF, y funciona igual desde fetch() que desde el JS
- * original (likes.js). */
 export async function toggleReactionPost(postId: number, reaction: string) {
   const formData = new FormData()
   formData.append('post_id', String(postId))
@@ -71,5 +67,36 @@ export async function toggleReactionComment(commentId: number, reaction: string)
     headers: { 'X-CSRFToken': getCsrfToken() },
     body: formData,
   })
+  return response.json()
+}
+
+export async function updatePost(
+  postId: number,
+  datos: {
+    text?: string
+    image?: File | null
+    referenciaNarrativaId?: number
+    fronteraSpoilerId?: number | null
+    nivelSpoiler?: string
+  }
+): Promise<FeedPost> {
+  const formData = new FormData()
+  if (datos.text !== undefined) formData.append('text', datos.text)
+  if (datos.image) formData.append('image', datos.image)
+  if (datos.referenciaNarrativaId) formData.append('referencia_narrativa', String(datos.referenciaNarrativaId))
+  if (datos.fronteraSpoilerId) formData.append('frontera_spoiler', String(datos.fronteraSpoilerId))
+  if (datos.nivelSpoiler) formData.append('nivel_spoiler', datos.nivelSpoiler)
+
+  const response = await fetch(`/posts/api/${postId}/editar/`, {
+    method: 'PATCH',
+    credentials: 'same-origin',
+    headers: { 'X-CSRFToken': getCsrfToken() },
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null)
+    throw detail
+  }
   return response.json()
 }
