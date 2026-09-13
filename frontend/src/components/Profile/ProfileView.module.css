@@ -1,0 +1,103 @@
+.wrapper {
+  padding: 24px 0 40px;
+}
+
+.header {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+}
+
+.username {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 6px 0;
+}
+
+.bio {
+  font-size: 14px;
+  color: var(--ink);
+  margin: 0 0 12px 0;
+}
+
+.stats {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: var(--fog);
+  margin-bottom: 14px;
+}
+
+.stats strong {
+  color: var(--ink);
+}
+
+.stats a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.buttonPrimary {
+  background: var(--gold);
+  color: var(--paper);
+  border-color: var(--gold);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.gridItem {
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.gridImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.empty {
+  color: var(--fog);
+  font-size: 14px;
+  padding: 24px 0;
+  text-align: center;
+}
