@@ -22,6 +22,7 @@ export default defineConfig(({ command }) => ({
         inbox: 'src/inbox.tsx',
         chat: 'src/chat.tsx',
         follow_list: 'src/follow_list.tsx',
+        publicar: 'src/publicar.tsx',
       },
     },
   },

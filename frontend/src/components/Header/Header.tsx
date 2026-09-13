@@ -78,7 +78,7 @@ export default function Header() {
         </div>
 
         <div className={styles.right}>
-          <a className={styles.createLink} href="/narrative/publicar/" aria-label="Crear publicación">
+          <a className={styles.createLink} href="/posts/crear-react/" aria-label="Crear publicación">
             +
           </a>
           <button
