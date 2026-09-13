@@ -16,6 +16,9 @@ class FeedAPIView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
     def get_queryset(self):
         user = self.request.user
         followed_users = user.following.values_list('followed', flat=True)
@@ -41,6 +44,10 @@ class FeedAPIView(generics.ListAPIView):
         obra_id = self.request.query_params.get('obra')
         if obra_id is not None:
             queryset = queryset.filter(obra_id=obra_id)
+
+        hashtag = self.request.query_params.get('hashtag')
+        if hashtag is not None:
+            queryset = queryset.filter(post_hashtags__hashtag__name=hashtag)
 
         return queryset.order_by('-created_at')
 

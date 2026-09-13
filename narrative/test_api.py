@@ -328,3 +328,44 @@ class SuscripcionesSilenciadasTests(TestCase):
         response = self.client.get(reverse('narrative_api_feed'))
         ids = [p['id'] for p in response.data['results']]
         self.assertNotIn(post_propio.id, ids)
+
+class FeedFiltroHashtagTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.usuario = User.objects.create_user('hashtag_user', password='x')
+        self.obra = Obra.objects.create(titulo='Serie Hashtag', slug='serie-hashtag')
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+
+    def test_filtra_por_hashtag(self):
+        post_con_tag = Post.objects.create(
+            author=self.usuario, obra=self.obra, text='usando #probando',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        Post.objects.create(
+            author=self.usuario, obra=self.obra, text='sin hashtag',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'), {'hashtag': 'probando'})
+        ids = [p['id'] for p in response.data['results']]
+        self.assertIn(post_con_tag.id, ids)
+        self.assertEqual(len(ids), 1)
+
+    def test_hashtag_inexistente_devuelve_vacio(self):
+        Post.objects.create(
+            author=self.usuario, obra=self.obra, text='algo #real',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'), {'hashtag': 'noexiste'})
+        self.assertEqual(len(response.data['results']), 0)
