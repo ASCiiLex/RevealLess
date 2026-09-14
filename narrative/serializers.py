@@ -108,3 +108,69 @@ class SolicitudTemaSerializer(serializers.ModelSerializer):
         model = SolicitudTema
         fields = ['id', 'obra', 'obra_titulo', 'nombre', 'estado', 'creado_en', 'resuelto_en']
         read_only_fields = ['estado', 'creado_en', 'resuelto_en']
+
+
+class TemaConSuscripcionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    nombre = serializers.CharField()
+    suscrito = serializers.BooleanField()
+    suscripcion_id = serializers.IntegerField(allow_null=True)
+
+
+class ObraLandingSerializer(serializers.ModelSerializer):
+    """Serializer dedicado a la landing de obra: junta datos que hoy
+    viven repartidos en tres endpoints distintos (ObraResumenSerializer
+    para catálogo, ObraDetalleAPIView para unidades/temas planos,
+    CatalogoObrasAPIView para progreso) en una sola respuesta pensada
+    para esta pantalla concreta."""
+
+    imagen_url = serializers.SerializerMethodField()
+    categorias = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nombre')
+    suscrito = serializers.SerializerMethodField()
+    suscripcion_id = serializers.SerializerMethodField()
+    progreso_pct = serializers.SerializerMethodField()
+    total_suscriptores = serializers.SerializerMethodField()
+    temas = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Obra
+        fields = [
+            'id', 'titulo', 'slug', 'sinopsis', 'imagen_url', 'categorias',
+            'suscrito', 'suscripcion_id', 'progreso_pct', 'total_suscriptores', 'temas',
+        ]
+
+    def get_imagen_url(self, obj):
+        return obj.image_url
+
+    def get_suscrito(self, obj):
+        return obj.id in (self.context.get('ids_obras_suscritas') or set())
+
+    def get_suscripcion_id(self, obj):
+        ids_por_obra = self.context.get('suscripcion_id_por_obra')
+        if not ids_por_obra:
+            return None
+        return ids_por_obra.get(obj.id)
+
+    def get_progreso_pct(self, obj):
+        progreso = self.context.get('progreso')
+        longitud_total = self.context.get('longitud_total')
+        if not progreso or not longitud_total:
+            return None
+        pct = round((progreso.orden_absoluto / longitud_total) * 100)
+        return min(max(pct, 0), 100)
+
+    def get_total_suscriptores(self, obj):
+        return self.context.get('total_suscriptores', 0)
+
+    def get_temas(self, obj):
+        suscripcion_id_por_tema = self.context.get('suscripcion_id_por_tema', {})
+        temas = obj.temas_transversales.all().order_by('nombre')
+        return TemaConSuscripcionSerializer([
+            {
+                'id': t.id,
+                'nombre': t.nombre,
+                'suscrito': t.id in suscripcion_id_por_tema,
+                'suscripcion_id': suscripcion_id_por_tema.get(t.id),
+            }
+            for t in temas
+        ], many=True).data

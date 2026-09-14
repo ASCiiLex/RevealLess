@@ -60,10 +60,13 @@ def declarar_progreso(request, obra_slug):
 
 @login_required
 def progreso_react_view(request, obra_slug):
-    """Vista mínima que solo monta el punto de entrada de React para la
-    gestión de progreso (Fase 4). No reemplaza declarar_progreso: convive
-    con la vista HTML heredada. El slug se pasa al DOM vía data-attribute
-    para que src/progreso.tsx sepa qué obra cargar sin depender de
-    parsear la URL en JS."""
     get_object_or_404(Obra, slug=obra_slug)
     return render(request, 'narrative/progreso_react.html', {'obra_slug': obra_slug})
+
+
+@login_required
+def obra_landing_react_view(request, obra_slug):
+    """Vista mínima que monta el punto de entrada de React para la
+    landing de obra (Fase 4)."""
+    get_object_or_404(Obra, slug=obra_slug)
+    return render(request, 'narrative/obra_landing_react.html', {'obra_slug': obra_slug})

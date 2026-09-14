@@ -8,7 +8,10 @@ from rest_framework.generics import get_object_or_404
 from posts.models import Hashtag, Post
 from subscriptions.models import Suscripcion
 from .models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa, SolicitudTema
-from .serializers import ObraResumenSerializer, UnidadNarrativaSerializer, SolicitudTemaSerializer
+from .serializers import (
+    ObraResumenSerializer, UnidadNarrativaSerializer, SolicitudTemaSerializer,
+    ObraLandingSerializer,
+)
 
 
 def _contexto_suscripcion_obra(user):
@@ -26,11 +29,6 @@ def _contexto_suscripcion_obra(user):
 
 
 def _suscripcion_id_por_tema(user):
-    """Mapea tema_id -> id de la Suscripcion del usuario a ese tema
-    concreto, análogo a suscripcion_id_por_obra pero para el nivel
-    tema. Usado por BuscarAPIView para que TemaRow en el frontend sepa
-    si ya está suscrito (y con qué id deshacerlo), mismo problema que
-    ya se resolvió para obras."""
     suscripciones_de_tema = Suscripcion.objects.filter(usuario=user, tema__isnull=False)
     return {s.tema_id: s.id for s in suscripciones_de_tema}
 
@@ -74,6 +72,35 @@ class ObraDetalleAPIView(APIView):
             'unidades': UnidadNarrativaSerializer(unidades, many=True).data,
             'temas': [{'id': t.id, 'nombre': t.nombre} for t in temas],
         })
+
+
+class ObraLandingAPIView(APIView):
+    """Endpoint dedicado a la landing de obra: sinopsis, categorias,
+    progreso del usuario, total de suscriptores (cualquier nivel:
+    obra/unidad/tema, todos cuentan como interes por la obra), y sus
+    temas transversales con el estado de suscripcion de cada uno."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, obra_slug):
+        obra = get_object_or_404(
+            Obra.objects.annotate(longitud_total=Max('unidades__orden_fin')),
+            slug=obra_slug,
+        )
+
+        contexto_suscripcion = _contexto_suscripcion_obra(request.user)
+        progreso = ProgresoUsuario.objects.filter(usuario=request.user, obra=obra).first()
+        total_suscriptores = Suscripcion.objects.filter(obra=obra).values('usuario').distinct().count()
+
+        contexto = {
+            **contexto_suscripcion,
+            'progreso': progreso,
+            'longitud_total': obra.longitud_total,
+            'total_suscriptores': total_suscriptores,
+            'suscripcion_id_por_tema': _suscripcion_id_por_tema(request.user),
+        }
+
+        return Response(ObraLandingSerializer(obra, context=contexto).data)
 
 
 class SolicitudTemaListCreateAPIView(APIView):
