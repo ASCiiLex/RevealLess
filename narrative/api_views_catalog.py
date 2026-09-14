@@ -12,13 +12,6 @@ from .serializers import ObraResumenSerializer, UnidadNarrativaSerializer, Solic
 
 
 def _contexto_suscripcion_obra(user):
-    """Contexto compartido por CatalogoObrasAPIView y BuscarAPIView:
-    ids_obras_suscritas incluye CUALQUIER nivel de suscripción (obra,
-    unidad o tema) -- se usa para decidir si una obra entra en
-    Biblioteca. suscripcion_id_por_obra, en cambio, solo mapea
-    suscripciones de nivel OBRA COMPLETA (unidad y tema nulos): es lo
-    que representa el botón Seguir/Siguiendo de un Lomo de obra, que no
-    debe confundirse con seguir un tema o arco concreto de esa obra."""
     todas_las_suscripciones = Suscripcion.objects.filter(usuario=user)
 
     ids_obras_suscritas = set(todas_las_suscripciones.values_list('obra_id', flat=True))
@@ -30,6 +23,16 @@ def _contexto_suscripcion_obra(user):
         'ids_obras_suscritas': ids_obras_suscritas,
         'suscripcion_id_por_obra': suscripcion_id_por_obra,
     }
+
+
+def _suscripcion_id_por_tema(user):
+    """Mapea tema_id -> id de la Suscripcion del usuario a ese tema
+    concreto, análogo a suscripcion_id_por_obra pero para el nivel
+    tema. Usado por BuscarAPIView para que TemaRow en el frontend sepa
+    si ya está suscrito (y con qué id deshacerlo), mismo problema que
+    ya se resolvió para obras."""
+    suscripciones_de_tema = Suscripcion.objects.filter(usuario=user, tema__isnull=False)
+    return {s.tema_id: s.id for s in suscripciones_de_tema}
 
 
 class CatalogoObrasAPIView(APIView):
@@ -101,17 +104,6 @@ def _post_data(post):
 
 
 class BuscarAPIView(APIView):
-    """Búsqueda combinada: obras y temas (dominio narrativo, ya existía),
-    más usuarios, hashtags y posts (migrado desde global_search.js /
-    posts/views/search.py, con una corrección de seguridad importante:
-    la búsqueda de posts original NO aplicaba visible_for(), pudiendo
-    filtrar texto de posts bloqueados por frontera de spoiler. Aquí se
-    corrige exigiendo Post.objects.visible_for(request.user) como base.
-
-    Las vistas Django clásicas (mentions_search, hashtags_search,
-    global_search) NO se tocan ni se retiran -- siguen sirviendo a las
-    plantillas HTML heredadas hasta que se migren a React."""
-
     permission_classes = [IsAuthenticated]
 
     MIN_CARACTERES = 2
@@ -133,6 +125,7 @@ class BuscarAPIView(APIView):
             })
 
         contexto_suscripcion = _contexto_suscripcion_obra(request.user)
+        suscripcion_id_por_tema = _suscripcion_id_por_tema(request.user)
 
         obras = Obra.objects.filter(titulo__icontains=q)[:self.LIMITE_POR_TIPO]
         temas = TemaTransversal.objects.filter(nombre__icontains=q).select_related('obra')[:self.LIMITE_POR_TIPO]
@@ -160,6 +153,8 @@ class BuscarAPIView(APIView):
                     'obra_id': t.obra_id,
                     'obra_titulo': t.obra.titulo,
                     'obra_slug': t.obra.slug,
+                    'suscrito': t.id in suscripcion_id_por_tema,
+                    'suscripcion_id': suscripcion_id_por_tema.get(t.id),
                 }
                 for t in temas
             ],

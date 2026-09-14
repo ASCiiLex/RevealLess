@@ -71,6 +71,21 @@ class BuscarAPIViewTests(TestCase):
         self.assertEqual(response.data['hashtags'], [])
         self.assertEqual(response.data['posts'], [])
 
+    def test_tema_incluye_suscrito_true_si_ya_esta_suscrito(self):
+        from subscriptions.services import crear_suscripcion
+        crear_suscripcion(self.usuario, self.obra, tema=self.tema)
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_buscar'), {'q': 'fruta'})
+        self.assertTrue(response.data['temas'][0]['suscrito'])
+        self.assertIsNotNone(response.data['temas'][0]['suscripcion_id'])
+
+    def test_tema_incluye_suscrito_false_sin_suscripcion(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_buscar'), {'q': 'fruta'})
+        self.assertFalse(response.data['temas'][0]['suscrito'])
+        self.assertIsNone(response.data['temas'][0]['suscripcion_id'])
+
 
 class BuscarUsuariosHashtagsPostsAPIViewTests(TestCase):
     def setUp(self):
