@@ -13,6 +13,16 @@ export interface FeedPost {
     nombre: string
     tipo: string
     etiqueta: string
+    orden_inicio: number
+    orden_fin: number
+  } | null
+  frontera_spoiler: {
+    id: number
+    nombre: string
+    tipo: string
+    etiqueta: string
+    orden_inicio: number
+    orden_fin: number
   } | null
   nivel_spoiler: string
   created_at: string

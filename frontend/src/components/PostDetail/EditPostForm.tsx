@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styles from './EditPostForm.module.css'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { updatePost } from '../../api/postDetail'
@@ -17,14 +17,56 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const [fronteraId, setFronteraId] = useState<number | null>(null)
   const [nivelSpoiler, setNivelSpoiler] = useState(post.nivel_spoiler)
   const [error, setError] = useState<string | null>(null)
+  const [avisoReduccion, setAvisoReduccion] = useState<string | null>(null)
+  const [confirmadoPeseAviso, setConfirmadoPeseAviso] = useState(false)
   const [guardando, setGuardando] = useState(false)
 
   useEffect(() => {
     fetchObraDetalle(post.obra_slug).then(setDetalle)
   }, [post.obra_slug])
 
+  const unidadPorId = useMemo(() => {
+    const mapa = new Map<number, { orden_inicio: number }>()
+    detalle?.unidades.forEach((u) => mapa.set(u.id, u))
+    return mapa
+  }, [detalle])
+
+  function detectarReduccion(): string | null {
+    const avisos: string[] = []
+
+    if (
+      referenciaId &&
+      post.referencia_narrativa &&
+      referenciaId !== post.referencia_narrativa.id
+    ) {
+      const nuevaUnidad = unidadPorId.get(referenciaId)
+      if (nuevaUnidad && nuevaUnidad.orden_inicio < post.referencia_narrativa.orden_inicio) {
+        avisos.push('estás moviendo la referencia narrativa hacia atrás')
+      }
+    }
+
+    if (fronteraId && post.frontera_spoiler) {
+      const nuevaFrontera = unidadPorId.get(fronteraId)
+      if (nuevaFrontera && nuevaFrontera.orden_inicio < post.frontera_spoiler.orden_inicio) {
+        avisos.push('estás reduciendo la frontera de spoiler')
+      }
+    }
+
+    if (avisos.length === 0) return null
+    return `Atención: ${avisos.join(' y ')}. Esto no oculta el contenido a lectores que ya lo hayan visto con los valores anteriores, más permisivos desde ahora en adelante.`
+  }
+
   async function handleGuardar() {
     setError(null)
+
+    if (!confirmadoPeseAviso) {
+      const aviso = detectarReduccion()
+      if (aviso) {
+        setAvisoReduccion(aviso)
+        return
+      }
+    }
+
     setGuardando(true)
     try {
       const actualizado = await updatePost(post.id, {
@@ -53,6 +95,22 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
         <div className={styles.form}>
           {error && <p className={styles.error}>{error}</p>}
 
+          {avisoReduccion && (
+            <div className={styles.warningBox}>
+              {avisoReduccion}
+              <br />
+              <button
+                className={styles.confirmLink}
+                onClick={() => {
+                  setConfirmadoPeseAviso(true)
+                  setAvisoReduccion(null)
+                }}
+              >
+                Entiendo, continuar de todas formas
+              </button>
+            </div>
+          )}
+
           <div className={styles.field}>
             <label className={styles.label} htmlFor="edit-text">Texto</label>
             <textarea
@@ -69,7 +127,10 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
               id="edit-referencia"
               className={styles.select}
               value={referenciaId ?? ''}
-              onChange={(e) => setReferenciaId(Number(e.target.value) || null)}
+              onChange={(e) => {
+                setReferenciaId(Number(e.target.value) || null)
+                setConfirmadoPeseAviso(false)
+              }}
             >
               {detalle.unidades.map((u) => (
                 <option key={u.id} value={u.id}>{u.etiqueta}</option>
@@ -85,7 +146,10 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
               id="edit-frontera"
               className={styles.select}
               value={fronteraId ?? ''}
-              onChange={(e) => setFronteraId(Number(e.target.value) || null)}
+              onChange={(e) => {
+                setFronteraId(Number(e.target.value) || null)
+                setConfirmadoPeseAviso(false)
+              }}
             >
               <option value="">No cambiar</option>
               {detalle.unidades.map((u) => (

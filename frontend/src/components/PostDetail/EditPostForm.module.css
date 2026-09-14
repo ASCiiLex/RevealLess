@@ -70,6 +70,26 @@
   font-size: 13px;
 }
 
+.warningBox {
+  background: color-mix(in srgb, var(--gold) 18%, var(--paper));
+  color: var(--ink);
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.confirmLink {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  font-size: 13px;
+}
+
 .actions {
   display: flex;
   gap: 8px;
