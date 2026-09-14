@@ -8,12 +8,12 @@
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--paper);
   margin: 0 0 20px 0;
 }
 
 .empty {
-  color: var(--fog);
+  color: var(--paper);
   font-size: 14px;
   padding: 24px 0;
   text-align: center;

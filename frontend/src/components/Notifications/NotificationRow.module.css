@@ -2,14 +2,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 4px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px;
+  background: var(--paper);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
   text-decoration: none;
   color: inherit;
 }
 
 .rowUnseen {
-  background: color-mix(in srgb, var(--gold) 8%, var(--paper));
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1), inset 3px 0 0 var(--gold);
 }
 
 .avatar {

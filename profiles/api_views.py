@@ -11,24 +11,19 @@ from .serializers import ProfileDetailSerializer, ProfileEditSerializer
 
 
 class ProfileDetailAPIView(APIView):
-    """Réplica de profile_view: mismos datos (posts visibles vía
-    visible_for(), contadores de followers/following, is_following).
-    AllowAny porque los perfiles son públicos -- visible_for() ya
-    contempla usuarios anónimos (devuelve queryset vacío), igual que en
-    Django clásico."""
-
     permission_classes = [AllowAny]
 
     def get(self, request, username):
         profile_user = get_object_or_404(User, username=username)
         profile = get_object_or_404(Profile.objects.select_related('user'), user=profile_user)
 
-        posts = (
+        posts_visibles = (
             profile_user.posts.all()
             .select_related('author', 'obra')
             .visible_for(request.user)
             .order_by('-created_at')
         )
+        total_posts_publicados = profile_user.posts.count()
 
         is_following = False
         if request.user.is_authenticated and request.user != profile_user:
@@ -39,7 +34,8 @@ class ProfileDetailAPIView(APIView):
         data = {
             'profile_user': profile_user,
             'profile': profile,
-            'posts': posts,
+            'posts': posts_visibles,
+            'total_posts_publicados': total_posts_publicados,
             'is_following': is_following,
             'followers_count': Follow.objects.filter(followed=profile_user).count(),
             'following_count': Follow.objects.filter(follower=profile_user).count(),
@@ -50,10 +46,6 @@ class ProfileDetailAPIView(APIView):
 
 
 class ProfileEditAPIView(APIView):
-    """Réplica de edit_profile. PATCH en vez de PUT: permite enviar solo
-    los campos que cambian (típico en un formulario de edición desde
-    React que no siempre reenvía la imagen si no se tocó)."""
-
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 

@@ -19,6 +19,7 @@ class ProfileDetailSerializer(serializers.Serializer):
     followers_count = serializers.IntegerField()
     following_count = serializers.IntegerField()
     posts = serializers.SerializerMethodField()
+    has_hidden_posts = serializers.SerializerMethodField()
 
     def get_is_own_profile(self, obj):
         request = self.context['request']
@@ -26,6 +27,14 @@ class ProfileDetailSerializer(serializers.Serializer):
 
     def get_posts(self, obj):
         return [{'id': p.id, 'image_url': p.image_url} for p in obj['posts']]
+
+    def get_has_hidden_posts(self, obj):
+        """True si el usuario tiene posts publicados que no aparecen en
+        'posts' porque visible_for() los oculta (progreso insuficiente
+        del visitante) -- distinto de 'no tiene publicaciones en
+        absoluto'. Usado por el frontend para elegir el mensaje
+        correcto en el estado vacio."""
+        return obj['total_posts_publicados'] > len(obj['posts'])
 
 
 class ProfileEditSerializer(serializers.ModelSerializer):

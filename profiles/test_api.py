@@ -90,6 +90,28 @@ class ProfileDetailAPIViewTests(TestCase):
         self.assertIn(self.post.id, ids)
         self.assertNotIn(post_bloqueado.id, ids)
 
+    def test_has_hidden_posts_true_si_hay_posts_ocultos_por_frontera(self):
+        e2 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E2', orden_local=2,
+        )
+        self.obra.recalcular_orden()
+        e2.refresh_from_db()
+
+        Post.objects.create(
+            author=self.dueño, obra=self.obra, text='post con spoiler',
+            referencia_narrativa=self.e1, frontera_spoiler=e2,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('profiles_api_detail', args=['perfil_dueño']))
+        self.assertTrue(response.data['has_hidden_posts'])
+
+    def test_has_hidden_posts_false_sin_posts_ocultos(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('profiles_api_detail', args=['perfil_dueño']))
+        self.assertFalse(response.data['has_hidden_posts'])
+
 
 class ProfileEditAPIViewTests(TestCase):
     def setUp(self):

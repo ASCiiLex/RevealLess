@@ -4,6 +4,7 @@
 
   --fog: #7C8B9B;
   --gold: #B8902E;
+  --gold-light: #E8D9B8;
 
   --border: #D9D2C2;
 
@@ -11,6 +12,8 @@
   --wood-dark: #6B4423;
   --shelf-bg: #524F49;
   --shelf-bg-dark: #3E3B37;
+
+  --page-bg: #4A5560;
 
   --font-display: 'Fraunces', serif;
   --font-body: 'Public Sans', sans-serif;

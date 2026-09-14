@@ -1,6 +1,9 @@
 .post {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border);
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
 .meta {

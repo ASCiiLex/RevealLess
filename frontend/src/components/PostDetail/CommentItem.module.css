@@ -1,6 +1,9 @@
 .comment {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .header {
@@ -26,13 +29,13 @@
 .text {
   font-size: 14px;
   color: var(--ink);
-  margin: 0 0 6px 32px;
+  margin: 0 0 6px 36px;
 }
 
 .actions {
   display: flex;
   gap: 12px;
-  margin-left: 32px;
+  margin-left: 36px;
   font-size: 12px;
 }
 
@@ -58,14 +61,14 @@
 }
 
 .replies {
-  margin-left: 32px;
+  margin-left: 36px;
   margin-top: 8px;
 }
 
 .replyForm {
   display: flex;
   gap: 6px;
-  margin: 8px 0 0 32px;
+  margin: 8px 0 0 36px;
 }
 
 .replyInput {
