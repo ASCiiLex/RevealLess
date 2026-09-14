@@ -119,8 +119,8 @@ function ObraRow({ obra }: { obra: LomoObra }) {
 }
 
 function TemaRow({ tema }: { tema: TemaBusqueda }) {
-  const [suscripcionId, setSuscripcionId] = useState<number | null>(null)
-  const [siguiendo, setSiguiendo] = useState(false)
+  const [siguiendo, setSiguiendo] = useState(tema.suscrito)
+  const [suscripcionId, setSuscripcionId] = useState(tema.suscripcion_id)
   const [cargando, setCargando] = useState(false)
 
   async function handleToggle() {

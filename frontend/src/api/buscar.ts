@@ -7,6 +7,8 @@ export interface TemaBusqueda {
   obra_id: number
   obra_titulo: string
   obra_slug: string
+  suscrito: boolean
+  suscripcion_id: number | null
 }
 
 export interface UsuarioBusqueda {
