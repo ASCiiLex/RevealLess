@@ -32,7 +32,7 @@ export interface Suscripcion {
 
 export interface ObraDetalle {
   obra: { id: number; titulo: string; slug: string }
-  unidades: { id: number; etiqueta: string }[]
+  unidades: { id: number; etiqueta: string; orden_inicio: number; orden_fin: number }[]
   temas: { id: number; nombre: string }[]
 }
 
