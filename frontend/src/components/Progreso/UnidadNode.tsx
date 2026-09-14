@@ -1,25 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './UnidadNode.module.css'
-import { contieneActual, type TreeNode } from '../../utils/buildTree'
+import type { TreeNode } from '../../utils/buildTree'
 
-const UMBRAL_SCROLL = 8 // más de esto usa contenedor con scroll interno
+const UMBRAL_SCROLL = 8
 
 interface Props {
   nodo: TreeNode
   actualId: number
+  actualOrden: number
   onSelect: (unidadId: number) => void
 }
 
-export default function UnidadNode({ nodo, actualId, onSelect }: Props) {
-  const tieneActual = contieneActual(nodo, actualId)
-  const [abierto, setAbierto] = useState(tieneActual)
+export default function UnidadNode({ nodo, actualId, actualOrden, onSelect }: Props) {
+  const contieneActual = nodo.orden_inicio <= actualOrden && actualOrden <= nodo.orden_fin
+  const esPasado = nodo.orden_fin < actualOrden
+  const destacar = contieneActual || esPasado
+
+  const [abierto, setAbierto] = useState(contieneActual)
   const esHoja = nodo.hijos.length === 0
 
   if (esHoja) {
     const esActual = nodo.id === actualId
     return (
       <button
-        className={`${styles.leaf} ${esActual ? styles.leafActual : ''}`}
+        className={`${styles.leaf} ${esActual ? styles.leafActual : ''} ${!esActual && destacar ? styles.leafPast : ''}`}
         onClick={() => onSelect(nodo.id)}
       >
         <span>{nodo.etiqueta}{esActual ? ' · actual' : ''}</span>
@@ -32,7 +36,7 @@ export default function UnidadNode({ nodo, actualId, onSelect }: Props) {
   return (
     <div className={styles.node}>
       <button
-        className={`${styles.header} ${tieneActual ? styles.headerActual : ''}`}
+        className={`${styles.header} ${destacar ? styles.headerActual : ''}`}
         onClick={() => setAbierto((v) => !v)}
         aria-expanded={abierto}
       >
@@ -46,7 +50,13 @@ export default function UnidadNode({ nodo, actualId, onSelect }: Props) {
             <ScrollAcotado hijos={nodo.hijos} actualId={actualId} onSelect={onSelect} />
           ) : (
             nodo.hijos.map((hijo) => (
-              <UnidadNode key={hijo.id} nodo={hijo} actualId={actualId} onSelect={onSelect} />
+              <UnidadNode
+                key={hijo.id}
+                nodo={hijo}
+                actualId={actualId}
+                actualOrden={actualOrden}
+                onSelect={onSelect}
+              />
             ))
           )}
         </div>

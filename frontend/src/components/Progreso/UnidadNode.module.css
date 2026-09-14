@@ -2,6 +2,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
   margin-bottom: 6px;
+  overflow: hidden;
 }
 
 .header {
@@ -33,10 +34,9 @@
 }
 
 .children {
-  padding: 0 6px 6px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 .scrollBox {
@@ -45,14 +45,14 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
   padding: 4px;
+  margin: 0 6px 6px;
 }
 
 .leaf {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px;
-  border-radius: var(--radius);
+  padding: 8px 16px;
   background: none;
   border: none;
   width: 100%;
@@ -64,6 +64,7 @@
 }
 
 .leafPast {
+  background: color-mix(in srgb, var(--gold) 15%, var(--paper));
   color: var(--fog);
 }
 

@@ -52,6 +52,7 @@ export default function ProgresoView({ obraSlug }: Props) {
 
   const arbol = buildTree(data.unidades)
   const actualId = data.progreso?.unidad_actual.id ?? -1
+  const actualOrden = data.progreso?.unidad_actual.orden_inicio ?? -1
 
   return (
     <div className={styles.wrapper}>
@@ -65,14 +66,17 @@ export default function ProgresoView({ obraSlug }: Props) {
         )}
       </div>
 
-      {arbol.map((nodo) => (
-        <UnidadNode
-          key={nodo.id}
-          nodo={nodo}
-          actualId={actualId}
-          onSelect={(id) => handleSelect(id)}
-        />
-      ))}
+      <div className={styles.tree}>
+        {arbol.map((nodo) => (
+          <UnidadNode
+            key={nodo.id}
+            nodo={nodo}
+            actualId={actualId}
+            actualOrden={actualOrden}
+            onSelect={(id) => handleSelect(id)}
+          />
+        ))}
+      </div>
 
       {pendienteConfirmar && (
         <ConfirmModal

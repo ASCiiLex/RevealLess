@@ -8,6 +8,7 @@ import { fetchMe, type Me } from '../../api/me'
 import { buscar, type ResultadoBusqueda } from '../../api/buscar'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { useMessagesAlertSocket } from '../../hooks/useMessagesAlertSocket'
+import { useNotificationSocket } from '../../hooks/useNotificationSocket'
 import logo from '../../assets/brand/logo-sf-ss.png'
 
 export default function Header() {
@@ -33,6 +34,22 @@ export default function Header() {
         ...prev,
         unread_messages: nuevoUnreadMessages,
         unread_count: prev.unread_notifications + nuevoUnreadMessages,
+      }
+    })
+  })
+
+  // Mismo patron que useMessagesAlertSocket: cada notificacion entrante
+  // incrementa el contador local en vivo, sin esperar a recargar la
+  // pagina. Antes solo se conectaba dentro de NotificationsView (donde
+  // prepend en la lista); ahora tambien aqui, solo para el contador.
+  useNotificationSocket(() => {
+    setMe((prev) => {
+      if (!prev) return prev
+      const nuevoUnreadNotifications = prev.unread_notifications + 1
+      return {
+        ...prev,
+        unread_notifications: nuevoUnreadNotifications,
+        unread_count: nuevoUnreadNotifications + prev.unread_messages,
       }
     })
   })

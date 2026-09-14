@@ -48,7 +48,11 @@ export default function ProfileView({ username }: Props) {
       </div>
 
       {profile.posts.length === 0 ? (
-        <p className={styles.empty}>Este usuario aún no tiene publicaciones.</p>
+        <p className={styles.empty}>
+          {profile.has_hidden_posts
+            ? 'Las publicaciones de este usuario aún no son visibles para ti.'
+            : 'Este usuario aún no tiene publicaciones.'}
+        </p>
       ) : (
         <div className={styles.grid}>
           {profile.posts.map((post) => (

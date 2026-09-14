@@ -6,7 +6,11 @@
   display: flex;
   gap: 20px;
   align-items: flex-start;
-  margin-bottom: 24px;
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  margin-bottom: 20px;
 }
 
 .avatar {
@@ -92,6 +96,8 @@
 .gridItem {
   aspect-ratio: 1;
   overflow: hidden;
+  border-radius: var(--radius);
+  display: block;
 }
 
 .gridImage {
@@ -102,7 +108,7 @@
 }
 
 .empty {
-  color: var(--fog);
+  color: var(--paper);
   font-size: 14px;
   padding: 24px 0;
   text-align: center;

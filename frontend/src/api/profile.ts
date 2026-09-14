@@ -15,6 +15,7 @@ export interface ProfileDetail {
   followers_count: number
   following_count: number
   posts: ProfilePost[]
+  has_hidden_posts: boolean
 }
 
 export interface ProfileEditData {
