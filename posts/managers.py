@@ -13,13 +13,28 @@ class PostQuerySet(models.QuerySet):
             usuario=user, obra=OuterRef('obra')
         ).values('orden_absoluto')[:1]
 
+        progreso_cruzado = ProgresoUsuario.objects.filter(
+            usuario=user, obra=OuterRef('obra_cruzada')
+        ).values('orden_absoluto')[:1]
+
         return self.annotate(
             progreso_lector=Coalesce(
                 Subquery(progreso_lector, output_field=models.IntegerField()),
                 Value(0),
-            )
+            ),
+            progreso_cruzado=Coalesce(
+                Subquery(progreso_cruzado, output_field=models.IntegerField()),
+                Value(0),
+            ),
         ).filter(
-            Q(author=user) | Q(progreso_lector__gte=F('frontera_orden'))
+            Q(author=user)
+            | (
+                Q(progreso_lector__gte=F('frontera_orden'))
+                & (
+                    Q(frontera_cruzada_orden__isnull=True)
+                    | Q(progreso_cruzado__gte=F('frontera_cruzada_orden'))
+                )
+            )
         )
 
     def with_feed_stats(self):

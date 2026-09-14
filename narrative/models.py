@@ -49,6 +49,19 @@ class Obra(models.Model):
     )
     categorias = models.ManyToManyField(Categoria, blank=True, related_name='obras')
 
+    # Vínculo puramente informativo entre continuidades de una misma
+    # franquicia (ej. anime -> manga, película -> libro). No participa en
+    # frontera_orden ni en visible_for(): cada continuidad sigue siendo
+    # una isla de progreso independiente. Mismo criterio que Categoria.
+    adapta_a = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='adaptaciones',
+        help_text='Obra origen si esta es una adaptación de otra continuidad (ej. anime → manga).',
+    )
+
     class Meta:
         ordering = ['titulo']
 
@@ -248,7 +261,15 @@ class SolicitudTema(models.Model):
 
 class ClasificacionNarrativa(models.Model):
     """Mixin abstracto compartido por Post y Comment. frontera_orden es el
-    único valor que debe consultar el motor de visibilidad."""
+    valor principal que consulta el motor de visibilidad.
+
+    obra_cruzada / frontera_cruzada cubren el caso de contenido que vive
+    en una obra (ej. anime) pero revela información cuya frontera real
+    está en otra continuidad de la misma franquicia (ej. manga). Cuando
+    están informados, el motor exige ADEMÁS progreso suficiente en
+    obra_cruzada. Es declarativo (usuario o IA), nunca automático, y no
+    implica ningún mapeo de equivalencia capítulo↔episodio entre las dos
+    obras — cada una sigue con su propia escala de orden."""
 
     ORIGEN_EXPLICITO = 'explicito'
     ORIGEN_IA = 'ia'
@@ -286,6 +307,19 @@ class ClasificacionNarrativa(models.Model):
     ia_confianza = models.FloatField(null=True, blank=True)
     clasificado_en = models.DateTimeField(null=True, blank=True)
 
+    # Frontera cruzada entre continuidades (opcional, MVP del blindaje).
+    obra_cruzada = models.ForeignKey(
+        Obra, on_delete=models.PROTECT, null=True, blank=True,
+        related_name='%(class)s_cruzados',
+        help_text='Obra distinta (ej. manga si esto es del anime) cuya frontera también debe cumplirse.',
+    )
+    frontera_cruzada = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.PROTECT, null=True, blank=True,
+        related_name='%(class)s_frontera_cruzada',
+        help_text='Punto de obra_cruzada hasta el que hay que haber llegado.',
+    )
+    frontera_cruzada_orden = models.PositiveIntegerField(null=True, blank=True, editable=False)
+
     class Meta:
         abstract = True
 
@@ -294,4 +328,9 @@ class ClasificacionNarrativa(models.Model):
             self.frontera_orden = None
         elif self.frontera_spoiler_id:
             self.frontera_orden = self.frontera_spoiler.orden_fin
+
+        self.frontera_cruzada_orden = (
+            self.frontera_cruzada.orden_fin if self.frontera_cruzada_id else None
+        )
+
         super().save(*args, **kwargs)

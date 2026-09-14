@@ -16,14 +16,29 @@ class CommentQuerySet(models.QuerySet):
             usuario=user, obra=OuterRef('post__obra')
         ).values('orden_absoluto')[:1]
 
+        progreso_cruzado = ProgresoUsuario.objects.filter(
+            usuario=user, obra=OuterRef('obra_cruzada')
+        ).values('orden_absoluto')[:1]
+
         return self.annotate(
             frontera_efectiva_calculada=Coalesce('frontera_orden', 'post__frontera_orden'),
             progreso_lector=Coalesce(
                 Subquery(progreso_lector, output_field=models.IntegerField()),
                 Value(0),
             ),
+            progreso_cruzado=Coalesce(
+                Subquery(progreso_cruzado, output_field=models.IntegerField()),
+                Value(0),
+            ),
         ).filter(
             post__in=visible_posts,
         ).filter(
-            Q(user=user) | Q(progreso_lector__gte=F('frontera_efectiva_calculada'))
+            Q(user=user)
+            | (
+                Q(progreso_lector__gte=F('frontera_efectiva_calculada'))
+                & (
+                    Q(frontera_cruzada_orden__isnull=True)
+                    | Q(progreso_cruzado__gte=F('frontera_cruzada_orden'))
+                )
+            )
         )

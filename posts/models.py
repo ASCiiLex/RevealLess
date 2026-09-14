@@ -55,6 +55,13 @@ class Post(ClasificacionNarrativa, models.Model):
                 check=models.Q(frontera_spoiler__isnull=False),
                 name='post_frontera_spoiler_obligatoria',
             ),
+            models.CheckConstraint(
+                check=(
+                    models.Q(obra_cruzada__isnull=True, frontera_cruzada__isnull=True)
+                    | (models.Q(obra_cruzada__isnull=False) & models.Q(frontera_cruzada__isnull=False))
+                ),
+                name='post_frontera_cruzada_consistency',
+            ),
         ]
 
     def __str__(self):
@@ -66,6 +73,11 @@ class Post(ClasificacionNarrativa, models.Model):
             raise ValidationError({'referencia_narrativa': 'Debe pertenecer a la obra del post.'})
         if self.frontera_spoiler_id and self.frontera_spoiler.obra_id != self.obra_id:
             raise ValidationError({'frontera_spoiler': 'Debe pertenecer a la obra del post.'})
+        if self.obra_cruzada_id:
+            if self.obra_cruzada_id == self.obra_id:
+                raise ValidationError({'obra_cruzada': 'Debe ser una obra distinta a la del post.'})
+            if self.frontera_cruzada_id and self.frontera_cruzada.obra_id != self.obra_cruzada_id:
+                raise ValidationError({'frontera_cruzada': 'Debe pertenecer a obra_cruzada.'})
 
     @property
     def likes_count(self):
