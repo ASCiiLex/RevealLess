@@ -71,15 +71,19 @@ class Notification(models.Model):
 
     @property
     def url(self):
+        # Todas las rutas apuntan a las vistas React (Fase 4) -- las
+        # vistas Django clasicas equivalentes siguen existiendo en
+        # paralelo, pero las notificaciones deben llevar siempre a la
+        # experiencia actual, no a la heredada.
         if self.target_type in ("post", "comment", "reply"):
             if self._related_post:
-                return f"/posts/{self.target_id}/"
+                return f"/posts/{self.target_id}/react/"
             return f"/notificaciones/post-no-existe/{self.id}/"
 
         if self.target_type == "follow":
-            return f"/perfil/{self.actor.username}/"
+            return f"/perfil/{self.actor.username}/react/"
 
         if self.target_type == "message":
-            return f"/mensajes/{self.actor.username}/"
+            return f"/mensajes/chat-react/{self.actor.username}/"
 
         return "#"

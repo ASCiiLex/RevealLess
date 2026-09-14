@@ -1,5 +1,5 @@
 .feed {
-  max-width: var(--max-line);
+  max-width: var(--feed-width);
   margin: 0 auto;
   padding: 24px 0;
 }

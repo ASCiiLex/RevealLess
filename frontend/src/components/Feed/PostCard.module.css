@@ -33,7 +33,6 @@
 
 .image {
   width: 100%;
-  max-width: 480px;
   border-radius: var(--radius);
   display: block;
   margin-bottom: 12px;
