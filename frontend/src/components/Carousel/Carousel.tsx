@@ -12,10 +12,14 @@ export default function Carousel() {
   )
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
 
-  useEffect(() => {
+  function recargarCatalogo() {
     fetchCatalogoObras()
       .then(setObras)
       .catch(() => setObras({ biblioteca: [], descubrir: [] }))
+  }
+
+  useEffect(() => {
+    recargarCatalogo()
   }, [])
 
   useEffect(() => {
@@ -66,6 +70,7 @@ export default function Carousel() {
               activa={obraFiltro === obra.id}
               onSelect={handleSelectObra}
               mostrarProgreso={view === 'biblioteca'}
+              onCambioSuscripcion={recargarCatalogo}
             />
           ))}
         </div>

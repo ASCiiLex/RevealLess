@@ -18,9 +18,10 @@ interface Props {
   activa: boolean
   onSelect: (obra: LomoObra) => void
   mostrarProgreso: boolean
+  onCambioSuscripcion?: () => void
 }
 
-export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props) {
+export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambioSuscripcion }: Props) {
   const [siguiendo, setSiguiendo] = useState(obra.suscrito)
   const [suscripcionId, setSuscripcionId] = useState(obra.suscripcion_id)
   const [cargando, setCargando] = useState(false)
@@ -40,6 +41,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props)
         setSiguiendo(true)
         setSuscripcionId(suscripcion.id)
       }
+      onCambioSuscripcion?.()
     } finally {
       setCargando(false)
     }

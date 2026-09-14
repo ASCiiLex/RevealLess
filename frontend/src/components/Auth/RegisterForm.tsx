@@ -1,10 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import styles from './AuthForm.module.css'
 import AuthLayout from './AuthLayout'
+import OnboardingSearch from './OnboardingSearch'
 import { register } from '../../api/auth'
 import { ApiError } from '../../api/client'
 
+type Paso = 'form' | 'onboarding'
+
 export default function RegisterForm() {
+  const [paso, setPaso] = useState<Paso>('form')
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,6 +16,7 @@ export default function RegisterForm() {
   const [image, setImage] = useState<File | null>(null)
   const [errores, setErrores] = useState<string[]>([])
   const [cargando, setCargando] = useState(false)
+  const [totalSeguidos, setTotalSeguidos] = useState(0)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -19,7 +24,7 @@ export default function RegisterForm() {
     setCargando(true)
     try {
       await register({ username, email, password, password2, image })
-      window.location.href = '/feed/react/'
+      setPaso('onboarding')
     } catch (err) {
       if (err instanceof ApiError && err.detail && typeof err.detail === 'object') {
         const mensajes = Object.values(err.detail as Record<string, unknown>)
@@ -32,6 +37,30 @@ export default function RegisterForm() {
     } finally {
       setCargando(false)
     }
+  }
+
+  function finalizarOnboarding() {
+    // Si no siguio nada, Biblioteca estaria vacia -- lo llevamos
+    // directamente a Descubrir para que aterrice con contenido.
+    window.location.href = totalSeguidos > 0 ? '/feed/react/' : '/feed/react/?view=descubrir'
+  }
+
+  if (paso === 'onboarding') {
+    return (
+      <AuthLayout titulo="¿Qué te interesa?">
+        <p style={{ fontSize: 13, color: 'var(--fog)', marginBottom: 12 }}>
+          Sigue alguna obra o tema para empezar con contenido en tu Biblioteca. Puedes hacerlo también más tarde.
+        </p>
+        <OnboardingSearch onCambioContador={setTotalSeguidos} />
+        <button
+          className={styles.submit}
+          style={{ marginTop: 16 }}
+          onClick={finalizarOnboarding}
+        >
+          {totalSeguidos > 0 ? 'Continuar a Biblioteca' : 'Continuar a Descubrir'}
+        </button>
+      </AuthLayout>
+    )
   }
 
   return (
