@@ -4,6 +4,12 @@
   align-items: center;
   gap: 6px;
   flex: 0 0 auto;
+  transition: transform 0.18s ease;
+}
+
+.wrapper:hover {
+  transform: scale(1.08);
+  z-index: 5;
 }
 
 .lomo {
@@ -21,10 +27,13 @@
   cursor: pointer;
   font: inherit;
   order: 2;
+  box-shadow: 0 10px 14px -6px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.18s ease;
 }
 
 .lomoActive {
   border-color: var(--gold);
+  transform: scale(1.06);
 }
 
 .progressTrack {
@@ -112,7 +121,7 @@
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--paper);
   text-decoration: none;
   order: 1;
 }
@@ -138,7 +147,7 @@
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--paper);
   cursor: pointer;
   padding: 0;
   order: 3;

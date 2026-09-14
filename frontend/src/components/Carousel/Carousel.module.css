@@ -1,15 +1,27 @@
 .wrapper {
-  padding: 16px 0;
+  padding: 16px 24px 0;
+}
+
+.shelf {
+  height: 15px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, var(--wood) 0%, var(--wood-dark) 100%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+.shelfInterior {
+  background: linear-gradient(to bottom, var(--shelf-bg) 0%, var(--shelf-bg-dark) 100%);
+  padding: 10px 0;
 }
 
 .track {
   display: flex;
-  gap: 12px;
+  align-items: flex-end;
+  gap: 14px;
   overflow-x: auto;
+  overflow-y: visible;
   scroll-snap-type: x mandatory;
-  padding-bottom: 4px;
-  /* Oculta la barra de scroll visualmente sin perder la funcionalidad
-     (el gesto de swipe/drag sigue funcionando en todos los navegadores). */
+  padding: 10px 12px 10px;
   scrollbar-width: none;
 }
 

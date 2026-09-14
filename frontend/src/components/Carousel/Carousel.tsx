@@ -55,26 +55,34 @@ export default function Carousel() {
         onSelect={setCategoriaActiva}
       />
 
+      <div className={styles.shelf} />
+
       {listaFiltrada.length === 0 ? (
-        <p className={styles.empty}>
-          {view === 'biblioteca'
-            ? 'Todavía no sigues ninguna obra en esta categoría.'
-            : 'No hay obras que descubrir en esta categoría por ahora.'}
-        </p>
+        <div className={styles.shelfInterior}>
+          <p className={styles.empty}>
+            {view === 'biblioteca'
+              ? 'Todavía no sigues ninguna obra en esta categoría.'
+              : 'No hay obras que descubrir en esta categoría por ahora.'}
+          </p>
+        </div>
       ) : (
-        <div className={styles.track}>
-          {listaFiltrada.map((obra) => (
-            <Lomo
-              key={obra.id}
-              obra={obra}
-              activa={obraFiltro === obra.id}
-              onSelect={handleSelectObra}
-              mostrarProgreso={view === 'biblioteca'}
-              onCambioSuscripcion={recargarCatalogo}
-            />
-          ))}
+        <div className={styles.shelfInterior}>
+          <div className={styles.track}>
+            {listaFiltrada.map((obra) => (
+              <Lomo
+                key={obra.id}
+                obra={obra}
+                activa={obraFiltro === obra.id}
+                onSelect={handleSelectObra}
+                mostrarProgreso={view === 'biblioteca'}
+                onCambioSuscripcion={recargarCatalogo}
+              />
+            ))}
+          </div>
         </div>
       )}
+
+      <div className={styles.shelf} />
     </div>
   )
 }
