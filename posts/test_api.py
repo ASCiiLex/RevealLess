@@ -424,3 +424,31 @@ class PostSerializerIsOwnPostTests(TestCase):
         serializer."""
         response = self.client.get(reverse('posts_api_detail', args=[self.post.id]))
         self.assertEqual(response.status_code, 404)
+
+class PostSerializerFronteraSpoilerTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.autor = User.objects.create_user('frontera_serializer_autor', password='x')
+        self.obra = Obra.objects.create(titulo='Serie Frontera Serializer', slug='serie-frontera-serializer')
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.e2 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E2', orden_local=2,
+        )
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+        self.e2.refresh_from_db()
+        actualizar_progreso(self.autor, self.obra, self.e2)
+
+        self.post = Post.objects.create(
+            author=self.autor, obra=self.obra, text='post con frontera',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e2,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+    def test_incluye_frontera_spoiler_completa(self):
+        self.client.force_authenticate(user=self.autor)
+        response = self.client.get(reverse('posts_api_detail', args=[self.post.id]))
+        self.assertEqual(response.data['post']['frontera_spoiler']['id'], self.e2.id)
+        self.assertIn('orden_inicio', response.data['post']['frontera_spoiler'])

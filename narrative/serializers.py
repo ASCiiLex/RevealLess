@@ -30,6 +30,7 @@ class PostSerializer(serializers.ModelSerializer):
     obra_slug = serializers.CharField(source='obra.slug', read_only=True)
     imagen = serializers.SerializerMethodField()
     referencia_narrativa = UnidadNarrativaSerializer(read_only=True)
+    frontera_spoiler = UnidadNarrativaSerializer(read_only=True)
     likes_count = serializers.IntegerField(read_only=True)
     comments_count = serializers.IntegerField(read_only=True)
     user_reaction = serializers.SerializerMethodField()
@@ -39,7 +40,7 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = [
             'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'text', 'imagen',
-            'referencia_narrativa', 'nivel_spoiler', 'created_at',
+            'referencia_narrativa', 'frontera_spoiler', 'nivel_spoiler', 'created_at',
             'likes_count', 'comments_count', 'user_reaction', 'is_own_post',
         ]
 
