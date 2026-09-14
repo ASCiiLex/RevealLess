@@ -45,6 +45,11 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props)
     }
   }
 
+  function handleVerInfo(e: React.MouseEvent) {
+    e.stopPropagation()
+    window.location.href = `/narrative/obra/${obra.slug}/react/`
+  }
+
   return (
     <div className={styles.wrapper}>
       <button
@@ -57,6 +62,17 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso }: Props)
             <div className={styles.progressFill} style={{ width: `${obra.progreso_pct}%` }} />
           </div>
         )}
+
+        <button
+          type="button"
+          className={styles.infoIcon}
+          onClick={handleVerInfo}
+          aria-label={`Ver información de ${obra.titulo}`}
+          title="Ver información"
+        >
+          i
+        </button>
+
         <img className={styles.image} src={obra.imagen_url} alt="" />
         <div className={styles.overlay} />
         <span className={styles.title}>{obra.titulo}</span>

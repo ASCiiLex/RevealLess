@@ -24,6 +24,7 @@ export default defineConfig(({ command }) => ({
         follow_list: 'src/follow_list.tsx',
         publicar: 'src/publicar.tsx',
         post_detail: 'src/post_detail.tsx',
+        obra_landing: 'src/obra_landing.tsx',
       },
     },
   },

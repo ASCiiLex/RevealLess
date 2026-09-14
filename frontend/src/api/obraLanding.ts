@@ -1,0 +1,26 @@
+import { api } from './client'
+
+export interface TemaLanding {
+  id: number
+  nombre: string
+  suscrito: boolean
+  suscripcion_id: number | null
+}
+
+export interface ObraLanding {
+  id: number
+  titulo: string
+  slug: string
+  sinopsis: string
+  imagen_url: string
+  categorias: string[]
+  suscrito: boolean
+  suscripcion_id: number | null
+  progreso_pct: number | null
+  total_suscriptores: number
+  temas: TemaLanding[]
+}
+
+export function fetchObraLanding(obraSlug: string): Promise<ObraLanding> {
+  return api.get<ObraLanding>(`/narrative/api/obras/${obraSlug}/landing/`)
+}

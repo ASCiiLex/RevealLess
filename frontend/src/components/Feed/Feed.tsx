@@ -47,9 +47,11 @@ export default function Feed({ filtroExterno }: Props) {
         ? posts[0]?.obra_titulo ?? 'Obra'
         : null
 
+  const obraSlugFiltro = filtroExterno?.tipo === 'obra' ? posts[0]?.obra_slug : undefined
+
   return (
     <div className={styles.feed}>
-      {filtroExterno && <FilterHeader titulo={tituloFiltro ?? ''} />}
+      {filtroExterno && <FilterHeader titulo={tituloFiltro ?? ''} obraSlug={obraSlugFiltro} />}
 
       {posts.length === 0 ? (
         <p className={styles.empty}>
