@@ -5,11 +5,17 @@
   min-width: 0;
   font-size: 12px;
   line-height: 1.4;
+  color: var(--fog);
+}
+
+.prefix {
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .padre {
-  color: var(--ink);
   font-weight: 600;
+  color: var(--ink);
 }
 
 .separator {
@@ -19,5 +25,4 @@
 
 .nombre {
   color: var(--fog);
-  font-weight: 500;
 }

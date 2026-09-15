@@ -1,13 +1,26 @@
 import styles from './NarrativeLabel.module.css'
-import type { NarrativeUnit } from '../../api/feed'
+
+export interface NarrativeUnit {
+  id: number
+  nombre: string
+  tipo: string
+  etiqueta: string
+  orden_inicio: number
+  orden_fin: number
+  padre?: number | null
+  padre_etiqueta?: string | null
+}
 
 interface Props {
   unidad: NarrativeUnit
+  prefix?: string
 }
 
-export default function NarrativeLabel({ unidad }: Props) {
+export default function NarrativeLabel({ unidad, prefix }: Props) {
   return (
     <span className={styles.label}>
+      {prefix && <span className={styles.prefix}>{prefix}</span>}
+
       {unidad.padre_etiqueta && (
         <>
           <span className={styles.padre}>{unidad.padre_etiqueta}</span>

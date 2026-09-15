@@ -13,22 +13,20 @@ export default function PostCard({ post }: Props) {
       <div className={styles.meta}>
         <span className={styles.author}>@{post.autor}</span>
         <span>·</span>
-        <span>{post.obra_titulo}</span>
-
-        {post.referencia_narrativa && (
-          <>
-            <span>·</span>
-            <NarrativeLabel unidad={post.referencia_narrativa} />
-          </>
-        )}
+        <span className={styles.narrative}>
+          <span>{post.obra_titulo}</span>
+          {post.referencia_narrativa && (
+            <>
+              <span className={styles.narrativeSeparator}>|</span>
+              <NarrativeLabel unidad={post.referencia_narrativa} />
+            </>
+          )}
+        </span>
       </div>
 
       <a className={styles.textLink} href={`/posts/${post.id}/react/`}>
         <p className={styles.text}>{post.text}</p>
-
-        {post.imagen && (
-          <img className={styles.image} src={post.imagen} alt="" />
-        )}
+        {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
       </a>
 
       <ReactionBar

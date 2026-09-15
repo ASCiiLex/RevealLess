@@ -69,12 +69,12 @@ export default function PostDetailView({ postId }: Props) {
             <div>
               <div className={styles.author}>@{post.autor}</div>
 
-              <div className={styles.obraRow}>
-                <span className={styles.obra}>{post.obra_titulo}</span>
+              <div className={styles.obra}>
+                <span>{post.obra_titulo}</span>
 
                 {post.referencia_narrativa && (
                   <>
-                    <span className={styles.separator}>·</span>
+                    <span className={styles.narrativeSeparator}>|</span>
                     <NarrativeLabel unidad={post.referencia_narrativa} />
                   </>
                 )}
@@ -82,10 +82,7 @@ export default function PostDetailView({ postId }: Props) {
             </div>
 
             {post.is_own_post && (
-              <button
-                className={styles.editButton}
-                onClick={() => setEditando(true)}
-              >
+              <button className={styles.editButton} onClick={() => setEditando(true)}>
                 Editar
               </button>
             )}
@@ -94,9 +91,7 @@ export default function PostDetailView({ postId }: Props) {
 
         <p className={styles.text}>{post.text}</p>
 
-        {post.imagen && (
-          <img className={styles.image} src={post.imagen} alt="" />
-        )}
+        {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
 
         <ReactionBar
           postId={post.id}
@@ -113,9 +108,7 @@ export default function PostDetailView({ postId }: Props) {
         />
       )}
 
-      <h2 className={styles.commentsTitle}>
-        Comentarios ({detalle.comments.length})
-      </h2>
+      <h2 className={styles.commentsTitle}>Comentarios ({detalle.comments.length})</h2>
 
       <div className={styles.commentForm}>
         <input
@@ -127,10 +120,7 @@ export default function PostDetailView({ postId }: Props) {
           onKeyDown={(e) => e.key === 'Enter' && handleComentar()}
         />
 
-        <button
-          className={styles.commentSubmit}
-          onClick={handleComentar}
-        >
+        <button className={styles.commentSubmit} onClick={handleComentar}>
           Enviar
         </button>
       </div>
