@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from core.validators import validate_image_size
@@ -30,14 +31,29 @@ class Categoria(models.Model):
 
 
 class Obra(models.Model):
+    TIPO_SERIE = 'serie'
+    TIPO_PELICULA = 'pelicula'
+    TIPO_ESPECIAL = 'especial'
+    TIPO_OVA = 'ova'
+    TIPO_CORTO = 'corto'
+    TIPO_MANGA = 'manga'
     TIPO_CHOICES = [
-        ('serie', 'Serie'),
+        (TIPO_SERIE, 'Serie'),
+        (TIPO_PELICULA, 'Película'),
+        (TIPO_ESPECIAL, 'Especial de TV'),
+        (TIPO_OVA, 'OVA'),
+        (TIPO_CORTO, 'Corto'),
+        (TIPO_MANGA, 'Manga'),
     ]
 
     titulo = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='serie')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_SERIE)
     sinopsis = models.TextField(blank=True)
+    fecha_publicacion = models.DateField(null=True, blank=True)
+    # Varios nombres separados por coma. Sin modelo Autor propio: es
+    # metadato cosmético, igual criterio pragmático que SQLite para el MVP.
+    autor = models.CharField(max_length=200, blank=True)
     imagen = models.ImageField(
         upload_to=obra_image_path,
         blank=True,
@@ -154,6 +170,10 @@ class UnidadNarrativa(models.Model):
     tipo = models.CharField(max_length=50)
     nombre = models.CharField(max_length=200)
     orden_local = models.PositiveIntegerField()
+    # Real (Fase A, episodios vía Jikan) o aproximada (Fase B, capítulos de
+    # manga por fecha de volumen). null mientras no se conozca ninguna de
+    # las dos.
+    fecha = models.DateField(null=True, blank=True)
     imagen = models.ImageField(
         upload_to=unidad_image_path,
         blank=True,
@@ -193,6 +213,34 @@ class UnidadNarrativa(models.Model):
         return self.obra.image_url
 
 
+class ExternalId(models.Model):
+    """Ancla entre una entidad propia y su identificador en una fuente
+    externa. Permite reimportar sin duplicar (Fase A) y que Fase B
+    localice Obra y episodios ya importados por su MAL ID."""
+
+    SOURCE_JIKAN = 'jikan'
+    SOURCE_CHOICES = [(SOURCE_JIKAN, 'Jikan (MyAnimeList)')]
+
+    source = models.CharField(max_length=30, choices=SOURCE_CHOICES)
+    external_id = models.CharField(max_length=50)
+    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, null=True, blank=True, related_name='external_ids')
+    unidad = models.ForeignKey(UnidadNarrativa, on_delete=models.CASCADE, null=True, blank=True, related_name='external_ids')
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(Q(obra__isnull=False) & Q(unidad__isnull=True))
+                    | (Q(obra__isnull=True) & Q(unidad__isnull=False)),
+                name='externalid_un_solo_destino',
+            ),
+            models.UniqueConstraint(fields=['source', 'obra'], name='uniq_source_obra', condition=Q(obra__isnull=False)),
+            models.UniqueConstraint(fields=['source', 'unidad'], name='uniq_source_unidad', condition=Q(unidad__isnull=False)),
+        ]
+
+    def __str__(self):
+        return f'{self.source}:{self.external_id}'
+
+
 class ProgresoUsuario(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='progresos')
     obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='progresos')
@@ -210,16 +258,30 @@ class ProgresoUsuario(models.Model):
 class TemaTransversal(models.Model):
     """Hilo temático que atraviesa una obra sin anclarse a una unidad
     narrativa concreta (ej. 'Frutas del diablo' en One Piece, 'El Anillo
-    Único' en El Señor de los Anillos). Es una etiqueta de agrupación y
-    suscripción: no participa en el cálculo de frontera_orden. Cada post
-    sigue calculando su propia frontera vía referencia_narrativa/
-    frontera_spoiler, exactamente igual que sin tema.
+    Único' en El Señor de los Anillos), o una minihistoria (portadas que
+    cuentan una historia en paralelo, publicadas dentro de capítulos ya
+    existentes). Es una etiqueta de agrupación y suscripción: no participa
+    en el cálculo de frontera_orden. Cada post sigue calculando su propia
+    frontera vía referencia_narrativa/frontera_spoiler, exactamente igual
+    que sin tema.
 
     Vive en narrative (no en subscriptions) porque es una propiedad de la
     obra, igual que UnidadNarrativa — no del acto de suscribirse a ella."""
 
+    TIPO_TEMATICO = 'tematico'
+    TIPO_MINIHISTORIA = 'minihistoria'
+    TIPO_CHOICES = [
+        (TIPO_TEMATICO, 'Temático'),
+        (TIPO_MINIHISTORIA, 'Minihistoria'),
+    ]
+
     obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='temas_transversales')
     nombre = models.CharField(max_length=150)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_TEMATICO)
+    # Solo se usa para minihistorias: capítulos/episodios concretos en los
+    # que aparece una página/escena de este hilo. No implica pertenencia
+    # narrativa — cada unidad conserva su propio padre y su propia frontera.
+    unidades = models.ManyToManyField(UnidadNarrativa, blank=True, related_name='temas_transversales')
 
     class Meta:
         unique_together = ('obra', 'nombre')
