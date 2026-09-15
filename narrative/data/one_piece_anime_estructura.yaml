@@ -1,0 +1,124 @@
+# Curación de estructura narrativa — One Piece (ANIME)
+# Fase B: reagrupa episodios ya importados en Fase A (Jikan) bajo Parte/Saga/Arco.
+# No crea hojas nuevas — solo nodos intermedios + vinculación por rango de episodio.
+#
+# obra_external_id.external_id: MAL ID 21 (One Piece, TV) — verificar antes de usar.
+obra_external_id: {source: jikan, external_id: 21}
+tipo_unidad_raiz: parte
+sinopsis_en: [parte, saga, arco]   # nunca en episodio suelto
+
+nodos:
+  - tipo: parte
+    nombre: "El mar de la supervivencia: Saga de los supernovas"
+    orden_local: 1
+    hijos:
+      - tipo: saga
+        nombre: "Saga del East Blue"
+        orden_local: 1
+        hijos:
+          - {tipo: arco, nombre: "Arco de Romance Dawn", orden_local: 1, vincular_episodios: [1, 3]}
+          - {tipo: arco, nombre: "Arco de la ciudad Orange", orden_local: 2, vincular_episodios: [4, 8]}
+          - {tipo: arco, nombre: "Arco de villa Syrup", orden_local: 3, vincular_episodios: [9, 18]}
+          - {tipo: arco, nombre: "Arco del Baratie", orden_local: 4, vincular_episodios: [19, 30]}
+          - {tipo: arco, nombre: "Arco de Arlong Park", orden_local: 5, vincular_episodios: [31, 45]}
+          - {tipo: arco, nombre: "Aventuras de la tripulación de Buggy Arc", orden_local: 6, vincular_episodios: [46, 47]}
+          - {tipo: arco, nombre: "Arco de Loguetown", orden_local: 7, vincular_episodios: [48, 53]}
+          - {tipo: arco, nombre: "Arco del Dragón Milenario", orden_local: 8, vincular_episodios: [54, 61]}
+      - tipo: saga
+        nombre: "Saga de Arabasta"
+        orden_local: 2
+        hijos:
+          - {tipo: arco, nombre: "Arco de Reverse Mountain", orden_local: 1, vincular_episodios: [62, 63]}
+          - {tipo: arco, nombre: "Arco de Whisky Peak", orden_local: 2, vincular_episodios: [64, 67]}
+          - {tipo: arco, nombre: "Diario de Kobbymeppo", orden_local: 3, vincular_episodios: [68, 69]}
+          - {tipo: arco, nombre: "Arco de Little Garden", orden_local: 4, vincular_episodios: [70, 77]}
+          - {tipo: arco, nombre: "Arco de la isla de Drum", orden_local: 5, vincular_episodios: [78, 91]}
+          - {tipo: arco, nombre: "Arco de Arabasta", orden_local: 6, vincular_episodios: [92, 130]}
+          - {tipo: arco, nombre: "Arco de Historias Independientes", orden_local: 7, vincular_episodios: [131, 135]}
+      - tipo: saga
+        nombre: "Saga de la isla del Cielo"
+        orden_local: 3
+        hijos:
+          - {tipo: arco, nombre: "Arco de la isla Cabra", orden_local: 1, vincular_episodios: [136, 138]}
+          - {tipo: arco, nombre: "Arco de la Niebla Arco Iris", orden_local: 2, vincular_episodios: [139, 143]}
+          - {tipo: arco, nombre: "Arco de Jaya", orden_local: 3, vincular_episodios: [144, 152]}
+          - {tipo: arco, nombre: "Arco de Skypiea", orden_local: 4, vincular_episodios: [153, 195]}
+          - {tipo: arco, nombre: "Arco de Navarone", orden_local: 5, vincular_episodios: [196, 206]}
+      - tipo: saga
+        nombre: "Saga de Water 7"
+        orden_local: 4
+        hijos:
+          - {tipo: arco, nombre: "Arco de Long Ring Long Land", orden_local: 1, vincular_episodios: [207, 219]}
+          - {tipo: arco, nombre: "Arco de Ocean's Dream", orden_local: 2, vincular_episodios: [220, 224]}
+          - {tipo: arco, nombre: "Arco del regreso a Foxy", orden_local: 3, vincular_episodios: [225, 226]}
+          - {tipo: arco, nombre: "Arco de Water 7", orden_local: 4, vincular_episodios: [227, 263]}
+          - {tipo: arco, nombre: "Arco de Enies Lobby", orden_local: 5, vincular_episodios: [264, 312]}
+          - {tipo: arco, nombre: "Arco del regreso a Water 7", orden_local: 6, vincular_episodios: [313, 325]}
+      - tipo: saga
+        nombre: "Saga de Thriller Bark"
+        orden_local: 5
+        hijos:
+          - {tipo: arco, nombre: "Arco de Lovely Land", orden_local: 1, vincular_episodios: [326, 335]}
+          - {tipo: arco, nombre: "Arco de Thriller Bark", orden_local: 2, vincular_episodios: [337, 381]}
+          - {tipo: arco, nombre: "Arco de Spa Island", orden_local: 3, vincular_episodios: [382, 384]}
+      - tipo: saga
+        nombre: "Saga de la Guerra en la Cumbre"
+        orden_local: 6
+        hijos:
+          - {tipo: arco, nombre: "Arco del Archipiélago Sabaody", orden_local: 1, vincular_episodios: [385, 405]}
+          - {tipo: arco, nombre: "Arco de Amazon Lily", orden_local: 2, vincular_episodios: [408, 421]}
+          - {tipo: arco, nombre: "Arco de Impel Down", orden_local: 3, vincular_episodios: [422, 425]}
+          - {tipo: arco, nombre: "Arco del Little East Blue", orden_local: 4, vincular_episodios: [426, 429]}
+          - {tipo: arco, nombre: "Arco de Impel Down (continuación)", orden_local: 5, vincular_episodios: [430, 452]}
+          - {tipo: arco, nombre: "Aventuras de cada Sombrero de Paja", orden_local: 6, vincular_episodios: [453, 456]}
+          - {tipo: arco, nombre: "Arco de Marineford", orden_local: 7, vincular_episodios: [457, 489]}
+          - {tipo: arco, nombre: "Arco de 3D2Y", orden_local: 8, vincular_episodios: [490, 516]}
+
+  - tipo: parte
+    nombre: "El último mar: Saga del Nuevo Mundo"
+    orden_local: 2
+    hijos:
+      - tipo: saga
+        nombre: "Saga de la isla Gyojin"
+        orden_local: 1
+        hijos:
+          - {tipo: arco, nombre: "Arco del regreso a Sabaody", orden_local: 1, vincular_episodios: [517, 522]}
+          - {tipo: arco, nombre: "Arco de la isla Gyojin", orden_local: 2, vincular_episodios: [523, 574]}
+      - tipo: saga
+        nombre: "Saga de Dressrosa"
+        orden_local: 2
+        hijos:
+          - {tipo: arco, nombre: "Arco de la ambición de Z", orden_local: 1, vincular_episodios: [575, 578]}
+          - {tipo: arco, nombre: "Arco de Punk Hazard", orden_local: 2, vincular_episodios: [579, 625]}
+          - {tipo: arco, nombre: "Arco del rescate de Caesar", orden_local: 3, vincular_episodios: [626, 628]}
+          - {tipo: arco, nombre: "Arco de Dressrosa", orden_local: 4, vincular_episodios: [629, 746]}
+      - tipo: saga
+        nombre: "Saga de Whole Cake Island"
+        orden_local: 3
+        hijos:
+          - {tipo: arco, nombre: "Arco de Silver Mine", orden_local: 1, vincular_episodios: [747, 750]}
+          - {tipo: arco, nombre: "Arco de Zou", orden_local: 2, vincular_episodios: [751, 779]}
+          - {tipo: arco, nombre: "Arco de los Supernovas de la Marina", orden_local: 3, vincular_episodios: [780, 782]}
+          - {tipo: arco, nombre: "Arco de Whole Cake Island", orden_local: 4, vincular_episodios: [783, 877]}
+      - tipo: saga
+        nombre: "Saga del País de Wano"
+        orden_local: 4
+        hijos:
+          - {tipo: arco, nombre: "Arco del Lovely", orden_local: 1, vincular_episodios: [878, 889]}
+          - {tipo: arco, nombre: "Arco del País de Wano", orden_local: 2, vincular_episodios: [890, 894]}
+          - {tipo: arco, nombre: "Arco del rey del ácido carbónico", orden_local: 3, vincular_episodios: [895, 896]}
+          - {tipo: arco, nombre: "Arco del País de Wano (parte 2)", orden_local: 4, vincular_episodios: [897, 1028]}
+          - {tipo: arco, nombre: "Arco del pasado de Uta", orden_local: 5, vincular_episodios: [1029, 1030]}
+          - {tipo: arco, nombre: "Arco del País de Wano (parte 3)", orden_local: 6, vincular_episodios: [1031, 1085]}
+      - tipo: saga
+        nombre: "Saga final"
+        orden_local: 5
+        hijos:
+          - {tipo: arco, nombre: "Arco de Egghead", orden_local: 1, vincular_episodios: [1086, 1122]}
+          - {tipo: arco, nombre: "Arco de Egghead (parte 2)", orden_local: 2, vincular_episodios: [1123, 1155]}
+          - {tipo: arco, nombre: "Arco de Elbaph", orden_local: 3, vincular_episodios: [1156, null]}  # sin fin (en emisión) — el loader debe tolerar null y usar el último episodio importado
+
+# Películas, especiales de TV, OVAs, cortos (imagen 2): NO van en este fichero.
+# Son Obras independientes (tipo=película/especial/ova/corto), cada una con su propio
+# MAL ID, importadas en Fase A y enlazadas a esta Obra vía adapta_a/relations.
+# No tienen estructura interna de arcos — quedan fuera del alcance de la curación.

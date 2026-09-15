@@ -1,0 +1,126 @@
+# Curación de estructura narrativa — One Piece (MANGA)
+# Fase B: a diferencia del anime, aquí SÍ crea hojas nuevas (Jikan no da capítulos de manga).
+# fecha_capitulos: pendiente de fuente adicional (aproximación por volumen, a decidir/incorporar más adelante).
+#
+# obra_external_id.external_id: MAL ID 13 (One Piece, Manga) — verificar antes de usar.
+obra_external_id: {source: jikan, external_id: 13}
+tipo_unidad_raiz: parte
+sinopsis_en: [parte, saga, arco]   # nunca en capítulo suelto
+fecha_capitulos: pendiente
+
+nodos:
+  - tipo: parte
+    nombre: "El mar de la supervivencia: Saga de los supernovas"
+    orden_local: 1
+    hijos:
+      - tipo: saga
+        nombre: "Saga del East Blue"
+        orden_local: 1
+        hijos:
+          - {tipo: arco, nombre: "Arco de Romance Dawn", orden_local: 1, vincular_capitulos: [1, 7], volumenes: [1, 1]}
+          - {tipo: arco, nombre: "Arco de la ciudad Orange", orden_local: 2, vincular_capitulos: [8, 21], volumenes: [1, 3]}
+          - {tipo: arco, nombre: "Arco de Villa Syrup", orden_local: 3, vincular_capitulos: [22, 41], volumenes: [3, 5]}
+          - {tipo: arco, nombre: "Arco del Baratie", orden_local: 4, vincular_capitulos: [42, 68], volumenes: [5, 8]}
+          - {tipo: arco, nombre: "Arco de Arlong Park", orden_local: 5, vincular_capitulos: [69, 95], volumenes: [8, 11]}
+          - {tipo: arco, nombre: "Arco de Loguetown", orden_local: 6, vincular_capitulos: [96, 100], volumenes: [11, 12]}
+      - tipo: saga
+        nombre: "Saga de Arabasta"
+        orden_local: 2
+        hijos:
+          - {tipo: arco, nombre: "Arco de Reverse Mountain", orden_local: 1, vincular_capitulos: [101, 105], volumenes: [12, 12]}
+          - {tipo: arco, nombre: "Arco de Whisky Peak", orden_local: 2, vincular_capitulos: [106, 114], volumenes: [12, 13]}
+          - {tipo: arco, nombre: "Arco de Little Garden", orden_local: 3, vincular_capitulos: [115, 129], volumenes: [13, 15]}
+          - {tipo: arco, nombre: "Arco de la isla de Drum", orden_local: 4, vincular_capitulos: [130, 154], volumenes: [15, 17]}
+          - {tipo: arco, nombre: "Arco de Arabasta", orden_local: 5, vincular_capitulos: [155, 217], volumenes: [17, 24]}
+      - tipo: saga
+        nombre: "Saga de la isla del Cielo"
+        orden_local: 3
+        hijos:
+          - {tipo: arco, nombre: "Arco de Jaya", orden_local: 1, vincular_capitulos: [218, 236], volumenes: [24, 25]}
+          - {tipo: arco, nombre: "Arco de Skypiea", orden_local: 2, vincular_capitulos: [237, 302], volumenes: [26, 32]}
+      - tipo: saga
+        nombre: "Saga de Water 7"
+        orden_local: 4
+        hijos:
+          - {tipo: arco, nombre: "Arco de Long Ring Long Land", orden_local: 1, vincular_capitulos: [303, 321], volumenes: [32, 34]}
+          - {tipo: arco, nombre: "Arco de Water 7", orden_local: 2, vincular_capitulos: [322, 374], volumenes: [34, 39]}
+          - {tipo: arco, nombre: "Arco de Enies Lobby", orden_local: 3, vincular_capitulos: [375, 430], volumenes: [39, 44]}
+          - {tipo: arco, nombre: "Arco del regreso a Water 7", orden_local: 4, vincular_capitulos: [431, 441], volumenes: [45, 46]}
+      - tipo: saga
+        nombre: "Saga de Thriller Bark"
+        orden_local: 5
+        hijos:
+          - {tipo: arco, nombre: "Arco de Thriller Bark", orden_local: 1, vincular_capitulos: [442, 489], volumenes: [46, 50]}
+      - tipo: saga
+        nombre: "Saga de la Guerra en la Cumbre"
+        orden_local: 6
+        hijos:
+          - {tipo: arco, nombre: "Arco del Archipiélago Sabaody", orden_local: 1, vincular_capitulos: [490, 513], volumenes: [50, 53]}
+          - {tipo: arco, nombre: "Arco de Amazon Lily", orden_local: 2, vincular_capitulos: [514, 524], volumenes: [53, 54]}
+          - {tipo: arco, nombre: "Arco de Impel Down", orden_local: 3, vincular_capitulos: [525, 549], volumenes: [54, 56]}
+          - {tipo: arco, nombre: "Arco de Marineford", orden_local: 4, vincular_capitulos: [550, 580], volumenes: [56, 59]}
+          - {tipo: arco, nombre: "Arco de 3D2Y", orden_local: 5, vincular_capitulos: [581, 597], volumenes: [59, 61]}
+
+  - tipo: parte
+    nombre: "El último mar: Saga del Nuevo Mundo"
+    orden_local: 2
+    hijos:
+      - tipo: saga
+        nombre: "Saga de la isla Gyojin"
+        orden_local: 1
+        hijos:
+          - {tipo: arco, nombre: "Arco del regreso a Sabaody", orden_local: 1, vincular_capitulos: [598, 602], volumenes: [61, 61]}
+          - {tipo: arco, nombre: "Arco de la isla Gyojin", orden_local: 2, vincular_capitulos: [603, 653], volumenes: [61, 66]}
+      - tipo: saga
+        nombre: "Saga de Dressrosa"
+        orden_local: 2
+        hijos:
+          - {tipo: arco, nombre: "Arco de Punk Hazard", orden_local: 1, vincular_capitulos: [654, 699], volumenes: [66, 70]}
+          - {tipo: arco, nombre: "Arco de Dressrosa", orden_local: 2, vincular_capitulos: [700, 801], volumenes: [70, 80]}
+      - tipo: saga
+        nombre: "Saga de Whole Cake Island"
+        orden_local: 3
+        hijos:
+          - {tipo: arco, nombre: "Arco de Zou", orden_local: 1, vincular_capitulos: [802, 824], volumenes: [80, 82]}
+          - {tipo: arco, nombre: "Arco de Whole Cake Island", orden_local: 2, vincular_capitulos: [825, 902], volumenes: [82, 90]}
+      - tipo: saga
+        nombre: "Saga del País de Wano"
+        orden_local: 4
+        hijos:
+          - {tipo: arco, nombre: "Arco del Lovely", orden_local: 1, vincular_capitulos: [903, 908], volumenes: [90, 90]}
+          - {tipo: arco, nombre: "Arco del País de Wano", orden_local: 2, vincular_capitulos: [909, 1057], volumenes: [90, 105]}
+      - tipo: saga
+        nombre: "Saga final"
+        orden_local: 5
+        hijos:
+          - {tipo: arco, nombre: "Arco de Egghead", orden_local: 1, vincular_capitulos: [1058, 1125], volumenes: [105, 111]}
+          - {tipo: arco, nombre: "Arco de Elbaph", orden_local: 2, vincular_capitulos: [1126, null], volumenes: [null, null]}  # en curso — loader debe tolerar null
+
+# Minihistorias (imagen 4) — TemaTransversal, no participan en frontera_orden.
+# IMPORTANTE: la tabla original da RANGO de capítulo/volumen en el que aparece la minihistoria,
+# no la lista de capítulos exactos que llevan página de portada dentro de ese rango.
+# Dejo el rango tal cual como placeholder — según lo acordado (capítulos explícitos, no rango),
+# esto necesita revisión antes de usarse: o se afina a la lista exacta, o se decide aceptar el
+# rango como aproximación consciente. Marcado con revisar: true.
+temas_transversales:
+  - {nombre: "Aventura de la tripulación de Buggy", tipo: minihistoria, rango_capitulos: [35, 75], volumenes: [4, 9], revisar: true}
+  - {nombre: "Diario de Kobymeppo", tipo: minihistoria, rango_capitulos: [83, 119], volumenes: [10, 14], revisar: true}
+  - {nombre: "Paraíso Dance de Jango", tipo: minihistoria, rango_capitulos: [126, 172], volumenes: [14, 19], revisar: true}
+  - {nombre: "Paseo por el fondo marino de Hatchan", tipo: minihistoria, rango_capitulos: [182, 228], volumenes: [20, 25], revisar: true}
+  - {nombre: "Hurra omnívoro de Wapol", tipo: minihistoria, rango_capitulos: [236, 262], volumenes: [25, 28], revisar: true}
+  - {nombre: "Ace a la caza de Barbanegra", tipo: minihistoria, rango_capitulos: [272, 305], volumenes: [29, 32], revisar: true}
+  - {nombre: "Accidental vida de Gedatsu en el Mar Azul", tipo: minihistoria, rango_capitulos: [314, 348], volumenes: [33, 37], revisar: true}
+  - {nombre: "La \"Operación: Reunir a Baroque Works\" de Miss Goldenweek", tipo: minihistoria, rango_capitulos: [359, 413], volumenes: [38, 43], revisar: true}
+  - {nombre: "Dónde están ahora (I)", tipo: minihistoria, rango_capitulos: [424, 427], volumenes: [44, 44], revisar: true}
+  - {nombre: "Gran plan espacial de Enel", tipo: minihistoria, rango_capitulos: [428, 474], volumenes: [44, 49], revisar: true}
+  - {nombre: "Dónde están ahora (II)", tipo: minihistoria, rango_capitulos: [486, 490], volumenes: [50, 50], revisar: true}
+  - {nombre: "Reporte independiente del CP9", tipo: minihistoria, rango_capitulos: [491, 528], volumenes: [50, 54], revisar: true}
+  - {nombre: "Aventuras de cada Sombrero de Paja", tipo: minihistoria, rango_capitulos: [543, 560], volumenes: [56, 57], revisar: true}
+  - {nombre: "Desde las cubiertas del mundo", tipo: minihistoria, rango_capitulos: [613, 668], volumenes: [62, 68], revisar: true}
+  - {nombre: "Kehihihihi de Caribou en el Nuevo Mundo", tipo: minihistoria, rango_capitulos: [674, 731], volumenes: [68, 73], revisar: true}
+  - {nombre: "El solitario viaje de Jinbe, el Caballero del Mar", tipo: minihistoria, rango_capitulos: [751, 785], volumenes: [75, 78], revisar: true}
+  - {nombre: "Desde las cubiertas del mundo: arco del hombre de los 500.000.000", tipo: minihistoria, rango_capitulos: [805, 838], volumenes: [80, 83], revisar: true}
+  - {nombre: "Las historias de la autoproclamada Gran Flota de Sombrero de Paja", tipo: minihistoria, rango_capitulos: [864, 919], volumenes: [86, 91], revisar: true}
+  - {nombre: "El \"Oh familia mía\" de \"Gang\" Bege", tipo: minihistoria, rango_capitulos: [948, 994], volumenes: [94, 97], revisar: true}
+  - {nombre: "La insensible excursión del Germa 66", tipo: minihistoria, rango_capitulos: [1035, 1078], volumenes: [102, 105], revisar: true}
+  - {nombre: "El peregrinaje por los templos de la chica oni, Yamato", tipo: minihistoria, rango_capitulos: [1109, 1162], volumenes: [109, 114], revisar: true}
