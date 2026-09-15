@@ -13,6 +13,10 @@ class Command(BaseCommand):
             '--hasta-capitulo', type=int, default=None,
             help='Cierra los rangos abiertos (fin=null) de vincular_capitulos hasta este número.',
         )
+        parser.add_argument(
+            '--hasta-episodio', type=int, default=None,
+            help='Cierra los rangos abiertos (fin=null) de vincular_episodios hasta este número.',
+        )
 
     def handle(self, *args, **options):
         with open(options['archivo'], encoding='utf-8') as f:
@@ -29,6 +33,7 @@ class Command(BaseCommand):
             )
         obra = externo.obra
         self.hasta_capitulo = options.get('hasta_capitulo')
+        self.hasta_episodio = options.get('hasta_episodio')
 
         for nodo in data.get('nodos', []):
             self._construir_nodo(obra, None, nodo)
@@ -51,49 +56,49 @@ class Command(BaseCommand):
             unidad.save(update_fields=['orden_local'])
 
         if 'vincular_episodios' in nodo:
-            self._vincular_episodios(obra, unidad, nodo['vincular_episodios'])
+            self._vincular_o_crear(obra, unidad, nodo['vincular_episodios'], tipo='episodio',
+                                    nombre_patron='Episodio {n}', hasta=self.hasta_episodio,
+                                    flag_hasta='--hasta-episodio')
         if 'vincular_capitulos' in nodo:
-            self._vincular_capitulos(obra, unidad, nodo['vincular_capitulos'])
+            self._vincular_o_crear(obra, unidad, nodo['vincular_capitulos'], tipo='capitulo',
+                                    nombre_patron='Capítulo {n}', hasta=self.hasta_capitulo,
+                                    flag_hasta='--hasta-capitulo')
 
         for hijo in nodo.get('hijos', []):
             self._construir_nodo(obra, unidad, hijo)
 
-    def _vincular_episodios(self, obra, arco, rango):
-        inicio, fin = rango
-        qs = UnidadNarrativa.objects.filter(obra=obra, padre__isnull=True, tipo='episodio', orden_local__gte=inicio)
-        if fin is not None:
-            qs = qs.filter(orden_local__lte=fin)
-        total = qs.update(padre=arco)
-        if total == 0:
-            self.stdout.write(self.style.WARNING(
-                f'{arco.nombre}: 0 episodios encontrados en el rango {rango} '
-                '— ¿se ejecutó importar_catalogo para esta Obra?'
-            ))
-        else:
-            self.stdout.write(f'{arco.nombre}: {total} episodios reasignados.')
-
-    def _vincular_capitulos(self, obra, arco, rango):
+    def _vincular_o_crear(self, obra, arco, rango, tipo, nombre_patron, hasta, flag_hasta):
+        """Común a episodios (anime) y capítulos (manga): si la hoja ya
+        existe (importada por Jikan en Fase A, o creada en una pasada
+        anterior de este mismo comando), se reasigna a este arco. Si no
+        existe todavía, se crea como placeholder — así el árbol completo
+        queda operativo aunque Fase A no haya podido traer los datos
+        reales, y cuando Fase A sí los traiga más tarde adoptará estas
+        mismas hojas por su orden_local en vez de duplicarlas."""
         inicio, fin = rango
         if fin is None:
-            fin = self.hasta_capitulo
+            fin = hasta
             if fin is None:
                 self.stdout.write(self.style.WARNING(
-                    f'{arco.nombre}: rango abierto sin --hasta-capitulo — se omite.'
+                    f'{arco.nombre}: rango abierto sin {flag_hasta} — se omite.'
                 ))
                 return
 
-        creados = 0
+        creados, reasignados = 0, 0
         for n in range(inicio, fin + 1):
             unidad, creada = UnidadNarrativa.objects.get_or_create(
-                obra=obra, tipo='capitulo', orden_local=n,
-                defaults={'padre': arco, 'nombre': f'Capítulo {n}'},
+                obra=obra, tipo=tipo, orden_local=n,
+                defaults={'padre': arco, 'nombre': nombre_patron.format(n=n)},
             )
-            if not creada and unidad.padre_id != arco.id:
-                unidad.padre = arco
-                unidad.save(update_fields=['padre'])
             if creada:
                 creados += 1
-        self.stdout.write(f'{arco.nombre}: {creados} capítulos creados ({inicio}-{fin}).')
+            else:
+                if unidad.padre_id != arco.id:
+                    unidad.padre = arco
+                    unidad.save(update_fields=['padre'])
+                reasignados += 1
+
+        self.stdout.write(f'{arco.nombre}: {creados} creados como placeholder, {reasignados} reasignados ({inicio}-{fin}).')
 
     # -- TemaTransversal (temático o minihistoria) ------------------------
 

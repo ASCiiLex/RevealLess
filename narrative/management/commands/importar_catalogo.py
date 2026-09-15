@@ -123,7 +123,7 @@ class Command(BaseCommand):
     def _importar_episodios(self, obra, source, mal_id, total_episodios):
         episodios, paginas_fallidas = jikan.get_anime_episodes(mal_id, total_episodios)
 
-        creados, actualizados = 0, 0
+        creados, adoptados, actualizados = 0, 0, 0
         for ep in episodios:
             ep_id = ep['mal_id']
             nombre = ep.get('title') or f'Episodio {ep_id}'
@@ -140,14 +140,30 @@ class Command(BaseCommand):
                 actualizados += 1
                 continue
 
-            unidad = UnidadNarrativa.objects.create(
-                obra=obra, padre=None, tipo='episodio',
-                nombre=nombre, orden_local=ep_id, fecha=fecha,
-            )
-            ExternalId.objects.create(source=source, external_id=str(ep_id), unidad=unidad)
-            creados += 1
+            # Puede existir ya como placeholder creado por importar_estructura
+            # (Fase B) antes de que Jikan estuviera disponible. Se adopta —
+            # se le pone título/fecha reales y se conserva su padre actual —
+            # en vez de crear un duplicado sin relación con el árbol.
+            unidad = UnidadNarrativa.objects.filter(
+                obra=obra, tipo='episodio', orden_local=ep_id,
+            ).first()
+            if unidad:
+                unidad.nombre = nombre
+                unidad.fecha = fecha
+                unidad.save(update_fields=['nombre', 'fecha'])
+                adoptados += 1
+            else:
+                unidad = UnidadNarrativa.objects.create(
+                    obra=obra, padre=None, tipo='episodio',
+                    nombre=nombre, orden_local=ep_id, fecha=fecha,
+                )
+                creados += 1
 
-        self.stdout.write(self.style.SUCCESS(f'Episodios: {creados} creados, {actualizados} actualizados.'))
+            ExternalId.objects.create(source=source, external_id=str(ep_id), unidad=unidad)
+
+        self.stdout.write(self.style.SUCCESS(
+            f'Episodios: {creados} creados, {adoptados} adoptados (placeholder → real), {actualizados} actualizados.'
+        ))
 
         if paginas_fallidas:
             self.stdout.write(self.style.WARNING(
