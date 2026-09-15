@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import styles from './PostDetailView.module.css'
 import CommentItem from './CommentItem'
 import ReactionBar from '../Feed/ReactionBar'
+import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EditPostForm from './EditPostForm'
 import { fetchPostDetail, addComment, type PostDetail } from '../../api/postDetail'
 import type { FeedPost } from '../../api/feed'
@@ -21,7 +22,9 @@ export default function PostDetailView({ postId }: Props) {
 
   async function handleComentar() {
     if (!nuevoComentario.trim() || !detalle) return
+
     const nuevo = await addComment(postId, nuevoComentario)
+
     setDetalle({
       ...detalle,
       comments: [
@@ -39,11 +42,13 @@ export default function PostDetailView({ postId }: Props) {
         ...detalle.comments,
       ],
     })
+
     setNuevoComentario('')
   }
 
   function handlePostActualizado(postActualizado: FeedPost) {
     if (!detalle) return
+
     setDetalle({ ...detalle, post: postActualizado })
     setEditando(false)
   }
@@ -59,13 +64,28 @@ export default function PostDetailView({ postId }: Props) {
       <div className={styles.postCard}>
         <div className={styles.meta}>
           <img className={styles.avatar} src={post.autor_avatar} alt="" />
+
           <div className={styles.authorRow}>
             <div>
               <div className={styles.author}>@{post.autor}</div>
-              <div className={styles.obra}>{post.obra_titulo}</div>
+
+              <div className={styles.obraRow}>
+                <span className={styles.obra}>{post.obra_titulo}</span>
+
+                {post.referencia_narrativa && (
+                  <>
+                    <span className={styles.separator}>·</span>
+                    <NarrativeLabel unidad={post.referencia_narrativa} />
+                  </>
+                )}
+              </div>
             </div>
+
             {post.is_own_post && (
-              <button className={styles.editButton} onClick={() => setEditando(true)}>
+              <button
+                className={styles.editButton}
+                onClick={() => setEditando(true)}
+              >
                 Editar
               </button>
             )}
@@ -73,7 +93,10 @@ export default function PostDetailView({ postId }: Props) {
         </div>
 
         <p className={styles.text}>{post.text}</p>
-        {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
+
+        {post.imagen && (
+          <img className={styles.image} src={post.imagen} alt="" />
+        )}
 
         <ReactionBar
           postId={post.id}
@@ -90,7 +113,9 @@ export default function PostDetailView({ postId }: Props) {
         />
       )}
 
-      <h2 className={styles.commentsTitle}>Comentarios ({detalle.comments.length})</h2>
+      <h2 className={styles.commentsTitle}>
+        Comentarios ({detalle.comments.length})
+      </h2>
 
       <div className={styles.commentForm}>
         <input
@@ -101,7 +126,11 @@ export default function PostDetailView({ postId }: Props) {
           placeholder="Escribe un comentario..."
           onKeyDown={(e) => e.key === 'Enter' && handleComentar()}
         />
-        <button className={styles.commentSubmit} onClick={handleComentar}>
+
+        <button
+          className={styles.commentSubmit}
+          onClick={handleComentar}
+        >
           Enviar
         </button>
       </div>
@@ -109,7 +138,9 @@ export default function PostDetailView({ postId }: Props) {
       {detalle.comments.length === 0 ? (
         <p className={styles.empty}>No hay comentarios todavía.</p>
       ) : (
-        detalle.comments.map((c) => <CommentItem key={c.id} comment={c} postId={postId} />)
+        detalle.comments.map((c) => (
+          <CommentItem key={c.id} comment={c} postId={postId} />
+        ))
       )}
     </div>
   )

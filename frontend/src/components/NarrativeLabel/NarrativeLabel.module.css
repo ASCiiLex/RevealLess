@@ -1,0 +1,23 @@
+.label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.padre {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.separator {
+  color: var(--fog);
+  opacity: 0.7;
+}
+
+.nombre {
+  color: var(--fog);
+  font-weight: 500;
+}

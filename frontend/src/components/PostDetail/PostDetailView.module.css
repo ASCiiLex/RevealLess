@@ -31,6 +31,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .author {
@@ -39,9 +40,22 @@
   color: var(--ink);
 }
 
+.narrativeMeta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .obra {
   font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.separator {
   color: var(--fog);
+  font-size: 13px;
 }
 
 .editButton {
@@ -115,4 +129,21 @@
   font-size: 14px;
   text-align: center;
   padding: 24px 0;
+}
+
+
+.obraRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.separator {
+  color: var(--fog);
+}
+
+.obra {
+  font-size: 13px;
+  color: var(--fog);
 }

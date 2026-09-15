@@ -1,5 +1,16 @@
 import { api } from './client'
 
+export interface NarrativeUnit {
+  id: number
+  nombre: string
+  tipo: string
+  etiqueta: string
+  orden_inicio: number
+  orden_fin: number
+  padre: number | null
+  padre_etiqueta: string | null
+}
+
 export interface FeedPost {
   id: number
   autor: string
@@ -8,22 +19,8 @@ export interface FeedPost {
   obra_slug: string
   text: string
   imagen: string | null
-  referencia_narrativa: {
-    id: number
-    nombre: string
-    tipo: string
-    etiqueta: string
-    orden_inicio: number
-    orden_fin: number
-  } | null
-  frontera_spoiler: {
-    id: number
-    nombre: string
-    tipo: string
-    etiqueta: string
-    orden_inicio: number
-    orden_fin: number
-  } | null
+  referencia_narrativa: NarrativeUnit | null
+  frontera_spoiler: NarrativeUnit | null
   nivel_spoiler: string
   created_at: string
   likes_count: number
@@ -39,11 +36,17 @@ interface PaginatedResponse<T> {
   results: T[]
 }
 
-export function fetchFeed(obraId?: number | null, hashtag?: string): Promise<PaginatedResponse<FeedPost>> {
+export function fetchFeed(
+  obraId?: number | null,
+  hashtag?: string
+): Promise<PaginatedResponse<FeedPost>> {
   const params = new URLSearchParams()
+
   if (obraId) params.set('obra', String(obraId))
   if (hashtag) params.set('hashtag', hashtag)
+
   const query = params.toString()
+
   return api.get<PaginatedResponse<FeedPost>>(
     `/narrative/api/feed/${query ? `?${query}` : ''}`
   )
