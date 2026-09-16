@@ -14,6 +14,7 @@ urlpatterns = [
     path('progreso/<slug:obra_slug>/', views.declarar_progreso, name='narrative_declarar_progreso'),
     path('progreso-react/<slug:obra_slug>/', views.progreso_react_view, name='narrative_progreso_react'),
     path('obra/<slug:obra_slug>/react/', views.obra_landing_react_view, name='narrative_obra_landing_react'),
+    path('obra/<slug:obra_slug>/temas/react/', views.obra_temas_react_view, name='narrative_obra_temas_react'),
 
     path('api/feed/', FeedAPIView.as_view(), name='narrative_api_feed'),
     path('api/progreso/<slug:obra_slug>/', ProgresoAPIView.as_view(), name='narrative_api_progreso'),

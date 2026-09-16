@@ -25,6 +25,7 @@ export default defineConfig(({ command }) => ({
         publicar: 'src/publicar.tsx',
         post_detail: 'src/post_detail.tsx',
         obra_landing: 'src/obra_landing.tsx',
+        obra_temas: 'src/obra_temas.tsx',
       },
     },
   },
