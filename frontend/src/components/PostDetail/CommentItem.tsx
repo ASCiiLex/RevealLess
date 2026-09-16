@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import styles from './CommentItem.module.css'
 import EmocionBadge from '../Emociones/EmocionBadge'
+import ReactionBar from '../Feed/ReactionBar'
 import type { CommentItem as CommentItemType } from '../../api/postDetail'
-import { toggleReactionComment, addComment } from '../../api/postDetail'
+import { addComment } from '../../api/postDetail'
 
 interface Props {
   comment: CommentItemType
@@ -10,17 +11,9 @@ interface Props {
 }
 
 export default function CommentItem({ comment, postId }: Props) {
-  const [reaccion, setReaccion] = useState(comment.user_reaction)
-  const [contador, setContador] = useState(comment.reactions_count)
   const [replyAbierto, setReplyAbierto] = useState(false)
   const [replyTexto, setReplyTexto] = useState('')
   const [replies, setReplies] = useState(comment.replies)
-
-  async function handleLike() {
-    const resultado = await toggleReactionComment(comment.id, 'like')
-    setReaccion(resultado.removed ? null : 'like')
-    setContador(resultado.count)
-  }
 
   async function handleReply() {
     if (!replyTexto.trim()) return
@@ -52,13 +45,13 @@ export default function CommentItem({ comment, postId }: Props) {
         <EmocionBadge emocionAutor={comment.emocion_autor} />
       </div>
       <p className={styles.text}>{comment.text}</p>
+
       <div className={styles.actions}>
-        <button
-          className={`${styles.reactButton} ${reaccion === 'like' ? styles.reactButtonActive : ''}`}
-          onClick={handleLike}
-        >
-          Me gusta {contador > 0 && `(${contador})`}
-        </button>
+        <ReactionBar
+          targetId={comment.id}
+          target="comment"
+          reaccionInicial={comment.user_reaction}
+        />
         {!comment.parent_id && (
           <button className={styles.replyButton} onClick={() => setReplyAbierto((v) => !v)}>
             Responder
@@ -76,7 +69,7 @@ export default function CommentItem({ comment, postId }: Props) {
             placeholder="Escribe una respuesta..."
             onKeyDown={(e) => e.key === 'Enter' && handleReply()}
           />
-          <button className={styles.reactButton} onClick={handleReply}>Enviar</button>
+          <button className={styles.quitar} onClick={handleReply}>Enviar</button>
         </div>
       )}
 

@@ -31,7 +31,7 @@ class Notification(models.Model):
     target_id = models.IntegerField(null=True, blank=True)
 
     reaction = models.CharField(
-        max_length=10,
+        max_length=20,
         null=True,
         blank=True
     )

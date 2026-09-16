@@ -43,6 +43,17 @@ export async function toggleReactionPost(postId: number, reaction: string) {
   return response.json()
 }
 
+export interface PostReactionsTotals {
+  totals: Record<string, number>
+}
+
+export async function fetchPostReactionsTotals(postId: number): Promise<PostReactionsTotals> {
+  const response = await fetch(`/posts/reactions/${postId}/`, {
+    credentials: 'same-origin',
+  })
+  return response.json()
+}
+
 export async function addComment(
   postId: number,
   text: string,

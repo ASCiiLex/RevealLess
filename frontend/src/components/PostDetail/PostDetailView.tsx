@@ -102,9 +102,8 @@ export default function PostDetailView({ postId }: Props) {
         {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
 
         <ReactionBar
-          postId={post.id}
+          targetId={post.id}
           reaccionInicial={detalle.post_reaction}
-          contadorInicial={post.likes_count}
         />
       </div>
 

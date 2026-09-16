@@ -33,9 +33,8 @@ export default function PostCard({ post }: Props) {
       </a>
 
       <ReactionBar
-        postId={post.id}
+        targetId={post.id}
         reaccionInicial={post.user_reaction}
-        contadorInicial={post.likes_count}
       />
 
       <a className={styles.commentsLink} href={`/posts/${post.id}/react/`}>

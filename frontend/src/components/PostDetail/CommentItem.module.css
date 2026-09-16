@@ -29,27 +29,15 @@
 .text {
   font-size: 14px;
   color: var(--ink);
-  margin: 0 0 6px 36px;
+  margin: 0 0 8px 36px;
 }
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 12px;
   margin-left: 36px;
   font-size: 12px;
-}
-
-.reactButton {
-  border: none;
-  background: none;
-  color: var(--fog);
-  cursor: pointer;
-  padding: 0;
-}
-
-.reactButtonActive {
-  color: var(--gold);
-  font-weight: 600;
 }
 
 .replyButton {
@@ -58,6 +46,7 @@
   color: var(--fog);
   cursor: pointer;
   padding: 0;
+  font-size: 12px;
 }
 
 .replies {
@@ -80,4 +69,13 @@
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 13px;
+}
+
+.quitar {
+  border: none;
+  background: none;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
 }
