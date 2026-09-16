@@ -152,5 +152,7 @@ class PostDetailAPIView(APIView):
         return Response({
             'post': PostSerializer(post, context={'request': request}).data,
             'post_reaction': post_reaction,
-            'comments': CommentSerializer(comments, many=True, context={'reaction_map': reaction_map}).data,
+            'comments': CommentSerializer(
+                comments, many=True, context={'reaction_map': reaction_map, 'request': request}
+            ).data,
         })
