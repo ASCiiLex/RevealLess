@@ -83,7 +83,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
       {mostrarProgreso && (
         <a className={styles.progressLink} href={`/narrative/progreso-react/${obra.slug}/`}>
           <span className={styles.progressIcon} aria-hidden="true">📖</span>
-          <span>Progreso</span>
+          <span className={styles.actionText}>Progreso</span>
         </a>
       )}
 
@@ -93,7 +93,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
         disabled={cargando}
       >
         <span className={styles.progressIcon} aria-hidden="true">{siguiendo ? '🔕' : '🔔'}</span>
-        <span>{siguiendo ? 'Siguiendo' : 'Seguir'}</span>
+        <span className={styles.actionText}>{siguiendo ? 'Siguiendo' : 'Seguir'}</span>
       </button>
     </div>
   )
