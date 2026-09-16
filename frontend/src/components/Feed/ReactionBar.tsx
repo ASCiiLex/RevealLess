@@ -20,6 +20,7 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
   const [reaccion, setReaccion] = useState(reaccionInicial)
   const [totales, setTotales] = useState<Record<string, number>>({})
   const [abierto, setAbierto] = useState(false)
+  const [posicion, setPosicion] = useState<'abajo' | 'arriba'>('abajo')
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -36,6 +37,18 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  function handleAbrir() {
+    if (!abierto && wrapperRef.current) {
+      // Panel ocupa ~150px de alto; si no cabe hacia abajo antes del
+      // final del viewport (restando el BottomNav fixed, ~64px),
+      // se despliega hacia arriba en su lugar.
+      const rect = wrapperRef.current.getBoundingClientRect()
+      const espacioAbajo = window.innerHeight - rect.bottom - 64
+      setPosicion(espacioAbajo < 160 ? 'arriba' : 'abajo')
+    }
+    setAbierto((v) => !v)
+  }
 
   async function handleReaccion(tipo: string) {
     const resultado = target === 'post'
@@ -59,7 +72,7 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
     <div className={styles.wrapper} ref={wrapperRef}>
       <button
         className={`${styles.trigger} ${reaccion ? styles.triggerActive : ''}`}
-        onClick={() => setAbierto((v) => !v)}
+        onClick={handleAbrir}
         aria-expanded={abierto}
       >
         <span className={styles.triggerEmoji} aria-hidden="true">
@@ -74,7 +87,7 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
       )}
 
       {abierto && (
-        <div className={styles.panel}>
+        <div className={`${styles.panel} ${posicion === 'arriba' ? styles.panelArriba : ''}`}>
           <div className={styles.grid}>
             {EMOCIONES.map((e) => (
               <button

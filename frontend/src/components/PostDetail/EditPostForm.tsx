@@ -124,7 +124,7 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
             />
           </div>
 
-          <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} />
+                    <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} colapsable={false} />
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>

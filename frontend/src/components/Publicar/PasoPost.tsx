@@ -47,10 +47,6 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
       })
 
       if ('progresoRequerido' in resultado) {
-        // El backend es la única fuente de verdad real sobre si hace
-        // falta progreso -- la heurística optimista de PublicarFlow
-        // (saltar directo a este paso) puede equivocarse, y aquí es
-        // donde se corrige devolviendo al paso de declarar progreso.
         onProgresoRequerido()
         return
       }
@@ -87,30 +83,6 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
         )}
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="text">¿Qué estás pensando?</label>
-          <textarea
-            id="text"
-            className={styles.textarea}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            required
-          />
-        </div>
-
-        <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} />
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="image">Imagen (opcional)</label>
-          <input
-            id="image"
-            className={styles.input}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-          />
-        </div>
-
-        <div className={styles.field}>
           <label className={styles.label} htmlFor="referencia">¿De qué parte habla?</label>
           <select
             id="referencia"
@@ -120,6 +92,23 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
             required
           >
             <option value="">Elige una unidad</option>
+            {detalle.unidades.map((u) => (
+              <option key={u.id} value={u.id}>{u.etiqueta}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="nuevo-progreso">
+            Actualizar mi progreso a (opcional)
+          </label>
+          <select
+            id="nuevo-progreso"
+            className={styles.select}
+            value={nuevoProgresoId ?? ''}
+            onChange={(e) => setNuevoProgresoId(Number(e.target.value) || null)}
+          >
+            <option value="">No actualizar</option>
             {detalle.unidades.map((u) => (
               <option key={u.id} value={u.id}>{u.etiqueta}</option>
             ))}
@@ -147,20 +136,27 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="nuevo-progreso">
-            Actualizar mi progreso a (opcional)
-          </label>
-          <select
-            id="nuevo-progreso"
-            className={styles.select}
-            value={nuevoProgresoId ?? ''}
-            onChange={(e) => setNuevoProgresoId(Number(e.target.value) || null)}
-          >
-            <option value="">No actualizar</option>
-            {detalle.unidades.map((u) => (
-              <option key={u.id} value={u.id}>{u.etiqueta}</option>
-            ))}
-          </select>
+          <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>
+          <textarea
+            id="text"
+            className={styles.textarea}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            required
+          />
+        </div>
+
+        <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} />
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="image">Imagen (opcional)</label>
+          <input
+            id="image"
+            className={styles.input}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+          />
         </div>
 
         <button className={styles.submit} type="submit" disabled={enviando || !referenciaId}>

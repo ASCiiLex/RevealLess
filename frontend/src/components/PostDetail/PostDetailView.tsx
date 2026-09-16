@@ -118,25 +118,27 @@ export default function PostDetailView({ postId }: Props) {
       <h2 className={styles.commentsTitle}>Comentarios ({detalle.comments.length})</h2>
 
       <div className={styles.commentForm}>
-        <input
-          className={styles.commentInput}
-          type="text"
-          value={nuevoComentario}
-          onChange={(e) => setNuevoComentario(e.target.value)}
-          placeholder="Escribe un comentario..."
-          onKeyDown={(e) => e.key === 'Enter' && handleComentar()}
+        <div className={styles.commentInputRow}>
+          <input
+            className={styles.commentInput}
+            type="text"
+            value={nuevoComentario}
+            onChange={(e) => setNuevoComentario(e.target.value)}
+            placeholder="Escribe un comentario..."
+            onKeyDown={(e) => e.key === 'Enter' && handleComentar()}
+          />
+
+          <button className={styles.commentSubmit} onClick={handleComentar}>
+            Enviar
+          </button>
+        </div>
+
+        <EmocionSelector
+          value={emocionComentario}
+          onChange={setEmocionComentario}
+          label="¿Qué emoción te produce? (opcional)"
         />
-
-        <button className={styles.commentSubmit} onClick={handleComentar}>
-          Enviar
-        </button>
       </div>
-
-      <EmocionSelector
-        value={emocionComentario}
-        onChange={setEmocionComentario}
-        label="¿Qué emoción te produce? (opcional, para tu comentario)"
-      />
 
       {detalle.comments.length === 0 ? (
         <p className={styles.empty}>No hay comentarios todavía.</p>

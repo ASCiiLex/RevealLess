@@ -4,6 +4,26 @@
   gap: 6px;
 }
 
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.chevron {
+  color: var(--fog);
+  font-size: 12px;
+}
+
 .label {
   font-size: 12px;
   font-weight: 600;
