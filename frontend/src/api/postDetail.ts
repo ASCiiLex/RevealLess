@@ -9,6 +9,10 @@ export interface CommentItem {
   created_at: string
   parent_id: number | null
   emocion_autor: string | null
+  referencia_narrativa_id: number | null
+  frontera_spoiler_id: number | null
+  frontera_origen: string
+  is_own_comment: boolean
   reactions_count: number
   user_reaction: string | null
   replies: CommentItem[]
@@ -54,17 +58,25 @@ export async function fetchPostReactionsTotals(postId: number): Promise<PostReac
   return response.json()
 }
 
+export interface AddCommentOptions {
+  parentId?: number
+  emocionAutor?: string | null
+  referenciaNarrativaId?: number | null
+  fronteraSpoilerId?: number | null
+}
+
 export async function addComment(
   postId: number,
   text: string,
-  parentId?: number,
-  emocionAutor?: string | null
+  opciones: AddCommentOptions = {}
 ) {
   const formData = new FormData()
   formData.append('post_id', String(postId))
   formData.append('text', text)
-  if (parentId) formData.append('parent_id', String(parentId))
-  if (emocionAutor) formData.append('emocion_autor', emocionAutor)
+  if (opciones.parentId) formData.append('parent_id', String(opciones.parentId))
+  if (opciones.emocionAutor) formData.append('emocion_autor', opciones.emocionAutor)
+  if (opciones.referenciaNarrativaId) formData.append('referencia_narrativa', String(opciones.referenciaNarrativaId))
+  if (opciones.fronteraSpoilerId) formData.append('frontera_spoiler', String(opciones.fronteraSpoilerId))
 
   const response = await fetch('/comments/add/', {
     method: 'POST',
@@ -75,11 +87,53 @@ export async function addComment(
   return response.json()
 }
 
+export async function updateComment(
+  commentId: number,
+  datos: {
+    text?: string
+    emocionAutor?: string | null
+    referenciaNarrativaId?: number
+    fronteraSpoilerId?: number | null
+  }
+) {
+  const formData = new FormData()
+  if (datos.text !== undefined) formData.append('text', datos.text)
+  if (datos.emocionAutor !== undefined) formData.append('emocion_autor', datos.emocionAutor ?? '')
+  if (datos.referenciaNarrativaId) formData.append('referencia_narrativa', String(datos.referenciaNarrativaId))
+  if (datos.fronteraSpoilerId) formData.append('frontera_spoiler', String(datos.fronteraSpoilerId))
+
+  const response = await fetch(`/comments/editar/${commentId}/`, {
+    method: 'PATCH',
+    credentials: 'same-origin',
+    headers: { 'X-CSRFToken': getCsrfToken() },
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null)
+    throw detail
+  }
+  return response.json()
+}
+
 export async function toggleReactionComment(commentId: number, reaction: string) {
   const formData = new FormData()
   formData.append('reaction', reaction)
 
   const response = await fetch(`/comments/react/${commentId}/`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'X-CSRFToken': getCsrfToken() },
+    body: formData,
+  })
+  return response.json()
+}
+
+export async function toggleReactionMessage(messageId: number, reaction: string) {
+  const formData = new FormData()
+  formData.append('reaction', reaction)
+
+  const response = await fetch(`/mensajes/react/msg/${messageId}/`, {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'X-CSRFToken': getCsrfToken() },
@@ -118,18 +172,5 @@ export async function updatePost(
     const detail = await response.json().catch(() => null)
     throw detail
   }
-  return response.json()
-}
-
-export async function toggleReactionMessage(messageId: number, reaction: string) {
-  const formData = new FormData()
-  formData.append('reaction', reaction)
-
-  const response = await fetch(`/mensajes/react/msg/${messageId}/`, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'X-CSRFToken': getCsrfToken() },
-    body: formData,
-  })
   return response.json()
 }

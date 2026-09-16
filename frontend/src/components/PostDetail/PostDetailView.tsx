@@ -5,9 +5,11 @@ import ReactionBar from '../Feed/ReactionBar'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import EmocionSelector from '../Emociones/EmocionSelector'
+import NarrativaSelector from './NarrativaSelector'
 import EditPostForm from './EditPostForm'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
 import { fetchPostDetail, addComment, type PostDetail } from '../../api/postDetail'
+import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import type { FeedPost } from '../../api/feed'
 
 interface Props {
@@ -16,18 +18,31 @@ interface Props {
 
 export default function PostDetailView({ postId }: Props) {
   const [detalle, setDetalle] = useState<PostDetail | null>(null)
+  const [obraDetalle, setObraDetalle] = useState<ObraDetalle | null>(null)
   const [nuevoComentario, setNuevoComentario] = useState('')
   const [emocionComentario, setEmocionComentario] = useState<string | null>(null)
+  const [referenciaComentario, setReferenciaComentario] = useState<number | null>(null)
+  const [fronteraComentario, setFronteraComentario] = useState<number | null>(null)
   const [editando, setEditando] = useState(false)
 
   useEffect(() => {
     fetchPostDetail(postId).then(setDetalle)
   }, [postId])
 
+  useEffect(() => {
+    if (detalle) {
+      fetchObraDetalle(detalle.post.obra_slug).then(setObraDetalle)
+    }
+  }, [detalle?.post.obra_slug])
+
   async function handleComentar() {
     if (!nuevoComentario.trim() || !detalle) return
 
-    const nuevo = await addComment(postId, nuevoComentario, undefined, emocionComentario)
+    const nuevo = await addComment(postId, nuevoComentario, {
+      emocionAutor: emocionComentario,
+      referenciaNarrativaId: referenciaComentario,
+      fronteraSpoilerId: fronteraComentario,
+    })
 
     setDetalle({
       ...detalle,
@@ -40,6 +55,10 @@ export default function PostDetailView({ postId }: Props) {
           created_at: nuevo.created_at,
           parent_id: null,
           emocion_autor: nuevo.emocion_autor ?? null,
+          referencia_narrativa_id: nuevo.referencia_narrativa_id ?? null,
+          frontera_spoiler_id: nuevo.frontera_spoiler_id ?? null,
+          frontera_origen: nuevo.frontera_origen ?? 'heredado_post',
+          is_own_comment: true,
           reactions_count: 0,
           user_reaction: null,
           replies: [],
@@ -50,6 +69,8 @@ export default function PostDetailView({ postId }: Props) {
 
     setNuevoComentario('')
     setEmocionComentario(null)
+    setReferenciaComentario(null)
+    setFronteraComentario(null)
   }
 
   function handlePostActualizado(postActualizado: FeedPost) {
@@ -133,10 +154,20 @@ export default function PostDetailView({ postId }: Props) {
           </button>
         </div>
 
+        {obraDetalle && (
+          <NarrativaSelector
+            detalle={obraDetalle}
+            referenciaId={referenciaComentario}
+            fronteraId={fronteraComentario}
+            onChangeReferencia={setReferenciaComentario}
+            onChangeFrontera={setFronteraComentario}
+          />
+        )}
+
         <EmocionSelector
           value={emocionComentario}
           onChange={setEmocionComentario}
-          label="¿Qué emoción te produce? (opcional)"
+          label="¿Quieres añadir emoción de contexto? (opcional)"
         />
       </div>
 
@@ -144,7 +175,12 @@ export default function PostDetailView({ postId }: Props) {
         <p className={styles.empty}>No hay comentarios todavía.</p>
       ) : (
         detalle.comments.map((c) => (
-          <CommentItem key={c.id} comment={c} postId={postId} />
+          <CommentItem
+            key={c.id}
+            comment={c}
+            postId={postId}
+            obraDetalle={obraDetalle}
+          />
         ))
       )}
     </div>
