@@ -104,5 +104,5 @@ class ChatHistoryAPIView(APIView):
 
         return Response({
             'other': {'username': other.username, 'avatar': other.profile.image_url if hasattr(other, 'profile') else '/static/img/default_profile.jpg'},
-            'messages': MessageSerializer(messages, many=True).data,
+            'messages': MessageSerializer(messages, many=True, context={'request': request}).data,
         })
