@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import styles from './CommentItem.module.css'
+import EmocionBadge from '../Emociones/EmocionBadge'
 import type { CommentItem as CommentItemType } from '../../api/postDetail'
 import { toggleReactionComment, addComment } from '../../api/postDetail'
 
@@ -33,6 +34,7 @@ export default function CommentItem({ comment, postId }: Props) {
         text: nuevo.text,
         created_at: nuevo.created_at,
         parent_id: comment.id,
+        emocion_autor: nuevo.emocion_autor ?? null,
         reactions_count: 0,
         user_reaction: null,
         replies: [],
@@ -47,6 +49,7 @@ export default function CommentItem({ comment, postId }: Props) {
       <div className={styles.header}>
         <img className={styles.avatar} src={comment.avatar} alt="" />
         <span className={styles.username}>@{comment.user}</span>
+        <EmocionBadge emocionAutor={comment.emocion_autor} />
       </div>
       <p className={styles.text}>{comment.text}</p>
       <div className={styles.actions}>

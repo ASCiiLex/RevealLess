@@ -1,6 +1,8 @@
 import styles from './PostCard.module.css'
 import ReactionBar from './ReactionBar'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
+import EmocionBadge from '../Emociones/EmocionBadge'
+import { emocionHaloStyle } from '../../utils/emocionHalo'
 import type { FeedPost } from '../../api/feed'
 
 interface Props {
@@ -9,9 +11,10 @@ interface Props {
 
 export default function PostCard({ post }: Props) {
   return (
-    <article className={styles.post}>
+    <article className={styles.post} style={emocionHaloStyle(post.emocion_autor)}>
       <div className={styles.meta}>
         <span className={styles.author}>@{post.autor}</span>
+        <EmocionBadge emocionAutor={post.emocion_autor} />
         <span>·</span>
         <span className={styles.narrative}>
           <span>{post.obra_titulo}</span>

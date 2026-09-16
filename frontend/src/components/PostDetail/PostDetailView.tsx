@@ -3,7 +3,10 @@ import styles from './PostDetailView.module.css'
 import CommentItem from './CommentItem'
 import ReactionBar from '../Feed/ReactionBar'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
+import EmocionBadge from '../Emociones/EmocionBadge'
+import EmocionSelector from '../Emociones/EmocionSelector'
 import EditPostForm from './EditPostForm'
+import { emocionHaloStyle } from '../../utils/emocionHalo'
 import { fetchPostDetail, addComment, type PostDetail } from '../../api/postDetail'
 import type { FeedPost } from '../../api/feed'
 
@@ -14,6 +17,7 @@ interface Props {
 export default function PostDetailView({ postId }: Props) {
   const [detalle, setDetalle] = useState<PostDetail | null>(null)
   const [nuevoComentario, setNuevoComentario] = useState('')
+  const [emocionComentario, setEmocionComentario] = useState<string | null>(null)
   const [editando, setEditando] = useState(false)
 
   useEffect(() => {
@@ -23,7 +27,7 @@ export default function PostDetailView({ postId }: Props) {
   async function handleComentar() {
     if (!nuevoComentario.trim() || !detalle) return
 
-    const nuevo = await addComment(postId, nuevoComentario)
+    const nuevo = await addComment(postId, nuevoComentario, undefined, emocionComentario)
 
     setDetalle({
       ...detalle,
@@ -35,6 +39,7 @@ export default function PostDetailView({ postId }: Props) {
           text: nuevo.text,
           created_at: nuevo.created_at,
           parent_id: null,
+          emocion_autor: nuevo.emocion_autor ?? null,
           reactions_count: 0,
           user_reaction: null,
           replies: [],
@@ -44,6 +49,7 @@ export default function PostDetailView({ postId }: Props) {
     })
 
     setNuevoComentario('')
+    setEmocionComentario(null)
   }
 
   function handlePostActualizado(postActualizado: FeedPost) {
@@ -61,13 +67,15 @@ export default function PostDetailView({ postId }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.postCard}>
+      <div className={styles.postCard} style={emocionHaloStyle(post.emocion_autor)}>
         <div className={styles.meta}>
           <img className={styles.avatar} src={post.autor_avatar} alt="" />
 
           <div className={styles.authorRow}>
             <div>
-              <div className={styles.author}>@{post.autor}</div>
+              <div className={styles.author}>
+                @{post.autor} <EmocionBadge emocionAutor={post.emocion_autor} />
+              </div>
 
               <div className={styles.obra}>
                 <span>{post.obra_titulo}</span>
@@ -124,6 +132,12 @@ export default function PostDetailView({ postId }: Props) {
           Enviar
         </button>
       </div>
+
+      <EmocionSelector
+        value={emocionComentario}
+        onChange={setEmocionComentario}
+        label="¿Qué emoción te produce? (opcional, para tu comentario)"
+      />
 
       {detalle.comments.length === 0 ? (
         <p className={styles.empty}>No hay comentarios todavía.</p>

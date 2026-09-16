@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import styles from './EditPostForm.module.css'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { updatePost } from '../../api/postDetail'
+import EmocionSelector from '../Emociones/EmocionSelector'
 import type { FeedPost } from '../../api/feed'
 
 interface Props {
@@ -16,6 +17,7 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const [referenciaId, setReferenciaId] = useState(post.referencia_narrativa?.id ?? null)
   const [fronteraId, setFronteraId] = useState<number | null>(null)
   const [nivelSpoiler, setNivelSpoiler] = useState(post.nivel_spoiler)
+  const [emocionAutor, setEmocionAutor] = useState<string | null>(post.emocion_autor)
   const [error, setError] = useState<string | null>(null)
   const [avisoReduccion, setAvisoReduccion] = useState<string | null>(null)
   const [confirmadoPeseAviso, setConfirmadoPeseAviso] = useState(false)
@@ -74,6 +76,7 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
         referenciaNarrativaId: referenciaId ?? undefined,
         fronteraSpoilerId: fronteraId ?? undefined,
         nivelSpoiler,
+        emocionAutor,
       })
       onGuardado(actualizado)
     } catch {
@@ -120,6 +123,8 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
               onChange={(e) => setText(e.target.value)}
             />
           </div>
+
+          <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} />
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { crearPost } from '../../api/publicar'
+import EmocionSelector from '../Emociones/EmocionSelector'
 
 interface Props {
   obraSlug: string
@@ -16,6 +17,7 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
   const [image, setImage] = useState<File | null>(null)
   const [referenciaId, setReferenciaId] = useState<number | null>(null)
   const [fronteraId, setFronteraId] = useState<number | null>(null)
+  const [emocionAutor, setEmocionAutor] = useState<string | null>(null)
   const [nuevoProgresoId, setNuevoProgresoId] = useState<number | null>(null)
   const [confirmarSalto, setConfirmarSalto] = useState(false)
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
@@ -39,6 +41,7 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
         image,
         referenciaNarrativaId: referenciaId,
         fronteraSpoilerId: fronteraId,
+        emocionAutor,
         nuevoProgresoId,
         confirmarSaltoProgreso: confirmarSalto,
       })
@@ -93,6 +96,8 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
             required
           />
         </div>
+
+        <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} />
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="image">Imagen (opcional)</label>
