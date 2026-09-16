@@ -41,6 +41,14 @@ def add_comment(request):
     parent = None
     if parent_id:
         parent = get_object_or_404(Comment, id=parent_id, post=post)
+        # Límite de 3 niveles: comentario -> respuesta -> respuesta-a-
+        # respuesta, y ahí se para. Si el padre ya tiene su propio
+        # padre (ya es una respuesta), esto seria un nivel 4.
+        if parent.parent_id is not None:
+            return JsonResponse(
+                {"error": "No se puede responder a una respuesta ya anidada."},
+                status=400,
+            )
 
     comment = Comment.objects.create(
         user=request.user, post=post, parent=parent, text=text,

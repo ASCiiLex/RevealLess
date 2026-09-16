@@ -8,9 +8,12 @@ import { addComment } from '../../api/postDetail'
 interface Props {
   comment: CommentItemType
   postId: number
+  nivel?: number
 }
 
-export default function CommentItem({ comment, postId }: Props) {
+const NIVEL_MAXIMO = 3
+
+export default function CommentItem({ comment, postId, nivel = 1 }: Props) {
   const [replyAbierto, setReplyAbierto] = useState(false)
   const [replyTexto, setReplyTexto] = useState('')
   const [replies, setReplies] = useState(comment.replies)
@@ -37,6 +40,8 @@ export default function CommentItem({ comment, postId }: Props) {
     setReplyAbierto(false)
   }
 
+  const puedeResponder = nivel < NIVEL_MAXIMO
+
   return (
     <div className={styles.comment}>
       <div className={styles.header}>
@@ -52,7 +57,7 @@ export default function CommentItem({ comment, postId }: Props) {
           target="comment"
           reaccionInicial={comment.user_reaction}
         />
-        {!comment.parent_id && (
+        {puedeResponder && (
           <button className={styles.replyButton} onClick={() => setReplyAbierto((v) => !v)}>
             Responder
           </button>
@@ -76,7 +81,7 @@ export default function CommentItem({ comment, postId }: Props) {
       {replies.length > 0 && (
         <div className={styles.replies}>
           {replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} postId={postId} />
+            <CommentItem key={reply.id} comment={reply} postId={postId} nivel={nivel + 1} />
           ))}
         </div>
       )}
