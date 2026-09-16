@@ -6,9 +6,13 @@ from django.urls import reverse
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+from narrative.models import ClasificacionNarrativa
 from posts.models import Post
 from .models import Comment, CommentReaction
 from notifications.models import Notification
+
+
+EMOCION_VALIDAS = dict(ClasificacionNarrativa.EMOCION_CHOICES)
 
 
 @login_required
@@ -17,9 +21,13 @@ def add_comment(request):
     post_id = request.POST.get("post_id")
     text = request.POST.get("text", "").strip()
     parent_id = request.POST.get("parent_id")
+    emocion_autor = request.POST.get("emocion_autor") or None
 
     if not text:
         return JsonResponse({"error": "Texto vacío"}, status=400)
+
+    if emocion_autor and emocion_autor not in EMOCION_VALIDAS:
+        return JsonResponse({"error": "Emoción no válida"}, status=400)
 
     post = get_object_or_404(Post, id=post_id)
 
@@ -34,6 +42,7 @@ def add_comment(request):
         # responde, coherente con frontera_origen=ORIGEN_HEREDADO_POST
         # (default del modelo, que ya asume esta herencia).
         referencia_narrativa=post.referencia_narrativa,
+        emocion_autor=emocion_autor,
     )
 
     if parent is None and post.author != request.user:
@@ -61,6 +70,7 @@ def add_comment(request):
             "text": comment.text,
             "created_at": comment.created_at.strftime("%Y-%m-%d %H:%M"),
             "parent_id": comment.parent.id if comment.parent else None,
+            "emocion_autor": comment.emocion_autor,
             "likes_count": 0,
         }
     )

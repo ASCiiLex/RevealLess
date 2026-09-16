@@ -73,7 +73,7 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = [
             'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'text', 'imagen',
-            'referencia_narrativa', 'frontera_spoiler', 'nivel_spoiler', 'created_at',
+            'referencia_narrativa', 'frontera_spoiler', 'nivel_spoiler', 'emocion_autor', 'created_at',
             'likes_count', 'comments_count', 'user_reaction', 'is_own_post',
         ]
 
@@ -94,7 +94,7 @@ class PostSerializer(serializers.ModelSerializer):
     def get_is_own_post(self, obj):
         request = self.context.get('request')
         return bool(request and request.user.is_authenticated and request.user == obj.author)
-
+    
 
 class ObraResumenSerializer(serializers.ModelSerializer):
     imagen_url = serializers.SerializerMethodField()

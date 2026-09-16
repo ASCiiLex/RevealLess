@@ -269,7 +269,13 @@ class ClasificacionNarrativa(models.Model):
     están informados, el motor exige ADEMÁS progreso suficiente en
     obra_cruzada. Es declarativo (usuario o IA), nunca automático, y no
     implica ningún mapeo de equivalencia capítulo↔episodio entre las dos
-    obras — cada una sigue con su propia escala de orden."""
+    obras — cada una sigue con su propia escala de orden.
+
+    emocion_autor: la emoción que el propio autor declara sentir sobre su
+    contenido narrativo, distinta y separada de PostReaction/
+    CommentReaction (reacciones de otros usuarios al contenido). Siempre
+    opcional. No participa en frontera_orden ni en visible_for() -- es
+    puramente expresivo."""
 
     ORIGEN_EXPLICITO = 'explicito'
     ORIGEN_IA = 'ia'
@@ -293,6 +299,31 @@ class ClasificacionNarrativa(models.Model):
         (NIVEL_TRAMA_CENTRAL, 'Trama central'),
     ]
 
+    EMOCION_ME_GUSTA = 'me_gusta'
+    EMOCION_ME_ENCANTA = 'me_encanta'
+    EMOCION_ME_DIVIERTE = 'me_divierte'
+    EMOCION_ME_SORPRENDE = 'me_sorprende'
+    EMOCION_ME_ENFADA = 'me_enfada'
+    EMOCION_ME_DA_ASCO = 'me_da_asco'
+    EMOCION_ME_ENTRISTECE = 'me_entristece'
+    EMOCION_ME_ENTUSIASMA = 'me_entusiasma'
+    EMOCION_ME_EMOCIONA = 'me_emociona'
+    EMOCION_ME_DA_CURIOSIDAD = 'me_da_curiosidad'
+    EMOCION_ME_DA_MIEDO = 'me_da_miedo'
+    EMOCION_CHOICES = [
+        (EMOCION_ME_GUSTA, 'Me gusta'),
+        (EMOCION_ME_ENCANTA, 'Me encanta'),
+        (EMOCION_ME_DIVIERTE, 'Me divierte'),
+        (EMOCION_ME_SORPRENDE, 'Me sorprende'),
+        (EMOCION_ME_ENFADA, 'Me enfada'),
+        (EMOCION_ME_DA_ASCO, 'Me da asco'),
+        (EMOCION_ME_ENTRISTECE, 'Me entristece'),
+        (EMOCION_ME_ENTUSIASMA, 'Me entusiasma'),
+        (EMOCION_ME_EMOCIONA, 'Me emociona'),
+        (EMOCION_ME_DA_CURIOSIDAD, 'Me da curiosidad'),
+        (EMOCION_ME_DA_MIEDO, 'Me da miedo'),
+    ]
+
     referencia_narrativa = models.ForeignKey(
         UnidadNarrativa, on_delete=models.PROTECT,
         related_name='%(class)s_referenciados',
@@ -306,6 +337,10 @@ class ClasificacionNarrativa(models.Model):
     nivel_spoiler = models.CharField(max_length=20, choices=NIVEL_CHOICES, default=NIVEL_MENOR)
     ia_confianza = models.FloatField(null=True, blank=True)
     clasificado_en = models.DateTimeField(null=True, blank=True)
+
+    emocion_autor = models.CharField(
+        max_length=20, choices=EMOCION_CHOICES, null=True, blank=True,
+    )
 
     # Frontera cruzada entre continuidades (opcional, MVP del blindaje).
     obra_cruzada = models.ForeignKey(

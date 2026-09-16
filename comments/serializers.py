@@ -12,6 +12,7 @@ class CommentSerializer(serializers.Serializer):
     text = serializers.CharField()
     created_at = serializers.DateTimeField()
     parent_id = serializers.IntegerField(allow_null=True)
+    emocion_autor = serializers.CharField(allow_null=True)
     reactions_count = serializers.SerializerMethodField()
     user_reaction = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()

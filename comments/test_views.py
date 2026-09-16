@@ -83,3 +83,18 @@ class AddCommentViewTests(TestCase):
         reply = Comment.objects.get(text='una respuesta')
         self.assertEqual(reply.parent, padre)
         self.assertEqual(reply.referencia_narrativa, self.post.referencia_narrativa)
+
+    def test_crear_comentario_con_emocion_autor(self):
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'con emocion', 'emocion_autor': 'me_da_miedo',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['emocion_autor'], 'me_da_miedo')
+
+    def test_rechaza_emocion_autor_invalida_en_comentario(self):
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'emocion mala', 'emocion_autor': 'inventada',
+        })
+        self.assertEqual(response.status_code, 400)

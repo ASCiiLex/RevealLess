@@ -147,3 +147,41 @@ class PostCreateAPIViewTests(TestCase):
             {'text': '', 'referencia_narrativa': self.e1.id},
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_crea_post_con_emocion_autor(self):
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        self.client.force_authenticate(user=self.usuario)
+
+        response = self.client.post(
+            reverse('posts_api_create', args=[self.obra.slug]),
+            {
+                'text': 'con emocion', 'referencia_narrativa': self.e1.id,
+                'emocion_autor': 'me_encanta',
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['emocion_autor'], 'me_encanta')
+
+    def test_post_sin_emocion_autor_queda_null(self):
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        self.client.force_authenticate(user=self.usuario)
+
+        response = self.client.post(
+            reverse('posts_api_create', args=[self.obra.slug]),
+            {'text': 'sin emocion', 'referencia_narrativa': self.e1.id},
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(response.data['emocion_autor'])
+
+    def test_rechaza_emocion_autor_invalida(self):
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        self.client.force_authenticate(user=self.usuario)
+
+        response = self.client.post(
+            reverse('posts_api_create', args=[self.obra.slug]),
+            {
+                'text': 'emocion invalida', 'referencia_narrativa': self.e1.id,
+                'emocion_autor': 'no_existe',
+            },
+        )
+        self.assertEqual(response.status_code, 400)
