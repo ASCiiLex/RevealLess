@@ -120,3 +120,16 @@ export async function updatePost(
   }
   return response.json()
 }
+
+export async function toggleReactionMessage(messageId: number, reaction: string) {
+  const formData = new FormData()
+  formData.append('reaction', reaction)
+
+  const response = await fetch(`/mensajes/react/msg/${messageId}/`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'X-CSRFToken': getCsrfToken() },
+    body: formData,
+  })
+  return response.json()
+}

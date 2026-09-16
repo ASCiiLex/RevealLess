@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './ReactionBar.module.css'
-import { toggleReactionPost, toggleReactionComment, fetchPostReactionsTotals } from '../../api/postDetail'
+import { toggleReactionPost, toggleReactionComment, toggleReactionMessage, fetchPostReactionsTotals } from '../../api/postDetail'
 import { EMOCIONES } from '../../constants/emociones'
 
 interface Props {
   targetId: number
-  target?: 'post' | 'comment'
+  target?: 'post' | 'comment' | 'message'
   reaccionInicial: string | null
+  totalesEnVivo?: Record<string, number>
+  variante?: 'normal' | 'sutil'
 }
 
 async function fetchCommentReactionsTotals(commentId: number): Promise<{ totals: Record<string, number> }> {
@@ -16,7 +18,20 @@ async function fetchCommentReactionsTotals(commentId: number): Promise<{ totals:
   return response.json()
 }
 
-export default function ReactionBar({ targetId, target = 'post', reaccionInicial }: Props) {
+async function fetchMessageReactionsTotals(messageId: number): Promise<{ totals: Record<string, number> }> {
+  const response = await fetch(`/mensajes/reactions/msg/${messageId}/`, {
+    credentials: 'same-origin',
+  })
+  return response.json()
+}
+
+export default function ReactionBar({
+  targetId,
+  target = 'post',
+  reaccionInicial,
+  totalesEnVivo,
+  variante = 'normal',
+}: Props) {
   const [reaccion, setReaccion] = useState(reaccionInicial)
   const [totales, setTotales] = useState<Record<string, number>>({})
   const [abierto, setAbierto] = useState(false)
@@ -24,9 +39,18 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const fetchTotales = target === 'post' ? fetchPostReactionsTotals : fetchCommentReactionsTotals
+    const fetchTotales =
+      target === 'post' ? fetchPostReactionsTotals :
+      target === 'comment' ? fetchCommentReactionsTotals :
+      fetchMessageReactionsTotals
     fetchTotales(targetId).then((data) => setTotales(data.totals))
   }, [targetId, target])
+
+  useEffect(() => {
+    if (totalesEnVivo) {
+      setTotales(totalesEnVivo)
+    }
+  }, [totalesEnVivo])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -40,9 +64,6 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
 
   function handleAbrir() {
     if (!abierto && wrapperRef.current) {
-      // Panel ocupa ~150px de alto; si no cabe hacia abajo antes del
-      // final del viewport (restando el BottomNav fixed, ~64px),
-      // se despliega hacia arriba en su lugar.
       const rect = wrapperRef.current.getBoundingClientRect()
       const espacioAbajo = window.innerHeight - rect.bottom - 64
       setPosicion(espacioAbajo < 160 ? 'arriba' : 'abajo')
@@ -51,9 +72,10 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
   }
 
   async function handleReaccion(tipo: string) {
-    const resultado = target === 'post'
-      ? await toggleReactionPost(targetId, tipo)
-      : await toggleReactionComment(targetId, tipo)
+    const resultado =
+      target === 'post' ? await toggleReactionPost(targetId, tipo) :
+      target === 'comment' ? await toggleReactionComment(targetId, tipo) :
+      await toggleReactionMessage(targetId, tipo)
     setReaccion(resultado.removed ? null : tipo)
     setTotales(resultado.counts)
     setAbierto(false)
@@ -71,7 +93,7 @@ export default function ReactionBar({ targetId, target = 'post', reaccionInicial
   return (
     <div className={styles.wrapper} ref={wrapperRef}>
       <button
-        className={`${styles.trigger} ${reaccion ? styles.triggerActive : ''}`}
+        className={`${styles.trigger} ${variante === 'sutil' ? styles.triggerSutil : ''} ${reaccion ? styles.triggerActive : ''}`}
         onClick={handleAbrir}
         aria-expanded={abierto}
       >

@@ -104,3 +104,14 @@
   text-decoration: underline;
   padding: 4px 0 0;
 }
+
+.triggerSutil {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
+}
+
+.triggerSutil.triggerActive {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.28);
+}
