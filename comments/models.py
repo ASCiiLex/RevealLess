@@ -120,11 +120,17 @@ class Comment(ClasificacionNarrativa, models.Model):
 
 class CommentReaction(models.Model):
     REACTION_CHOICES = [
-        ("like", "Me gusta"),
-        ("love", "Me encanta"),
-        ("funny", "Me divierte"),
-        ("wow", "Me sorprende"),
-        ("sad", "Me entristece"),
+        ("me_gusta", "Me gusta"),
+        ("me_encanta", "Me encanta"),
+        ("me_divierte", "Me divierte"),
+        ("me_sorprende", "Me sorprende"),
+        ("me_enfada", "Me enfada"),
+        ("me_da_asco", "Me da asco"),
+        ("me_entristece", "Me entristece"),
+        ("me_entusiasma", "Me entusiasma"),
+        ("me_emociona", "Me emociona"),
+        ("me_da_curiosidad", "Me da curiosidad"),
+        ("me_da_miedo", "Me da miedo"),
     ]
 
     user = models.ForeignKey(
@@ -133,7 +139,7 @@ class CommentReaction(models.Model):
     comment = models.ForeignKey(
         Comment, on_delete=models.CASCADE, related_name="reactions"
     )
-    reaction = models.CharField(max_length=10, choices=REACTION_CHOICES, default="like")
+    reaction = models.CharField(max_length=20, choices=REACTION_CHOICES, default="me_gusta")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

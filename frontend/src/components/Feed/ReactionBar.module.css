@@ -1,65 +1,30 @@
-.post {
-  background: var(--paper);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-}
-
-.meta {
+.bar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
+  margin-top: 8px;
+}
+
+.reactionButton {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+.reactionButton:hover {
+  background: color-mix(in srgb, var(--gold) 12%, var(--paper));
+}
+
+.reactionButtonActive {
+  background: color-mix(in srgb, var(--gold) 18%, var(--paper));
+}
+
+.count {
   font-size: 13px;
   color: var(--fog);
-  margin-bottom: 8px;
-}
-
-.author {
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.narrative {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  min-width: 0;
-}
-
-.narrativeSeparator {
-  color: var(--border);
-}
-
-.textLink {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.text {
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--ink);
-  margin: 0 0 12px 0;
-  max-width: var(--max-line);
-}
-
-.image {
-  width: 100%;
-  border-radius: var(--radius);
-  display: block;
-  margin-bottom: 12px;
-}
-
-.commentsLink {
-  display: block;
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--fog);
-  text-decoration: none;
-}
-
-.commentsLink:hover {
-  color: var(--gold);
+  margin-left: 2px;
 }

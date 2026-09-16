@@ -15,6 +15,13 @@ from notifications.models import Notification
 EMOCION_VALIDAS = dict(ClasificacionNarrativa.EMOCION_CHOICES)
 
 
+def _counts_por_reaccion(comment):
+    return {
+        clave: comment.reactions.filter(reaction=clave).count()
+        for clave, _ in CommentReaction.REACTION_CHOICES
+    }
+
+
 @login_required
 @require_POST
 def add_comment(request):
@@ -111,13 +118,7 @@ def toggle_reaction_comment(request, comment_id):
             reaction=reaction_type,
         )
 
-    counts = {
-        "like": comment.reactions.filter(reaction="like").count(),
-        "love": comment.reactions.filter(reaction="love").count(),
-        "funny": comment.reactions.filter(reaction="funny").count(),
-        "wow": comment.reactions.filter(reaction="wow").count(),
-        "sad": comment.reactions.filter(reaction="sad").count(),
-    }
+    counts = _counts_por_reaccion(comment)
     total = sum(counts.values())
 
     channel_layer = get_channel_layer()
@@ -159,13 +160,7 @@ def delete_comment(request, comment_id):
 def comment_reactions_list(request, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
 
-    totals = {
-        "like": comment.reactions.filter(reaction="like").count(),
-        "love": comment.reactions.filter(reaction="love").count(),
-        "funny": comment.reactions.filter(reaction="funny").count(),
-        "wow": comment.reactions.filter(reaction="wow").count(),
-        "sad": comment.reactions.filter(reaction="sad").count(),
-    }
+    totals = _counts_por_reaccion(comment)
 
     users_data = []
 
