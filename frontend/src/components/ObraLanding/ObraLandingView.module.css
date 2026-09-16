@@ -16,7 +16,7 @@
 
 .imagen {
   width: 96px;
-  height: 140px;
+  height: 200px;
   object-fit: cover;
   border-radius: var(--radius);
   flex-shrink: 0;
@@ -24,6 +24,9 @@
 
 .info {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .titulo {
@@ -52,27 +55,48 @@
 .suscriptores {
   font-size: 12px;
   color: var(--fog);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.progresoTexto {
+  font-size: 11px;
+  color: var(--fog);
+  margin-bottom: 3px;
+}
+
+.progresoTrack {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progresoFill {
+  height: 100%;
+  background: var(--gold);
 }
 
 .actions {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
 }
 
 .button {
-  padding: 8px 16px;
+  padding: 7px 8px;
   border-radius: var(--radius);
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border);
-  background: var(--paper);
+  background: none;
   color: var(--ink);
   text-decoration: none;
   display: inline-block;
+  text-align: center;
 }
 
 .buttonPrimary {
@@ -137,4 +161,14 @@
   border-radius: var(--radius);
   padding: 14px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+@media (min-width: 480px) {
+  .actions {
+    flex-direction: row;
+  }
+
+  .button {
+    flex: 1;
+  }
 }

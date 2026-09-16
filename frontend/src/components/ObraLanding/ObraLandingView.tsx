@@ -74,22 +74,31 @@ export default function ObraLandingView({ obraSlug }: Props) {
           <div className={styles.suscriptores}>
             {obra.total_suscriptores} suscriptor{obra.total_suscriptores === 1 ? '' : 'es'}
           </div>
-        </div>
-      </div>
 
-      <div className={styles.actions}>
-        <button
-          className={`${styles.button} ${obra.suscrito ? '' : styles.buttonPrimary}`}
-          onClick={handleToggleObra}
-        >
-          {obra.suscrito ? 'Siguiendo' : 'Seguir'}
-        </button>
-        <a className={styles.button} href={`/feed/react/?obra=${obra.id}`}>
-          Ver feed
-        </a>
-        <a className={styles.button} href={`/narrative/obra/${obra.slug}/temas/react/`}>
-          Temas
-        </a>
+          {obra.progreso_pct !== null && (
+            <>
+              <div className={styles.progresoTexto}>Tu progreso: {obra.progreso_pct}%</div>
+              <div className={styles.progresoTrack}>
+                <div className={styles.progresoFill} style={{ width: `${obra.progreso_pct}%` }} />
+              </div>
+            </>
+          )}
+
+          <div className={styles.actions}>
+            <button
+              className={`${styles.button} ${obra.suscrito ? '' : styles.buttonPrimary}`}
+              onClick={handleToggleObra}
+            >
+              {obra.suscrito ? 'Siguiendo' : 'Seguir'}
+            </button>
+            <a className={styles.button} href={`/feed/react/?obra=${obra.id}`}>
+              Ver feed
+            </a>
+            <a className={styles.button} href={`/narrative/obra/${obra.slug}/temas/react/`}>
+              Temas
+            </a>
+          </div>
+        </div>
       </div>
 
       {obra.sinopsis && (
@@ -121,6 +130,7 @@ export default function ObraLandingView({ obraSlug }: Props) {
               actualId={actualId}
               actualOrden={actualOrden}
               onSelect={(id) => handleSelectUnidad(id)}
+              autoScroll={false}
             />
           ))}
         </div>

@@ -76,3 +76,29 @@ class ObraLandingAPIViewTests(TestCase):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
         self.assertFalse(response.data['suscrito'])
+
+    def test_progreso_pct_no_redondea_hacia_arriba_al_100_si_falta_algo(self):
+        """Caso real detectado: 1160 de 1163 (99.74%) no debe mostrarse
+        como 100% -- mostrar completo cuando de verdad quedan episodios
+        pendientes contradice el proposito anti-spoiler."""
+        obra_larga = Obra.objects.create(titulo='Obra larga', slug='obra-larga')
+        unidades = [
+            UnidadNarrativa.objects.create(
+                obra=obra_larga, tipo='episodio', nombre=f'E{i}', orden_local=i,
+            )
+            for i in range(1, 1164)
+        ]
+        obra_larga.recalcular_orden()
+        penultima = unidades[1159]
+        penultima.refresh_from_db()
+        actualizar_progreso(self.usuario, obra_larga, penultima)
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obra_landing', args=[obra_larga.slug]))
+        self.assertLess(response.data['progreso_pct'], 100)
+
+    def test_progreso_pct_muestra_100_si_es_exactamente_completo(self):
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
+        self.assertEqual(response.data['progreso_pct'], 100)

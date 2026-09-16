@@ -9,9 +9,10 @@ interface Props {
   actualId: number
   actualOrden: number
   onSelect: (unidadId: number) => void
+  autoScroll?: boolean
 }
 
-export default function UnidadNode({ nodo, actualId, actualOrden, onSelect }: Props) {
+export default function UnidadNode({ nodo, actualId, actualOrden, onSelect, autoScroll = true }: Props) {
   const contieneActual = nodo.orden_inicio <= actualOrden && actualOrden <= nodo.orden_fin
   const esPasado = nodo.orden_fin < actualOrden
   const destacar = contieneActual || esPasado
@@ -47,7 +48,7 @@ export default function UnidadNode({ nodo, actualId, actualOrden, onSelect }: Pr
       {abierto && (
         <div className={styles.children}>
           {usarScroll ? (
-            <ScrollAcotado hijos={nodo.hijos} actualId={actualId} onSelect={onSelect} />
+            <ScrollAcotado hijos={nodo.hijos} actualId={actualId} onSelect={onSelect} autoScroll={autoScroll} />
           ) : (
             nodo.hijos.map((hijo) => (
               <UnidadNode
@@ -56,6 +57,7 @@ export default function UnidadNode({ nodo, actualId, actualOrden, onSelect }: Pr
                 actualId={actualId}
                 actualOrden={actualOrden}
                 onSelect={onSelect}
+                autoScroll={autoScroll}
               />
             ))
           )}
@@ -69,16 +71,20 @@ function ScrollAcotado({
   hijos,
   actualId,
   onSelect,
+  autoScroll,
 }: {
   hijos: TreeNode[]
   actualId: number
   onSelect: (id: number) => void
+  autoScroll: boolean
 }) {
   const actualRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    actualRef.current?.scrollIntoView({ block: 'center' })
-  }, [])
+    if (autoScroll) {
+      actualRef.current?.scrollIntoView({ block: 'center' })
+    }
+  }, [autoScroll])
 
   const ordenActual = hijos.find((h) => h.id === actualId)?.orden_inicio ?? 0
 
