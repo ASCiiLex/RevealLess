@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import sys
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
@@ -21,14 +22,14 @@ if not SECRET_KEY:
         sys.exit("SECRET_KEY no definida en el entorno de producción.")
 
 ALLOWED_HOSTS = [
-    'redsocialaficiones.fly.dev',
+    'revealless.fly.dev',
     '.fly.dev',
     'localhost',
     '127.0.0.1'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://redsocialaficiones.fly.dev"
+    "https://revealless.fly.dev"
 ]
 
 # Fly.io termina TLS en el edge y reenvía por X-Forwarded-Proto.
@@ -139,16 +140,23 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # BASE DE DATOS
 # ==========================================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME', 'revealless'),
-        'USER': os.environ.get('DATABASE_USER', 'revealless'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', ''),
-        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
-        'PORT': os.environ.get('DATABASE_PORT', '5433'),
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DATABASE_NAME', 'revealless'),
+            'USER': os.environ.get('DATABASE_USER', 'revealless'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', ''),
+            'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
+            'PORT': os.environ.get('DATABASE_PORT', '5433'),
+        }
+    }
 
 # ==========================================================
 # PASSWORDS
