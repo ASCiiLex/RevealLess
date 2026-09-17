@@ -32,6 +32,29 @@ class UnidadNarrativaAdmin(admin.ModelAdmin):
     # Piece, eso hace el formulario prácticamente inutilizable.
     raw_id_fields = ('padre',)
 
+    # orden_inicio/orden_fin son el valor que consulta frontera_orden — una
+    # edición manual de padre/orden_local sin recalcular deja el motor
+    # anti-spoiler con datos desactualizados, silenciosamente. Los
+    # comandos de importación ya llaman a recalcular_orden() en lote al
+    # final; aquí cada edición es unitaria, así que enganchar la llamada
+    # directamente en save/delete es seguro (no hay riesgo de recalcular
+    # el árbol entero cientos de veces seguidas, como pasaría con un
+    # signal post_save durante una importación masiva).
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        obj.obra.recalcular_orden()
+
+    def delete_model(self, request, obj):
+        obra = obj.obra
+        super().delete_model(request, obj)
+        obra.recalcular_orden()
+
+    def delete_queryset(self, request, queryset):
+        obras_ids = set(queryset.values_list('obra_id', flat=True))
+        super().delete_queryset(request, queryset)
+        for obra in Obra.objects.filter(id__in=obras_ids):
+            obra.recalcular_orden()
+
 
 @admin.register(ProgresoUsuario)
 class ProgresoUsuarioAdmin(admin.ModelAdmin):
