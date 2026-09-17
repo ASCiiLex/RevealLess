@@ -412,6 +412,67 @@ class ImportarEstructuraFechaDirectaTests(TestCase):
         self.assertEqual(ep5.orden_inicio, 2)
 
 
+class ImportarEstructuraColisionEntrePartesTests(TestCase):
+    """Regresión del bug real de Naruto: dos Partes cuya numeración de
+    episodio reinicia en 1 (Naruto / Shippūden) NO deben robarse episodios
+    entre sí. orden_local es único por Obra — vincular_episodios con rangos
+    que se solapan entre Partes distintas es un error de los datos de
+    curación, no algo que el comando deba absorber en silencio."""
+
+    def setUp(self):
+        self.obra = Obra.objects.create(titulo='Serie Doble', slug='serie-doble', tipo=Obra.TIPO_SERIE)
+        ExternalId.objects.create(source=ExternalId.SOURCE_MANUAL, external_id='serie-doble', obra=self.obra)
+
+    def test_rangos_solapados_entre_partes_no_deben_compartir_episodios(self):
+        """Si (por error de curación) dos Partes usan el mismo rango de
+        orden_local, la segunda Parte ADOPTA los mismos episodios de la
+        primera en vez de crear los suyos — documentado aquí para que se
+        note de inmediato si vuelve a pasar (recuento total no crece)."""
+        ruta = _escribir_yaml({
+            'obra_external_id': {'source': 'manual', 'external_id': 'serie-doble'},
+            'nodos': [
+                {'tipo': 'parte', 'nombre': 'Parte A', 'orden_local': 1, 'hijos': [
+                    {'tipo': 'temporada', 'nombre': 'T1', 'orden_local': 1, 'vincular_episodios': [1, 10]},
+                ]},
+                {'tipo': 'parte', 'nombre': 'Parte B', 'orden_local': 2, 'hijos': [
+                    {'tipo': 'temporada', 'nombre': 'T1', 'orden_local': 1, 'vincular_episodios': [1, 10]},
+                ]},
+            ],
+        })
+        try:
+            call_command('importar_estructura', ruta, stdout=StringIO())
+        finally:
+            os.unlink(ruta)
+
+        total = UnidadNarrativa.objects.filter(obra=self.obra, tipo='episodio').count()
+        # Con rangos solapados a propósito, los 10 episodios de Parte A
+        # terminan reasignados a Parte B — NO se duplican (10, no 20).
+        # Esto confirma el mecanismo del bug: la curación (los rangos del
+        # YAML) es responsable de no solapar entre Partes distintas.
+        self.assertEqual(total, 10)
+
+    def test_rangos_correlativos_entre_partes_no_colisionan(self):
+        """La forma correcta de evitarlo: numeración continua entre Partes
+        (igual que se corrigió en Naruto: Shippūden empieza en 221, no en 1)."""
+        ruta = _escribir_yaml({
+            'obra_external_id': {'source': 'manual', 'external_id': 'serie-doble'},
+            'nodos': [
+                {'tipo': 'parte', 'nombre': 'Parte A', 'orden_local': 1, 'hijos': [
+                    {'tipo': 'temporada', 'nombre': 'T1', 'orden_local': 1, 'vincular_episodios': [1, 10]},
+                ]},
+                {'tipo': 'parte', 'nombre': 'Parte B', 'orden_local': 2, 'hijos': [
+                    {'tipo': 'temporada', 'nombre': 'T1', 'orden_local': 1, 'vincular_episodios': [11, 20]},
+                ]},
+            ],
+        })
+        try:
+            call_command('importar_estructura', ruta, stdout=StringIO())
+        finally:
+            os.unlink(ruta)
+
+        self.assertEqual(UnidadNarrativa.objects.filter(obra=self.obra, tipo='episodio').count(), 20)
+
+
 class JikanClientPaginacionTests(TestCase):
     """Regresión del bug real encontrado durante la importación de One
     Piece: cuando Jikan no da el total de episodios (obra en emisión) y

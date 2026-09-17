@@ -1,0 +1,36 @@
+# Curación manual — Naruto (MANGA). Fuente de arcos: listfist.com/list-of-naruto-arcs
+# (cruzado con la numeración oficial de capítulos — sin solapes, el manga no
+# tiene relleno, a diferencia del anime).
+obra_external_id: {source: manual, external_id: naruto-manga}
+sinopsis_en: [parte, saga, arco]
+
+nodos:
+  - tipo: parte
+    nombre: "Naruto (Parte I)"
+    orden_local: 1
+    hijos:
+      - {tipo: arco, nombre: "Prólogo: El País de las Olas", orden_local: 1, vincular_capitulos: [1, 33]}
+      - {tipo: arco, nombre: "Exámenes Chūnin", orden_local: 2, vincular_capitulos: [34, 115]}
+      - {tipo: arco, nombre: "Invasión de Konoha", orden_local: 3, vincular_capitulos: [116, 138]}
+      - {tipo: arco, nombre: "Búsqueda de Tsunade", orden_local: 4, vincular_capitulos: [139, 171]}
+      - {tipo: arco, nombre: "Misión de Recuperación de Sasuke", orden_local: 5, vincular_capitulos: [172, 238]}
+      - {tipo: arco, nombre: "Kakashi Gaiden", orden_local: 6, vincular_capitulos: [239, 244]}
+
+  - tipo: parte
+    nombre: "Naruto: Shippūden (Parte II)"
+    orden_local: 2
+    hijos:
+      - {tipo: arco, nombre: "Misión de Rescate del Kazekage", orden_local: 1, vincular_capitulos: [245, 281]}
+      - {tipo: arco, nombre: "Misión de Reconocimiento del Puente Tenchi", orden_local: 2, vincular_capitulos: [282, 310]}
+      - {tipo: arco, nombre: "Misión de Supresión de Akatsuki", orden_local: 3, vincular_capitulos: [311, 342]}
+      - {tipo: arco, nombre: "Persecución de Itachi", orden_local: 4, vincular_capitulos: [343, 367]}
+      - {tipo: arco, nombre: "Relato del Valiente Jiraiya", orden_local: 5, vincular_capitulos: [368, 383]}
+      - {tipo: arco, nombre: "El Destinado Combate entre Hermanos", orden_local: 6, vincular_capitulos: [384, 412]}
+      - {tipo: arco, nombre: "El Asalto de Pain", orden_local: 7, vincular_capitulos: [413, 453]}
+      - {tipo: arco, nombre: "Cumbre de los Cinco Kage", orden_local: 8, vincular_capitulos: [454, 483]}
+      - {tipo: arco, nombre: "Cuarta Guerra Ninja: Cuenta Atrás", orden_local: 9, vincular_capitulos: [484, 515]}
+      - {tipo: arco, nombre: "Cuarta Guerra Ninja: Confrontación", orden_local: 10, vincular_capitulos: [516, 559]}
+      - {tipo: arco, nombre: "Cuarta Guerra Ninja: Clímax", orden_local: 11, vincular_capitulos: [560, 639]}
+      - {tipo: arco, nombre: "Nacimiento del Jinchūriki del Diez Colas", orden_local: 12, vincular_capitulos: [640, 677]}
+      - {tipo: arco, nombre: "El Ataque de Kaguya Ōtsutsuki", orden_local: 13, vincular_capitulos: [678, 699]}
+      - {tipo: arco, nombre: "Especial (capítulo final)", orden_local: 14, vincular_capitulos: [700, 700]}
