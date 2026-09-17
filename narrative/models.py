@@ -37,6 +37,7 @@ class Obra(models.Model):
     TIPO_OVA = 'ova'
     TIPO_CORTO = 'corto'
     TIPO_MANGA = 'manga'
+    TIPO_LIBRO = 'libro'
     TIPO_CHOICES = [
         (TIPO_SERIE, 'Serie'),
         (TIPO_PELICULA, 'Película'),
@@ -44,6 +45,7 @@ class Obra(models.Model):
         (TIPO_OVA, 'OVA'),
         (TIPO_CORTO, 'Corto'),
         (TIPO_MANGA, 'Manga'),
+        (TIPO_LIBRO, 'Libro'),
     ]
 
     titulo = models.CharField(max_length=200)

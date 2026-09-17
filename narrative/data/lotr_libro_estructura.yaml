@@ -1,0 +1,12 @@
+# Curación manual — El Señor de los Anillos (LIBRO). Orden de PUBLICACIÓN
+# real: El Hobbit (1937) antes que la trilogía (1954-55), aunque narrativamente
+# sea la precuela — mismo criterio que en Star Wars: manda el orden de
+# exposición del lector/espectador, no la cronología interna de la historia.
+obra_external_id: {source: manual, external_id: senor-de-los-anillos-libro}
+sinopsis_en: []
+
+nodos:
+  - {tipo: libro, nombre: "El Hobbit", orden_local: 1, fecha: "1937-09-21"}
+  - {tipo: libro, nombre: "La Comunidad del Anillo", orden_local: 2, fecha: "1954-07-29"}
+  - {tipo: libro, nombre: "Las Dos Torres", orden_local: 3, fecha: "1954-11-11"}
+  - {tipo: libro, nombre: "El Retorno del Rey", orden_local: 4, fecha: "1955-10-20"}
