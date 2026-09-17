@@ -1,0 +1,19 @@
+# Curación manual — Star Wars (PELÍCULAS). Orden de estreno real.
+# Fechas verificadas contra Wikipedia (List of Star Wars films).
+obra_external_id: {source: manual, external_id: star-wars-peliculas}
+sinopsis_en: []
+
+nodos:
+  - {tipo: pelicula, nombre: "Episodio IV: Una nueva esperanza", orden_local: 1, fecha: "1977-05-25"}
+  - {tipo: pelicula, nombre: "Episodio V: El Imperio contraataca", orden_local: 2, fecha: "1980-05-21"}
+  - {tipo: pelicula, nombre: "Episodio VI: El retorno del Jedi", orden_local: 3, fecha: "1983-05-25"}
+  - {tipo: pelicula, nombre: "Episodio I: La amenaza fantasma", orden_local: 4, fecha: "1999-05-19"}
+  - {tipo: pelicula, nombre: "Episodio II: El ataque de los clones", orden_local: 5, fecha: "2002-05-16"}
+  - {tipo: pelicula, nombre: "Episodio III: La venganza de los Sith", orden_local: 6, fecha: "2005-05-19"}
+  - {tipo: pelicula, nombre: "Star Wars: La guerra de los clones (película 2008)", orden_local: 7, fecha: "2008-08-15"}
+  - {tipo: pelicula, nombre: "Episodio VII: El despertar de la Fuerza", orden_local: 8, fecha: "2015-12-18"}
+  - {tipo: pelicula, nombre: "Rogue One: una historia de Star Wars", orden_local: 9, fecha: "2016-12-16"}
+  - {tipo: pelicula, nombre: "Episodio VIII: Los últimos Jedi", orden_local: 10, fecha: "2017-12-15"}
+  - {tipo: pelicula, nombre: "Han Solo: una historia de Star Wars", orden_local: 11, fecha: "2018-05-25"}
+  - {tipo: pelicula, nombre: "Episodio IX: El ascenso de Skywalker", orden_local: 12, fecha: "2019-12-20"}
+  - {tipo: pelicula, nombre: "El Mandaloriano y Grogu", orden_local: 13, fecha: "2026-05-22"}

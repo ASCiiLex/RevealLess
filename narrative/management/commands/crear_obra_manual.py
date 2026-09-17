@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
-from narrative.models import Obra, ExternalId
+from narrative.models import Obra, ExternalId, Categoria
 
 
 class Command(BaseCommand):
@@ -19,6 +19,10 @@ class Command(BaseCommand):
         parser.add_argument('--sinopsis', default='')
         parser.add_argument('--autor', default='')
         parser.add_argument('--fecha-publicacion', default=None, help='YYYY-MM-DD')
+        parser.add_argument(
+            '--categoria', action='append', default=[],
+            help='Nombre de Categoria a asignar (repetible: --categoria X --categoria Y).',
+        )
 
     def handle(self, *args, **options):
         slug = options['slug'] or slugify(options['titulo'])
@@ -36,6 +40,10 @@ class Command(BaseCommand):
         externo, _ = ExternalId.objects.get_or_create(
             source=ExternalId.SOURCE_MANUAL, external_id=slug, obra=obra,
         )
+
+        for nombre in options['categoria']:
+            categoria, _ = Categoria.objects.get_or_create(nombre=nombre)
+            obra.categorias.add(categoria)
 
         verbo = 'Creada' if creada else 'Ya existía'
         self.stdout.write(self.style.SUCCESS(f'{verbo}: {obra.titulo} (slug={slug})'))
