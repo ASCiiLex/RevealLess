@@ -9,6 +9,7 @@
 .meta {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 6px;
   font-size: 13px;
   color: var(--fog);
@@ -16,6 +17,11 @@
 }
 
 .author {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.obra {
   font-weight: 600;
   color: var(--ink);
 }

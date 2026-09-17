@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './ChatView.module.css'
+import ReactionBar from '../Feed/ReactionBar'
 import { fetchChatHistory, type ChatMessage } from '../../api/messages'
 import { useChatSocket } from '../../hooks/useChatSocket'
 
@@ -8,9 +9,11 @@ interface Props {
 }
 
 interface MensajeUnificado {
+  id: number
   text: string
   sender: string
   created_at: string
+  user_reaction?: string | null
 }
 
 export default function ChatView({ username }: Props) {
@@ -18,7 +21,7 @@ export default function ChatView({ username }: Props) {
   const [texto, setTexto] = useState('')
   const chatBoxRef = useRef<HTMLDivElement>(null)
 
-  const { mensajesSocket, enviarMensaje } = useChatSocket(username)
+  const { mensajesSocket, enviarMensaje, reaccionesEnVivo } = useChatSocket(username)
 
   useEffect(() => {
     fetchChatHistory(username).then((data) => {
@@ -55,13 +58,22 @@ export default function ChatView({ username }: Props) {
         ) : (
           mensajes.map((msg, i) => (
             <div
-              key={i}
+              key={msg.id ?? i}
               className={`${styles.message} ${msg.sender === username ? styles.received : styles.sent}`}
             >
               {msg.text}
               <div className={styles.time}>
                 {new Date(msg.created_at).toLocaleString()}
               </div>
+              {msg.id && (
+                <ReactionBar
+                  targetId={msg.id}
+                  target="message"
+                  reaccionInicial={msg.user_reaction ?? null}
+                  totalesEnVivo={reaccionesEnVivo[msg.id]}
+                  variante="sutil"
+                />
+              )}
             </div>
           ))
         )}

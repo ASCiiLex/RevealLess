@@ -48,6 +48,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
         payload = {
+            "id": message.id,
             "text": message.text,
             "sender": message.sender.username,
             "created_at": message.created_at.isoformat(),
@@ -73,6 +74,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event["data"]))
+
+    async def reaction_message(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "reaction",
+            **event["data"],
+        }))
 
     @database_sync_to_async
     def other_user_exists(self, username):

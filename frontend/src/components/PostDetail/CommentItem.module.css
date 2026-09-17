@@ -26,30 +26,32 @@
   color: var(--ink);
 }
 
-.text {
-  font-size: 14px;
-  color: var(--ink);
-  margin: 0 0 6px 36px;
-}
-
-.actions {
-  display: flex;
-  gap: 12px;
-  margin-left: 36px;
-  font-size: 12px;
-}
-
-.reactButton {
+.editButton {
+  margin-left: auto;
   border: none;
   background: none;
   color: var(--fog);
+  font-size: 12px;
   cursor: pointer;
   padding: 0;
 }
 
-.reactButtonActive {
+.editButton:hover {
   color: var(--gold);
-  font-weight: 600;
+}
+
+.text {
+  font-size: 14px;
+  color: var(--ink);
+  margin: 0 0 8px 36px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 36px;
+  font-size: 12px;
 }
 
 .replyButton {
@@ -58,6 +60,7 @@
   color: var(--fog);
   cursor: pointer;
   padding: 0;
+  font-size: 12px;
 }
 
 .replies {
@@ -67,8 +70,14 @@
 
 .replyForm {
   display: flex;
+  flex-direction: column;
   gap: 6px;
   margin: 8px 0 0 36px;
+}
+
+.replyInputRow {
+  display: flex;
+  gap: 6px;
 }
 
 .replyInput {
@@ -80,4 +89,13 @@
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 13px;
+}
+
+.quitar {
+  border: none;
+  background: none;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
 }

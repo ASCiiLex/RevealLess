@@ -40,8 +40,16 @@
 }
 
 .obra {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: 13px;
   color: var(--fog);
+}
+
+.narrativeSeparator {
+  color: var(--border);
 }
 
 .editButton {
@@ -79,12 +87,18 @@
 
 .commentForm {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 20px;
   background: var(--paper);
   border-radius: var(--radius);
   padding: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.commentInputRow {
+  display: flex;
+  gap: 8px;
 }
 
 .commentInput {

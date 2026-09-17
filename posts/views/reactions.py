@@ -11,6 +11,13 @@ from likes.models import PostReaction
 from ..models import Post
 
 
+def _counts_por_reaccion(post):
+    return {
+        clave: post.reactions.filter(reaction=clave).count()
+        for clave, _ in PostReaction.REACTION_CHOICES
+    }
+
+
 @login_required
 @require_POST
 def toggle_reaction_post(request):
@@ -42,13 +49,7 @@ def toggle_reaction_post(request):
 
     # La notificación la crea PostReaction.save() (con su propia dedupe) — no duplicar aquí.
 
-    counts = {
-        'like': post.reactions.filter(reaction='like').count(),
-        'love': post.reactions.filter(reaction='love').count(),
-        'funny': post.reactions.filter(reaction='funny').count(),
-        'wow': post.reactions.filter(reaction='wow').count(),
-        'sad': post.reactions.filter(reaction='sad').count(),
-    }
+    counts = _counts_por_reaccion(post)
     total = sum(counts.values())
 
     channel_layer = get_channel_layer()
@@ -76,13 +77,7 @@ def toggle_reaction_post(request):
 def post_reactions_list(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
-    totals = {
-        'like': post.reactions.filter(reaction='like').count(),
-        'love': post.reactions.filter(reaction='love').count(),
-        'funny': post.reactions.filter(reaction='funny').count(),
-        'wow': post.reactions.filter(reaction='wow').count(),
-        'sad': post.reactions.filter(reaction='sad').count(),
-    }
+    totals = _counts_por_reaccion(post)
 
     users_data = []
 

@@ -70,3 +70,13 @@ def obra_landing_react_view(request, obra_slug):
     landing de obra (Fase 4)."""
     get_object_or_404(Obra, slug=obra_slug)
     return render(request, 'narrative/obra_landing_react.html', {'obra_slug': obra_slug})
+
+
+@login_required
+def obra_temas_react_view(request, obra_slug):
+    """Vista mínima para la página de Temas de una obra, mudada aquí
+    desde la landing: hoy la landing embebe el gestor de progreso
+    directamente, y Temas pasa a ser su propia pantalla, igual que
+    antes lo era Progreso."""
+    get_object_or_404(Obra, slug=obra_slug)
+    return render(request, 'narrative/obra_temas_react.html', {'obra_slug': obra_slug})

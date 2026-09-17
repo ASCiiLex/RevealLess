@@ -15,6 +15,8 @@ export interface FeedPost {
     etiqueta: string
     orden_inicio: number
     orden_fin: number
+    padre: number | null
+    padre_etiqueta: string | null
   } | null
   frontera_spoiler: {
     id: number
@@ -25,6 +27,7 @@ export interface FeedPost {
     orden_fin: number
   } | null
   nivel_spoiler: string
+  emocion_autor: string | null
   created_at: string
   likes_count: number
   comments_count: number

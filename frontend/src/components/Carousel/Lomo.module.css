@@ -166,3 +166,36 @@
   color: var(--border);
   cursor: default;
 }
+
+@media (max-width: 767px) {
+  .lomo {
+    width: 92px;
+    height: 134px;
+  }
+
+  .infoIcon {
+    width: 17px;
+    height: 17px;
+    font-size: 9px;
+    top: 7px;
+    right: 5px;
+  }
+
+  .title {
+    font-size: 10px;
+    padding: 6px 5px;
+  }
+
+  .progressIcon {
+    font-size: 14px;
+  }
+
+  .actionText {
+    display: none;
+  }
+
+  .progressLink,
+  .followButton {
+    gap: 0;
+  }
+}

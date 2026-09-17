@@ -16,7 +16,7 @@
 
 .imagen {
   width: 96px;
-  height: 140px;
+  height: 200px;
   object-fit: cover;
   border-radius: var(--radius);
   flex-shrink: 0;
@@ -24,6 +24,9 @@
 
 .info {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .titulo {
@@ -52,44 +55,48 @@
 .suscriptores {
   font-size: 12px;
   color: var(--fog);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.sinopsis {
-  font-size: 14px;
-  color: var(--ink);
-  line-height: 1.5;
-  margin: 0 0 16px 0;
-  background: var(--paper);
-  border-radius: var(--radius);
-  padding: 14px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+.progresoTexto {
+  font-size: 11px;
+  color: var(--fog);
+  margin-bottom: 3px;
 }
 
-.progreso {
-  font-size: 13px;
-  color: var(--paper);
-  margin-bottom: 16px;
+.progresoTrack {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progresoFill {
+  height: 100%;
+  background: var(--gold);
 }
 
 .actions {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
 }
 
 .button {
-  padding: 8px 16px;
+  padding: 7px 8px;
   border-radius: var(--radius);
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border);
-  background: var(--paper);
+  background: none;
   color: var(--ink);
   text-decoration: none;
   display: inline-block;
+  text-align: center;
 }
 
 .buttonPrimary {
@@ -98,44 +105,70 @@
   border-color: var(--gold);
 }
 
-.temasTitle {
+.sinopsisBox {
+  background: var(--paper);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.sinopsisToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.chevron {
+  color: var(--fog);
+  font-size: 13px;
+}
+
+.sinopsisText {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 14px 14px;
+}
+
+.progresoTitle {
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
   color: var(--paper);
-  margin: 0 0 10px 0;
+  margin: 0 0 6px 0;
 }
 
-.temaRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
+.currentProgress {
+  font-size: 13px;
+  color: var(--paper);
+  opacity: 0.85;
+  margin: 0 0 12px 0;
+}
+
+.tree {
   background: var(--paper);
   border-radius: var(--radius);
-  margin-bottom: 8px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
-.temaNombre {
-  font-size: 14px;
-  color: var(--ink);
-}
+@media (min-width: 480px) {
+  .actions {
+    flex-direction: row;
+  }
 
-.temaButton {
-  border: none;
-  background: none;
-  color: var(--fog);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.temaButtonActive {
-  color: var(--gold);
-}
-
-.emptyTemas {
-  color: var(--paper);
-  font-size: 13px;
+  .button {
+    flex: 1;
+  }
 }

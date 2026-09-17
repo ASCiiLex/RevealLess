@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import styles from './ObraLandingView.module.css'
-import { fetchObraLanding, type ObraLanding, type TemaLanding } from '../../api/obraLanding'
+import { fetchObraLanding, type ObraLanding } from '../../api/obraLanding'
 import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
+import { fetchProgreso, actualizarProgreso, type ProgresoData } from '../../api/progreso'
+import { buildTree } from '../../utils/buildTree'
+import UnidadNode from '../Progreso/UnidadNode'
+import ConfirmModal from '../Progreso/ConfirmModal'
 
 interface Props {
   obraSlug: string
@@ -9,9 +13,16 @@ interface Props {
 
 export default function ObraLandingView({ obraSlug }: Props) {
   const [obra, setObra] = useState<ObraLanding | null>(null)
+  const [progresoData, setProgresoData] = useState<ProgresoData | null>(null)
+  const [sinopsisAbierta, setSinopsisAbierta] = useState(false)
+  const [pendienteConfirmar, setPendienteConfirmar] = useState<{
+    unidadId: number
+    mensaje: string
+  } | null>(null)
 
   useEffect(() => {
     fetchObraLanding(obraSlug).then(setObra)
+    fetchProgreso(obraSlug).then(setProgresoData)
   }, [obraSlug])
 
   async function handleToggleObra() {
@@ -27,32 +38,25 @@ export default function ObraLandingView({ obraSlug }: Props) {
     }
   }
 
-  async function handleToggleTema(tema: TemaLanding) {
-    if (!obra) return
-    if (tema.suscrito) {
-      if (tema.suscripcion_id !== null) {
-        await eliminarSuscripcion(tema.suscripcion_id)
-      }
-      setObra({
-        ...obra,
-        temas: obra.temas.map((t) =>
-          t.id === tema.id ? { ...t, suscrito: false, suscripcion_id: null } : t
-        ),
-      })
-    } else {
-      const suscripcion = await crearSuscripcion(obra.slug, { temaId: tema.id })
-      setObra({
-        ...obra,
-        temas: obra.temas.map((t) =>
-          t.id === tema.id ? { ...t, suscrito: true, suscripcion_id: suscripcion.id } : t
-        ),
-      })
+  async function handleSelectUnidad(unidadId: number, confirmado = false) {
+    const resultado = await actualizarProgreso(obraSlug, unidadId, confirmado)
+
+    if ('requiereConfirmacion' in resultado) {
+      setPendienteConfirmar({ unidadId, mensaje: resultado.detail })
+      return
     }
+
+    setPendienteConfirmar(null)
+    setProgresoData((prev) => (prev ? { ...prev, progreso: resultado } : prev))
   }
 
   if (!obra) {
     return null
   }
+
+  const arbol = progresoData ? buildTree(progresoData.unidades) : []
+  const actualId = progresoData?.progreso?.unidad_actual.id ?? -1
+  const actualOrden = progresoData?.progreso?.unidad_actual.orden_inicio ?? -1
 
   return (
     <div className={styles.wrapper}>
@@ -70,45 +74,74 @@ export default function ObraLandingView({ obraSlug }: Props) {
           <div className={styles.suscriptores}>
             {obra.total_suscriptores} suscriptor{obra.total_suscriptores === 1 ? '' : 'es'}
           </div>
+
+          {obra.progreso_pct !== null && (
+            <>
+              <div className={styles.progresoTexto}>Tu progreso: {obra.progreso_pct}%</div>
+              <div className={styles.progresoTrack}>
+                <div className={styles.progresoFill} style={{ width: `${obra.progreso_pct}%` }} />
+              </div>
+            </>
+          )}
+
+          <div className={styles.actions}>
+            <button
+              className={`${styles.button} ${obra.suscrito ? '' : styles.buttonPrimary}`}
+              onClick={handleToggleObra}
+            >
+              {obra.suscrito ? 'Siguiendo' : 'Seguir'}
+            </button>
+            <a className={styles.button} href={`/feed/react/?obra=${obra.id}`}>
+              Ver feed
+            </a>
+            <a className={styles.button} href={`/narrative/obra/${obra.slug}/temas/react/`}>
+              Temas
+            </a>
+          </div>
         </div>
       </div>
 
-      {obra.sinopsis && <p className={styles.sinopsis}>{obra.sinopsis}</p>}
-
-      {obra.progreso_pct !== null && (
-        <p className={styles.progreso}>Tu progreso: {obra.progreso_pct}%</p>
+      {obra.sinopsis && (
+        <div className={styles.sinopsisBox}>
+          <button
+            className={styles.sinopsisToggle}
+            onClick={() => setSinopsisAbierta((v) => !v)}
+            aria-expanded={sinopsisAbierta}
+          >
+            <span>Sinopsis</span>
+            <span className={styles.chevron} aria-hidden="true">{sinopsisAbierta ? '▾' : '▸'}</span>
+          </button>
+          {sinopsisAbierta && <p className={styles.sinopsisText}>{obra.sinopsis}</p>}
+        </div>
       )}
 
-      <div className={styles.actions}>
-        <button
-          className={`${styles.button} ${obra.suscrito ? '' : styles.buttonPrimary}`}
-          onClick={handleToggleObra}
-        >
-          {obra.suscrito ? 'Siguiendo' : 'Seguir'}
-        </button>
-        <a className={styles.button} href={`/feed/react/?obra=${obra.id}`}>
-          Ver feed
-        </a>
-        <a className={styles.button} href={`/narrative/progreso-react/${obra.slug}/`}>
-          Progreso
-        </a>
-      </div>
+      <h2 className={styles.progresoTitle}>Progreso</h2>
+      {progresoData?.progreso && (
+        <p className={styles.currentProgress}>
+          Progreso actual: {progresoData.progreso.unidad_actual.etiqueta}
+        </p>
+      )}
+      {progresoData && (
+        <div className={styles.tree}>
+          {arbol.map((nodo) => (
+            <UnidadNode
+              key={nodo.id}
+              nodo={nodo}
+              actualId={actualId}
+              actualOrden={actualOrden}
+              onSelect={(id) => handleSelectUnidad(id)}
+              autoScroll={false}
+            />
+          ))}
+        </div>
+      )}
 
-      <h2 className={styles.temasTitle}>Temas</h2>
-      {obra.temas.length === 0 ? (
-        <p className={styles.emptyTemas}>Esta obra aún no tiene temas registrados.</p>
-      ) : (
-        obra.temas.map((tema) => (
-          <div key={tema.id} className={styles.temaRow}>
-            <span className={styles.temaNombre}>{tema.nombre}</span>
-            <button
-              className={`${styles.temaButton} ${tema.suscrito ? styles.temaButtonActive : ''}`}
-              onClick={() => handleToggleTema(tema)}
-            >
-              {tema.suscrito ? 'Siguiendo' : 'Seguir'}
-            </button>
-          </div>
-        ))
+      {pendienteConfirmar && (
+        <ConfirmModal
+          mensaje={pendienteConfirmar.mensaje}
+          onConfirm={() => handleSelectUnidad(pendienteConfirmar.unidadId, true)}
+          onCancel={() => setPendienteConfirmar(null)}
+        />
       )}
     </div>
   )

@@ -4,10 +4,12 @@ from .views import (
     toggle_reaction_comment,
     delete_comment,
     comment_reactions_list,
+    CommentUpdateAPIView,
 )
 
 urlpatterns = [
     path('add/', add_comment, name='add_comment'),
+    path('editar/<int:comment_id>/', CommentUpdateAPIView.as_view(), name='comment_api_update'),
     path('react/<int:comment_id>/', toggle_reaction_comment, name='toggle_reaction_comment'),
     path('delete/<int:comment_id>/', delete_comment, name='delete_comment'),
     path('reactions/<int:comment_id>/', comment_reactions_list, name='comment_reactions_list'),

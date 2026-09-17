@@ -36,7 +36,12 @@ class FeedAPIView(generics.ListAPIView):
             .filter(condiciones_del_feed)
             .exclude(silenciado_q)
             .distinct()
-            .select_related('author', 'obra', 'referencia_narrativa')
+            .select_related(
+                'author',
+                'obra',
+                'referencia_narrativa',
+                'referencia_narrativa__padre',
+            )
             .visible_for(user)
             .with_feed_stats()
         )
@@ -58,7 +63,10 @@ class ProgresoAPIView(APIView):
     def get(self, request, obra_slug):
         obra = get_object_or_404(Obra, slug=obra_slug)
         unidades = UnidadNarrativa.objects.filter(obra=obra).order_by('orden_inicio')
-        progreso = ProgresoUsuario.objects.filter(usuario=request.user, obra=obra).first()
+        progreso = ProgresoUsuario.objects.filter(
+            usuario=request.user,
+            obra=obra,
+        ).first()
 
         return Response({
             'obra': {'titulo': obra.titulo, 'slug': obra.slug},
@@ -69,14 +77,24 @@ class ProgresoAPIView(APIView):
     def post(self, request, obra_slug):
         obra = get_object_or_404(Obra, slug=obra_slug)
         unidad = get_object_or_404(
-            UnidadNarrativa, id=request.data.get('unidad_actual'), obra=obra
+            UnidadNarrativa,
+            id=request.data.get('unidad_actual'),
+            obra=obra,
         )
         confirmado = bool(request.data.get('confirmado', False))
 
         try:
-            progreso = actualizar_progreso(request.user, obra, unidad, confirmado=confirmado)
+            progreso = actualizar_progreso(
+                request.user,
+                obra,
+                unidad,
+                confirmado=confirmado,
+            )
         except ValueError as exc:
-            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'detail': str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except SaltoGrandeRequiereConfirmacion as exc:
             return Response({
                 'detail': str(exc),

@@ -29,6 +29,7 @@ export async function crearPost(
     referenciaNarrativaId: number
     fronteraSpoilerId?: number | null
     nivelSpoiler?: string
+    emocionAutor?: string | null
     nuevoProgresoId?: number | null
     confirmarSaltoProgreso?: boolean
   }
@@ -39,6 +40,7 @@ export async function crearPost(
   formData.append('referencia_narrativa', String(datos.referenciaNarrativaId))
   if (datos.fronteraSpoilerId) formData.append('frontera_spoiler', String(datos.fronteraSpoilerId))
   if (datos.nivelSpoiler) formData.append('nivel_spoiler', datos.nivelSpoiler)
+  if (datos.emocionAutor) formData.append('emocion_autor', datos.emocionAutor)
   if (datos.nuevoProgresoId) formData.append('nuevo_progreso', String(datos.nuevoProgresoId))
   if (datos.confirmarSaltoProgreso) formData.append('confirmar_salto_progreso', 'true')
 

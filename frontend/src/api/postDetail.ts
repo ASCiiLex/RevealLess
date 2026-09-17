@@ -8,6 +8,11 @@ export interface CommentItem {
   text: string
   created_at: string
   parent_id: number | null
+  emocion_autor: string | null
+  referencia_narrativa_id: number | null
+  frontera_spoiler_id: number | null
+  frontera_origen: string
+  is_own_comment: boolean
   reactions_count: number
   user_reaction: string | null
   replies: CommentItem[]
@@ -42,11 +47,36 @@ export async function toggleReactionPost(postId: number, reaction: string) {
   return response.json()
 }
 
-export async function addComment(postId: number, text: string, parentId?: number) {
+export interface PostReactionsTotals {
+  totals: Record<string, number>
+}
+
+export async function fetchPostReactionsTotals(postId: number): Promise<PostReactionsTotals> {
+  const response = await fetch(`/posts/reactions/${postId}/`, {
+    credentials: 'same-origin',
+  })
+  return response.json()
+}
+
+export interface AddCommentOptions {
+  parentId?: number
+  emocionAutor?: string | null
+  referenciaNarrativaId?: number | null
+  fronteraSpoilerId?: number | null
+}
+
+export async function addComment(
+  postId: number,
+  text: string,
+  opciones: AddCommentOptions = {}
+) {
   const formData = new FormData()
   formData.append('post_id', String(postId))
   formData.append('text', text)
-  if (parentId) formData.append('parent_id', String(parentId))
+  if (opciones.parentId) formData.append('parent_id', String(opciones.parentId))
+  if (opciones.emocionAutor) formData.append('emocion_autor', opciones.emocionAutor)
+  if (opciones.referenciaNarrativaId) formData.append('referencia_narrativa', String(opciones.referenciaNarrativaId))
+  if (opciones.fronteraSpoilerId) formData.append('frontera_spoiler', String(opciones.fronteraSpoilerId))
 
   const response = await fetch('/comments/add/', {
     method: 'POST',
@@ -54,6 +84,35 @@ export async function addComment(postId: number, text: string, parentId?: number
     headers: { 'X-CSRFToken': getCsrfToken() },
     body: formData,
   })
+  return response.json()
+}
+
+export async function updateComment(
+  commentId: number,
+  datos: {
+    text?: string
+    emocionAutor?: string | null
+    referenciaNarrativaId?: number
+    fronteraSpoilerId?: number | null
+  }
+) {
+  const formData = new FormData()
+  if (datos.text !== undefined) formData.append('text', datos.text)
+  if (datos.emocionAutor !== undefined) formData.append('emocion_autor', datos.emocionAutor ?? '')
+  if (datos.referenciaNarrativaId) formData.append('referencia_narrativa', String(datos.referenciaNarrativaId))
+  if (datos.fronteraSpoilerId) formData.append('frontera_spoiler', String(datos.fronteraSpoilerId))
+
+  const response = await fetch(`/comments/editar/${commentId}/`, {
+    method: 'PATCH',
+    credentials: 'same-origin',
+    headers: { 'X-CSRFToken': getCsrfToken() },
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null)
+    throw detail
+  }
   return response.json()
 }
 
@@ -70,6 +129,19 @@ export async function toggleReactionComment(commentId: number, reaction: string)
   return response.json()
 }
 
+export async function toggleReactionMessage(messageId: number, reaction: string) {
+  const formData = new FormData()
+  formData.append('reaction', reaction)
+
+  const response = await fetch(`/mensajes/react/msg/${messageId}/`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'X-CSRFToken': getCsrfToken() },
+    body: formData,
+  })
+  return response.json()
+}
+
 export async function updatePost(
   postId: number,
   datos: {
@@ -78,6 +150,7 @@ export async function updatePost(
     referenciaNarrativaId?: number
     fronteraSpoilerId?: number | null
     nivelSpoiler?: string
+    emocionAutor?: string | null
   }
 ): Promise<FeedPost> {
   const formData = new FormData()
@@ -86,6 +159,7 @@ export async function updatePost(
   if (datos.referenciaNarrativaId) formData.append('referencia_narrativa', String(datos.referenciaNarrativaId))
   if (datos.fronteraSpoilerId) formData.append('frontera_spoiler', String(datos.fronteraSpoilerId))
   if (datos.nivelSpoiler) formData.append('nivel_spoiler', datos.nivelSpoiler)
+  if (datos.emocionAutor !== undefined) formData.append('emocion_autor', datos.emocionAutor ?? '')
 
   const response = await fetch(`/posts/api/${postId}/editar/`, {
     method: 'PATCH',

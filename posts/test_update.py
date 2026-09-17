@@ -92,3 +92,12 @@ class PostUpdateAPIViewTests(TestCase):
         self.post.refresh_from_db()
         self.assertEqual(self.post.nivel_spoiler, 'importante')
         self.assertEqual(self.post.text, 'texto original')
+
+    def test_edita_emocion_autor(self):
+        self.client.force_authenticate(user=self.autor)
+        response = self.client.patch(
+            reverse('posts_api_update', args=[self.post.id]), {'emocion_autor': 'me_entristece'},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.emocion_autor, 'me_entristece')

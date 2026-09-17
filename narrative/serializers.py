@@ -1,18 +1,51 @@
+import math
+
 from rest_framework import serializers
 from posts.models import Post
 from .models import UnidadNarrativa, ProgresoUsuario, Obra, SolicitudTema
 
 
+def calcular_progreso_pct(orden_absoluto, longitud_total):
+    """Nunca redondea hacia arriba hasta el 100% salvo que el progreso
+    sea matemáticamente exacto: mostrar "100%" cuando de verdad quedan
+    episodios pendientes contradice el proposito anti-spoiler (podria
+    dar al usuario una falsa sensacion de estar al dia). Se usa floor,
+    con la excepcion explicita del caso realmente completo (evita el
+    error opuesto: mostrar "99%" para quien si termino del todo)."""
+    if not longitud_total:
+        return None
+    ratio = orden_absoluto / longitud_total
+    if ratio >= 1:
+        pct = 100
+    else:
+        pct = math.floor(ratio * 100)
+    return min(max(pct, 0), 100)
+
+
 class UnidadNarrativaSerializer(serializers.ModelSerializer):
     imagen = serializers.SerializerMethodField()
     padre = serializers.IntegerField(source='padre_id', read_only=True, allow_null=True)
+    padre_etiqueta = serializers.SerializerMethodField()
 
     class Meta:
         model = UnidadNarrativa
-        fields = ['id', 'nombre', 'tipo', 'etiqueta', 'orden_inicio', 'orden_fin', 'imagen', 'padre']
+        fields = [
+            'id',
+            'nombre',
+            'tipo',
+            'etiqueta',
+            'orden_inicio',
+            'orden_fin',
+            'imagen',
+            'padre',
+            'padre_etiqueta',
+        ]
 
     def get_imagen(self, obj):
         return obj.image_url
+
+    def get_padre_etiqueta(self, obj):
+        return obj.padre.etiqueta if obj.padre_id else None
 
 
 class ProgresoUsuarioSerializer(serializers.ModelSerializer):
@@ -40,7 +73,7 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = [
             'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'text', 'imagen',
-            'referencia_narrativa', 'frontera_spoiler', 'nivel_spoiler', 'created_at',
+            'referencia_narrativa', 'frontera_spoiler', 'nivel_spoiler', 'emocion_autor', 'created_at',
             'likes_count', 'comments_count', 'user_reaction', 'is_own_post',
         ]
 
@@ -61,7 +94,7 @@ class PostSerializer(serializers.ModelSerializer):
     def get_is_own_post(self, obj):
         request = self.context.get('request')
         return bool(request and request.user.is_authenticated and request.user == obj.author)
-
+    
 
 class ObraResumenSerializer(serializers.ModelSerializer):
     imagen_url = serializers.SerializerMethodField()
@@ -85,11 +118,8 @@ class ObraResumenSerializer(serializers.ModelSerializer):
         if not progreso_por_obra or obj.id not in progreso_por_obra:
             return None
         longitud_total = getattr(obj, 'longitud_total', None)
-        if not longitud_total:
-            return None
         orden_absoluto = progreso_por_obra[obj.id]
-        pct = round((orden_absoluto / longitud_total) * 100)
-        return min(max(pct, 0), 100)
+        return calcular_progreso_pct(orden_absoluto, longitud_total)
 
     def get_suscrito(self, obj):
         return obj.id in (self.context.get('ids_obras_suscritas') or set())
@@ -154,10 +184,9 @@ class ObraLandingSerializer(serializers.ModelSerializer):
     def get_progreso_pct(self, obj):
         progreso = self.context.get('progreso')
         longitud_total = self.context.get('longitud_total')
-        if not progreso or not longitud_total:
+        if not progreso:
             return None
-        pct = round((progreso.orden_absoluto / longitud_total) * 100)
-        return min(max(pct, 0), 100)
+        return calcular_progreso_pct(progreso.orden_absoluto, longitud_total)
 
     def get_total_suscriptores(self, obj):
         return self.context.get('total_suscriptores', 0)

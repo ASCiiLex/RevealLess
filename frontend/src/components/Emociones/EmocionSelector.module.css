@@ -1,0 +1,78 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.chevron {
+  color: var(--fog);
+  font-size: 12px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fog);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.opcion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.opcionActiva {
+  border-color: var(--emocion-color, var(--gold));
+  background: color-mix(in srgb, var(--emocion-color, var(--gold)) 12%, var(--paper));
+}
+
+.emoji {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.etiqueta {
+  font-size: 9px;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.limpiar {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  color: var(--fog);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}

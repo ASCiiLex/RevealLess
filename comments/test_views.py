@@ -83,3 +83,49 @@ class AddCommentViewTests(TestCase):
         reply = Comment.objects.get(text='una respuesta')
         self.assertEqual(reply.parent, padre)
         self.assertEqual(reply.referencia_narrativa, self.post.referencia_narrativa)
+
+    def test_crear_comentario_con_emocion_autor(self):
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'con emocion', 'emocion_autor': 'me_da_miedo',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['emocion_autor'], 'me_da_miedo')
+
+    def test_rechaza_emocion_autor_invalida_en_comentario(self):
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'emocion mala', 'emocion_autor': 'inventada',
+        })
+        self.assertEqual(response.status_code, 400)
+
+    def test_responder_a_una_respuesta_es_rechazado(self):
+        """Limite de 3 niveles: comentario -> respuesta ->
+        respuesta-a-respuesta, y ahi se para."""
+        self.client.force_login(self.comentador)
+        padre = Comment.objects.create(
+            user=self.autor, post=self.post, text='comentario raiz',
+            referencia_narrativa=self.e1,
+        )
+        respuesta = Comment.objects.create(
+            user=self.comentador, post=self.post, parent=padre, text='respuesta nivel 2',
+            referencia_narrativa=self.e1,
+        )
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'intento nivel 4', 'parent_id': respuesta.id,
+        })
+        self.assertEqual(response.status_code, 400)
+
+    def test_responder_a_un_comentario_raiz_permite_nivel_3(self):
+        """Confirma explicitamente que SI se permite: responder a una
+        respuesta de nivel 2 cuyo padre es un comentario raiz (nivel 1)
+        -- eso crea el nivel 3, el limite maximo permitido."""
+        self.client.force_login(self.comentador)
+        padre = Comment.objects.create(
+            user=self.autor, post=self.post, text='comentario raiz',
+            referencia_narrativa=self.e1,
+        )
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'respuesta nivel 2', 'parent_id': padre.id,
+        })
+        self.assertEqual(response.status_code, 200)

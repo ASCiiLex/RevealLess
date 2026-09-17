@@ -1,6 +1,9 @@
 from rest_framework import serializers
-from narrative.models import UnidadNarrativa
+from narrative.models import ClasificacionNarrativa, UnidadNarrativa
 from .models import Post
+
+
+EMOCION_CHOICES = [c[0] for c in ClasificacionNarrativa.EMOCION_CHOICES]
 
 
 class PostCreateSerializer(serializers.Serializer):
@@ -14,6 +17,9 @@ class PostCreateSerializer(serializers.Serializer):
     )
     nivel_spoiler = serializers.ChoiceField(
         choices=['menor', 'importante', 'trama_central'], required=False, default='menor'
+    )
+    emocion_autor = serializers.ChoiceField(
+        choices=EMOCION_CHOICES, required=False, allow_null=True
     )
     nuevo_progreso = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
@@ -39,4 +45,7 @@ class PostUpdateSerializer(serializers.Serializer):
     )
     nivel_spoiler = serializers.ChoiceField(
         choices=['menor', 'importante', 'trama_central'], required=False
+    )
+    emocion_autor = serializers.ChoiceField(
+        choices=EMOCION_CHOICES, required=False, allow_null=True
     )

@@ -58,6 +58,7 @@ class PostCreateAPIView(APIView):
             image=datos.get('image'),
             referencia_narrativa=datos['referencia_narrativa'],
             nivel_spoiler=datos.get('nivel_spoiler', 'menor'),
+            emocion_autor=datos.get('emocion_autor'),
         )
 
         if datos.get('frontera_spoiler'):
@@ -113,6 +114,8 @@ class PostUpdateAPIView(APIView):
             post.referencia_narrativa = datos['referencia_narrativa']
         if 'nivel_spoiler' in datos:
             post.nivel_spoiler = datos['nivel_spoiler']
+        if 'emocion_autor' in datos:
+            post.emocion_autor = datos['emocion_autor']
         if 'frontera_spoiler' in datos:
             post.frontera_spoiler = datos['frontera_spoiler']
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
@@ -149,5 +152,7 @@ class PostDetailAPIView(APIView):
         return Response({
             'post': PostSerializer(post, context={'request': request}).data,
             'post_reaction': post_reaction,
-            'comments': CommentSerializer(comments, many=True, context={'reaction_map': reaction_map}).data,
+            'comments': CommentSerializer(
+                comments, many=True, context={'reaction_map': reaction_map, 'request': request}
+            ).data,
         })

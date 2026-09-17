@@ -15,6 +15,18 @@
 
   --page-bg: #4A5560;
 
+  --emocion-gusta: #E5484D;
+  --emocion-encanta: #C94F7C;
+  --emocion-divierte: #F2B84B;
+  --emocion-sorprende: #48B89A;
+  --emocion-enfada: #D83A3A;
+  --emocion-asco: #7A8F32;
+  --emocion-entristece: #4285D4;
+  --emocion-entusiasma: #FFD43B;
+  --emocion-emociona: #ED8F79;
+  --emocion-curiosidad: #E06B3C;
+  --emocion-miedo: #4B4A9E;
+
   --font-display: 'Fraunces', serif;
   --font-body: 'Public Sans', sans-serif;
 
