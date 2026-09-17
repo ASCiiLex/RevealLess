@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from .models import SolicitudTema, TemaTransversal
+from ..models import SolicitudTema, TemaTransversal
 
 UMBRAL_SALTO_GRANDE = 3
 
@@ -27,7 +27,7 @@ def calcular_orden_absoluto(unidad):
 
 
 def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False):
-    from .models import ProgresoUsuario
+    from ..models import ProgresoUsuario
 
     nuevo_orden = calcular_orden_absoluto(nueva_unidad)
 

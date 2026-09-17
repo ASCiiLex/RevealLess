@@ -1,0 +1,51 @@
+# Curación manual — Naruto (ANIME). Estructura por TEMPORADA de emisión/DVD
+# (Wikipedia), no por arco narrativo — los arcos tienen tramos que se
+# interrumpen y retoman más tarde (solapes reales entre episodios de
+# distintos arcos), mientras que las temporadas son estrictamente
+# secuenciales sin solape.
+#
+# IMPORTANTE: numeración de episodio CONTINUA en toda la Obra (1-720), no la
+# numeración original de cada serie (que reinicia en 1 en Shippūden). Mismo
+# criterio que One Piece. Necesario porque orden_local debe ser único por
+# Obra — con la numeración original de cada serie, episodio 1 de Shippūden
+# colisionaba con episodio 1 de Naruto y se "robaban" episodios entre Partes.
+obra_external_id: {source: manual, external_id: naruto-anime}
+sinopsis_en: [parte, saga]
+
+nodos:
+  - tipo: parte
+    nombre: "Naruto"
+    orden_local: 1
+    hijos:
+      - {tipo: temporada, nombre: "Temporada 1", orden_local: 1, vincular_episodios: [1, 35], fecha: "2002-10-03"}
+      - {tipo: temporada, nombre: "Temporada 2", orden_local: 2, vincular_episodios: [36, 83], fecha: "2003-06-04"}
+      - {tipo: temporada, nombre: "Temporada 3", orden_local: 3, vincular_episodios: [84, 131], fecha: "2004-05-19"}
+      - {tipo: temporada, nombre: "Temporada 4", orden_local: 4, vincular_episodios: [132, 179], fecha: "2005-04-27"}
+      - {tipo: temporada, nombre: "Temporada 5", orden_local: 5, vincular_episodios: [180, 220], fecha: "2006-04-12"}
+
+  - tipo: parte
+    nombre: "Naruto: Shippūden"
+    orden_local: 2
+    hijos:
+      - {tipo: temporada, nombre: "Temporada 1", orden_local: 1, vincular_episodios: [221, 252], fecha: "2007-02-15"}
+      - {tipo: temporada, nombre: "Temporada 2", orden_local: 2, vincular_episodios: [253, 273], fecha: "2007-11-08"}
+      - {tipo: temporada, nombre: "Temporada 3", orden_local: 3, vincular_episodios: [274, 291], fecha: "2008-04-03"}
+      - {tipo: temporada, nombre: "Temporada 4", orden_local: 4, vincular_episodios: [292, 308], fecha: "2008-08-21"}
+      - {tipo: temporada, nombre: "Temporada 5", orden_local: 5, vincular_episodios: [309, 332], fecha: "2008-12-18"}
+      - {tipo: temporada, nombre: "Temporada 6", orden_local: 6, vincular_episodios: [333, 363], fecha: "2009-06-11"}
+      - {tipo: temporada, nombre: "Temporada 7", orden_local: 7, vincular_episodios: [364, 371], fecha: "2010-01-21"}
+      - {tipo: temporada, nombre: "Temporada 8", orden_local: 8, vincular_episodios: [372, 395], fecha: "2010-03-25"}
+      - {tipo: temporada, nombre: "Temporada 9", orden_local: 9, vincular_episodios: [396, 416], fecha: "2010-09-02"}
+      - {tipo: temporada, nombre: "Temporada 10", orden_local: 10, vincular_episodios: [417, 441], fecha: "2011-02-10"}
+      - {tipo: temporada, nombre: "Temporada 11", orden_local: 11, vincular_episodios: [442, 462], fecha: "2011-07-28"}
+      - {tipo: temporada, nombre: "Temporada 12", orden_local: 12, vincular_episodios: [463, 495], fecha: "2012-01-05"}
+      - {tipo: temporada, nombre: "Temporada 13", orden_local: 13, vincular_episodios: [496, 515], fecha: "2012-08-23"}
+      - {tipo: temporada, nombre: "Temporada 14", orden_local: 14, vincular_episodios: [516, 540], fecha: "2013-01-17"}
+      - {tipo: temporada, nombre: "Temporada 15", orden_local: 15, vincular_episodios: [541, 568], fecha: "2013-07-18"}
+      - {tipo: temporada, nombre: "Temporada 16", orden_local: 16, vincular_episodios: [569, 581], fecha: "2014-02-06"}
+      - {tipo: temporada, nombre: "Temporada 17", orden_local: 17, vincular_episodios: [582, 592], fecha: "2014-05-15"}
+      - {tipo: temporada, nombre: "Temporada 18", orden_local: 18, vincular_episodios: [593, 613], fecha: "2014-08-21"}
+      - {tipo: temporada, nombre: "Temporada 19", orden_local: 19, vincular_episodios: [614, 633], fecha: "2015-01-08"}
+      - {tipo: temporada, nombre: "Temporada 20", orden_local: 20, vincular_episodios: [634, 678], fecha: "2015-05-28"}
+      - {tipo: temporada, nombre: "Temporada 21", orden_local: 21, vincular_episodios: [679, 699], fecha: "2016-05-05"}
+      - {tipo: temporada, nombre: "Temporada 22", orden_local: 22, vincular_episodios: [700, 720], fecha: "2016-10-20"}

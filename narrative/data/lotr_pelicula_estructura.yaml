@@ -1,0 +1,13 @@
+# Curación manual — El Señor de los Anillos (PELÍCULA). Orden de ESTRENO real:
+# la trilogía de LOTR (2001-2003) se estrenó antes que la de El Hobbit
+# (2012-2014), pese a que El Hobbit es la precuela narrativa.
+obra_external_id: {source: manual, external_id: senor-de-los-anillos-pelicula}
+sinopsis_en: []
+
+nodos:
+  - {tipo: pelicula, nombre: "La Comunidad del Anillo", orden_local: 1, fecha: "2001-12-19"}
+  - {tipo: pelicula, nombre: "Las Dos Torres", orden_local: 2, fecha: "2002-12-18"}
+  - {tipo: pelicula, nombre: "El Retorno del Rey", orden_local: 3, fecha: "2003-12-17"}
+  - {tipo: pelicula, nombre: "El Hobbit: Un viaje inesperado", orden_local: 4, fecha: "2012-12-14"}
+  - {tipo: pelicula, nombre: "El Hobbit: La desolación de Smaug", orden_local: 5, fecha: "2013-12-13"}
+  - {tipo: pelicula, nombre: "El Hobbit: La batalla de los cinco ejércitos", orden_local: 6, fecha: "2014-12-17"}
