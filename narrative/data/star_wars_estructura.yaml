@@ -1,0 +1,37 @@
+# Curación manual — Star Wars (una sola Obra: progreso y frontera combinados
+# entre películas y series de animación, en orden de ESTRENO, no cronológico
+# interno — decisión de diseño explícita, confirmada).
+#
+# Fechas de las películas: verificadas contra Wikipedia (List of Star Wars
+# films). Fechas de estreno de las series de animación: recordadas con
+# confianza media, NO verificadas una a una en esta sesión — revísalas antes
+# de dar el catálogo por definitivo.
+#
+# v1: cada serie de animación entra como UN solo nodo (fecha de estreno de
+# su primera temporada), sin desglosar en episodios — mismo criterio que las
+# fechas de anime de One Piece, pendiente de granularidad fina para v2.
+obra_external_id: {source: manual, external_id: star-wars}
+sinopsis_en: []  # sin estructura interna (Parte/Saga/Arco) — lista plana
+
+nodos:
+  - {tipo: pelicula, nombre: "Episodio IV: Una nueva esperanza", orden_local: 1, fecha: "1977-05-25"}
+  - {tipo: pelicula, nombre: "Episodio V: El Imperio contraataca", orden_local: 2, fecha: "1980-05-21"}
+  - {tipo: pelicula, nombre: "Episodio VI: El retorno del Jedi", orden_local: 3, fecha: "1983-05-25"}
+  - {tipo: pelicula, nombre: "Episodio I: La amenaza fantasma", orden_local: 4, fecha: "1999-05-19"}
+  - {tipo: pelicula, nombre: "Episodio II: El ataque de los clones", orden_local: 5, fecha: "2002-05-16"}
+  - {tipo: serie, nombre: "Star Wars: Clone Wars (miniserie 2003)", orden_local: 6, fecha: "2003-11-07"}
+  - {tipo: pelicula, nombre: "Episodio III: La venganza de los Sith", orden_local: 7, fecha: "2005-05-19"}
+  - {tipo: pelicula, nombre: "Star Wars: La guerra de los clones (película 2008)", orden_local: 8, fecha: "2008-08-15"}
+  - {tipo: serie, nombre: "Star Wars: The Clone Wars (serie 2008-2020)", orden_local: 9, fecha: "2008-10-03"}
+  - {tipo: serie, nombre: "Star Wars Rebels", orden_local: 10, fecha: "2014-10-03"}
+  - {tipo: pelicula, nombre: "Episodio VII: El despertar de la Fuerza", orden_local: 11, fecha: "2015-12-18"}
+  - {tipo: pelicula, nombre: "Rogue One: una historia de Star Wars", orden_local: 12, fecha: "2016-12-16"}
+  - {tipo: pelicula, nombre: "Episodio VIII: Los últimos Jedi", orden_local: 13, fecha: "2017-12-15"}
+  - {tipo: pelicula, nombre: "Han Solo: una historia de Star Wars", orden_local: 14, fecha: "2018-05-25"}
+  - {tipo: serie, nombre: "Star Wars Resistance", orden_local: 15, fecha: "2018-10-07"}
+  - {tipo: pelicula, nombre: "Episodio IX: El ascenso de Skywalker", orden_local: 16, fecha: "2019-12-20"}
+  - {tipo: serie, nombre: "Star Wars: The Bad Batch", orden_local: 17, fecha: "2021-05-04"}
+  - {tipo: serie, nombre: "Star Wars: Visions", orden_local: 18, fecha: "2021-09-22"}
+  - {tipo: serie, nombre: "Star Wars: Cuentos de los Jedi", orden_local: 19, fecha: "2022-10-26"}
+  - {tipo: serie, nombre: "Star Wars: Cuentos del Imperio", orden_local: 20, fecha: "2024-05-04"}
+  - {tipo: pelicula, nombre: "El Mandaloriano y Grogu", orden_local: 21, fecha: "2026-05-22"}

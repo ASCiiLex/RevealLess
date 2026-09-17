@@ -366,6 +366,52 @@ class ImportarEstructuraFechasVolumenTests(TestCase):
         self.assertEqual(fechas, {None})
 
 
+class CrearObraManualTests(TestCase):
+    def test_crea_obra_con_externalid_manual(self):
+        call_command(
+            'crear_obra_manual', slug='star-wars', titulo='Star Wars',
+            tipo=Obra.TIPO_SERIE, stdout=StringIO(),
+        )
+        obra = Obra.objects.get(slug='star-wars')
+        self.assertTrue(
+            ExternalId.objects.filter(source=ExternalId.SOURCE_MANUAL, external_id='star-wars', obra=obra).exists()
+        )
+
+    def test_es_idempotente(self):
+        call_command('crear_obra_manual', slug='star-wars', titulo='Star Wars', stdout=StringIO())
+        call_command('crear_obra_manual', slug='star-wars', titulo='Star Wars', stdout=StringIO())
+        self.assertEqual(Obra.objects.filter(slug='star-wars').count(), 1)
+        self.assertEqual(ExternalId.objects.filter(source=ExternalId.SOURCE_MANUAL, external_id='star-wars').count(), 1)
+
+
+class ImportarEstructuraFechaDirectaTests(TestCase):
+    """Curación manual sin Jikan (Star Wars, LOTR...): la fecha real ya se
+    conoce de antemano y se pone directamente en el nodo del YAML."""
+
+    def setUp(self):
+        self.obra = Obra.objects.create(titulo='Star Wars', slug='star-wars', tipo=Obra.TIPO_SERIE)
+        ExternalId.objects.create(source=ExternalId.SOURCE_MANUAL, external_id='star-wars', obra=self.obra)
+        self.ruta = _escribir_yaml({
+            'obra_external_id': {'source': 'manual', 'external_id': 'star-wars'},
+            'nodos': [
+                {'tipo': 'pelicula', 'nombre': 'Episodio IV', 'orden_local': 1, 'fecha': '1977-05-25'},
+                {'tipo': 'pelicula', 'nombre': 'Episodio V', 'orden_local': 2, 'fecha': '1980-05-21'},
+            ],
+        })
+
+    def tearDown(self):
+        os.unlink(self.ruta)
+
+    def test_asigna_fecha_directa_del_nodo(self):
+        call_command('importar_estructura', self.ruta, stdout=StringIO())
+        ep4 = UnidadNarrativa.objects.get(obra=self.obra, nombre='Episodio IV')
+        ep5 = UnidadNarrativa.objects.get(obra=self.obra, nombre='Episodio V')
+        self.assertEqual(ep4.fecha, date(1977, 5, 25))
+        self.assertEqual(ep5.fecha, date(1980, 5, 21))
+        self.assertEqual(ep4.orden_inicio, 1)
+        self.assertEqual(ep5.orden_inicio, 2)
+
+
 class JikanClientPaginacionTests(TestCase):
     """Regresión del bug real encontrado durante la importación de One
     Piece: cuando Jikan no da el total de episodios (obra en emisión) y

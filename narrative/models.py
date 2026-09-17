@@ -219,7 +219,11 @@ class ExternalId(models.Model):
     localice Obra y episodios ya importados por su MAL ID."""
 
     SOURCE_JIKAN = 'jikan'
-    SOURCE_CHOICES = [(SOURCE_JIKAN, 'Jikan (MyAnimeList)')]
+    SOURCE_MANUAL = 'manual'
+    SOURCE_CHOICES = [
+        (SOURCE_JIKAN, 'Jikan (MyAnimeList)'),
+        (SOURCE_MANUAL, 'Curación manual (sin fuente externa)'),
+    ]
 
     source = models.CharField(max_length=30, choices=SOURCE_CHOICES)
     external_id = models.CharField(max_length=50)

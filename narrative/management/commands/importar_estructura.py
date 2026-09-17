@@ -70,6 +70,15 @@ class Command(BaseCommand):
             unidad.orden_local = nodo['orden_local']
             unidad.save(update_fields=['orden_local'])
 
+        # Fecha directa en el propio nodo — caso de curación manual sin
+        # Jikan de por medio (Star Wars, LOTR...), donde la fecha real ya
+        # se conoce de antemano y no hace falta aproximarla por volumen.
+        if 'fecha' in nodo:
+            fecha = date.fromisoformat(str(nodo['fecha']))
+            if unidad.fecha != fecha:
+                unidad.fecha = fecha
+                unidad.save(update_fields=['fecha'])
+
         if 'vincular_episodios' in nodo:
             self._vincular_o_crear(obra, unidad, nodo['vincular_episodios'], tipo='episodio',
                                     nombre_patron='Episodio {n}', hasta=self.hasta_episodio,
