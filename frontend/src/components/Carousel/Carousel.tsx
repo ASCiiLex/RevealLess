@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './Carousel.module.css'
 import Lomo, { type LomoObra } from './Lomo'
 import CategoryChips from './CategoryChips'
@@ -11,6 +11,8 @@ export default function Carousel() {
     null
   )
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
+
+  const trackRef = useRef<HTMLDivElement>(null)
 
   function recargarCatalogo() {
     fetchCatalogoObras()
@@ -43,6 +45,18 @@ export default function Carousel() {
     setObraFiltro(obraFiltro === obra.id ? null : obra.id)
   }
 
+  function desplazar(direccion: 'left' | 'right') {
+    const track = trackRef.current
+    if (!track) return
+
+    const distancia = Math.max(track.clientWidth * 0.75, 300)
+
+    track.scrollBy({
+      left: direccion === 'right' ? distancia : -distancia,
+      behavior: 'smooth',
+    })
+  }
+
   if (!obras) {
     return null
   }
@@ -67,17 +81,37 @@ export default function Carousel() {
         </div>
       ) : (
         <div className={styles.shelfInterior}>
-          <div className={styles.track}>
-            {listaFiltrada.map((obra) => (
-              <Lomo
-                key={obra.id}
-                obra={obra}
-                activa={obraFiltro === obra.id}
-                onSelect={handleSelectObra}
-                mostrarProgreso={view === 'biblioteca'}
-                onCambioSuscripcion={recargarCatalogo}
-              />
-            ))}
+          <div className={styles.carousel}>
+            <button
+              type="button"
+              className={`${styles.arrow} ${styles.arrowLeft}`}
+              onClick={() => desplazar('left')}
+              aria-label="Desplazar obras hacia la izquierda"
+            >
+              ‹
+            </button>
+
+            <div ref={trackRef} className={styles.track}>
+              {listaFiltrada.map((obra) => (
+                <Lomo
+                  key={obra.id}
+                  obra={obra}
+                  activa={obraFiltro === obra.id}
+                  onSelect={handleSelectObra}
+                  mostrarProgreso={view === 'biblioteca'}
+                  onCambioSuscripcion={recargarCatalogo}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className={`${styles.arrow} ${styles.arrowRight}`}
+              onClick={() => desplazar('right')}
+              aria-label="Desplazar obras hacia la derecha"
+            >
+              ›
+            </button>
           </div>
         </div>
       )}
