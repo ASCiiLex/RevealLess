@@ -1,4 +1,6 @@
 import yaml
+from datetime import date
+
 from django.core.management.base import BaseCommand, CommandError
 
 from narrative.models import UnidadNarrativa, TemaTransversal, ExternalId
@@ -17,6 +19,11 @@ class Command(BaseCommand):
             '--hasta-episodio', type=int, default=None,
             help='Cierra los rangos abiertos (fin=null) de vincular_episodios hasta este número.',
         )
+        parser.add_argument(
+            '--fechas-volumen', default=None,
+            help='YAML {volumen: fecha} — aproxima la fecha de cada capítulo repartiendo '
+                 'proporcionalmente el rango "volumenes" del arco entre sus capítulos.',
+        )
 
     def handle(self, *args, **options):
         with open(options['archivo'], encoding='utf-8') as f:
@@ -34,6 +41,7 @@ class Command(BaseCommand):
         obra = externo.obra
         self.hasta_capitulo = options.get('hasta_capitulo')
         self.hasta_episodio = options.get('hasta_episodio')
+        self.fechas_volumen = self._cargar_fechas_volumen(options.get('fechas_volumen'))
 
         for nodo in data.get('nodos', []):
             self._construir_nodo(obra, None, nodo)
@@ -43,6 +51,13 @@ class Command(BaseCommand):
 
         obra.recalcular_orden()
         self.stdout.write(self.style.SUCCESS(f'Estructura aplicada sobre: {obra.titulo}'))
+
+    def _cargar_fechas_volumen(self, ruta):
+        if not ruta:
+            return None
+        with open(ruta, encoding='utf-8') as f:
+            crudo = yaml.safe_load(f)
+        return {int(vol): date.fromisoformat(str(fecha)) for vol, fecha in crudo.items()}
 
     # -- Parte / Saga / Arco ---------------------------------------------
 
@@ -58,16 +73,30 @@ class Command(BaseCommand):
         if 'vincular_episodios' in nodo:
             self._vincular_o_crear(obra, unidad, nodo['vincular_episodios'], tipo='episodio',
                                     nombre_patron='Episodio {n}', hasta=self.hasta_episodio,
-                                    flag_hasta='--hasta-episodio')
+                                    flag_hasta='--hasta-episodio', volumenes=None)
         if 'vincular_capitulos' in nodo:
             self._vincular_o_crear(obra, unidad, nodo['vincular_capitulos'], tipo='capitulo',
                                     nombre_patron='Capítulo {n}', hasta=self.hasta_capitulo,
-                                    flag_hasta='--hasta-capitulo')
+                                    flag_hasta='--hasta-capitulo', volumenes=nodo.get('volumenes'))
 
         for hijo in nodo.get('hijos', []):
             self._construir_nodo(obra, unidad, hijo)
 
-    def _vincular_o_crear(self, obra, arco, rango, tipo, nombre_patron, hasta, flag_hasta):
+    def _volumen_para_capitulo(self, n, inicio, fin, volumenes):
+        """Reparto proporcional por posición: el primer tramo de capítulos
+        cae en el primer volumen del rango, el último tramo en el último.
+        Aproximación consciente — no hay tabla capítulo↔volumen exacta."""
+        v_inicio, v_fin = volumenes
+        if v_inicio is None or v_fin is None:
+            return None
+        n_capitulos = fin - inicio + 1
+        n_volumenes = v_fin - v_inicio + 1
+        if n_volumenes <= 1 or n_capitulos <= 1:
+            return v_inicio
+        idx = min(n_volumenes - 1, (n - inicio) * n_volumenes // n_capitulos)
+        return v_inicio + idx
+
+    def _vincular_o_crear(self, obra, arco, rango, tipo, nombre_patron, hasta, flag_hasta, volumenes):
         """Común a episodios (anime) y capítulos (manga): si la hoja ya
         existe (importada por Jikan en Fase A, o creada en una pasada
         anterior de este mismo comando), se reasigna a este arco. Si no
@@ -84,7 +113,7 @@ class Command(BaseCommand):
                 ))
                 return
 
-        creados, reasignados = 0, 0
+        creados, reasignados, con_fecha = 0, 0, 0
         for n in range(inicio, fin + 1):
             unidad, creada = UnidadNarrativa.objects.get_or_create(
                 obra=obra, tipo=tipo, orden_local=n,
@@ -98,7 +127,18 @@ class Command(BaseCommand):
                     unidad.save(update_fields=['padre'])
                 reasignados += 1
 
-        self.stdout.write(f'{arco.nombre}: {creados} creados como placeholder, {reasignados} reasignados ({inicio}-{fin}).')
+            if tipo == 'capitulo' and self.fechas_volumen and volumenes:
+                volumen = self._volumen_para_capitulo(n, inicio, fin, volumenes)
+                fecha = self.fechas_volumen.get(volumen) if volumen else None
+                if fecha and unidad.fecha != fecha:
+                    unidad.fecha = fecha
+                    unidad.save(update_fields=['fecha'])
+                    con_fecha += 1
+
+        mensaje = f'{arco.nombre}: {creados} creados como placeholder, {reasignados} reasignados ({inicio}-{fin}).'
+        if con_fecha:
+            mensaje += f' {con_fecha} con fecha aproximada por volumen.'
+        self.stdout.write(mensaje)
 
     # -- TemaTransversal (temático o minihistoria) ------------------------
 

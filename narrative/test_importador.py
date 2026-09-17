@@ -1,5 +1,6 @@
 import os
 import tempfile
+from datetime import date
 from io import StringIO
 from unittest.mock import patch, Mock
 
@@ -293,6 +294,76 @@ class ImportarEstructuraMangaTests(TestCase):
         tema = TemaTransversal.objects.get(obra=self.obra, nombre='Minihistoria X')
         self.assertEqual(tema.tipo, TemaTransversal.TIPO_MINIHISTORIA)
         self.assertEqual(tema.unidades.count(), 3)
+
+
+class ImportarEstructuraFechasVolumenTests(TestCase):
+    """Aproximación de fecha de capítulo por reparto proporcional dentro
+    del rango de volúmenes del arco (--fechas-volumen)."""
+
+    def setUp(self):
+        self.obra = Obra.objects.create(titulo='Manga Z', slug='manga-z', tipo=Obra.TIPO_MANGA)
+        ExternalId.objects.create(source='jikan', external_id='555', obra=self.obra)
+        self.ruta_estructura = None
+        self.ruta_fechas = _escribir_yaml({1: '2000-01-01', 2: '2000-02-01', 3: '2000-03-01'})
+
+    def tearDown(self):
+        if self.ruta_estructura and os.path.exists(self.ruta_estructura):
+            os.unlink(self.ruta_estructura)
+        os.unlink(self.ruta_fechas)
+
+    def test_reparte_capitulos_entre_volumenes_proporcionalmente(self):
+        self.ruta_estructura = _escribir_yaml({
+            'obra_external_id': {'source': 'jikan', 'external_id': 555},
+            'nodos': [{
+                'tipo': 'arco', 'nombre': 'Arco', 'orden_local': 1,
+                'vincular_capitulos': [1, 9], 'volumenes': [1, 3],
+            }],
+        })
+        call_command(
+            'importar_estructura', self.ruta_estructura,
+            fechas_volumen=self.ruta_fechas, stdout=StringIO(),
+        )
+
+        fechas = {
+            u.orden_local: u.fecha
+            for u in UnidadNarrativa.objects.filter(obra=self.obra, tipo='capitulo')
+        }
+        self.assertEqual([fechas[n] for n in (1, 2, 3)], [date(2000, 1, 1)] * 3)
+        self.assertEqual([fechas[n] for n in (4, 5, 6)], [date(2000, 2, 1)] * 3)
+        self.assertEqual([fechas[n] for n in (7, 8, 9)], [date(2000, 3, 1)] * 3)
+
+    def test_volumen_unico_asigna_la_misma_fecha_a_todos(self):
+        self.ruta_estructura = _escribir_yaml({
+            'obra_external_id': {'source': 'jikan', 'external_id': 555},
+            'nodos': [{
+                'tipo': 'arco', 'nombre': 'Arco', 'orden_local': 1,
+                'vincular_capitulos': [1, 5], 'volumenes': [2, 2],
+            }],
+        })
+        call_command(
+            'importar_estructura', self.ruta_estructura,
+            fechas_volumen=self.ruta_fechas, stdout=StringIO(),
+        )
+
+        fechas = set(UnidadNarrativa.objects.filter(
+            obra=self.obra, tipo='capitulo'
+        ).values_list('fecha', flat=True))
+        self.assertEqual(fechas, {date(2000, 2, 1)})
+
+    def test_sin_fechas_volumen_no_asigna_fecha(self):
+        self.ruta_estructura = _escribir_yaml({
+            'obra_external_id': {'source': 'jikan', 'external_id': 555},
+            'nodos': [{
+                'tipo': 'arco', 'nombre': 'Arco', 'orden_local': 1,
+                'vincular_capitulos': [1, 3], 'volumenes': [1, 1],
+            }],
+        })
+        call_command('importar_estructura', self.ruta_estructura, stdout=StringIO())
+
+        fechas = set(UnidadNarrativa.objects.filter(
+            obra=self.obra, tipo='capitulo'
+        ).values_list('fecha', flat=True))
+        self.assertEqual(fechas, {None})
 
 
 class JikanClientPaginacionTests(TestCase):
