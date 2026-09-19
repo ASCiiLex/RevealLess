@@ -129,3 +129,29 @@ class AddCommentViewTests(TestCase):
             'post_id': self.post.id, 'text': 'respuesta nivel 2', 'parent_id': padre.id,
         })
         self.assertEqual(response.status_code, 200)
+
+    def test_crear_comentario_con_obra_cruzada_y_frontera(self):
+        from narrative.models import Obra, UnidadNarrativa
+        manga = Obra.objects.create(titulo='Manga X', slug='manga-x')
+        cap = UnidadNarrativa.objects.create(obra=manga, tipo='capitulo', nombre='Cap 900', orden_local=1)
+        manga.recalcular_orden()
+        cap.refresh_from_db()
+
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'esto es del manga',
+            'obra_cruzada': manga.id, 'frontera_cruzada': cap.id,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['obra_cruzada_id'], manga.id)
+        self.assertEqual(response.json()['frontera_cruzada_id'], cap.id)
+
+    def test_rechaza_obra_cruzada_sin_frontera_cruzada(self):
+        from narrative.models import Obra
+        manga = Obra.objects.create(titulo='Manga Y', slug='manga-y')
+
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'incompleto', 'obra_cruzada': manga.id,
+        })
+        self.assertEqual(response.status_code, 400)

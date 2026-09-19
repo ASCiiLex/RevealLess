@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from narrative.models import ClasificacionNarrativa, UnidadNarrativa
+from narrative.models import ClasificacionNarrativa, Obra, UnidadNarrativa
 
 
 EMOCION_CHOICES = [c[0] for c in ClasificacionNarrativa.EMOCION_CHOICES]
@@ -14,6 +14,12 @@ class CommentCreateSerializer(serializers.Serializer):
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
     )
     frontera_spoiler = serializers.PrimaryKeyRelatedField(
+        queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
+    )
+    obra_cruzada = serializers.PrimaryKeyRelatedField(
+        queryset=Obra.objects.all(), required=False, allow_null=True
+    )
+    frontera_cruzada = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
     )
 
@@ -30,6 +36,12 @@ class CommentUpdateSerializer(serializers.Serializer):
         queryset=UnidadNarrativa.objects.all(), required=False
     )
     frontera_spoiler = serializers.PrimaryKeyRelatedField(
+        queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
+    )
+    obra_cruzada = serializers.PrimaryKeyRelatedField(
+        queryset=Obra.objects.all(), required=False, allow_null=True
+    )
+    frontera_cruzada = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
     )
 
@@ -49,6 +61,8 @@ class CommentSerializer(serializers.Serializer):
     referencia_narrativa_id = serializers.IntegerField(allow_null=True)
     frontera_spoiler_id = serializers.IntegerField(allow_null=True)
     frontera_origen = serializers.CharField()
+    obra_cruzada_id = serializers.IntegerField(allow_null=True)
+    frontera_cruzada_id = serializers.IntegerField(allow_null=True)
     is_own_comment = serializers.SerializerMethodField()
     reactions_count = serializers.SerializerMethodField()
     user_reaction = serializers.SerializerMethodField()

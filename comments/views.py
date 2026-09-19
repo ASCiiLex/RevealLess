@@ -58,6 +58,14 @@ def add_comment(request):
                 status=400,
             )
 
+    obra_cruzada = datos.get("obra_cruzada")
+    frontera_cruzada = datos.get("frontera_cruzada")
+    if bool(obra_cruzada) != bool(frontera_cruzada):
+        return JsonResponse(
+            {"error": "Indica la obra cruzada y su frontera juntas, o ninguna de las dos."},
+            status=400,
+        )
+
     referencia = datos.get("referencia_narrativa") or post.referencia_narrativa
     frontera = datos.get("frontera_spoiler")
 
@@ -65,6 +73,8 @@ def add_comment(request):
         user=request.user, post=post, parent=parent, text=text,
         referencia_narrativa=referencia,
         emocion_autor=datos.get("emocion_autor"),
+        obra_cruzada=obra_cruzada,
+        frontera_cruzada=frontera_cruzada,
     )
 
     if frontera:
@@ -111,6 +121,8 @@ def add_comment(request):
             "referencia_narrativa_id": comment.referencia_narrativa_id,
             "frontera_spoiler_id": comment.frontera_spoiler_id,
             "frontera_origen": comment.frontera_origen,
+            "obra_cruzada_id": comment.obra_cruzada_id,
+            "frontera_cruzada_id": comment.frontera_cruzada_id,
             "likes_count": 0,
         }
     )
@@ -146,6 +158,10 @@ class CommentUpdateAPIView(APIView):
         if 'frontera_spoiler' in datos:
             comment.frontera_spoiler = datos['frontera_spoiler']
             comment.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
+        if 'obra_cruzada' in datos:
+            comment.obra_cruzada = datos['obra_cruzada']
+        if 'frontera_cruzada' in datos:
+            comment.frontera_cruzada = datos['frontera_cruzada']
 
         try:
             comment.full_clean()
@@ -160,6 +176,8 @@ class CommentUpdateAPIView(APIView):
             'referencia_narrativa_id': comment.referencia_narrativa_id,
             'frontera_spoiler_id': comment.frontera_spoiler_id,
             'frontera_origen': comment.frontera_origen,
+            'obra_cruzada_id': comment.obra_cruzada_id,
+            'frontera_cruzada_id': comment.frontera_cruzada_id,
         })
 
 

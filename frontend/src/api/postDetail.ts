@@ -12,6 +12,8 @@ export interface CommentItem {
   referencia_narrativa_id: number | null
   frontera_spoiler_id: number | null
   frontera_origen: string
+  obra_cruzada_id: number | null
+  frontera_cruzada_id: number | null
   is_own_comment: boolean
   reactions_count: number
   user_reaction: string | null
@@ -63,6 +65,8 @@ export interface AddCommentOptions {
   emocionAutor?: string | null
   referenciaNarrativaId?: number | null
   fronteraSpoilerId?: number | null
+  obraCruzadaId?: number | null
+  fronteraCruzadaId?: number | null
 }
 
 export async function addComment(
@@ -77,6 +81,8 @@ export async function addComment(
   if (opciones.emocionAutor) formData.append('emocion_autor', opciones.emocionAutor)
   if (opciones.referenciaNarrativaId) formData.append('referencia_narrativa', String(opciones.referenciaNarrativaId))
   if (opciones.fronteraSpoilerId) formData.append('frontera_spoiler', String(opciones.fronteraSpoilerId))
+  if (opciones.obraCruzadaId) formData.append('obra_cruzada', String(opciones.obraCruzadaId))
+  if (opciones.fronteraCruzadaId) formData.append('frontera_cruzada', String(opciones.fronteraCruzadaId))
 
   const response = await fetch('/comments/add/', {
     method: 'POST',
@@ -94,6 +100,8 @@ export async function updateComment(
     emocionAutor?: string | null
     referenciaNarrativaId?: number
     fronteraSpoilerId?: number | null
+    obraCruzadaId?: number | null
+    fronteraCruzadaId?: number | null
   }
 ) {
   const formData = new FormData()
@@ -101,6 +109,8 @@ export async function updateComment(
   if (datos.emocionAutor !== undefined) formData.append('emocion_autor', datos.emocionAutor ?? '')
   if (datos.referenciaNarrativaId) formData.append('referencia_narrativa', String(datos.referenciaNarrativaId))
   if (datos.fronteraSpoilerId) formData.append('frontera_spoiler', String(datos.fronteraSpoilerId))
+  if (datos.obraCruzadaId) formData.append('obra_cruzada', String(datos.obraCruzadaId))
+  if (datos.fronteraCruzadaId) formData.append('frontera_cruzada', String(datos.fronteraCruzadaId))
 
   const response = await fetch(`/comments/editar/${commentId}/`, {
     method: 'PATCH',

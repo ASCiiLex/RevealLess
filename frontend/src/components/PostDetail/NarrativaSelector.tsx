@@ -1,25 +1,73 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styles from './NarrativaSelector.module.css'
-import type { ObraDetalle } from '../../api/suscripciones'
+import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 
-interface Props {
-  detalle: ObraDetalle
+export interface NarrativaValue {
   referenciaId: number | null
   fronteraId: number | null
-  onChangeReferencia: (id: number | null) => void
-  onChangeFrontera: (id: number | null) => void
+  obraCruzadaId: number | null
+  fronteraCruzadaId: number | null
 }
 
-export default function NarrativaSelector({
-  detalle,
-  referenciaId,
-  fronteraId,
-  onChangeReferencia,
-  onChangeFrontera,
-}: Props) {
-  const [abierto, setAbierto] = useState(false)
+interface Props {
+  obraLocal: ObraDetalle
+  value: NarrativaValue
+  onChange: (value: NarrativaValue) => void
+}
 
-  const referenciaActual = detalle.unidades.find((u) => u.id === referenciaId)
+const ESTA_OBRA = ''
+
+export default function NarrativaSelector({ obraLocal, value, onChange }: Props) {
+  const [abierto, setAbierto] = useState(false)
+  const [obraCruzadaDetalle, setObraCruzadaDetalle] = useState<ObraDetalle | null>(null)
+
+  const esCruzada = value.obraCruzadaId !== null
+  const obraCruzadaSlug = obraLocal.obras_relacionadas.find(
+    (o) => o.id === value.obraCruzadaId
+  )?.slug
+
+  useEffect(() => {
+    if (obraCruzadaSlug) {
+      fetchObraDetalle(obraCruzadaSlug).then(setObraCruzadaDetalle)
+    } else {
+      setObraCruzadaDetalle(null)
+    }
+  }, [obraCruzadaSlug])
+
+  const unidadesFrontera = esCruzada ? obraCruzadaDetalle?.unidades ?? [] : obraLocal.unidades
+
+  function handleObraChange(idStr: string) {
+    if (idStr === ESTA_OBRA) {
+      onChange({ referenciaId: value.referenciaId, fronteraId: null, obraCruzadaId: null, fronteraCruzadaId: null })
+    } else {
+      onChange({ referenciaId: null, fronteraId: null, obraCruzadaId: Number(idStr), fronteraCruzadaId: null })
+    }
+  }
+
+  function handleReferenciaChange(idStr: string) {
+    onChange({ ...value, referenciaId: Number(idStr) || null })
+  }
+
+  function handleFronteraChange(idStr: string) {
+    const id = Number(idStr) || null
+    if (esCruzada) {
+      onChange({ ...value, fronteraCruzadaId: id })
+    } else {
+      onChange({ ...value, fronteraId: id })
+    }
+  }
+
+  const referenciaActual = obraLocal.unidades.find((u) => u.id === value.referenciaId)
+  const obraCruzadaActual = obraLocal.obras_relacionadas.find((o) => o.id === value.obraCruzadaId)
+  const fronteraActual = unidadesFrontera.find(
+    (u) => u.id === (esCruzada ? value.fronteraCruzadaId : value.fronteraId)
+  )
+
+  const resumen = obraCruzadaActual
+    ? `De: ${obraCruzadaActual.titulo}${fronteraActual ? ` · ${fronteraActual.etiqueta}` : ''}`
+    : referenciaActual
+      ? `De: ${referenciaActual.etiqueta}`
+      : '¿De qué parte trata el comentario? (opcional)'
 
   return (
     <div className={styles.wrapper}>
@@ -29,48 +77,52 @@ export default function NarrativaSelector({
         onClick={() => setAbierto((v) => !v)}
         aria-expanded={abierto}
       >
-        <span>
-          {referenciaActual ? `De: ${referenciaActual.etiqueta}` : '¿De qué parte trata el comentario? (opcional)'}
-        </span>
+        <span className={styles.toggleText}>{resumen}</span>
         <span className={styles.chevron} aria-hidden="true">{abierto ? '▾' : '▸'}</span>
       </button>
 
       {abierto && (
-        <>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="narrativa-referencia">
-              ¿De qué parte trata el comentario? (opcional)
-            </label>
+        <div className={styles.row}>
+          {obraLocal.obras_relacionadas.length > 0 && (
             <select
-              id="narrativa-referencia"
               className={styles.select}
-              value={referenciaId ?? ''}
-              onChange={(e) => onChangeReferencia(Number(e.target.value) || null)}
+              value={value.obraCruzadaId ?? ESTA_OBRA}
+              onChange={(e) => handleObraChange(e.target.value)}
+              aria-label="Obra"
             >
-              <option value="">Heredar del post</option>
-              {detalle.unidades.map((u) => (
-                <option key={u.id} value={u.id}>{u.etiqueta}</option>
+              <option value={ESTA_OBRA}>Esta obra</option>
+              {obraLocal.obras_relacionadas.map((o) => (
+                <option key={o.id} value={o.id}>{o.titulo}</option>
               ))}
             </select>
-          </div>
+          )}
 
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="narrativa-frontera">
-              ¿Hasta dónde hay que haber visto/leído? (opcional)
-            </label>
-            <select
-              id="narrativa-frontera"
-              className={styles.select}
-              value={fronteraId ?? ''}
-              onChange={(e) => onChangeFrontera(Number(e.target.value) || null)}
-            >
-              <option value="">Heredar del post</option>
-              {detalle.unidades.map((u) => (
-                <option key={u.id} value={u.id}>{u.etiqueta}</option>
-              ))}
-            </select>
-          </div>
-        </>
+          <select
+            className={styles.select}
+            value={value.referenciaId ?? ''}
+            onChange={(e) => handleReferenciaChange(e.target.value)}
+            disabled={esCruzada}
+            aria-label="Referencia narrativa"
+          >
+            <option value="">{esCruzada ? '—' : 'Referencia'}</option>
+            {obraLocal.unidades.map((u) => (
+              <option key={u.id} value={u.id}>{u.etiqueta}</option>
+            ))}
+          </select>
+
+          <select
+            className={styles.select}
+            value={(esCruzada ? value.fronteraCruzadaId : value.fronteraId) ?? ''}
+            onChange={(e) => handleFronteraChange(e.target.value)}
+            disabled={esCruzada && !obraCruzadaDetalle}
+            aria-label="Frontera de spoiler"
+          >
+            <option value="">Frontera</option>
+            {unidadesFrontera.map((u) => (
+              <option key={u.id} value={u.id}>{u.etiqueta}</option>
+            ))}
+          </select>
+        </div>
       )}
     </div>
   )

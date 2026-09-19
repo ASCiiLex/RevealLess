@@ -3,6 +3,7 @@ import styles from './EditCommentForm.module.css'
 import { updateComment, type CommentItem } from '../../api/postDetail'
 import type { ObraDetalle } from '../../api/suscripciones'
 import EmocionSelector from '../Emociones/EmocionSelector'
+import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 
 interface Props {
   comment: CommentItem
@@ -13,8 +14,12 @@ interface Props {
 
 export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCancelar }: Props) {
   const [text, setText] = useState(comment.text)
-  const [referenciaId, setReferenciaId] = useState(comment.referencia_narrativa_id)
-  const [fronteraId, setFronteraId] = useState<number | null>(null)
+  const [narrativa, setNarrativa] = useState<NarrativaValue>({
+    referenciaId: comment.referencia_narrativa_id,
+    fronteraId: null,
+    obraCruzadaId: comment.obra_cruzada_id,
+    fronteraCruzadaId: null,
+  })
   const [emocionAutor, setEmocionAutor] = useState<string | null>(comment.emocion_autor)
   const [error, setError] = useState<string | null>(null)
   const [avisoReduccion, setAvisoReduccion] = useState<string | null>(null)
@@ -32,15 +37,19 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
     const referenciaOriginal = comment.referencia_narrativa_id ? unidadPorId.get(comment.referencia_narrativa_id) : null
     const fronteraOriginal = comment.frontera_spoiler_id ? unidadPorId.get(comment.frontera_spoiler_id) : null
 
-    if (referenciaId && referenciaOriginal && referenciaId !== comment.referencia_narrativa_id) {
-      const nuevaUnidad = unidadPorId.get(referenciaId)
+    if (
+      narrativa.referenciaId &&
+      referenciaOriginal &&
+      narrativa.referenciaId !== comment.referencia_narrativa_id
+    ) {
+      const nuevaUnidad = unidadPorId.get(narrativa.referenciaId)
       if (nuevaUnidad && nuevaUnidad.orden_inicio < referenciaOriginal.orden_inicio) {
         avisos.push('estás moviendo la referencia narrativa hacia atrás')
       }
     }
 
-    if (fronteraId && fronteraOriginal) {
-      const nuevaFrontera = unidadPorId.get(fronteraId)
+    if (narrativa.fronteraId && fronteraOriginal) {
+      const nuevaFrontera = unidadPorId.get(narrativa.fronteraId)
       if (nuevaFrontera && nuevaFrontera.orden_inicio < fronteraOriginal.orden_inicio) {
         avisos.push('estás reduciendo la frontera de spoiler')
       }
@@ -66,8 +75,10 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
       await updateComment(comment.id, {
         text,
         emocionAutor: emocionAutor,
-        referenciaNarrativaId: referenciaId ?? undefined,
-        fronteraSpoilerId: fronteraId ?? undefined,
+        referenciaNarrativaId: narrativa.referenciaId ?? undefined,
+        fronteraSpoilerId: narrativa.fronteraId ?? undefined,
+        obraCruzadaId: narrativa.obraCruzadaId ?? undefined,
+        fronteraCruzadaId: narrativa.fronteraCruzadaId ?? undefined,
       })
       onGuardado({ text, emocion_autor: emocionAutor })
     } catch {
@@ -115,45 +126,14 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
             />
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="edit-comment-referencia">
-              ¿De qué parte trata el comentario? (opcional)
-            </label>
-            <select
-              id="edit-comment-referencia"
-              className={styles.select}
-              value={referenciaId ?? ''}
-              onChange={(e) => {
-                setReferenciaId(Number(e.target.value) || null)
-                setConfirmadoPeseAviso(false)
-              }}
-            >
-              <option value="">Sin cambiar</option>
-              {obraDetalle.unidades.map((u) => (
-                <option key={u.id} value={u.id}>{u.etiqueta}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="edit-comment-frontera">
-              ¿Hasta dónde hay que haber visto/leído? (opcional)
-            </label>
-            <select
-              id="edit-comment-frontera"
-              className={styles.select}
-              value={fronteraId ?? ''}
-              onChange={(e) => {
-                setFronteraId(Number(e.target.value) || null)
-                setConfirmadoPeseAviso(false)
-              }}
-            >
-              <option value="">No cambiar</option>
-              {obraDetalle.unidades.map((u) => (
-                <option key={u.id} value={u.id}>{u.etiqueta}</option>
-              ))}
-            </select>
-          </div>
+          <NarrativaSelector
+            obraLocal={obraDetalle}
+            value={narrativa}
+            onChange={(v) => {
+              setNarrativa(v)
+              setConfirmadoPeseAviso(false)
+            }}
+          />
 
           <EmocionSelector
             value={emocionAutor}

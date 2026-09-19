@@ -33,6 +33,19 @@ def _suscripcion_id_por_tema(user):
     return {s.tema_id: s.id for s in suscripciones_de_tema}
 
 
+def _obras_relacionadas(obra):
+    """Continuidades de la misma franquicia (MVP del blindaje): la obra
+    de la que esta se adapta, y las que se adaptan de esta. Puramente
+    informativo para poblar el selector de 'obra cruzada' en posts/
+    comentarios -- no implica ningun mapeo de equivalencia entre las
+    escalas de orden de cada una."""
+    relacionadas = []
+    if obra.adapta_a_id:
+        relacionadas.append(obra.adapta_a)
+    relacionadas.extend(obra.adaptaciones.all())
+    return relacionadas
+
+
 class CatalogoObrasAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -66,11 +79,15 @@ class ObraDetalleAPIView(APIView):
         obra = get_object_or_404(Obra, slug=obra_slug)
         unidades = UnidadNarrativa.objects.filter(obra=obra).order_by('orden_inicio')
         temas = TemaTransversal.objects.filter(obra=obra).order_by('nombre')
+        relacionadas = _obras_relacionadas(obra)
 
         return Response({
             'obra': {'id': obra.id, 'titulo': obra.titulo, 'slug': obra.slug},
             'unidades': UnidadNarrativaSerializer(unidades, many=True).data,
             'temas': [{'id': t.id, 'nombre': t.nombre} for t in temas],
+            'obras_relacionadas': [
+                {'id': o.id, 'slug': o.slug, 'titulo': o.titulo} for o in relacionadas
+            ],
         })
 
 

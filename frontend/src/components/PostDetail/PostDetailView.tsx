@@ -4,8 +4,8 @@ import CommentItem from './CommentItem'
 import ReactionBar from '../Feed/ReactionBar'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
-import EmocionSelector from '../Emociones/EmocionSelector'
-import NarrativaSelector from './NarrativaSelector'
+import EmocionPopover from '../Emociones/EmocionPopover'
+import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 import EditPostForm from './EditPostForm'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
 import { fetchPostDetail, addComment, type PostDetail } from '../../api/postDetail'
@@ -16,13 +16,20 @@ interface Props {
   postId: number
 }
 
+const NARRATIVA_VACIA: NarrativaValue = {
+  referenciaId: null,
+  fronteraId: null,
+  obraCruzadaId: null,
+  fronteraCruzadaId: null,
+}
+
 export default function PostDetailView({ postId }: Props) {
   const [detalle, setDetalle] = useState<PostDetail | null>(null)
   const [obraDetalle, setObraDetalle] = useState<ObraDetalle | null>(null)
   const [nuevoComentario, setNuevoComentario] = useState('')
   const [emocionComentario, setEmocionComentario] = useState<string | null>(null)
-  const [referenciaComentario, setReferenciaComentario] = useState<number | null>(null)
-  const [fronteraComentario, setFronteraComentario] = useState<number | null>(null)
+  const [emocionAbierta, setEmocionAbierta] = useState(false)
+  const [narrativa, setNarrativa] = useState<NarrativaValue>(NARRATIVA_VACIA)
   const [editando, setEditando] = useState(false)
 
   useEffect(() => {
@@ -40,8 +47,10 @@ export default function PostDetailView({ postId }: Props) {
 
     const nuevo = await addComment(postId, nuevoComentario, {
       emocionAutor: emocionComentario,
-      referenciaNarrativaId: referenciaComentario,
-      fronteraSpoilerId: fronteraComentario,
+      referenciaNarrativaId: narrativa.referenciaId,
+      fronteraSpoilerId: narrativa.fronteraId,
+      obraCruzadaId: narrativa.obraCruzadaId,
+      fronteraCruzadaId: narrativa.fronteraCruzadaId,
     })
 
     setDetalle({
@@ -58,6 +67,8 @@ export default function PostDetailView({ postId }: Props) {
           referencia_narrativa_id: nuevo.referencia_narrativa_id ?? null,
           frontera_spoiler_id: nuevo.frontera_spoiler_id ?? null,
           frontera_origen: nuevo.frontera_origen ?? 'heredado_post',
+          obra_cruzada_id: nuevo.obra_cruzada_id ?? null,
+          frontera_cruzada_id: nuevo.frontera_cruzada_id ?? null,
           is_own_comment: true,
           reactions_count: 0,
           user_reaction: null,
@@ -69,8 +80,7 @@ export default function PostDetailView({ postId }: Props) {
 
     setNuevoComentario('')
     setEmocionComentario(null)
-    setReferenciaComentario(null)
-    setFronteraComentario(null)
+    setNarrativa(NARRATIVA_VACIA)
   }
 
   function handlePostActualizado(postActualizado: FeedPost) {
@@ -140,14 +150,23 @@ export default function PostDetailView({ postId }: Props) {
 
       <div className={styles.commentForm}>
         <div className={styles.commentInputRow}>
-          <input
-            className={styles.commentInput}
-            type="text"
-            value={nuevoComentario}
-            onChange={(e) => setNuevoComentario(e.target.value)}
-            placeholder="Escribe un comentario..."
-            onKeyDown={(e) => e.key === 'Enter' && handleComentar()}
-          />
+          <div className={styles.inputWrap}>
+            <input
+              className={styles.commentInput}
+              type="text"
+              value={nuevoComentario}
+              onChange={(e) => setNuevoComentario(e.target.value)}
+              onFocus={() => setEmocionAbierta(true)}
+              onBlur={() => setTimeout(() => setEmocionAbierta(false), 150)}
+              placeholder="Escribe un comentario..."
+              onKeyDown={(e) => e.key === 'Enter' && handleComentar()}
+            />
+            <EmocionPopover
+              visible={emocionAbierta}
+              value={emocionComentario}
+              onSelect={setEmocionComentario}
+            />
+          </div>
 
           <button className={styles.commentSubmit} onClick={handleComentar}>
             Enviar
@@ -156,19 +175,11 @@ export default function PostDetailView({ postId }: Props) {
 
         {obraDetalle && (
           <NarrativaSelector
-            detalle={obraDetalle}
-            referenciaId={referenciaComentario}
-            fronteraId={fronteraComentario}
-            onChangeReferencia={setReferenciaComentario}
-            onChangeFrontera={setFronteraComentario}
+            obraLocal={obraDetalle}
+            value={narrativa}
+            onChange={setNarrativa}
           />
         )}
-
-        <EmocionSelector
-          value={emocionComentario}
-          onChange={setEmocionComentario}
-          label="¿Quieres añadir emoción de contexto? (opcional)"
-        />
       </div>
 
       {detalle.comments.length === 0 ? (

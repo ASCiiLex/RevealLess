@@ -1,0 +1,38 @@
+.panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.opcion {
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+}
+
+.opcion:hover {
+  background: var(--border);
+}
+
+.opcionActiva {
+  border-color: var(--emocion-color, var(--gold));
+  background: color-mix(in srgb, var(--emocion-color, var(--gold)) 15%, var(--paper));
+}

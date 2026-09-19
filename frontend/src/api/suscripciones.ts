@@ -30,10 +30,17 @@ export interface Suscripcion {
   ultima_visita: string | null
 }
 
+export interface ObraRelacionada {
+  id: number
+  slug: string
+  titulo: string
+}
+
 export interface ObraDetalle {
   obra: { id: number; titulo: string; slug: string }
   unidades: { id: number; etiqueta: string; orden_inicio: number; orden_fin: number }[]
   temas: { id: number; nombre: string }[]
+  obras_relacionadas: ObraRelacionada[]
 }
 
 export type EstadoSolicitud = 'pendiente' | 'aprobada' | 'rechazada'

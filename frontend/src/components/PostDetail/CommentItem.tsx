@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import styles from './CommentItem.module.css'
 import EmocionBadge from '../Emociones/EmocionBadge'
-import EmocionSelector from '../Emociones/EmocionSelector'
+import EmocionPopover from '../Emociones/EmocionPopover'
 import ReactionBar from '../Feed/ReactionBar'
 import EditCommentForm from './EditCommentForm'
-import NarrativaSelector from './NarrativaSelector'
+import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 import type { CommentItem as CommentItemType } from '../../api/postDetail'
 import { addComment } from '../../api/postDetail'
 import type { ObraDetalle } from '../../api/suscripciones'
@@ -18,12 +18,19 @@ interface Props {
 
 const NIVEL_MAXIMO = 3
 
+const NARRATIVA_VACIA: NarrativaValue = {
+  referenciaId: null,
+  fronteraId: null,
+  obraCruzadaId: null,
+  fronteraCruzadaId: null,
+}
+
 export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }: Props) {
   const [replyAbierto, setReplyAbierto] = useState(false)
   const [replyTexto, setReplyTexto] = useState('')
-  const [replyReferencia, setReplyReferencia] = useState<number | null>(null)
-  const [replyFrontera, setReplyFrontera] = useState<number | null>(null)
+  const [replyNarrativa, setReplyNarrativa] = useState<NarrativaValue>(NARRATIVA_VACIA)
   const [replyEmocion, setReplyEmocion] = useState<string | null>(null)
+  const [replyEmocionAbierta, setReplyEmocionAbierta] = useState(false)
   const [replies, setReplies] = useState(comment.replies)
   const [editando, setEditando] = useState(false)
   const [textoActual, setTextoActual] = useState(comment.text)
@@ -33,8 +40,10 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
     if (!replyTexto.trim()) return
     const nuevo = await addComment(postId, replyTexto, {
       parentId: comment.id,
-      referenciaNarrativaId: replyReferencia,
-      fronteraSpoilerId: replyFrontera,
+      referenciaNarrativaId: replyNarrativa.referenciaId,
+      fronteraSpoilerId: replyNarrativa.fronteraId,
+      obraCruzadaId: replyNarrativa.obraCruzadaId,
+      fronteraCruzadaId: replyNarrativa.fronteraCruzadaId,
       emocionAutor: replyEmocion,
     })
     setReplies((prev) => [
@@ -50,6 +59,8 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
         referencia_narrativa_id: nuevo.referencia_narrativa_id ?? null,
         frontera_spoiler_id: nuevo.frontera_spoiler_id ?? null,
         frontera_origen: nuevo.frontera_origen ?? 'heredado_post',
+        obra_cruzada_id: nuevo.obra_cruzada_id ?? null,
+        frontera_cruzada_id: nuevo.frontera_cruzada_id ?? null,
         is_own_comment: true,
         reactions_count: 0,
         user_reaction: null,
@@ -57,8 +68,7 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
       },
     ])
     setReplyTexto('')
-    setReplyReferencia(null)
-    setReplyFrontera(null)
+    setReplyNarrativa(NARRATIVA_VACIA)
     setReplyEmocion(null)
     setReplyAbierto(false)
   }
@@ -101,30 +111,32 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
       {replyAbierto && (
         <div className={styles.replyForm}>
           <div className={styles.replyInputRow}>
-            <input
-              className={styles.replyInput}
-              type="text"
-              value={replyTexto}
-              onChange={(e) => setReplyTexto(e.target.value)}
-              placeholder="Escribe una respuesta..."
-              onKeyDown={(e) => e.key === 'Enter' && handleReply()}
-            />
+            <div className={styles.inputWrap}>
+              <input
+                className={styles.replyInput}
+                type="text"
+                value={replyTexto}
+                onChange={(e) => setReplyTexto(e.target.value)}
+                onFocus={() => setReplyEmocionAbierta(true)}
+                onBlur={() => setTimeout(() => setReplyEmocionAbierta(false), 150)}
+                placeholder="Escribe una respuesta..."
+                onKeyDown={(e) => e.key === 'Enter' && handleReply()}
+              />
+              <EmocionPopover
+                visible={replyEmocionAbierta}
+                value={replyEmocion}
+                onSelect={setReplyEmocion}
+              />
+            </div>
             <button className={styles.quitar} onClick={handleReply}>Enviar</button>
           </div>
           {obraDetalle && (
             <NarrativaSelector
-              detalle={obraDetalle}
-              referenciaId={replyReferencia}
-              fronteraId={replyFrontera}
-              onChangeReferencia={setReplyReferencia}
-              onChangeFrontera={setReplyFrontera}
+              obraLocal={obraDetalle}
+              value={replyNarrativa}
+              onChange={setReplyNarrativa}
             />
           )}
-          <EmocionSelector
-            value={replyEmocion}
-            onChange={setReplyEmocion}
-            label="¿Quieres añadir emoción de contexto? (opcional)"
-          />
         </div>
       )}
 
