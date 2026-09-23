@@ -10,9 +10,10 @@ interface Props {
   actualOrden: number
   onSelect: (unidadId: number) => void
   autoScroll?: boolean
+  nivel?: number
 }
 
-export default function UnidadNode({ nodo, actualId, actualOrden, onSelect, autoScroll = true }: Props) {
+export default function UnidadNode({ nodo, actualId, actualOrden, onSelect, autoScroll = true, nivel = 1 }: Props) {
   const contieneActual = nodo.orden_inicio <= actualOrden && actualOrden <= nodo.orden_fin
   const esPasado = nodo.orden_fin < actualOrden
   const destacar = contieneActual || esPasado
@@ -27,20 +28,23 @@ export default function UnidadNode({ nodo, actualId, actualOrden, onSelect, auto
         className={`${styles.leaf} ${esActual ? styles.leafActual : ''} ${!esActual && destacar ? styles.leafPast : ''}`}
         onClick={() => onSelect(nodo.id)}
       >
+        <span className={styles.leafIcon} aria-hidden="true">{esActual || destacar ? '●' : '○'}</span>
         <span>{nodo.etiqueta}{esActual ? ' · actual' : ''}</span>
       </button>
     )
   }
 
   const usarScroll = nodo.hijos.length > UMBRAL_SCROLL && nodo.hijos.every((h) => h.hijos.length === 0)
+  const nivelClase = nivel === 1 ? styles.nivel1 : nivel === 2 ? styles.nivel2 : styles.nivel3
 
   return (
-    <div className={styles.node}>
+    <div className={`${styles.node} ${nivelClase}`}>
       <button
         className={`${styles.header} ${destacar ? styles.headerActual : ''}`}
         onClick={() => setAbierto((v) => !v)}
         aria-expanded={abierto}
       >
+        <span className={styles.icono} aria-hidden="true">{nivel === 1 ? '📖' : '🔖'}</span>
         <span className={styles.nombre}>{nodo.etiqueta}</span>
         <span className={styles.chevron} aria-hidden="true">{abierto ? '▾' : '▸'}</span>
       </button>
@@ -58,6 +62,7 @@ export default function UnidadNode({ nodo, actualId, actualOrden, onSelect, auto
                 actualOrden={actualOrden}
                 onSelect={onSelect}
                 autoScroll={autoScroll}
+                nivel={nivel + 1}
               />
             ))
           )}
@@ -100,6 +105,7 @@ function ScrollAcotado({
             className={`${styles.leaf} ${esActual ? styles.leafActual : ''} ${esPasado ? styles.leafPast : ''}`}
             onClick={() => onSelect(hijo.id)}
           >
+            <span className={styles.leafIcon} aria-hidden="true">{esActual || esPasado ? '●' : '○'}</span>
             <span>{hijo.etiqueta}{esActual ? ' · actual' : ''}</span>
           </button>
         )

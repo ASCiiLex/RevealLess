@@ -1,14 +1,27 @@
 .node {
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius);
+  border-left: 3px solid var(--border);
+  border-radius: 0;
   margin-bottom: 6px;
-  overflow: hidden;
+}
+
+.nivel1 {
+  border-left-width: 3px;
+}
+
+.nivel2 {
+  border-left-width: 2px;
+  margin-left: 10px;
+}
+
+.nivel3 {
+  border-left-width: 1px;
+  margin-left: 16px;
 }
 
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 10px 12px;
   background: none;
   border: none;
@@ -19,18 +32,43 @@
 }
 
 .headerActual {
-  background: color-mix(in srgb, var(--gold) 15%, var(--paper));
+  background: color-mix(in srgb, var(--gold) 12%, var(--paper));
+}
+
+.icono {
+  font-size: 13px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.nivel1 > .header .icono {
+  font-size: 15px;
 }
 
 .nombre {
-  font-size: 14px;
-  font-weight: 600;
+  flex: 1;
   color: var(--ink);
+}
+
+.nivel1 > .header .nombre {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.nivel2 > .header .nombre {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nivel3 > .header .nombre {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .chevron {
   color: var(--fog);
   font-size: 12px;
+  flex-shrink: 0;
 }
 
 .children {
@@ -45,22 +83,29 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
   padding: 4px;
-  margin: 0 6px 6px;
+  margin: 0 6px 6px 20px;
 }
 
 .leaf {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 7px 16px 7px 20px;
   background: none;
-  border: none;
+  border-left: 1px solid var(--border);
   width: 100%;
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--ink);
   text-align: left;
+}
+
+.leafIcon {
+  font-size: 9px;
+  flex-shrink: 0;
+  color: var(--fog);
 }
 
 .leafPast {
@@ -68,10 +113,19 @@
   color: var(--fog);
 }
 
+.leafPast .leafIcon {
+  color: var(--gold);
+}
+
 .leafActual {
   background: var(--gold);
   color: var(--paper);
-  font-weight: 600;
+  font-weight: 700;
+  border-left-color: var(--gold);
+}
+
+.leafActual .leafIcon {
+  color: var(--paper);
 }
 
 .hint {
