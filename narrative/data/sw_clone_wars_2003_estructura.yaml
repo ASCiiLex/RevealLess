@@ -1,0 +1,45 @@
+# Curación manual — Star Wars: Clone Wars (miniserie 2003-2005).
+# Fuente: en.wikipedia.org/wiki/Star_Wars:_Clone_Wars — 3 temporadas, 25
+# episodios, agrupadas en 2 volúmenes de DVD (Volumen 1: temporadas 1-2,
+# episodios de 2-3 min; Volumen 2: temporada 3, 5 episodios de 12 min).
+# Episodios como placeholder (sin título individual, v1).
+obra_external_id: {source: manual, external_id: star-wars-clone-wars-2003}
+sinopsis_en: []
+
+nodos:
+  - tipo: volumen
+    nombre: "Volumen 1 (Temporadas 1-2)"
+    orden_local: 1
+    fecha: "2003-11-07"
+    hijos:
+      - {tipo: episodio, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: episodio, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: episodio, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: episodio, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: episodio, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: episodio, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: episodio, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: episodio, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: episodio, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: episodio, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: episodio, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: episodio, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: episodio, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: episodio, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: episodio, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: episodio, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: episodio, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: episodio, nombre: "Capítulo 18", orden_local: 18}
+      - {tipo: episodio, nombre: "Capítulo 19", orden_local: 19}
+      - {tipo: episodio, nombre: "Capítulo 20", orden_local: 20}
+
+  - tipo: volumen
+    nombre: "Volumen 2 (Temporada 3)"
+    orden_local: 2
+    fecha: "2005-03-25"
+    hijos:
+      - {tipo: episodio, nombre: "Capítulo 21", orden_local: 1}
+      - {tipo: episodio, nombre: "Capítulo 22", orden_local: 2}
+      - {tipo: episodio, nombre: "Capítulo 23", orden_local: 3}
+      - {tipo: episodio, nombre: "Capítulo 24", orden_local: 4}
+      - {tipo: episodio, nombre: "Capítulo 25", orden_local: 5}

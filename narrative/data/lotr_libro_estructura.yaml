@@ -1,12 +1,115 @@
-# Curación manual — El Señor de los Anillos (LIBRO). Orden de PUBLICACIÓN
-# real: El Hobbit (1937) antes que la trilogía (1954-55), aunque narrativamente
-# sea la precuela — mismo criterio que en Star Wars: manda el orden de
-# exposición del lector/espectador, no la cronología interna de la historia.
+# Curación manual — El Señor de los Anillos (LIBRO), con capítulos reales.
+# Reemplaza la versión anterior (4 hojas sueltas) — ahora cada libro es un
+# nodo padre con sus capítulos como hijos. Orden de PUBLICACIÓN real: El
+# Hobbit (1937) antes que la trilogía (1954-55).
+# Recuento verificado: El Hobbit 19; Comunidad 22 (Libro I: 12 + Libro II: 10);
+# Dos Torres 21 (Libro III: 11 + Libro IV: 10); Retorno del Rey 19
+# (Libro V: 10 + Libro VI: 9). Total 81 capítulos.
 obra_external_id: {source: manual, external_id: senor-de-los-anillos-libro}
-sinopsis_en: []
+sinopsis_en: [libro]
 
 nodos:
-  - {tipo: libro, nombre: "El Hobbit", orden_local: 1, fecha: "1937-09-21"}
-  - {tipo: libro, nombre: "La Comunidad del Anillo", orden_local: 2, fecha: "1954-07-29"}
-  - {tipo: libro, nombre: "Las Dos Torres", orden_local: 3, fecha: "1954-11-11"}
-  - {tipo: libro, nombre: "El Retorno del Rey", orden_local: 4, fecha: "1955-10-20"}
+  - tipo: libro
+    nombre: "El Hobbit"
+    orden_local: 1
+    fecha: "1937-09-21"
+    hijos:
+      - {tipo: capitulo, nombre: "Una tertulia inesperada", orden_local: 1}
+      - {tipo: capitulo, nombre: "Carnero asado", orden_local: 2}
+      - {tipo: capitulo, nombre: "Un corto descanso", orden_local: 3}
+      - {tipo: capitulo, nombre: "Sobre la colina y bajo la colina", orden_local: 4}
+      - {tipo: capitulo, nombre: "Acertijos en las tinieblas", orden_local: 5}
+      - {tipo: capitulo, nombre: "De la sartén al fuego", orden_local: 6}
+      - {tipo: capitulo, nombre: "Extraños aposentos", orden_local: 7}
+      - {tipo: capitulo, nombre: "Moscas y arañas", orden_local: 8}
+      - {tipo: capitulo, nombre: "Barriles de contrabando", orden_local: 9}
+      - {tipo: capitulo, nombre: "Una cálida bienvenida", orden_local: 10}
+      - {tipo: capitulo, nombre: "En el umbral", orden_local: 11}
+      - {tipo: capitulo, nombre: "Información interior", orden_local: 12}
+      - {tipo: capitulo, nombre: "Fuera de combate", orden_local: 13}
+      - {tipo: capitulo, nombre: "Fuego y agua", orden_local: 14}
+      - {tipo: capitulo, nombre: "Las nubes se reúnen", orden_local: 15}
+      - {tipo: capitulo, nombre: "Un ladrón en la noche", orden_local: 16}
+      - {tipo: capitulo, nombre: "Estalla la tormenta", orden_local: 17}
+      - {tipo: capitulo, nombre: "El viaje de vuelta", orden_local: 18}
+      - {tipo: capitulo, nombre: "La última etapa", orden_local: 19}
+
+  - tipo: libro
+    nombre: "La Comunidad del Anillo"
+    orden_local: 2
+    fecha: "1954-07-29"
+    hijos:
+      - {tipo: capitulo, nombre: "Una fiesta largamente esperada", orden_local: 1}
+      - {tipo: capitulo, nombre: "La sombra del pasado", orden_local: 2}
+      - {tipo: capitulo, nombre: "Tres son compañía", orden_local: 3}
+      - {tipo: capitulo, nombre: "Un atajo hacia los hongos", orden_local: 4}
+      - {tipo: capitulo, nombre: "Una conspiración desenmascarada", orden_local: 5}
+      - {tipo: capitulo, nombre: "El Bosque Viejo", orden_local: 6}
+      - {tipo: capitulo, nombre: "En casa de Tom Bombadil", orden_local: 7}
+      - {tipo: capitulo, nombre: "Niebla en las Quebradas de los Túmulos", orden_local: 8}
+      - {tipo: capitulo, nombre: "Bajo el signo del Poney Pisador", orden_local: 9}
+      - {tipo: capitulo, nombre: "Trancos", orden_local: 10}
+      - {tipo: capitulo, nombre: "Un cuchillo en la oscuridad", orden_local: 11}
+      - {tipo: capitulo, nombre: "Huida hacia el Vado", orden_local: 12}
+      - {tipo: capitulo, nombre: "Muchos encuentros", orden_local: 13}
+      - {tipo: capitulo, nombre: "El Concilio de Elrond", orden_local: 14}
+      - {tipo: capitulo, nombre: "El Anillo va hacia el Sur", orden_local: 15}
+      - {tipo: capitulo, nombre: "Un viaje en la oscuridad", orden_local: 16}
+      - {tipo: capitulo, nombre: "El Puente de Khazad-dûm", orden_local: 17}
+      - {tipo: capitulo, nombre: "Lothlórien", orden_local: 18}
+      - {tipo: capitulo, nombre: "El espejo de Galadriel", orden_local: 19}
+      - {tipo: capitulo, nombre: "Adiós a Lórien", orden_local: 20}
+      - {tipo: capitulo, nombre: "El Gran Río", orden_local: 21}
+      - {tipo: capitulo, nombre: "La disolución de la Comunidad", orden_local: 22}
+
+  - tipo: libro
+    nombre: "Las Dos Torres"
+    orden_local: 3
+    fecha: "1954-11-11"
+    hijos:
+      - {tipo: capitulo, nombre: "La partida de Boromir", orden_local: 1}
+      - {tipo: capitulo, nombre: "Los Jinetes de Rohan", orden_local: 2}
+      - {tipo: capitulo, nombre: "Los Uruk-hai", orden_local: 3}
+      - {tipo: capitulo, nombre: "Bárbol", orden_local: 4}
+      - {tipo: capitulo, nombre: "El Jinete Blanco", orden_local: 5}
+      - {tipo: capitulo, nombre: "El Rey del Palacio Dorado", orden_local: 6}
+      - {tipo: capitulo, nombre: "El Abismo de Helm", orden_local: 7}
+      - {tipo: capitulo, nombre: "El camino a Isengard", orden_local: 8}
+      - {tipo: capitulo, nombre: "Restos y despojos", orden_local: 9}
+      - {tipo: capitulo, nombre: "La voz de Saruman", orden_local: 10}
+      - {tipo: capitulo, nombre: "El Palantír", orden_local: 11}
+      - {tipo: capitulo, nombre: "Se doma a Sméagol", orden_local: 12}
+      - {tipo: capitulo, nombre: "El paso de las Ciénagas", orden_local: 13}
+      - {tipo: capitulo, nombre: "La Puerta Negra está cerrada", orden_local: 14}
+      - {tipo: capitulo, nombre: "De hierbas y guiso de conejo", orden_local: 15}
+      - {tipo: capitulo, nombre: "La ventana al Oeste", orden_local: 16}
+      - {tipo: capitulo, nombre: "El estanque vedado", orden_local: 17}
+      - {tipo: capitulo, nombre: "Viaje a la encrucijada", orden_local: 18}
+      - {tipo: capitulo, nombre: "Las escaleras de Cirith Ungol", orden_local: 19}
+      - {tipo: capitulo, nombre: "La guarida de Ella-Laraña", orden_local: 20}
+      - {tipo: capitulo, nombre: "Las decisiones del señor Samsagaz", orden_local: 21}
+
+  - tipo: libro
+    nombre: "El Retorno del Rey"
+    orden_local: 4
+    fecha: "1955-10-20"
+    hijos:
+      - {tipo: capitulo, nombre: "Minas Tirith", orden_local: 1}
+      - {tipo: capitulo, nombre: "El paso de la Compañía Gris", orden_local: 2}
+      - {tipo: capitulo, nombre: "La reunión de las tropas de Rohan", orden_local: 3}
+      - {tipo: capitulo, nombre: "El sitio de Gondor", orden_local: 4}
+      - {tipo: capitulo, nombre: "La cabalgata de los Rohirrim", orden_local: 5}
+      - {tipo: capitulo, nombre: "La batalla de los Campos del Pelennor", orden_local: 6}
+      - {tipo: capitulo, nombre: "La pira de Denethor", orden_local: 7}
+      - {tipo: capitulo, nombre: "Las Casas de Curación", orden_local: 8}
+      - {tipo: capitulo, nombre: "El último debate", orden_local: 9}
+      - {tipo: capitulo, nombre: "Se abre la Puerta Negra", orden_local: 10}
+      - {tipo: capitulo, nombre: "La Torre de Cirith Ungol", orden_local: 11}
+      - {tipo: capitulo, nombre: "La tierra de la Sombra", orden_local: 12}
+      - {tipo: capitulo, nombre: "El Monte del Destino", orden_local: 13}
+      - {tipo: capitulo, nombre: "El campo de Cormallen", orden_local: 14}
+      - {tipo: capitulo, nombre: "El Senescal y el Rey", orden_local: 15}
+      - {tipo: capitulo, nombre: "Muchas despedidas", orden_local: 16}
+      - {tipo: capitulo, nombre: "De vuelta a casa", orden_local: 17}
+      - {tipo: capitulo, nombre: "El saqueo de la Comarca", orden_local: 18}
+      - {tipo: capitulo, nombre: "Los Puertos Grises", orden_local: 19}

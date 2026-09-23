@@ -1,0 +1,48 @@
+# Curación manual — Star Wars: The Clone Wars (2008-2020).
+# Fuente: en.wikipedia.org/wiki/List_of_Star_Wars_television_series
+# 7 temporadas, 133 episodios. Episodios como placeholder (v1).
+obra_external_id: {source: manual, external_id: star-wars-the-clone-wars}
+sinopsis_en: []
+
+nodos:
+  - tipo: temporada
+    nombre: "Temporada 1"
+    orden_local: 1
+    fecha: "2008-10-03"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}, {tipo: episodio, nombre: "Episodio 16", orden_local: 16}, {tipo: episodio, nombre: "Episodio 17", orden_local: 17}, {tipo: episodio, nombre: "Episodio 18", orden_local: 18}, {tipo: episodio, nombre: "Episodio 19", orden_local: 19}, {tipo: episodio, nombre: "Episodio 20", orden_local: 20}, {tipo: episodio, nombre: "Episodio 21", orden_local: 21}, {tipo: episodio, nombre: "Episodio 22", orden_local: 22}]
+
+  - tipo: temporada
+    nombre: "Temporada 2"
+    orden_local: 2
+    fecha: "2009-10-02"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}, {tipo: episodio, nombre: "Episodio 16", orden_local: 16}, {tipo: episodio, nombre: "Episodio 17", orden_local: 17}, {tipo: episodio, nombre: "Episodio 18", orden_local: 18}, {tipo: episodio, nombre: "Episodio 19", orden_local: 19}, {tipo: episodio, nombre: "Episodio 20", orden_local: 20}, {tipo: episodio, nombre: "Episodio 21", orden_local: 21}, {tipo: episodio, nombre: "Episodio 22", orden_local: 22}]
+
+  - tipo: temporada
+    nombre: "Temporada 3"
+    orden_local: 3
+    fecha: "2010-09-17"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}, {tipo: episodio, nombre: "Episodio 16", orden_local: 16}, {tipo: episodio, nombre: "Episodio 17", orden_local: 17}, {tipo: episodio, nombre: "Episodio 18", orden_local: 18}, {tipo: episodio, nombre: "Episodio 19", orden_local: 19}, {tipo: episodio, nombre: "Episodio 20", orden_local: 20}, {tipo: episodio, nombre: "Episodio 21", orden_local: 21}, {tipo: episodio, nombre: "Episodio 22", orden_local: 22}]
+
+  - tipo: temporada
+    nombre: "Temporada 4"
+    orden_local: 4
+    fecha: "2011-09-16"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}, {tipo: episodio, nombre: "Episodio 16", orden_local: 16}, {tipo: episodio, nombre: "Episodio 17", orden_local: 17}, {tipo: episodio, nombre: "Episodio 18", orden_local: 18}, {tipo: episodio, nombre: "Episodio 19", orden_local: 19}, {tipo: episodio, nombre: "Episodio 20", orden_local: 20}, {tipo: episodio, nombre: "Episodio 21", orden_local: 21}, {tipo: episodio, nombre: "Episodio 22", orden_local: 22}]
+
+  - tipo: temporada
+    nombre: "Temporada 5"
+    orden_local: 5
+    fecha: "2012-09-29"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}, {tipo: episodio, nombre: "Episodio 16", orden_local: 16}, {tipo: episodio, nombre: "Episodio 17", orden_local: 17}, {tipo: episodio, nombre: "Episodio 18", orden_local: 18}, {tipo: episodio, nombre: "Episodio 19", orden_local: 19}, {tipo: episodio, nombre: "Episodio 20", orden_local: 20}]
+
+  - tipo: temporada
+    nombre: "Temporada 6 (The Lost Missions)"
+    orden_local: 6
+    fecha: "2014-03-07"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}]
+
+  - tipo: temporada
+    nombre: "Temporada 7 (The Final Season)"
+    orden_local: 7
+    fecha: "2020-02-21"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}]

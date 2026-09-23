@@ -1,0 +1,22 @@
+# Curación manual — Star Wars: The Bad Batch. Fuente: en.wikipedia.org/wiki/List_of_Star_Wars_television_series
+obra_external_id: {source: manual, external_id: star-wars-bad-batch}
+sinopsis_en: []
+
+nodos:
+  - tipo: temporada
+    nombre: "Temporada 1"
+    orden_local: 1
+    fecha: "2021-05-04"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}, {tipo: episodio, nombre: "Episodio 16", orden_local: 16}]
+
+  - tipo: temporada
+    nombre: "Temporada 2"
+    orden_local: 2
+    fecha: "2023-01-04"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}, {tipo: episodio, nombre: "Episodio 16", orden_local: 16}]
+
+  - tipo: temporada
+    nombre: "Temporada 3"
+    orden_local: 3
+    fecha: "2024-02-21"
+    hijos: [{tipo: episodio, nombre: "Episodio 1", orden_local: 1}, {tipo: episodio, nombre: "Episodio 2", orden_local: 2}, {tipo: episodio, nombre: "Episodio 3", orden_local: 3}, {tipo: episodio, nombre: "Episodio 4", orden_local: 4}, {tipo: episodio, nombre: "Episodio 5", orden_local: 5}, {tipo: episodio, nombre: "Episodio 6", orden_local: 6}, {tipo: episodio, nombre: "Episodio 7", orden_local: 7}, {tipo: episodio, nombre: "Episodio 8", orden_local: 8}, {tipo: episodio, nombre: "Episodio 9", orden_local: 9}, {tipo: episodio, nombre: "Episodio 10", orden_local: 10}, {tipo: episodio, nombre: "Episodio 11", orden_local: 11}, {tipo: episodio, nombre: "Episodio 12", orden_local: 12}, {tipo: episodio, nombre: "Episodio 13", orden_local: 13}, {tipo: episodio, nombre: "Episodio 14", orden_local: 14}, {tipo: episodio, nombre: "Episodio 15", orden_local: 15}]

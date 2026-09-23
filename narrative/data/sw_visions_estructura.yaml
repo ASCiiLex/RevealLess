@@ -1,0 +1,22 @@
+# Curación manual — Star Wars: Visions (antología). Fuente: en.wikipedia.org/wiki/List_of_Star_Wars_television_series
+obra_external_id: {source: manual, external_id: star-wars-visions}
+sinopsis_en: []
+
+nodos:
+  - tipo: volumen
+    nombre: "Volumen 1"
+    orden_local: 1
+    fecha: "2021-09-22"
+    hijos: [{tipo: corto, nombre: "Corto 1", orden_local: 1}, {tipo: corto, nombre: "Corto 2", orden_local: 2}, {tipo: corto, nombre: "Corto 3", orden_local: 3}, {tipo: corto, nombre: "Corto 4", orden_local: 4}, {tipo: corto, nombre: "Corto 5", orden_local: 5}, {tipo: corto, nombre: "Corto 6", orden_local: 6}, {tipo: corto, nombre: "Corto 7", orden_local: 7}, {tipo: corto, nombre: "Corto 8", orden_local: 8}, {tipo: corto, nombre: "Corto 9", orden_local: 9}]
+
+  - tipo: volumen
+    nombre: "Volumen 2"
+    orden_local: 2
+    fecha: "2023-05-04"
+    hijos: [{tipo: corto, nombre: "Corto 1", orden_local: 1}, {tipo: corto, nombre: "Corto 2", orden_local: 2}, {tipo: corto, nombre: "Corto 3", orden_local: 3}, {tipo: corto, nombre: "Corto 4", orden_local: 4}, {tipo: corto, nombre: "Corto 5", orden_local: 5}, {tipo: corto, nombre: "Corto 6", orden_local: 6}, {tipo: corto, nombre: "Corto 7", orden_local: 7}, {tipo: corto, nombre: "Corto 8", orden_local: 8}, {tipo: corto, nombre: "Corto 9", orden_local: 9}]
+
+  - tipo: volumen
+    nombre: "Volumen 3"
+    orden_local: 3
+    fecha: "2025-10-29"
+    hijos: [{tipo: corto, nombre: "Corto 1", orden_local: 1}, {tipo: corto, nombre: "Corto 2", orden_local: 2}, {tipo: corto, nombre: "Corto 3", orden_local: 3}, {tipo: corto, nombre: "Corto 4", orden_local: 4}, {tipo: corto, nombre: "Corto 5", orden_local: 5}, {tipo: corto, nombre: "Corto 6", orden_local: 6}, {tipo: corto, nombre: "Corto 7", orden_local: 7}, {tipo: corto, nombre: "Corto 8", orden_local: 8}, {tipo: corto, nombre: "Corto 9", orden_local: 9}]
