@@ -9,7 +9,7 @@ def send_ws_notification(user, notification):
     payload = {
         "id": notification.id,
         "actor": notification.actor.username,
-        "verb": notification.verb,
+        "verb": notification.verb_display,
         "avatar": notification.avatar,
         "url": notification.url,
         "created_at": notification.created_at.isoformat(),

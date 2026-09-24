@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+# Código guardado en BD -> texto que se muestra al usuario.
+VERBOS_TEXTO = {
+    'commented': 'comentó tu publicación',
+    'replied': 'respondió a tu comentario',
+    'mentioned': 'te ha mencionado en un comentario',
+}
+
 
 class Notification(models.Model):
     actor = models.ForeignKey(
@@ -45,6 +52,14 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.actor.username} {self.verb}"
+
+    @property
+    def verb_display(self):
+        """Texto en español del verbo; si no es un código conocido, se devuelve tal cual."""
+        if self.verb == 'reacted':
+            objetivo = 'comentario' if self.target_type in ('comment', 'reply') else 'publicación'
+            return f'reaccionó a tu {objetivo}'
+        return VERBOS_TEXTO.get(self.verb, self.verb)
 
     @property
     def avatar(self):

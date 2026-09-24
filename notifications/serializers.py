@@ -3,13 +3,13 @@ from .models import Notification
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    """Réplica de los datos que ya expone Notification vía sus
-    @property (avatar, url) -- no se recalculan aquí, se reutilizan
-    directamente para no duplicar esa lógica de negocio."""
+    """Expone avatar, url y verbo traducido reutilizando las @property
+    de Notification, sin duplicar esa lógica."""
 
     actor = serializers.CharField(source='actor.username', read_only=True)
     avatar = serializers.CharField(read_only=True)
     url = serializers.CharField(read_only=True)
+    verb = serializers.CharField(source='verb_display', read_only=True)
 
     class Meta:
         model = Notification
