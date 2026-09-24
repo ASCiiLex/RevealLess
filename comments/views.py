@@ -16,7 +16,6 @@ from narrative.services import detectar_posibles_referencias_cruzadas
 from posts.models import Post
 from .models import Comment, CommentReaction
 from .serializers import CommentCreateSerializer, CommentUpdateSerializer
-from notifications.models import Notification
 
 
 EMOCION_VALIDAS = dict(ClasificacionNarrativa.EMOCION_CHOICES)
@@ -107,25 +106,8 @@ def add_comment(request):
     except ValidationError as exc:
         return JsonResponse({"error": exc.message_dict}, status=400)
 
+    # Las notificaciones (comentario, respuesta, menciones) las crea Comment.save().
     comment.save()
-
-    if parent is None and post.author != request.user:
-        Notification.objects.create(
-            actor=request.user,
-            user=post.author,
-            verb="comentó tu post",
-            target_type="post",
-            target_id=post.id,
-        )
-
-    if parent and parent.user != request.user:
-        Notification.objects.create(
-            actor=request.user,
-            user=parent.user,
-            verb="respondió a tu comentario",
-            target_type="post",
-            target_id=post.id,
-        )
 
     return JsonResponse(
         {
@@ -218,15 +200,7 @@ def toggle_reaction_comment(request, comment_id):
             reaction.reaction = reaction_type
             reaction.save()
 
-    if not removed and comment.user != request.user:
-        Notification.objects.create(
-            actor=request.user,
-            user=comment.user,
-            verb="reaccionó a tu comentario",
-            target_type="comment",
-            target_id=comment.id,
-            reaction=reaction_type,
-        )
+    # La notificación la crea CommentReaction.save() — no duplicar aquí.
 
     counts = _counts_por_reaccion(comment)
     total = sum(counts.values())

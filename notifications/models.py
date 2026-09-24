@@ -54,12 +54,17 @@ class Notification(models.Model):
 
     @property
     def _related_post(self):
-        # Cachea la query: post_thumbnail y url ya no piden 2 veces el mismo Post.
+        # Cachea la query: post_thumbnail y url no piden dos veces el mismo Post.
+        # target_id es un Post si target_type='post', un Comment si 'comment'/'reply'.
         if not hasattr(self, "_post_cache"):
             self._post_cache = None
-            if self.target_type in ("post", "comment", "reply") and self.target_id:
+            if self.target_id:
                 from posts.models import Post
-                self._post_cache = Post.objects.only("id", "image").filter(id=self.target_id).first()
+                posts = Post.objects.only("id", "image")
+                if self.target_type == "post":
+                    self._post_cache = posts.filter(id=self.target_id).first()
+                elif self.target_type in ("comment", "reply"):
+                    self._post_cache = posts.filter(comments__id=self.target_id).first()
         return self._post_cache
 
     @property
@@ -71,13 +76,11 @@ class Notification(models.Model):
 
     @property
     def url(self):
-        # Todas las rutas apuntan a las vistas React (Fase 4) -- las
-        # vistas Django clasicas equivalentes siguen existiendo en
-        # paralelo, pero las notificaciones deben llevar siempre a la
-        # experiencia actual, no a la heredada.
+        # Todas las rutas apuntan a las vistas React (Fase 4).
         if self.target_type in ("post", "comment", "reply"):
-            if self._related_post:
-                return f"/posts/{self.target_id}/react/"
+            post = self._related_post
+            if post:
+                return f"/posts/{post.id}/react/"
             return f"/notificaciones/post-no-existe/{self.id}/"
 
         if self.target_type == "follow":
