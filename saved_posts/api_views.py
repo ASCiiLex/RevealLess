@@ -32,11 +32,13 @@ class SavedPostToggleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, post_id):
-        post = get_object_or_404(Post, id=post_id)
+        # Solo se pueden guardar posts visibles para el usuario.
+        post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
         SavedPost.objects.get_or_create(user=request.user, post=post)
         return Response(status=status.HTTP_200_OK)
 
     def delete(self, request, post_id):
+        # Sin visible_for: siempre se puede quitar un guardado propio.
         post = get_object_or_404(Post, id=post_id)
         SavedPost.objects.filter(user=request.user, post=post).delete()
         return Response(status=status.HTTP_200_OK)

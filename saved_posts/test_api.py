@@ -4,6 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
+from narrative.services import actualizar_progreso
 from posts.models import Post
 from .models import SavedPost
 
@@ -99,3 +100,36 @@ class SavedPostToggleAPIViewTests(TestCase):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.post(reverse('saved_posts_api_toggle', args=[999999]))
         self.assertEqual(response.status_code, 404)
+
+
+class SavedPostToggleVisibilidadTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.autor = User.objects.create_user('guardar_autor', password='x')
+        self.lector = User.objects.create_user('guardar_lector', password='x')
+
+        self.obra = Obra.objects.create(titulo='Serie Guardar Oculto', slug='serie-guardar-oculto')
+        self.e1 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='E1', orden_local=1)
+        self.e3 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='E3', orden_local=3)
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+        self.e3.refresh_from_db()
+        actualizar_progreso(self.lector, self.obra, self.e1)
+
+        self.post_oculto = Post.objects.create(
+            author=self.autor, obra=self.obra, text='post oculto',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e3,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        self.client.force_authenticate(user=self.lector)
+
+    def test_no_se_puede_guardar_un_post_oculto(self):
+        response = self.client.post(reverse('saved_posts_api_toggle', args=[self.post_oculto.id]))
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(SavedPost.objects.filter(post=self.post_oculto).exists())
+
+    def test_se_puede_quitar_el_guardado_de_un_post_ya_oculto(self):
+        SavedPost.objects.create(user=self.lector, post=self.post_oculto)
+        response = self.client.delete(reverse('saved_posts_api_toggle', args=[self.post_oculto.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(SavedPost.objects.filter(post=self.post_oculto).exists())

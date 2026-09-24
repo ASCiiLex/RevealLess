@@ -3,8 +3,9 @@ from django.test import TestCase
 from django.urls import reverse
 
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
+from narrative.services import actualizar_progreso
 from posts.models import Post
-from .models import Comment
+from .models import Comment, CommentReaction
 
 
 class AddCommentViewTests(TestCase):
@@ -19,6 +20,7 @@ class AddCommentViewTests(TestCase):
         )
         self.obra.recalcular_orden()
         self.e1.refresh_from_db()
+        actualizar_progreso(self.comentador, self.obra, self.e1)
 
         self.post = Post.objects.create(
             author=self.autor, obra=self.obra, text='post base',
@@ -169,6 +171,7 @@ class DeteccionReferenciaCruzadaComentarioTests(TestCase):
         )
         self.anime.recalcular_orden()
         self.e1.refresh_from_db()
+        actualizar_progreso(self.comentador, self.anime, self.e1)
 
         self.manga = Obra.objects.create(
             titulo='Manga Y', slug='manga-y-rel', tipo=Obra.TIPO_MANGA, adapta_a=self.anime,
@@ -213,3 +216,79 @@ class DeteccionReferenciaCruzadaComentarioTests(TestCase):
         self.assertEqual(response.status_code, 200)
         comentario = Comment.objects.get(text='esto pasó en el manga')
         self.assertEqual(comentario.obra_cruzada, self.manga)
+
+
+class ContenidoOcultoComentariosTests(TestCase):
+    """Un usuario no puede comentar, responder ni reaccionar sobre
+    contenido que su progreso aún no le permite ver."""
+
+    def setUp(self):
+        self.autor = User.objects.create_user('oculto_autor', password='x')
+        self.lector = User.objects.create_user('oculto_lector', password='x')
+
+        self.obra = Obra.objects.create(titulo='Serie Oculta', slug='serie-oculta')
+        self.e1 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='E1', orden_local=1)
+        self.e3 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='E3', orden_local=3)
+        self.obra.recalcular_orden()
+        self.e1.refresh_from_db()
+        self.e3.refresh_from_db()
+        actualizar_progreso(self.lector, self.obra, self.e1)
+
+        self.post_visible = Post.objects.create(
+            author=self.autor, obra=self.obra, text='post visible',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        self.post_oculto = Post.objects.create(
+            author=self.autor, obra=self.obra, text='post oculto',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e3,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+        self.comentario_visible = Comment.objects.create(
+            user=self.autor, post=self.post_visible, text='comentario visible',
+            referencia_narrativa=self.e1,
+        )
+        self.comentario_oculto = Comment.objects.create(
+            user=self.autor, post=self.post_visible, text='comentario oculto',
+            referencia_narrativa=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+            frontera_spoiler=self.e3,
+        )
+        self.client.force_login(self.lector)
+
+    def test_no_se_puede_comentar_en_un_post_oculto(self):
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post_oculto.id, 'text': 'intento colarme',
+        })
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(Comment.objects.filter(text='intento colarme').exists())
+
+    def test_no_se_puede_responder_a_un_comentario_oculto(self):
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post_visible.id, 'text': 'respuesta a oculto',
+            'parent_id': self.comentario_oculto.id,
+        })
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(Comment.objects.filter(text='respuesta a oculto').exists())
+
+    def test_no_se_puede_reaccionar_a_un_comentario_oculto(self):
+        response = self.client.post(
+            reverse('toggle_reaction_comment', args=[self.comentario_oculto.id]),
+            {'reaction': 'me_gusta'},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(CommentReaction.objects.filter(comment=self.comentario_oculto).exists())
+
+    def test_no_se_pueden_listar_reacciones_de_un_comentario_oculto(self):
+        response = self.client.get(
+            reverse('comment_reactions_list', args=[self.comentario_oculto.id])
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_se_puede_reaccionar_a_un_comentario_visible(self):
+        response = self.client.post(
+            reverse('toggle_reaction_comment', args=[self.comentario_visible.id]),
+            {'reaction': 'me_gusta'},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(CommentReaction.objects.filter(comment=self.comentario_visible).exists())

@@ -29,7 +29,8 @@ def toggle_reaction_post(request):
     if reaction_type not in valid_reactions:
         return JsonResponse({'error': 'Reacción no válida'}, status=400)
 
-    post = get_object_or_404(Post, id=post_id)
+    # Solo se puede reaccionar a posts visibles para el usuario.
+    post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
 
     reaction, created = PostReaction.objects.get_or_create(
         user=request.user,
@@ -75,7 +76,7 @@ def toggle_reaction_post(request):
 
 @login_required
 def post_reactions_list(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
 
     totals = _counts_por_reaccion(post)
 

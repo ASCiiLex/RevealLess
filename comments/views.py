@@ -56,12 +56,15 @@ def add_comment(request):
     if not text:
         return JsonResponse({"error": "Texto vacío"}, status=400)
 
-    post = get_object_or_404(Post, id=post_id)
+    # Solo se puede comentar en posts (y responder a comentarios) visibles para el usuario.
+    post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
 
     parent = None
     parent_id = datos.get("parent_id")
     if parent_id:
-        parent = get_object_or_404(Comment, id=parent_id, post=post)
+        parent = get_object_or_404(
+            Comment.objects.visible_for(request.user), id=parent_id, post=post
+        )
         if parent.parent_id is not None:
             return JsonResponse(
                 {"error": "No se puede responder a una respuesta ya anidada."},
@@ -199,7 +202,7 @@ def toggle_reaction_comment(request, comment_id):
     if reaction_type not in valid_reactions:
         return JsonResponse({"error": "Reacción no válida"}, status=400)
 
-    comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(Comment.objects.visible_for(request.user), id=comment_id)
 
     reaction, created = CommentReaction.objects.get_or_create(
         user=request.user, comment=comment, defaults={"reaction": reaction_type}
@@ -265,7 +268,7 @@ def delete_comment(request, comment_id):
 
 @login_required
 def comment_reactions_list(request, comment_id):
-    comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(Comment.objects.visible_for(request.user), id=comment_id)
 
     totals = _counts_por_reaccion(comment)
 
