@@ -64,7 +64,8 @@ def global_search(request):
         hashtags_data = [{"name": h.name} for h in hashtags_qs]
 
         posts_qs = (
-            Post.objects.filter(text__icontains=q)
+            Post.objects.visible_for(request.user)
+            .filter(text__icontains=q)
             .order_by('-created_at')[:5]
         )
         for p in posts_qs:
