@@ -1,11 +1,9 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Q
 
 from follows.models import Follow
 from profiles.models import Profile
-from .forms import ProfileForm
 
 
 def profile_view(request, username):
@@ -52,22 +50,6 @@ def profile_view(request, username):
     return render(request, 'profiles/profile.html', context)
 
 
-def search_view(request):
-    query = request.GET.get("q", "").strip()
-    results = []
-
-    if query:
-        results = User.objects.select_related('profile').filter(
-            Q(username__icontains=query) |
-            Q(profile__bio__icontains=query)
-        ).distinct()
-
-    return render(request, 'profiles/search.html', {
-        'query': query,
-        'results': results,
-    })
-
-
 def followers_view(request, username):
     profile_user = get_object_or_404(User, username=username)
 
@@ -91,36 +73,6 @@ def following_view(request, username):
     return render(request, "follows/following_list.html", {
         "profile_user": profile_user,
         "following": following,
-    })
-
-
-@login_required
-def edit_profile(request):
-    profile = getattr(request.user, 'profile', None)
-
-    if not profile:
-        profile = Profile.objects.create(user=request.user)
-
-    if request.method == 'POST':
-        form = ProfileForm(
-            request.POST,
-            request.FILES,
-            instance=profile,
-            user=request.user
-        )
-
-        if form.is_valid():
-            form.save(request.user)
-            return redirect('profile', username=request.user.username)
-
-    else:
-        form = ProfileForm(
-            instance=profile,
-            user=request.user
-        )
-
-    return render(request, 'profiles/edit_profile.html', {
-        'form': form
     })
 
 

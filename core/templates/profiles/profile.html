@@ -47,25 +47,22 @@
 
         <!-- Botón Editar perfil -->
         {% if request.user == profile_user %}
-            <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary mt-2">
+            <a href="/perfil/editar-react/" class="btn btn-outline-primary mt-2">
                 Editar perfil
             </a>
         {% endif %}
 
 
-        <!-- Botón seguir / dejar de seguir -->
+        <!-- Botón seguir / dejar de seguir (vía API, follow/unfollow clásicos ya no existen) -->
         {% if request.user.is_authenticated and request.user != profile_user %}
-            {% if is_following %}
-                <form action="/follows/unfollow/{{ profile_user.username }}/" method="post" class="follow-btn">
-                    {% csrf_token %}
-                    <button class="btn btn-secondary">Dejar de seguir</button>
-                </form>
-            {% else %}
-                <form action="/follows/follow/{{ profile_user.username }}/" method="post" class="follow-btn">
-                    {% csrf_token %}
-                    <button class="btn btn-primary">Seguir</button>
-                </form>
-            {% endif %}
+            <button
+                id="follow-toggle-btn"
+                class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %} follow-btn"
+                data-username="{{ profile_user.username }}"
+                data-following="{{ is_following|yesno:'true,false' }}"
+            >
+                {% if is_following %}Dejar de seguir{% else %}Seguir{% endif %}
+            </button>
         {% endif %}
 
         <!-- Botón enviar mensaje -->
@@ -95,4 +92,38 @@
     {% endfor %}
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var btn = document.getElementById('follow-toggle-btn');
+    if (!btn) return;
+
+    function getCsrfToken() {
+        var match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    btn.addEventListener('click', function () {
+        var username = btn.dataset.username;
+        var following = btn.dataset.following === 'true';
+        var metodo = following ? 'DELETE' : 'POST';
+
+        btn.disabled = true;
+        fetch('/follows/api/' + username + '/', {
+            method: metodo,
+            credentials: 'same-origin',
+            headers: { 'X-CSRFToken': getCsrfToken() },
+        })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                btn.dataset.following = data.is_following ? 'true' : 'false';
+                btn.textContent = data.is_following ? 'Dejar de seguir' : 'Seguir';
+                btn.className = 'btn follow-btn ' + (data.is_following ? 'btn-secondary' : 'btn-primary');
+            })
+            .finally(function () { btn.disabled = false; });
+    });
+})();
+</script>
 {% endblock %}
