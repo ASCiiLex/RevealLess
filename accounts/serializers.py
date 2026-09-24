@@ -1,7 +1,10 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import FileExtensionValidator
 from rest_framework import serializers
+
+from core.validators import validate_image_size
 
 
 class LoginSerializer(serializers.Serializer):
@@ -19,7 +22,15 @@ class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
-    image = serializers.ImageField(required=False, allow_null=True)
+    # Mismas reglas que Profile.image (extensión y tamaño).
+    image = serializers.ImageField(
+        required=False,
+        allow_null=True,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+            validate_image_size,
+        ],
+    )
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
