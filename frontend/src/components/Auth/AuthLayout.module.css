@@ -7,10 +7,16 @@
   padding: 24px 16px;
 }
 
+.logoLink {
+  display: block;
+  margin-bottom: 32px;
+  line-height: 0;
+}
+
 .logo {
   height: 88px;
   width: auto;
-  margin-bottom: 32px;
+  display: block;
 }
 
 .card {

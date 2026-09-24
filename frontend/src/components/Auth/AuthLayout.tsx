@@ -11,7 +11,9 @@ interface Props {
 export default function AuthLayout({ titulo, children, footer }: Props) {
   return (
     <div className={styles.wrapper}>
-      <img className={styles.logo} src={logo} alt="RevealLess" />
+      <a className={styles.logoLink} href="/" aria-label="Ir al inicio">
+        <img className={styles.logo} src={logo} alt="RevealLess" />
+      </a>
       <div className={styles.card}>
         <h1 className={styles.title}>{titulo}</h1>
         {children}
