@@ -9,26 +9,27 @@ from ..models import Hashtag, Post
 
 
 def hashtag_detail(request, name):
-    # 🔥 Normalización (clave para evitar errores)
     name = name.lower().strip()
 
-    # 🔍 Buscar hashtag sin romper
     hashtag = Hashtag.objects.filter(name=name).first()
 
-    # 🔥 Query de posts (vacío si no existe hashtag)
+    # Solo posts visibles según el progreso del usuario (anónimo: ninguno).
     if hashtag:
-        posts_qs = Post.objects.filter(
-            post_hashtags__hashtag=hashtag
-        ).select_related('author').distinct().order_by('-created_at')
+        posts_qs = (
+            Post.objects.visible_for(request.user)
+            .filter(post_hashtags__hashtag=hashtag)
+            .select_related('author')
+            .distinct()
+            .order_by('-created_at')
+        )
     else:
         posts_qs = Post.objects.none()
 
-    # 📄 Paginación segura
     paginator = Paginator(posts_qs, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # 🔥 Trending hashtags (últimos 7 días)
+    # Trending hashtags (últimos 7 días)
     since = timezone.now() - timedelta(days=7)
 
     trending_hashtags = Hashtag.objects.filter(
@@ -37,7 +38,6 @@ def hashtag_detail(request, name):
         num_posts=Count('posts__post', distinct=True)
     ).order_by('-num_posts')[:10]
 
-    # 🧠 Contexto consistente SIEMPRE
     context = {
         'hashtag': hashtag if hashtag else {'name': name},
         'posts': page_obj,
