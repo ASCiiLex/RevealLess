@@ -67,7 +67,7 @@
 
         <!-- Botón enviar mensaje -->
         {% if request.user.is_authenticated and request.user != profile_user %}
-            <a href="{% url 'chat' profile_user.username %}" class="btn btn-success follow-btn">
+            <a href="/mensajes/chat-react/{{ profile_user.username }}/" class="btn btn-success follow-btn">
                 Enviar mensaje
             </a>
         {% endif %}
