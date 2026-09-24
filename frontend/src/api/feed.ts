@@ -33,6 +33,7 @@ export interface FeedPost {
   comments_count: number
   user_reaction: string | null
   is_own_post: boolean
+  is_saved: boolean
 }
 
 interface PaginatedResponse<T> {

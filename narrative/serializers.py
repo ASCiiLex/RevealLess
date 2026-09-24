@@ -68,13 +68,14 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.IntegerField(read_only=True)
     user_reaction = serializers.SerializerMethodField()
     is_own_post = serializers.SerializerMethodField()
+    is_saved = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = [
             'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'text', 'imagen',
             'referencia_narrativa', 'frontera_spoiler', 'nivel_spoiler', 'emocion_autor', 'created_at',
-            'likes_count', 'comments_count', 'user_reaction', 'is_own_post',
+            'likes_count', 'comments_count', 'user_reaction', 'is_own_post', 'is_saved',
         ]
 
     def get_imagen(self, obj):
@@ -94,7 +95,21 @@ class PostSerializer(serializers.ModelSerializer):
     def get_is_own_post(self, obj):
         request = self.context.get('request')
         return bool(request and request.user.is_authenticated and request.user == obj.author)
-    
+
+    def get_is_saved(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        # Una sola consulta por petición: el conjunto de ids se cachea en el contexto compartido.
+        ids_guardados = self.context.get('_saved_post_ids')
+        if ids_guardados is None:
+            from saved_posts.models import SavedPost
+            ids_guardados = set(
+                SavedPost.objects.filter(user=request.user).values_list('post_id', flat=True)
+            )
+            self.context['_saved_post_ids'] = ids_guardados
+        return obj.id in ids_guardados
+
 
 class ObraResumenSerializer(serializers.ModelSerializer):
     imagen_url = serializers.SerializerMethodField()
