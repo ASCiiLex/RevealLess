@@ -9,8 +9,8 @@ from .api_views import MeAPIView
 
 def home_redirect(request):
     if request.user.is_authenticated:
-        return redirect('feed')
-    return redirect('login')
+        return redirect('feed_react')
+    return redirect('feed')
 
 
 urlpatterns = [

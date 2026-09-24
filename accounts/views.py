@@ -68,12 +68,12 @@ def login_react_view(request):
     decorador, un visitante anónimo nunca recibiría la cookie
     csrftoken, y el POST desde React fallaría por CSRF."""
     if request.user.is_authenticated:
-        return redirect('feed')
+        return redirect('feed_react')
     return render(request, 'accounts/login_react.html')
 
 
 @ensure_csrf_cookie
 def register_react_view(request):
     if request.user.is_authenticated:
-        return redirect('feed')
+        return redirect('feed_react')
     return render(request, 'accounts/register_react.html')
