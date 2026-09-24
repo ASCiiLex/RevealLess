@@ -11,6 +11,7 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         main: 'src/main.tsx',
+        landing: 'src/landing.tsx',
         progreso: 'src/progreso.tsx',
         suscripciones: 'src/suscripciones.tsx',
         login: 'src/login.tsx',

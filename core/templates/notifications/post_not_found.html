@@ -1,16 +1,11 @@
 {% extends "base_public.html" %}
 
 {% block content %}
-<div class="container mt-4">
-
-    <div class="alert alert-warning text-center">
-        <h4>Este post ya no existe</h4>
+<main class="container pl-main">
+    <div class="pl-notice">
+        <h2>Este post ya no existe</h2>
         <p>Es posible que el autor lo haya eliminado.</p>
+        <a class="pl-btn pl-btn-primary" href="/notificaciones/react/">Volver a notificaciones</a>
     </div>
-
-    <div class="text-center mt-3">
-        <a href="/notificaciones/react/" class="btn btn-primary">Volver a notificaciones</a>
-    </div>
-
-</div>
+</main>
 {% endblock %}

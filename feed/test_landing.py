@@ -24,6 +24,10 @@ class LandingPublicaTests(TestCase):
         response = self.client.get(reverse('feed'))
         self.assertNotContains(response, 'href="/cuentas/login/"')
 
+    def test_sinopsis_es_colapsable(self):
+        response = self.client.get(reverse('feed'))
+        self.assertContains(response, '<details>')
+
     def test_usuario_autenticado_va_al_feed_react(self):
         self.client.force_login(User.objects.create_user('landing_user', password='x'))
         response = self.client.get(reverse('feed'))
