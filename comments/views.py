@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.serializers import serializar_reactores
 from narrative.models import ClasificacionNarrativa
 from narrative.services import detectar_posibles_referencias_cruzadas
 from posts.models import Post
@@ -242,4 +243,8 @@ def delete_comment(request, comment_id):
 @login_required
 def comment_reactions_list(request, comment_id):
     comment = get_object_or_404(Comment.objects.visible_for(request.user), id=comment_id)
-    return JsonResponse({"totals": _counts_por_reaccion(comment)})
+
+    return JsonResponse({
+        "totals": _counts_por_reaccion(comment),
+        "users": serializar_reactores(request, comment.reactions),
+    })

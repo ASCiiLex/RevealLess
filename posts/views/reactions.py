@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+from core.serializers import serializar_reactores
 from likes.models import PostReaction
 from ..models import Post
 
@@ -76,4 +77,8 @@ def toggle_reaction_post(request):
 @login_required
 def post_reactions_list(request, post_id):
     post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
-    return JsonResponse({'totals': _counts_por_reaccion(post)})
+
+    return JsonResponse({
+        'totals': _counts_por_reaccion(post),
+        'users': serializar_reactores(request, post.reactions),
+    })

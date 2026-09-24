@@ -26,12 +26,22 @@ class ListaReaccionesPostTests(TestCase):
         )
         PostReaction.objects.create(user=self.lector, post=self.post, reaction='me_gusta')
         self.client.force_login(self.lector)
+        self.url = reverse('post_reactions_list', args=[self.post.id])
 
     def test_con_reacciones_existentes_responde_200(self):
-        response = self.client.get(reverse('post_reactions_list', args=[self.post.id]))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get(self.url).status_code, 200)
 
-    def test_devuelve_solo_los_totales(self):
-        data = self.client.get(reverse('post_reactions_list', args=[self.post.id])).json()
-        self.assertEqual(set(data.keys()), {'totals'})
+    def test_devuelve_totales_y_usuarios(self):
+        data = self.client.get(self.url).json()
+        self.assertEqual(set(data.keys()), {'totals', 'users'})
         self.assertEqual(data['totals']['me_gusta'], 1)
+
+    def test_usuario_incluye_nombre_reaccion_y_perfil_react(self):
+        usuario = self.client.get(self.url).json()['users'][0]
+        self.assertEqual(usuario['username'], 'lrp_lector')
+        self.assertEqual(usuario['reaction'], 'me_gusta')
+        self.assertEqual(usuario['profile_url'], '/perfil/lrp_lector/react/')
+
+    def test_avatar_es_url_absoluta(self):
+        usuario = self.client.get(self.url).json()['users'][0]
+        self.assertEqual(usuario['avatar_url'], 'http://testserver/static/img/default_profile.jpg')
