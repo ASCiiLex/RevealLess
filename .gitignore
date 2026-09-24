@@ -17,3 +17,10 @@ media/
 .vscode/
 .idea/
 staticfiles/
+
+# Build artifacts del frontend
+frontend/tsconfig.tsbuildinfo
+frontend/tsconfig.node.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+static/frontend/
