@@ -41,7 +41,7 @@ export default function PasoProgreso({ obraSlug, obraTitulo, onProgresoDeclarado
       <p>Necesitamos saber tu progreso antes de publicar sobre esta obra.</p>
 
       {arbol.map((nodo) => (
-        <UnidadNode key={nodo.id} nodo={nodo} actualId={-1} onSelect={handleSelect} />
+        <UnidadNode key={nodo.id} nodo={nodo} actualId={-1} actualOrden={-1} onSelect={handleSelect} />
       ))}
     </div>
   )
