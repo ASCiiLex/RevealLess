@@ -5,6 +5,7 @@
 }
 
 .postCard {
+  position: relative;
   background: var(--paper);
   border-radius: var(--radius);
   padding: 16px;
@@ -16,6 +17,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-right: 90px;
   margin-bottom: 8px;
 }
 

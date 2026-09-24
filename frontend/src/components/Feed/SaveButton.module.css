@@ -1,0 +1,49 @@
+.save {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--fog);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.saveActive {
+  color: var(--gold);
+}
+
+.save:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* El texto solo se ve en escritorio: en móvil el botón se queda como icono circular. */
+.label {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .save {
+    width: auto;
+    height: auto;
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    gap: 6px;
+  }
+
+  .label {
+    display: inline;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+  }
+}

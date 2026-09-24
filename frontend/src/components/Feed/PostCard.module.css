@@ -1,4 +1,5 @@
 .post {
+  position: relative;
   background: var(--paper);
   border-radius: var(--radius);
   padding: 16px;
@@ -11,6 +12,7 @@
   align-items: baseline;
   flex-wrap: wrap;
   gap: 6px;
+  padding-right: 40px;
   font-size: 13px;
   color: var(--fog);
   margin-bottom: 8px;

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import styles from './PostDetailView.module.css'
 import CommentItem from './CommentItem'
-import ReactionBar from '../Feed/ReactionBar'
+import PostActions from '../Feed/PostActions'
+import SaveButton from '../Feed/SaveButton'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import EmocionPopover from '../Emociones/EmocionPopover'
@@ -132,6 +133,8 @@ export default function PostDetailView({ postId }: Props) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.postCard} style={emocionHaloStyle(post.emocion_autor)}>
+        <SaveButton postId={post.id} guardadoInicial={post.is_saved} />
+
         <div className={styles.meta}>
           <img className={styles.avatar} src={post.autor_avatar} alt="" />
 
@@ -165,10 +168,7 @@ export default function PostDetailView({ postId }: Props) {
 
         {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
 
-        <ReactionBar
-          targetId={post.id}
-          reaccionInicial={detalle.post_reaction}
-        />
+        <PostActions postId={post.id} reaccionInicial={detalle.post_reaction} />
       </div>
 
       {editando && (

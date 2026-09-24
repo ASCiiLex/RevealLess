@@ -1,5 +1,6 @@
 import styles from './PostCard.module.css'
-import ReactionBar from './ReactionBar'
+import PostActions from './PostActions'
+import SaveButton from './SaveButton'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
@@ -12,6 +13,8 @@ interface Props {
 export default function PostCard({ post }: Props) {
   return (
     <article className={styles.post} style={emocionHaloStyle(post.emocion_autor)}>
+      <SaveButton postId={post.id} guardadoInicial={post.is_saved} />
+
       <div className={styles.meta}>
         <span className={styles.author}>@{post.autor}</span>
         <EmocionBadge emocionAutor={post.emocion_autor} />
@@ -32,10 +35,7 @@ export default function PostCard({ post }: Props) {
         {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
       </a>
 
-      <ReactionBar
-        targetId={post.id}
-        reaccionInicial={post.user_reaction}
-      />
+      <PostActions postId={post.id} reaccionInicial={post.user_reaction} />
 
       <a className={styles.commentsLink} href={`/posts/${post.id}/react/`}>
         {post.comments_count} comentarios
