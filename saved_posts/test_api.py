@@ -19,8 +19,13 @@ class SavedPostListAPIViewTests(TestCase):
         self.e1 = UnidadNarrativa.objects.create(
             obra=self.obra, tipo='episodio', nombre='E1', orden_local=1,
         )
+        self.e3 = UnidadNarrativa.objects.create(
+            obra=self.obra, tipo='episodio', nombre='E3', orden_local=3,
+        )
         self.obra.recalcular_orden()
         self.e1.refresh_from_db()
+        self.e3.refresh_from_db()
+        actualizar_progreso(self.usuario, self.obra, self.e1)
 
         self.post = Post.objects.create(
             author=self.otro_usuario, obra=self.obra, text='post guardable',
@@ -46,6 +51,17 @@ class SavedPostListAPIViewTests(TestCase):
         response = self.client.get(reverse('saved_posts_api_list'))
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['post_id'], self.post.id)
+
+    def test_no_lista_un_guardado_que_dejo_de_ser_visible(self):
+        SavedPost.objects.create(user=self.usuario, post=self.post)
+
+        # El autor sube la frontera del post tras haberlo guardado el lector.
+        self.post.frontera_spoiler = self.e3
+        self.post.save()
+
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('saved_posts_api_list'))
+        self.assertEqual(response.data, [])
 
 
 class SavedPostToggleAPIViewTests(TestCase):

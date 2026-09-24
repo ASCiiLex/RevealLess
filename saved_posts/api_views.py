@@ -10,19 +10,19 @@ from .serializers import SavedPostSerializer
 
 
 class SavedPostListAPIView(APIView):
-    """Réplica de saved_posts_view: lista los posts guardados del
-    usuario autenticado. No aplica visible_for() explícitamente porque
-    un post guardado que el usuario ya vio y guardó es, por definición,
-    algo que ya le era visible en su momento -- a diferencia del feed o
-    la búsqueda, donde el contenido puede pertenecer a otro usuario que
-    nunca lo vio antes."""
+    """Lista los guardados del usuario cuyo post sigue siendo visible
+    para él. Se filtra con visible_for() porque la visibilidad puede
+    cambiar tras guardar (el autor sube la frontera al editar)."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        saved = SavedPost.objects.filter(user=request.user).select_related(
-            'post', 'post__author'
-        ).order_by('-created_at')
+        saved = (
+            SavedPost.objects
+            .filter(user=request.user, post__in=Post.objects.visible_for(request.user))
+            .select_related('post', 'post__author')
+            .order_by('-created_at')
+        )
         return Response(SavedPostSerializer(saved, many=True).data)
 
 
