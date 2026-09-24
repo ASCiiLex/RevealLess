@@ -13,6 +13,10 @@ export function login(username: string, password: string): Promise<LoginResponse
   return api.post<LoginResponse>('/cuentas/api/login/', { username, password })
 }
 
+export async function logout(): Promise<void> {
+  await api.post<void>('/cuentas/logout/')
+}
+
 export interface RegisterData {
   username: string
   email: string

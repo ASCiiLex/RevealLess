@@ -1,6 +1,8 @@
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 from .forms import RegisterForm
 
@@ -50,9 +52,11 @@ def login_view(request):
     return render(request, 'accounts/login.html', {'error': error})
 
 
+@require_POST
 def logout_view(request):
+    # Solo POST: un GET (enlace o imagen externa) no debe cerrar la sesión.
     logout(request)
-    return redirect('login_react')
+    return HttpResponse(status=204)
 
 
 @ensure_csrf_cookie

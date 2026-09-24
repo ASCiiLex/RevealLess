@@ -1,4 +1,5 @@
 import type { Me } from '../../api/me'
+import { logout } from '../../api/auth'
 
 interface Props {
   me: Me
@@ -8,6 +9,16 @@ interface Props {
 }
 
 export default function AccountMenuLinks({ me, itemClassName, logoutClassName, dividerClassName }: Props) {
+  function handleLogout() {
+    logout()
+      .then(() => {
+        window.location.href = '/cuentas/login-react/'
+      })
+      .catch(() => {
+        // Si falla, la sesión sigue abierta y el usuario permanece en la página.
+      })
+  }
+
   return (
     <>
       <a className={itemClassName} href={`/perfil/${me.username}/react/`} role="menuitem">
@@ -26,9 +37,14 @@ export default function AccountMenuLinks({ me, itemClassName, logoutClassName, d
         Suscripciones
       </a>
       <hr className={dividerClassName} />
-      <a className={`${itemClassName} ${logoutClassName}`} href="/cuentas/logout/" role="menuitem">
+      <button
+        type="button"
+        className={`${itemClassName} ${logoutClassName}`}
+        onClick={handleLogout}
+        role="menuitem"
+      >
         Cerrar sesión
-      </a>
+      </button>
     </>
   )
 }

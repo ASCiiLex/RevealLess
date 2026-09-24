@@ -86,7 +86,13 @@
   display: none;
 }
 
+/* Botón con el aspecto de un enlace del menú. */
 .logout {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: inherit;
   color: var(--fog);
-  border-bottom: none;
+  cursor: pointer;
 }
