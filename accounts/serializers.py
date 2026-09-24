@@ -13,10 +13,8 @@ class LoginSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.Serializer):
-    """Réplica de RegisterForm.clean(): mismas validaciones (contraseñas
-    coinciden, robustez via validate_password, username/email únicos),
-    para no divergir entre el flujo Django clásico (que sigue existiendo)
-    y este nuevo endpoint API."""
+    """Validaciones de registro: contraseñas coinciden, robustez vía
+    validate_password y username/email únicos."""
 
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()

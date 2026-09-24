@@ -11,8 +11,7 @@ from .serializers import LoginSerializer, RegisterSerializer
 
 @method_decorator(ratelimit(key='ip', rate='10/m', method='POST', block=True), name='post')
 class LoginAPIView(APIView):
-    """Mismo límite de tasa que login_view (10/m por IP), mismo mensaje
-    de error genérico ante credenciales inválidas."""
+    """Límite de 10/m por IP y mensaje genérico ante credenciales inválidas."""
 
     permission_classes = [AllowAny]
 
@@ -38,10 +37,8 @@ class LoginAPIView(APIView):
 
 @method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
 class RegisterAPIView(APIView):
-    """Mismo límite de tasa que register_view (5/m por IP). Crea el
-    usuario (Profile se crea solo vía la señal post_save ya existente),
-    aplica el avatar si se envió, e inicia sesión automáticamente,
-    igual que el flujo Django clásico."""
+    """Límite de 5/m por IP. Crea el usuario (el Profile lo crea la señal
+    post_save), aplica el avatar si se envió e inicia sesión."""
 
     permission_classes = [AllowAny]
 
