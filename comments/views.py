@@ -3,7 +3,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.urls import reverse
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from rest_framework import status
@@ -243,28 +242,4 @@ def delete_comment(request, comment_id):
 @login_required
 def comment_reactions_list(request, comment_id):
     comment = get_object_or_404(Comment.objects.visible_for(request.user), id=comment_id)
-
-    totals = _counts_por_reaccion(comment)
-
-    users_data = []
-
-    for r in comment.reactions.select_related("user").order_by("-created_at"):
-        user = r.user
-        profile_url = reverse("profile", args=[user.username])
-
-        avatar = (
-            request.build_absolute_uri(user.profile.image.url)
-            if hasattr(user, "profile") and user.profile.image
-            else request.build_absolute_uri("/static/img/default_profile.jpg")
-        )
-
-        users_data.append(
-            {
-                "username": user.username,
-                "profile_url": profile_url,
-                "avatar_url": avatar,
-                "reaction": r.reaction,
-            }
-        )
-
-    return JsonResponse({"totals": totals, "users": users_data})
+    return JsonResponse({"totals": _counts_por_reaccion(comment)})
