@@ -1,5 +1,10 @@
 {% extends "base_public.html" %}
 
+{# Pantalla de usuarios con sesión: sin botones ni enlaces de acceso. #}
+{% block header_actions %}{% endblock %}
+{% block footer_links %}{% endblock %}
+{% block bottom_nav %}{% endblock %}
+
 {% block content %}
 <main class="container pl-main">
     <div class="pl-notice">

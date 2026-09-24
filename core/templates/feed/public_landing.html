@@ -1,13 +1,12 @@
 {% extends 'base_public.html' %}
+
+{% block body_class %}pl-has-nav{% endblock %}
+
 {% block content %}
 <main class="container pl-main">
     <section class="pl-hero">
         <h1>Disfruta sin spoilers</h1>
         <p class="pl-lead">Habla de tus series, libros y pelis a tu propio ritmo.</p>
-        <div class="pl-actions">
-            <a class="pl-btn pl-btn-primary" href="/cuentas/login-react/">Iniciar sesión</a>
-            <a class="pl-btn pl-btn-ghost" href="/cuentas/register-react/">Registrarse</a>
-        </div>
     </section>
 
     <section class="pl-stats">
@@ -16,7 +15,7 @@
         <div class="pl-stat"><strong>{{ stats.usuarios_count }}</strong><span>usuarios</span></div>
     </section>
 
-    <h2 class="pl-section-title">Catálogo</h2>
+    <h2 class="pl-section-title" id="catalogo">Catálogo</h2>
     <div class="pl-grid">
         {% for obra in obras %}
         <article class="pl-card">

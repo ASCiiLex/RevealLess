@@ -1,5 +1,11 @@
 /* Páginas públicas de Django (landing, "post no existe"): mismos tokens que la app. */
 
+.pl-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .pl-header {
   background: var(--paper);
   border-bottom: 1px solid var(--border);
@@ -8,6 +14,8 @@
 .pl-header-inner {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding-top: 10px;
   padding-bottom: 10px;
 }
@@ -19,7 +27,14 @@
   background: url('../assets/brand/logo-sf-ss.png') left center / contain no-repeat;
 }
 
+.pl-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .pl-main {
+  flex: 1 0 auto;
+  width: 100%;
   padding-top: 32px;
   padding-bottom: 48px;
   color: var(--paper);
@@ -39,14 +54,6 @@
   color: var(--gold-light);
 }
 
-.pl-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
 .pl-btn {
   display: inline-block;
   padding: 10px 20px;
@@ -55,6 +62,11 @@
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
+  text-align: center;
+}
+
+.pl-btn-sm {
+  padding: 8px 16px;
 }
 
 .pl-btn-primary {
@@ -62,9 +74,10 @@
   color: var(--paper);
 }
 
-.pl-btn-ghost {
+/* Para fondos claros (cabecera y barra inferior). */
+.pl-btn-outline {
   background: transparent;
-  color: var(--paper);
+  color: var(--ink);
 }
 
 .pl-stats {
@@ -89,6 +102,7 @@
 .pl-section-title {
   font-size: 1.3rem;
   margin-bottom: 14px;
+  color: var(--paper);
 }
 
 .pl-grid {
@@ -162,12 +176,128 @@
   margin: 8px 0 20px;
 }
 
+/* Footer: mismo color que la cabecera. Escritorio: logo | frase | enlaces. */
+.pl-footer {
+  background: var(--paper);
+  color: var(--ink);
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.pl-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.pl-footer-logo {
+  flex: 0 0 auto;
+  display: block;
+  width: 200px;
+  height: 56px;
+  background: url('../assets/brand/logo-sf-ss.png') left center / contain no-repeat;
+}
+
+.pl-footer-tagline {
+  flex: 1;
+  max-width: 360px;
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.pl-footer-links {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.pl-footer-links a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pl-footer-links a:hover,
+.pl-footer-links a:focus-visible {
+  color: var(--gold);
+}
+
+.pl-footer-copy {
+  border-top: 1px solid var(--border);
+  padding: 12px var(--gutter);
+  text-align: center;
+  color: var(--fog);
+}
+
+/* Solo visible en móvil. */
+.pl-bottom-nav {
+  display: none;
+}
+
 @media (max-width: 767px) {
+  .pl-header-inner {
+    justify-content: center;
+  }
+
   .pl-logo {
+    width: 180px;
     height: 44px;
+    background-position: center;
+  }
+
+  .pl-header-actions {
+    display: none;
   }
 
   .pl-stats {
     gap: 24px;
+  }
+
+  /* Móvil: logo, frase y enlaces apilados y centrados. */
+  .pl-footer-inner {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .pl-footer-logo {
+    width: 140px;
+    height: 40px;
+    background-position: center;
+  }
+
+  .pl-footer-tagline {
+    flex: none;
+  }
+
+  .pl-footer-links {
+    justify-content: center;
+  }
+
+  /* Deja hueco para la barra fija y que no tape el footer. */
+  .pl-has-nav .pl-footer {
+    padding-bottom: 76px;
+  }
+
+  .pl-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--paper);
+    border-top: 1px solid var(--border);
+    z-index: 10;
+  }
+
+  .pl-bottom-nav .pl-btn {
+    flex: 1;
   }
 }

@@ -28,6 +28,23 @@ class LandingPublicaTests(TestCase):
         response = self.client.get(reverse('feed'))
         self.assertContains(response, '<details>')
 
+    def test_landing_tiene_footer(self):
+        response = self.client.get(reverse('feed'))
+        self.assertContains(response, '<footer class="pl-footer">')
+
+    def test_footer_tiene_logo(self):
+        response = self.client.get(reverse('feed'))
+        self.assertContains(response, 'pl-footer-logo')
+
+    def test_footer_enlaza_al_catalogo(self):
+        response = self.client.get(reverse('feed'))
+        self.assertContains(response, 'href="#catalogo"')
+        self.assertContains(response, 'id="catalogo"')
+
+    def test_landing_tiene_barra_inferior_de_acceso(self):
+        response = self.client.get(reverse('feed'))
+        self.assertContains(response, 'class="pl-bottom-nav"')
+
     def test_usuario_autenticado_va_al_feed_react(self):
         self.client.force_login(User.objects.create_user('landing_user', password='x'))
         response = self.client.get(reverse('feed'))
@@ -61,3 +78,15 @@ class RedireccionesHaciaVistasReactTests(TestCase):
         self.client.force_login(self.usuario)
         response = self.client.get(reverse('post_not_found', args=[1]))
         self.assertContains(response, 'href="/notificaciones/react/"')
+
+    def test_post_no_existe_no_muestra_botones_de_acceso(self):
+        self.client.force_login(self.usuario)
+        response = self.client.get(reverse('post_not_found', args=[1]))
+        self.assertNotContains(response, 'href="/cuentas/login-react/"')
+        self.assertNotContains(response, 'class="pl-bottom-nav"')
+
+    def test_post_no_existe_footer_sin_enlaces_de_acceso(self):
+        self.client.force_login(self.usuario)
+        response = self.client.get(reverse('post_not_found', args=[1]))
+        self.assertContains(response, '<footer class="pl-footer">')
+        self.assertNotContains(response, 'pl-footer-links')
