@@ -39,8 +39,7 @@ def _avatar_url(user):
 
 
 class FollowersListAPIView(APIView):
-    """Réplica de followers_list. AllowAny porque la lista de
-    seguidores es pública, igual que en la vista Django clásica."""
+    """Lista de seguidores. AllowAny: es pública."""
 
     permission_classes = [AllowAny]
 
