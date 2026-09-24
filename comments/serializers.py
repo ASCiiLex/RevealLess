@@ -22,13 +22,13 @@ class CommentCreateSerializer(serializers.Serializer):
     frontera_cruzada = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
     )
+    descartar_referencia_cruzada = serializers.BooleanField(required=False, default=False)
 
 
 class CommentUpdateSerializer(serializers.Serializer):
     """Edición de un comentario ya publicado, mismo criterio que
-    PostUpdateSerializer: todos los campos opcionales, si se envía
-    frontera_spoiler se marca ORIGEN_EXPLICITO, si no se envía la
-    frontera actual no se toca."""
+    PostUpdateSerializer: todos los campos opcionales, sin detección de
+    referencia cruzada (solo se dispara al crear)."""
 
     text = serializers.CharField(max_length=2000, required=False)
     emocion_autor = serializers.ChoiceField(choices=EMOCION_CHOICES, required=False, allow_null=True)

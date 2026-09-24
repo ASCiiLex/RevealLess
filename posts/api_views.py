@@ -11,12 +11,28 @@ from comments.models import CommentReaction
 from comments.serializers import CommentSerializer
 from likes.models import PostReaction
 from narrative.models import Obra, ProgresoUsuario, ClasificacionNarrativa
-from narrative.services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
+from narrative.services import (
+    actualizar_progreso,
+    SaltoGrandeRequiereConfirmacion,
+    detectar_posibles_referencias_cruzadas,
+)
 from narrative.ai_assistant import proponer_clasificacion
 from narrative.serializers import PostSerializer
 from .models import Post
 from .serializers import PostCreateSerializer, PostUpdateSerializer
 from .views.post_detail import get_sorted_comments
+
+
+def _serializar_detecciones(detecciones):
+    return [
+        {
+            'obra_id': d['obra'].id,
+            'obra_titulo': d['obra'].titulo,
+            'obra_slug': d['obra'].slug,
+            'palabra': d['palabra'],
+        }
+        for d in detecciones
+    ]
 
 
 class PostCreateAPIView(APIView):
@@ -51,6 +67,21 @@ class PostCreateAPIView(APIView):
                     'salto': exc.salto,
                 }, status=status.HTTP_409_CONFLICT)
 
+        obra_cruzada = datos.get('obra_cruzada')
+        frontera_cruzada = datos.get('frontera_cruzada')
+        if bool(obra_cruzada) != bool(frontera_cruzada):
+            return Response({
+                'detail': 'Indica la obra cruzada y su frontera juntas, o ninguna de las dos.',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not obra_cruzada and not datos.get('descartar_referencia_cruzada'):
+            detecciones = detectar_posibles_referencias_cruzadas(datos['text'], obra)
+            if detecciones:
+                return Response({
+                    'detail': 'referencia_cruzada_detectada',
+                    'detecciones': _serializar_detecciones(detecciones),
+                }, status=status.HTTP_409_CONFLICT)
+
         post = Post(
             author=request.user,
             obra=obra,
@@ -59,6 +90,8 @@ class PostCreateAPIView(APIView):
             referencia_narrativa=datos['referencia_narrativa'],
             nivel_spoiler=datos.get('nivel_spoiler', 'menor'),
             emocion_autor=datos.get('emocion_autor'),
+            obra_cruzada=obra_cruzada,
+            frontera_cruzada=frontera_cruzada,
         )
 
         if datos.get('frontera_spoiler'):
@@ -86,9 +119,10 @@ class PostCreateAPIView(APIView):
 
 class PostUpdateAPIView(APIView):
     """Edita un post ya publicado. Solo el autor puede editarlo (403 si
-    no). No vuelve a consultar progreso ni dispara la IA -- si se envía
-    frontera_spoiler, se marca ORIGEN_EXPLICITO (edición manual
-    consciente); si no se envía, la frontera actual no se toca."""
+    no). No vuelve a consultar progreso ni dispara la IA ni la detección
+    de referencia cruzada -- si se envía frontera_spoiler, se marca
+    ORIGEN_EXPLICITO (edición manual consciente); si no se envía, la
+    frontera actual no se toca."""
 
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -119,6 +153,10 @@ class PostUpdateAPIView(APIView):
         if 'frontera_spoiler' in datos:
             post.frontera_spoiler = datos['frontera_spoiler']
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
+        if 'obra_cruzada' in datos:
+            post.obra_cruzada = datos['obra_cruzada']
+        if 'frontera_cruzada' in datos:
+            post.frontera_cruzada = datos['frontera_cruzada']
 
         try:
             post.full_clean()

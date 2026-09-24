@@ -12,6 +12,18 @@ export interface RequiereConfirmacionProgreso {
   salto: number
 }
 
+export interface DeteccionCruzada {
+  obraId: number
+  obraTitulo: string
+  obraSlug: string
+  palabra: string
+}
+
+export interface ReferenciaCruzadaDetectada {
+  referenciaCruzadaDetectada: true
+  detecciones: DeteccionCruzada[]
+}
+
 export interface PostCreado {
   id: number
 }
@@ -32,8 +44,11 @@ export async function crearPost(
     emocionAutor?: string | null
     nuevoProgresoId?: number | null
     confirmarSaltoProgreso?: boolean
+    obraCruzadaId?: number | null
+    fronteraCruzadaId?: number | null
+    descartarReferenciaCruzada?: boolean
   }
-): Promise<PostCreado | ProgresoRequerido | RequiereConfirmacionProgreso> {
+): Promise<PostCreado | ProgresoRequerido | RequiereConfirmacionProgreso | ReferenciaCruzadaDetectada> {
   const formData = new FormData()
   formData.append('text', datos.text)
   if (datos.image) formData.append('image', datos.image)
@@ -43,6 +58,9 @@ export async function crearPost(
   if (datos.emocionAutor) formData.append('emocion_autor', datos.emocionAutor)
   if (datos.nuevoProgresoId) formData.append('nuevo_progreso', String(datos.nuevoProgresoId))
   if (datos.confirmarSaltoProgreso) formData.append('confirmar_salto_progreso', 'true')
+  if (datos.obraCruzadaId) formData.append('obra_cruzada', String(datos.obraCruzadaId))
+  if (datos.fronteraCruzadaId) formData.append('frontera_cruzada', String(datos.fronteraCruzadaId))
+  if (datos.descartarReferenciaCruzada) formData.append('descartar_referencia_cruzada', 'true')
 
   try {
     const response = await fetch(`/posts/api/crear/${obraSlug}/`, {
@@ -60,13 +78,29 @@ export async function crearPost(
     return response.json()
   } catch (err) {
     if (err instanceof ApiError && err.status === 409) {
-      const body = err.detail as { detail: string; requiere_confirmacion_progreso?: boolean; obra_slug?: string }
+      const body = err.detail as {
+        detail: string
+        requiere_confirmacion_progreso?: boolean
+        obra_slug?: string
+        salto?: number
+        detecciones?: Array<{ obra_id: number; obra_titulo: string; obra_slug: string; palabra: string }>
+      }
       if (body.detail === 'progreso_requerido') {
         return { progresoRequerido: true, obraSlug: body.obra_slug ?? obraSlug }
       }
       if (body.requiere_confirmacion_progreso) {
-        const saltoBody = err.detail as { detail: string; salto: number }
-        return { requiereConfirmacion: true, detail: saltoBody.detail, salto: saltoBody.salto }
+        return { requiereConfirmacion: true, detail: body.detail, salto: body.salto as number }
+      }
+      if (body.detail === 'referencia_cruzada_detectada') {
+        return {
+          referenciaCruzadaDetectada: true,
+          detecciones: (body.detecciones ?? []).map((d) => ({
+            obraId: d.obra_id,
+            obraTitulo: d.obra_titulo,
+            obraSlug: d.obra_slug,
+            palabra: d.palabra,
+          })),
+        }
       }
     }
     throw err

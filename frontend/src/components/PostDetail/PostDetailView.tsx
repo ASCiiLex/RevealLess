@@ -7,6 +7,8 @@ import EmocionBadge from '../Emociones/EmocionBadge'
 import EmocionPopover from '../Emociones/EmocionPopover'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 import EditPostForm from './EditPostForm'
+import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
+import type { DeteccionCruzada } from '../../api/publicar'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
 import { fetchPostDetail, addComment, type PostDetail } from '../../api/postDetail'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
@@ -31,6 +33,7 @@ export default function PostDetailView({ postId }: Props) {
   const [emocionAbierta, setEmocionAbierta] = useState(false)
   const [narrativa, setNarrativa] = useState<NarrativaValue>(NARRATIVA_VACIA)
   const [editando, setEditando] = useState(false)
+  const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
 
   useEffect(() => {
     fetchPostDetail(postId).then(setDetalle)
@@ -42,17 +45,19 @@ export default function PostDetailView({ postId }: Props) {
     }
   }, [detalle?.post.obra_slug])
 
-  async function handleComentar() {
-    if (!nuevoComentario.trim() || !detalle) return
-
-    const nuevo = await addComment(postId, nuevoComentario, {
-      emocionAutor: emocionComentario,
-      referenciaNarrativaId: narrativa.referenciaId,
-      fronteraSpoilerId: narrativa.fronteraId,
-      obraCruzadaId: narrativa.obraCruzadaId,
-      fronteraCruzadaId: narrativa.fronteraCruzadaId,
-    })
-
+  function agregarComentarioAlEstado(nuevo: {
+    id: number
+    user: string
+    text: string
+    created_at: string
+    emocion_autor: string | null
+    referencia_narrativa_id: number | null
+    frontera_spoiler_id: number | null
+    frontera_origen: string
+    obra_cruzada_id: number | null
+    frontera_cruzada_id: number | null
+  }) {
+    if (!detalle) return
     setDetalle({
       ...detalle,
       comments: [
@@ -63,12 +68,12 @@ export default function PostDetailView({ postId }: Props) {
           text: nuevo.text,
           created_at: nuevo.created_at,
           parent_id: null,
-          emocion_autor: nuevo.emocion_autor ?? null,
-          referencia_narrativa_id: nuevo.referencia_narrativa_id ?? null,
-          frontera_spoiler_id: nuevo.frontera_spoiler_id ?? null,
-          frontera_origen: nuevo.frontera_origen ?? 'heredado_post',
-          obra_cruzada_id: nuevo.obra_cruzada_id ?? null,
-          frontera_cruzada_id: nuevo.frontera_cruzada_id ?? null,
+          emocion_autor: nuevo.emocion_autor,
+          referencia_narrativa_id: nuevo.referencia_narrativa_id,
+          frontera_spoiler_id: nuevo.frontera_spoiler_id,
+          frontera_origen: nuevo.frontera_origen,
+          obra_cruzada_id: nuevo.obra_cruzada_id,
+          frontera_cruzada_id: nuevo.frontera_cruzada_id,
           is_own_comment: true,
           reactions_count: 0,
           user_reaction: null,
@@ -77,10 +82,38 @@ export default function PostDetailView({ postId }: Props) {
         ...detalle.comments,
       ],
     })
-
     setNuevoComentario('')
     setEmocionComentario(null)
     setNarrativa(NARRATIVA_VACIA)
+  }
+
+  async function enviarComentario(overrides: {
+    obraCruzadaId?: number | null
+    fronteraCruzadaId?: number | null
+    descartarReferenciaCruzada?: boolean
+  } = {}) {
+    if (!nuevoComentario.trim() || !detalle) return
+
+    const resultado = await addComment(postId, nuevoComentario, {
+      emocionAutor: emocionComentario,
+      referenciaNarrativaId: narrativa.referenciaId,
+      fronteraSpoilerId: narrativa.fronteraId,
+      obraCruzadaId: narrativa.obraCruzadaId,
+      fronteraCruzadaId: narrativa.fronteraId,
+      ...overrides,
+    })
+
+    if ('referenciaCruzadaDetectada' in resultado) {
+      setDetecciones(resultado.detecciones)
+      return
+    }
+
+    setDetecciones(null)
+    agregarComentarioAlEstado(resultado)
+  }
+
+  async function handleComentar() {
+    enviarComentario()
   }
 
   function handlePostActualizado(postActualizado: FeedPost) {
@@ -193,6 +226,19 @@ export default function PostDetailView({ postId }: Props) {
             obraDetalle={obraDetalle}
           />
         ))
+      )}
+
+      {detecciones && (
+        <ReferenciaCruzadaAviso
+          detecciones={detecciones}
+          onConfirmar={(obraCruzadaId, fronteraCruzadaId) => {
+            enviarComentario({ obraCruzadaId, fronteraCruzadaId })
+          }}
+          onDescartar={() => {
+            enviarComentario({ descartarReferenciaCruzada: true })
+          }}
+          onCancelar={() => setDetecciones(null)}
+        />
       )}
     </div>
   )

@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from narrative.models import ClasificacionNarrativa
+from narrative.services import detectar_posibles_referencias_cruzadas
 from posts.models import Post
 from .models import Comment, CommentReaction
 from .serializers import CommentCreateSerializer, CommentUpdateSerializer
@@ -26,6 +27,18 @@ def _counts_por_reaccion(comment):
         clave: comment.reactions.filter(reaction=clave).count()
         for clave, _ in CommentReaction.REACTION_CHOICES
     }
+
+
+def _serializar_detecciones(detecciones):
+    return [
+        {
+            'obra_id': d['obra'].id,
+            'obra_titulo': d['obra'].titulo,
+            'obra_slug': d['obra'].slug,
+            'palabra': d['palabra'],
+        }
+        for d in detecciones
+    ]
 
 
 @login_required
@@ -49,9 +62,6 @@ def add_comment(request):
     parent_id = datos.get("parent_id")
     if parent_id:
         parent = get_object_or_404(Comment, id=parent_id, post=post)
-        # Límite de 3 niveles: comentario -> respuesta -> respuesta-a-
-        # respuesta, y ahi se para. Si el padre ya tiene su propio
-        # padre (ya es una respuesta), esto seria un nivel 4.
         if parent.parent_id is not None:
             return JsonResponse(
                 {"error": "No se puede responder a una respuesta ya anidada."},
@@ -65,6 +75,14 @@ def add_comment(request):
             {"error": "Indica la obra cruzada y su frontera juntas, o ninguna de las dos."},
             status=400,
         )
+
+    if not obra_cruzada and not datos.get("descartar_referencia_cruzada"):
+        detecciones = detectar_posibles_referencias_cruzadas(text, post.obra)
+        if detecciones:
+            return JsonResponse({
+                "detail": "referencia_cruzada_detectada",
+                "detecciones": _serializar_detecciones(detecciones),
+            }, status=409)
 
     referencia = datos.get("referencia_narrativa") or post.referencia_narrativa
     frontera = datos.get("frontera_spoiler")
@@ -80,10 +98,6 @@ def add_comment(request):
     if frontera:
         comment.frontera_spoiler = frontera
         comment.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
-    # Si no se especifica frontera, se queda con el default del modelo
-    # (ORIGEN_HEREDADO_POST, frontera_spoiler=None) -- hereda la del
-    # post, comportamiento ya existente. Sin asistente de IA para
-    # comentarios por ahora (anotado para v2).
 
     try:
         comment.full_clean()
@@ -129,11 +143,6 @@ def add_comment(request):
 
 
 class CommentUpdateAPIView(APIView):
-    """Edita un comentario ya publicado. Solo el autor puede editarlo
-    (403 si no). Mismo criterio que PostUpdateAPIView: si se envía
-    frontera_spoiler, se marca ORIGEN_EXPLICITO; si no se envía, la
-    frontera actual no se toca."""
-
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, comment_id):

@@ -2,7 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { crearPost } from '../../api/publicar'
+import type { DeteccionCruzada } from '../../api/publicar'
 import EmocionSelector from '../Emociones/EmocionSelector'
+import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 
 interface Props {
   obraSlug: string
@@ -21,6 +23,7 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
   const [nuevoProgresoId, setNuevoProgresoId] = useState<number | null>(null)
   const [confirmarSalto, setConfirmarSalto] = useState(false)
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
+  const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
 
@@ -28,8 +31,11 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
     fetchObraDetalle(obraSlug).then(setDetalle)
   }, [obraSlug])
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function enviar(overrides: {
+    obraCruzadaId?: number | null
+    fronteraCruzadaId?: number | null
+    descartarReferenciaCruzada?: boolean
+  } = {}) {
     if (!referenciaId) return
     setError(null)
     setAvisoSalto(null)
@@ -44,6 +50,7 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
         emocionAutor,
         nuevoProgresoId,
         confirmarSaltoProgreso: confirmarSalto,
+        ...overrides,
       })
 
       if ('progresoRequerido' in resultado) {
@@ -54,13 +61,23 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
         setAvisoSalto(resultado.detail)
         return
       }
+      if ('referenciaCruzadaDetectada' in resultado) {
+        setDetecciones(resultado.detecciones)
+        return
+      }
 
+      setDetecciones(null)
       onPublicado(resultado.id)
     } catch {
       setError('No se pudo publicar. Revisa los datos e inténtalo de nuevo.')
     } finally {
       setEnviando(false)
     }
+  }
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    enviar()
   }
 
   if (!detalle) {
@@ -76,7 +93,7 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
         {avisoSalto && (
           <p className={styles.error}>
             {avisoSalto}{' '}
-            <button type="button" onClick={() => setConfirmarSalto(true)}>
+            <button type="button" onClick={() => { setConfirmarSalto(true); enviar() }}>
               Confirmar y publicar
             </button>
           </p>
@@ -163,6 +180,21 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
           {enviando ? 'Publicando...' : 'Publicar'}
         </button>
       </form>
+
+      {detecciones && (
+        <ReferenciaCruzadaAviso
+          detecciones={detecciones}
+          onConfirmar={(obraCruzadaId, fronteraCruzadaId) => {
+            setDetecciones(null)
+            enviar({ obraCruzadaId, fronteraCruzadaId })
+          }}
+          onDescartar={() => {
+            setDetecciones(null)
+            enviar({ descartarReferenciaCruzada: true })
+          }}
+          onCancelar={() => setDetecciones(null)}
+        />
+      )}
     </div>
   )
 }

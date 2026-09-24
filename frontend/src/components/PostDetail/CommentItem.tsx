@@ -5,6 +5,8 @@ import EmocionPopover from '../Emociones/EmocionPopover'
 import ReactionBar from '../Feed/ReactionBar'
 import EditCommentForm from './EditCommentForm'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
+import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
+import type { DeteccionCruzada } from '../../api/publicar'
 import type { CommentItem as CommentItemType } from '../../api/postDetail'
 import { addComment } from '../../api/postDetail'
 import type { ObraDetalle } from '../../api/suscripciones'
@@ -35,32 +37,46 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
   const [editando, setEditando] = useState(false)
   const [textoActual, setTextoActual] = useState(comment.text)
   const [emocionActual, setEmocionActual] = useState(comment.emocion_autor)
+  const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
 
-  async function handleReply() {
+  async function enviarReply(overrides: {
+    obraCruzadaId?: number | null
+    fronteraCruzadaId?: number | null
+    descartarReferenciaCruzada?: boolean
+  } = {}) {
     if (!replyTexto.trim()) return
-    const nuevo = await addComment(postId, replyTexto, {
+
+    const resultado = await addComment(postId, replyTexto, {
       parentId: comment.id,
       referenciaNarrativaId: replyNarrativa.referenciaId,
       fronteraSpoilerId: replyNarrativa.fronteraId,
       obraCruzadaId: replyNarrativa.obraCruzadaId,
       fronteraCruzadaId: replyNarrativa.fronteraCruzadaId,
       emocionAutor: replyEmocion,
+      ...overrides,
     })
+
+    if ('referenciaCruzadaDetectada' in resultado) {
+      setDetecciones(resultado.detecciones)
+      return
+    }
+
+    setDetecciones(null)
     setReplies((prev) => [
       ...prev,
       {
-        id: nuevo.id,
-        user: nuevo.user,
+        id: resultado.id,
+        user: resultado.user,
         avatar: '/static/img/default_profile.jpg',
-        text: nuevo.text,
-        created_at: nuevo.created_at,
+        text: resultado.text,
+        created_at: resultado.created_at,
         parent_id: comment.id,
-        emocion_autor: nuevo.emocion_autor ?? null,
-        referencia_narrativa_id: nuevo.referencia_narrativa_id ?? null,
-        frontera_spoiler_id: nuevo.frontera_spoiler_id ?? null,
-        frontera_origen: nuevo.frontera_origen ?? 'heredado_post',
-        obra_cruzada_id: nuevo.obra_cruzada_id ?? null,
-        frontera_cruzada_id: nuevo.frontera_cruzada_id ?? null,
+        emocion_autor: resultado.emocion_autor,
+        referencia_narrativa_id: resultado.referencia_narrativa_id,
+        frontera_spoiler_id: resultado.frontera_spoiler_id,
+        frontera_origen: resultado.frontera_origen,
+        obra_cruzada_id: resultado.obra_cruzada_id,
+        frontera_cruzada_id: resultado.frontera_cruzada_id,
         is_own_comment: true,
         reactions_count: 0,
         user_reaction: null,
@@ -120,7 +136,7 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
                 onFocus={() => setReplyEmocionAbierta(true)}
                 onBlur={() => setTimeout(() => setReplyEmocionAbierta(false), 150)}
                 placeholder="Escribe una respuesta..."
-                onKeyDown={(e) => e.key === 'Enter' && handleReply()}
+                onKeyDown={(e) => e.key === 'Enter' && enviarReply()}
               />
               <EmocionPopover
                 visible={replyEmocionAbierta}
@@ -128,7 +144,7 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
                 onSelect={setReplyEmocion}
               />
             </div>
-            <button className={styles.quitar} onClick={handleReply}>Enviar</button>
+            <button className={styles.quitar} onClick={() => enviarReply()}>Enviar</button>
           </div>
           {obraDetalle && (
             <NarrativaSelector
@@ -161,6 +177,19 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
             />
           ))}
         </div>
+      )}
+
+      {detecciones && (
+        <ReferenciaCruzadaAviso
+          detecciones={detecciones}
+          onConfirmar={(obraCruzadaId, fronteraCruzadaId) => {
+            enviarReply({ obraCruzadaId, fronteraCruzadaId })
+          }}
+          onDescartar={() => {
+            enviarReply({ descartarReferenciaCruzada: true })
+          }}
+          onCancelar={() => setDetecciones(null)}
+        />
       )}
     </div>
   )

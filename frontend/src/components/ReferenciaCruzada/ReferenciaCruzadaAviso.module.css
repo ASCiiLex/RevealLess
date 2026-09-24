@@ -1,0 +1,65 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--color-surface, #fff);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.text {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.confirmar {
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.confirmar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.descartar,
+.cancelar {
+  background: transparent;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}

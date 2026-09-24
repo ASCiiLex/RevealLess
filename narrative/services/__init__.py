@@ -1,8 +1,21 @@
+import re
+
+from django.db.models import Q
 from django.utils import timezone
 
-from ..models import SolicitudTema, TemaTransversal
+from ..models import Obra, SolicitudTema, TemaTransversal
 
 UMBRAL_SALTO_GRANDE = 3
+
+TIPO_PALABRAS_CLAVE = {
+    Obra.TIPO_MANGA: ['manga'],
+    Obra.TIPO_LIBRO: ['libro', 'novela'],
+    Obra.TIPO_PELICULA: ['película', 'pelicula', 'film'],
+    Obra.TIPO_SERIE: ['anime', 'serie'],
+    Obra.TIPO_OVA: ['ova'],
+    Obra.TIPO_ESPECIAL: [],
+    Obra.TIPO_CORTO: [],
+}
 
 
 class SaltoGrandeRequiereConfirmacion(Exception):
@@ -37,8 +50,6 @@ def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False):
         defaults={'unidad_actual': nueva_unidad, 'orden_absoluto': nuevo_orden},
     )
     if creado:
-        # Primera declaración de progreso: no es un "salto" respecto a nada,
-        # así que no exige confirmación aunque el punto de partida sea alto.
         return progreso
 
     if nuevo_orden < progreso.orden_absoluto:
@@ -52,6 +63,28 @@ def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False):
     progreso.orden_absoluto = nuevo_orden
     progreso.save(update_fields=['unidad_actual', 'orden_absoluto'])
     return progreso
+
+
+def detectar_posibles_referencias_cruzadas(texto, obra):
+    """Detección por palabra exacta (case-insensitive, límite de palabra)
+    de menciones a una continuidad relacionada distinta de `obra`. No es
+    infalible por diseño (falsos positivos posibles con esta técnica) —
+    el usuario siempre puede confirmar la frontera real o descartar la
+    detección como coincidencia antes de publicar. Solo compara contra
+    obras realmente relacionadas (adapta_a en cualquier dirección),
+    nunca contra el catálogo entero."""
+    relacionadas = Obra.objects.filter(
+        Q(adapta_a=obra) | Q(id=obra.adapta_a_id)
+    ).exclude(id=obra.id)
+
+    texto_lower = texto.lower()
+    detecciones = []
+    for relacionada in relacionadas:
+        for palabra in TIPO_PALABRAS_CLAVE.get(relacionada.tipo, []):
+            if re.search(rf'\b{re.escape(palabra)}\b', texto_lower):
+                detecciones.append({'obra': relacionada, 'palabra': palabra})
+                break
+    return detecciones
 
 
 def aprobar_solicitud_tema(solicitud):

@@ -1,5 +1,6 @@
 import { api } from './client'
 import type { FeedPost } from './feed'
+import type { ReferenciaCruzadaDetectada } from './publicar'
 
 export interface CommentItem {
   id: number
@@ -24,6 +25,21 @@ export interface PostDetail {
   post: FeedPost
   post_reaction: string | null
   comments: CommentItem[]
+}
+
+export interface ComentarioCreado {
+  id: number
+  user: string
+  text: string
+  created_at: string
+  parent_id: number | null
+  emocion_autor: string | null
+  referencia_narrativa_id: number | null
+  frontera_spoiler_id: number | null
+  frontera_origen: string
+  obra_cruzada_id: number | null
+  frontera_cruzada_id: number | null
+  likes_count: number
 }
 
 export function fetchPostDetail(postId: number, sort = 'recent'): Promise<PostDetail> {
@@ -67,13 +83,14 @@ export interface AddCommentOptions {
   fronteraSpoilerId?: number | null
   obraCruzadaId?: number | null
   fronteraCruzadaId?: number | null
+  descartarReferenciaCruzada?: boolean
 }
 
 export async function addComment(
   postId: number,
   text: string,
   opciones: AddCommentOptions = {}
-) {
+): Promise<ComentarioCreado | ReferenciaCruzadaDetectada> {
   const formData = new FormData()
   formData.append('post_id', String(postId))
   formData.append('text', text)
@@ -83,6 +100,7 @@ export async function addComment(
   if (opciones.fronteraSpoilerId) formData.append('frontera_spoiler', String(opciones.fronteraSpoilerId))
   if (opciones.obraCruzadaId) formData.append('obra_cruzada', String(opciones.obraCruzadaId))
   if (opciones.fronteraCruzadaId) formData.append('frontera_cruzada', String(opciones.fronteraCruzadaId))
+  if (opciones.descartarReferenciaCruzada) formData.append('descartar_referencia_cruzada', 'true')
 
   const response = await fetch('/comments/add/', {
     method: 'POST',
@@ -90,7 +108,25 @@ export async function addComment(
     headers: { 'X-CSRFToken': getCsrfToken() },
     body: formData,
   })
-  return response.json()
+
+  const body = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    if (response.status === 409 && body?.detail === 'referencia_cruzada_detectada') {
+      return {
+        referenciaCruzadaDetectada: true,
+        detecciones: (body.detecciones ?? []).map((d: any) => ({
+          obraId: d.obra_id,
+          obraTitulo: d.obra_titulo,
+          obraSlug: d.obra_slug,
+          palabra: d.palabra,
+        })),
+      }
+    }
+    throw body
+  }
+
+  return body
 }
 
 export async function updateComment(
