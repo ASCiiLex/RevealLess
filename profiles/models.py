@@ -43,8 +43,8 @@ class Profile(models.Model):
         return "/static/img/default_profile.jpg"
 
 @receiver(post_save, sender=User)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-    else:
-        instance.profile.save()
+def ensure_user_profile(sender, instance, raw=False, **kwargs):
+    # Garantiza un perfil por usuario; get_or_create no falla si ya existe o falta.
+    if raw:
+        return
+    Profile.objects.get_or_create(user=instance)
