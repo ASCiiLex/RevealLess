@@ -4,7 +4,12 @@ from django.test import TestCase
 
 from .models import Obra, UnidadNarrativa, ProgresoUsuario, Categoria, ExternalId, TemaTransversal
 from .serializers import UnidadNarrativaSerializer
-from .services import actualizar_progreso, calcular_orden_absoluto, SaltoGrandeRequiereConfirmacion
+from .services import (
+    actualizar_progreso,
+    calcular_orden_absoluto,
+    SaltoGrandeRequiereConfirmacion,
+    detectar_posibles_referencias_cruzadas,
+)
 
 
 class RecalcularOrdenTests(TestCase):
@@ -273,3 +278,43 @@ class TemaTransversalTests(TestCase):
         self.capitulo.refresh_from_db()
 
         self.assertEqual(self.capitulo.orden_inicio, orden_previo)
+
+
+class DeteccionReferenciaCruzadaTests(TestCase):
+    def setUp(self):
+        self.anime = Obra.objects.create(titulo='One Piece Anime', slug='op-anime', tipo=Obra.TIPO_SERIE)
+        self.manga = Obra.objects.create(
+            titulo='One Piece Manga', slug='op-manga', tipo=Obra.TIPO_MANGA, adapta_a=self.anime,
+        )
+
+    def test_detecta_palabra_manga_cuando_hay_manga_relacionado(self):
+        detecciones = detectar_posibles_referencias_cruzadas('esto pasó en el manga', self.anime)
+        self.assertEqual(len(detecciones), 1)
+        self.assertEqual(detecciones[0]['obra'], self.manga)
+        self.assertEqual(detecciones[0]['palabra'], 'manga')
+
+    def test_detecta_en_sentido_inverso_de_adapta_a(self):
+        """Desde el manga, mencionar 'anime' debe detectar la obra origen
+        (self.anime), no solo funcionar en la dirección hijo->padre."""
+        detecciones = detectar_posibles_referencias_cruzadas('en el anime esto no pasó así', self.manga)
+        self.assertEqual(len(detecciones), 1)
+        self.assertEqual(detecciones[0]['obra'], self.anime)
+
+    def test_no_detecta_sin_relacion_adapta_a(self):
+        suelta = Obra.objects.create(titulo='Otra serie', slug='otra-serie')
+        detecciones = detectar_posibles_referencias_cruzadas('esto pasó en el manga', suelta)
+        self.assertEqual(detecciones, [])
+
+    def test_case_insensitive(self):
+        detecciones = detectar_posibles_referencias_cruzadas('MANGA en mayúsculas', self.anime)
+        self.assertEqual(len(detecciones), 1)
+
+    def test_no_hay_falso_positivo_por_substring_sin_limite_de_palabra(self):
+        """'mangaka' contiene 'manga' como substring, pero no es la
+        palabra completa — no debe detectarse (límite de palabra \\b)."""
+        detecciones = detectar_posibles_referencias_cruzadas('es un mangaka reconocido', self.anime)
+        self.assertEqual(detecciones, [])
+
+    def test_texto_sin_palabra_clave_no_detecta(self):
+        detecciones = detectar_posibles_referencias_cruzadas('un texto normal sin nada especial', self.anime)
+        self.assertEqual(detecciones, [])

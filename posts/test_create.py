@@ -185,3 +185,70 @@ class PostCreateAPIViewTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 400)
+
+
+class ReferenciaCruzadaEnPostCreateTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.usuario = User.objects.create_user('publicador_cruzado', password='x')
+
+        self.anime = Obra.objects.create(titulo='Anime X', slug='anime-x', tipo=Obra.TIPO_SERIE)
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.anime, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.anime.recalcular_orden()
+        self.e1.refresh_from_db()
+
+        self.manga = Obra.objects.create(
+            titulo='Manga X', slug='manga-x', tipo=Obra.TIPO_MANGA, adapta_a=self.anime,
+        )
+        self.cap = UnidadNarrativa.objects.create(
+            obra=self.manga, tipo='capitulo', nombre='Cap 900', orden_local=1,
+        )
+        self.manga.recalcular_orden()
+        self.cap.refresh_from_db()
+
+        actualizar_progreso(self.usuario, self.anime, self.e1)
+        self.client.force_authenticate(user=self.usuario)
+
+    def test_deteccion_bloquea_y_devuelve_detecciones(self):
+        response = self.client.post(
+            reverse('posts_api_create', args=[self.anime.slug]),
+            {'text': 'esto pasó en el manga', 'referencia_narrativa': self.e1.id},
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.data['detail'], 'referencia_cruzada_detectada')
+        self.assertEqual(response.data['detecciones'][0]['obra_slug'], self.manga.slug)
+        self.assertFalse(Post.objects.filter(text='esto pasó en el manga').exists())
+
+    def test_confirmar_referencia_cruzada_publica_con_ambos_campos(self):
+        response = self.client.post(
+            reverse('posts_api_create', args=[self.anime.slug]),
+            {
+                'text': 'esto pasó en el manga', 'referencia_narrativa': self.e1.id,
+                'obra_cruzada': self.manga.id, 'frontera_cruzada': self.cap.id,
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        post = Post.objects.get(text='esto pasó en el manga')
+        self.assertEqual(post.obra_cruzada, self.manga)
+        self.assertEqual(post.frontera_cruzada, self.cap)
+
+    def test_descartar_referencia_cruzada_publica_sin_marcar(self):
+        response = self.client.post(
+            reverse('posts_api_create', args=[self.anime.slug]),
+            {
+                'text': 'esto pasó en el manga', 'referencia_narrativa': self.e1.id,
+                'descartar_referencia_cruzada': 'true',
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        post = Post.objects.get(text='esto pasó en el manga')
+        self.assertIsNone(post.obra_cruzada)
+
+    def test_texto_sin_palabra_clave_no_activa_deteccion(self):
+        response = self.client.post(
+            reverse('posts_api_create', args=[self.anime.slug]),
+            {'text': 'un texto normal sin nada especial', 'referencia_narrativa': self.e1.id},
+        )
+        self.assertEqual(response.status_code, 201)

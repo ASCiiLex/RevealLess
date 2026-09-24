@@ -155,3 +155,61 @@ class AddCommentViewTests(TestCase):
             'post_id': self.post.id, 'text': 'incompleto', 'obra_cruzada': manga.id,
         })
         self.assertEqual(response.status_code, 400)
+
+
+class DeteccionReferenciaCruzadaComentarioTests(TestCase):
+    def setUp(self):
+        self.client = self.client_class()
+        self.autor = User.objects.create_user('deteccion_autor', password='x')
+        self.comentador = User.objects.create_user('deteccion_comentador', password='x')
+
+        self.anime = Obra.objects.create(titulo='Anime Y', slug='anime-y', tipo=Obra.TIPO_SERIE)
+        self.e1 = UnidadNarrativa.objects.create(
+            obra=self.anime, tipo='episodio', nombre='E1', orden_local=1,
+        )
+        self.anime.recalcular_orden()
+        self.e1.refresh_from_db()
+
+        self.manga = Obra.objects.create(
+            titulo='Manga Y', slug='manga-y-rel', tipo=Obra.TIPO_MANGA, adapta_a=self.anime,
+        )
+        self.cap = UnidadNarrativa.objects.create(
+            obra=self.manga, tipo='capitulo', nombre='Cap 900', orden_local=1,
+        )
+        self.manga.recalcular_orden()
+        self.cap.refresh_from_db()
+
+        self.post = Post.objects.create(
+            author=self.autor, obra=self.anime, text='post base',
+            referencia_narrativa=self.e1, frontera_spoiler=self.e1,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+    def test_deteccion_bloquea_comentario_y_devuelve_detecciones(self):
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'esto pasó en el manga',
+        })
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()['detail'], 'referencia_cruzada_detectada')
+        self.assertFalse(Comment.objects.filter(text='esto pasó en el manga').exists())
+
+    def test_descartar_referencia_cruzada_permite_comentar(self):
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'esto pasó en el manga',
+            'descartar_referencia_cruzada': 'true',
+        })
+        self.assertEqual(response.status_code, 200)
+        comentario = Comment.objects.get(text='esto pasó en el manga')
+        self.assertIsNone(comentario.obra_cruzada)
+
+    def test_obra_cruzada_explicita_evita_la_deteccion(self):
+        self.client.force_login(self.comentador)
+        response = self.client.post(reverse('add_comment'), {
+            'post_id': self.post.id, 'text': 'esto pasó en el manga',
+            'obra_cruzada': self.manga.id, 'frontera_cruzada': self.cap.id,
+        })
+        self.assertEqual(response.status_code, 200)
+        comentario = Comment.objects.get(text='esto pasó en el manga')
+        self.assertEqual(comentario.obra_cruzada, self.manga)
