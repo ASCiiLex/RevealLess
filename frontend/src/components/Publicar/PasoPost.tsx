@@ -1,8 +1,11 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { crearPost } from '../../api/publicar'
 import type { DeteccionCruzada } from '../../api/publicar'
+import { fetchSuggestedHashtags } from '../../api/textAutocomplete'
+import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 import EmocionSelector from '../Emociones/EmocionSelector'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 
@@ -26,10 +29,28 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [hashtagsSugeridos, setHashtagsSugeridos] = useState<string[]>([])
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
 
   useEffect(() => {
     fetchObraDetalle(obraSlug).then(setDetalle)
+    fetchSuggestedHashtags().then((data) => setHashtagsSugeridos(data.results))
   }, [obraSlug])
+
+  function insertarHashtagSugerido(tag: string) {
+    const campo = textareaRef.current
+    const inserted = `#${tag} `
+    const cursor = campo?.selectionStart ?? text.length
+    const nuevoValor = text.slice(0, cursor) + inserted + text.slice(cursor)
+    setText(nuevoValor)
+    requestAnimationFrame(() => {
+      const pos = cursor + inserted.length
+      campo?.setSelectionRange(pos, pos)
+      campo?.focus()
+    })
+  }
 
   async function enviar(overrides: {
     obraCruzadaId?: number | null
@@ -154,13 +175,38 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>
-          <textarea
-            id="text"
-            className={styles.textarea}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            required
-          />
+          <div className={styles.textareaWrap}>
+            <textarea
+              id="text"
+              ref={textareaRef}
+              className={styles.textarea}
+              value={text}
+              onChange={(e) => autocomplete.handleChange(e.target.value)}
+              onKeyDown={autocomplete.handleKeyDown}
+              onBlur={() => setTimeout(autocomplete.cerrar, 150)}
+              required
+            />
+            <AutocompleteDropdown
+              suggestions={autocomplete.suggestions}
+              activeIndex={autocomplete.activeIndex}
+              onSelect={autocomplete.seleccionar}
+            />
+          </div>
+
+          {hashtagsSugeridos.length > 0 && (
+            <div className={styles.hashtagsSugeridos}>
+              {hashtagsSugeridos.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  className={styles.hashtagChip}
+                  onClick={() => insertarHashtagSugerido(tag)}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} />

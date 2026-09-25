@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -5,6 +6,7 @@ from django.db.models import Count
 from ..models import Hashtag, Post
 
 
+@login_required
 def mentions_search(request):
     q = request.GET.get('q', '').strip()
     results = []
@@ -16,6 +18,7 @@ def mentions_search(request):
     return JsonResponse({'results': results})
 
 
+@login_required
 def hashtags_search(request):
     q = request.GET.get('q', '').strip()
     results = []
@@ -27,6 +30,7 @@ def hashtags_search(request):
     return JsonResponse({'results': results})
 
 
+@login_required
 def suggested_hashtags(request):
     tags = Hashtag.objects.annotate(
         num_posts=Count('posts__post')

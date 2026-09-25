@@ -30,6 +30,10 @@
   color: var(--fog);
 }
 
+.textareaWrap {
+  position: relative;
+}
+
 .textarea,
 .select,
 .input {
@@ -43,6 +47,8 @@
 }
 
 .textarea {
+  width: 100%;
+  box-sizing: border-box;
   resize: vertical;
   min-height: 90px;
 }
@@ -50,6 +56,28 @@
 .hint {
   font-size: 12px;
   color: var(--fog);
+}
+
+.hashtagsSugeridos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.hashtagChip {
+  border: 1px solid var(--border);
+  background: none;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.hashtagChip:hover {
+  background: var(--border);
 }
 
 .checkboxRow {

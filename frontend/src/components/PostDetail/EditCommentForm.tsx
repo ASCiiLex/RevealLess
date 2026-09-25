@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import styles from './EditCommentForm.module.css'
 import { updateComment, type CommentItem } from '../../api/postDetail'
 import type { ObraDetalle } from '../../api/suscripciones'
 import EmocionSelector from '../Emociones/EmocionSelector'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
+import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 
 interface Props {
   comment: CommentItem
@@ -25,6 +27,9 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
   const [avisoReduccion, setAvisoReduccion] = useState<string | null>(null)
   const [confirmadoPeseAviso, setConfirmadoPeseAviso] = useState(false)
   const [guardando, setGuardando] = useState(false)
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
 
   const unidadPorId = useMemo(() => {
     const mapa = new Map<number, { orden_inicio: number }>()
@@ -88,6 +93,10 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
     }
   }
 
+  function handleKeyDownTexto(e: KeyboardEvent<HTMLTextAreaElement>) {
+    autocomplete.handleKeyDown(e)
+  }
+
   if (!obraDetalle) {
     return null
   }
@@ -116,13 +125,21 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
             </div>
           )}
 
-          <div className={styles.field}>
+          <div className={styles.field} style={{ position: 'relative' }}>
             <label className={styles.label} htmlFor="edit-comment-text">¿Qué quieres comentar?</label>
             <textarea
               id="edit-comment-text"
+              ref={textareaRef}
               className={styles.textarea}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => autocomplete.handleChange(e.target.value)}
+              onKeyDown={handleKeyDownTexto}
+              onBlur={() => setTimeout(autocomplete.cerrar, 150)}
+            />
+            <AutocompleteDropdown
+              suggestions={autocomplete.suggestions}
+              activeIndex={autocomplete.activeIndex}
+              onSelect={autocomplete.seleccionar}
             />
           </div>
 

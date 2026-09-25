@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './PostDetailView.module.css'
 import CommentItem from './CommentItem'
 import PostActions from '../Feed/PostActions'
@@ -7,6 +7,8 @@ import LinkedText from '../Text/LinkedText'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import EmocionPopover from '../Emociones/EmocionPopover'
+import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 import EditPostForm from './EditPostForm'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
@@ -36,6 +38,13 @@ export default function PostDetailView({ postId }: Props) {
   const [narrativa, setNarrativa] = useState<NarrativaValue>(NARRATIVA_VACIA)
   const [editando, setEditando] = useState(false)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
+
+  const comentarioInputRef = useRef<HTMLInputElement>(null)
+  const autocomplete = useMentionHashtagAutocomplete({
+    value: nuevoComentario,
+    onChange: setNuevoComentario,
+    fieldRef: comentarioInputRef,
+  })
 
   useEffect(() => {
     fetchPostDetail(postId).then(setDetalle)
@@ -118,6 +127,11 @@ export default function PostDetailView({ postId }: Props) {
     enviarComentario()
   }
 
+  function handleKeyDownComentario(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (autocomplete.handleKeyDown(e)) return
+    if (e.key === 'Enter') handleComentar()
+  }
+
   function handlePostActualizado(postActualizado: FeedPost) {
     if (!detalle) return
 
@@ -186,20 +200,32 @@ export default function PostDetailView({ postId }: Props) {
         <div className={styles.commentInputRow}>
           <div className={styles.inputWrap}>
             <input
+              ref={comentarioInputRef}
               className={styles.commentInput}
               type="text"
               value={nuevoComentario}
-              onChange={(e) => setNuevoComentario(e.target.value)}
+              onChange={(e) => autocomplete.handleChange(e.target.value)}
               onFocus={() => setEmocionAbierta(true)}
-              onBlur={() => setTimeout(() => setEmocionAbierta(false), 150)}
+              onBlur={() => {
+                setTimeout(() => setEmocionAbierta(false), 150)
+                setTimeout(autocomplete.cerrar, 150)
+              }}
               placeholder="Escribe un comentario..."
-              onKeyDown={(e) => e.key === 'Enter' && handleComentar()}
+              onKeyDown={handleKeyDownComentario}
             />
-            <EmocionPopover
-              visible={emocionAbierta}
-              value={emocionComentario}
-              onSelect={setEmocionComentario}
-            />
+            {autocomplete.suggestions.length > 0 ? (
+              <AutocompleteDropdown
+                suggestions={autocomplete.suggestions}
+                activeIndex={autocomplete.activeIndex}
+                onSelect={autocomplete.seleccionar}
+              />
+            ) : (
+              <EmocionPopover
+                visible={emocionAbierta}
+                value={emocionComentario}
+                onSelect={setEmocionComentario}
+              />
+            )}
           </div>
 
           <button className={styles.commentSubmit} onClick={handleComentar}>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import styles from './CommentItem.module.css'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import EmocionPopover from '../Emociones/EmocionPopover'
@@ -7,6 +7,8 @@ import LinkedText from '../Text/LinkedText'
 import EditCommentForm from './EditCommentForm'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
+import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 import type { DeteccionCruzada } from '../../api/publicar'
 import type { CommentItem as CommentItemType } from '../../api/postDetail'
 import { addComment } from '../../api/postDetail'
@@ -39,6 +41,13 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
   const [textoActual, setTextoActual] = useState(comment.text)
   const [emocionActual, setEmocionActual] = useState(comment.emocion_autor)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
+
+  const replyInputRef = useRef<HTMLInputElement>(null)
+  const autocomplete = useMentionHashtagAutocomplete({
+    value: replyTexto,
+    onChange: setReplyTexto,
+    fieldRef: replyInputRef,
+  })
 
   async function enviarReply(overrides: {
     obraCruzadaId?: number | null
@@ -96,6 +105,11 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
     setEditando(false)
   }
 
+  function handleKeyDownReply(e: KeyboardEvent<HTMLInputElement>) {
+    if (autocomplete.handleKeyDown(e)) return
+    if (e.key === 'Enter') enviarReply()
+  }
+
   const puedeResponder = nivel < NIVEL_MAXIMO
 
   return (
@@ -130,20 +144,32 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
           <div className={styles.replyInputRow}>
             <div className={styles.inputWrap}>
               <input
+                ref={replyInputRef}
                 className={styles.replyInput}
                 type="text"
                 value={replyTexto}
-                onChange={(e) => setReplyTexto(e.target.value)}
+                onChange={(e) => autocomplete.handleChange(e.target.value)}
                 onFocus={() => setReplyEmocionAbierta(true)}
-                onBlur={() => setTimeout(() => setReplyEmocionAbierta(false), 150)}
+                onBlur={() => {
+                  setTimeout(() => setReplyEmocionAbierta(false), 150)
+                  setTimeout(autocomplete.cerrar, 150)
+                }}
                 placeholder="Escribe una respuesta..."
-                onKeyDown={(e) => e.key === 'Enter' && enviarReply()}
+                onKeyDown={handleKeyDownReply}
               />
-              <EmocionPopover
-                visible={replyEmocionAbierta}
-                value={replyEmocion}
-                onSelect={setReplyEmocion}
-              />
+              {autocomplete.suggestions.length > 0 ? (
+                <AutocompleteDropdown
+                  suggestions={autocomplete.suggestions}
+                  activeIndex={autocomplete.activeIndex}
+                  onSelect={autocomplete.seleccionar}
+                />
+              ) : (
+                <EmocionPopover
+                  visible={replyEmocionAbierta}
+                  value={replyEmocion}
+                  onSelect={setReplyEmocion}
+                />
+              )}
             </div>
             <button className={styles.quitar} onClick={() => enviarReply()}>Enviar</button>
           </div>
