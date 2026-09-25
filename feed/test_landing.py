@@ -77,7 +77,7 @@ class RedireccionesHaciaVistasReactTests(TestCase):
     def test_post_no_existe_enlaza_a_notificaciones_react(self):
         self.client.force_login(self.usuario)
         response = self.client.get(reverse('post_not_found', args=[1]))
-        self.assertContains(response, 'href="/notificaciones/react/"')
+        self.assertContains(response, 'href="/notificaciones/"')
 
     def test_post_no_existe_no_muestra_botones_de_acceso(self):
         self.client.force_login(self.usuario)
