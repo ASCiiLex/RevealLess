@@ -3,6 +3,7 @@ import styles from './CommentItem.module.css'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import EmocionPopover from '../Emociones/EmocionPopover'
 import ReactionBar from '../Feed/ReactionBar'
+import LinkedText from '../Text/LinkedText'
 import EditCommentForm from './EditCommentForm'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
@@ -109,7 +110,7 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
           </button>
         )}
       </div>
-      <p className={styles.text}>{textoActual}</p>
+      <p className={styles.text}><LinkedText text={textoActual} /></p>
 
       <div className={styles.actions}>
         <ReactionBar

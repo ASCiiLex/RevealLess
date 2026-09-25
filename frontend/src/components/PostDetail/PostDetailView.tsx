@@ -3,6 +3,7 @@ import styles from './PostDetailView.module.css'
 import CommentItem from './CommentItem'
 import PostActions from '../Feed/PostActions'
 import SaveButton from '../Feed/SaveButton'
+import LinkedText from '../Text/LinkedText'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import EmocionPopover from '../Emociones/EmocionPopover'
@@ -164,7 +165,7 @@ export default function PostDetailView({ postId }: Props) {
           </div>
         </div>
 
-        <p className={styles.text}>{post.text}</p>
+        <p className={styles.text}><LinkedText text={post.text} /></p>
 
         {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
 
