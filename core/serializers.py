@@ -11,7 +11,7 @@ def serializar_reactores(request, reacciones):
         )
         usuarios.append({
             'username': user.username,
-            'profile_url': f'/perfil/{user.username}/react/',
+            'profile_url': f'/perfil/{user.username}/',
             'avatar_url': request.build_absolute_uri(avatar),
             'reaction': reaccion.reaction,
         })

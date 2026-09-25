@@ -6,13 +6,13 @@ from .views import (
 from .api_views import InboxListAPIView, ChatHistoryAPIView
 
 urlpatterns = [
-    path('react/', inbox_react_view, name='inbox_react'),
+    path('', inbox_react_view, name='inbox'),
 
     path('api/', InboxListAPIView.as_view(), name='messages_api_inbox'),
     path('api/<str:username>/', ChatHistoryAPIView.as_view(), name='messages_api_chat'),
 
-    path('react/msg/<int:message_id>/', toggle_reaction_message, name='toggle_reaction_message'),
-    path('reactions/msg/<int:message_id>/', message_reactions_list, name='message_reactions_list'),
+    path('<int:message_id>/reaction/', toggle_reaction_message, name='toggle_reaction_message'),
+    path('<int:message_id>/reactions/', message_reactions_list, name='message_reactions_list'),
 
-    path('chat-react/<str:username>/', chat_react_view, name='chat_react'),
+    path('<str:username>/', chat_react_view, name='chat'),
 ]

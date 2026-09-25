@@ -99,9 +99,9 @@ class Notification(models.Model):
             return f"/notificaciones/post-no-existe/{self.id}/"
 
         if self.target_type == "follow":
-            return f"/perfil/{self.actor.username}/react/"
+            return f"/perfil/{self.actor.username}/"
 
         if self.target_type == "message":
-            return f"/mensajes/chat-react/{self.actor.username}/"
+            return f"/mensajes/{self.actor.username}/"
 
         return "#"

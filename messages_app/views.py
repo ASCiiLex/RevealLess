@@ -19,7 +19,7 @@ def chat_react_view(request, username):
     /ws/messages/ (registrados en core/routing.py) funcionan igual, sin
     cambios de infraestructura -- mismo origen que la página HTML clásica."""
     if username == request.user.username:
-        return redirect('inbox_react')
+        return redirect('inbox')
     get_object_or_404(User, username=username)
     return render(request, 'messages/chat_react.html', {'username': username})
 

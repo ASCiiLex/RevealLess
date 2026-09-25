@@ -40,7 +40,7 @@ class ListaReaccionesPostTests(TestCase):
         usuario = self.client.get(self.url).json()['users'][0]
         self.assertEqual(usuario['username'], 'lrp_lector')
         self.assertEqual(usuario['reaction'], 'me_gusta')
-        self.assertEqual(usuario['profile_url'], '/perfil/lrp_lector/react/')
+        self.assertEqual(usuario['profile_url'], '/perfil/lrp_lector/')
 
     def test_avatar_es_url_absoluta(self):
         usuario = self.client.get(self.url).json()['users'][0]

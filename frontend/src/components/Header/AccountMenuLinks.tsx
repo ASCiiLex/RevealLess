@@ -27,7 +27,7 @@ export default function AccountMenuLinks({ me, itemClassName, logoutClassName, d
       <a className={itemClassName} href="/notificaciones/react/" role="menuitem">
         Notificaciones{me.unread_notifications > 0 ? ` (${me.unread_notifications})` : ''}
       </a>
-      <a className={itemClassName} href="/mensajes/react/" role="menuitem">
+      <a className={itemClassName} href="/mensajes/" role="menuitem">
         Mensajes{me.unread_messages > 0 ? ` (${me.unread_messages})` : ''}
       </a>
       <a className={itemClassName} href="/guardados/guardados-react/" role="menuitem">

@@ -72,7 +72,7 @@ class NotificationListAPIViewTests(TestCase):
         data = response.data['results'][0]
         self.assertEqual(data['id'], notif.id)
         self.assertIn('avatar', data)
-        self.assertEqual(data['url'], f'/perfil/{self.actor.username}/react/')
+        self.assertEqual(data['url'], f'/perfil/{self.actor.username}/')
 
     def test_paginacion_has_next(self):
         for i in range(16):

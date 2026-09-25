@@ -19,7 +19,7 @@ async function fetchCommentReactionsTotals(commentId: number): Promise<{ totals:
 }
 
 async function fetchMessageReactionsTotals(messageId: number): Promise<{ totals: Record<string, number> }> {
-  const response = await fetch(`/mensajes/reactions/msg/${messageId}/`, {
+  const response = await fetch(`/mensajes/${messageId}/reactions/`, {
     credentials: 'same-origin',
   })
   return response.json()

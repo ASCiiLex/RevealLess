@@ -7,7 +7,7 @@ interface Props {
 
 export default function InboxRow({ item }: Props) {
   return (
-    <a className={styles.row} href={`/mensajes/chat-react/${item.username}/`}>
+    <a className={styles.row} href={`/mensajes/${item.username}/`}>
       <img className={styles.avatar} src={item.avatar} alt="" />
       <div className={styles.info}>
         <div className={styles.username}>@{item.username}</div>

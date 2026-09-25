@@ -101,7 +101,7 @@ function FollowActions({
       >
         {siguiendo ? 'Dejar de seguir' : 'Seguir'}
       </button>
-      <a className={styles.button} href={`/mensajes/chat-react/${username}/`}>
+      <a className={styles.button} href={`/mensajes/${username}/`}>
         Enviar mensaje
       </a>
     </>
