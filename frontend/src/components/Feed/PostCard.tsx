@@ -30,14 +30,14 @@ export default function PostCard({ post }: Props) {
         </span>
       </div>
 
-      <a className={styles.textLink} href={`/posts/${post.id}/react/`}>
+      <a className={styles.textLink} href={`/posts/${post.id}/`}>
         <p className={styles.text}>{post.text}</p>
         {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
       </a>
 
       <PostActions postId={post.id} reaccionInicial={post.user_reaction} />
 
-      <a className={styles.commentsLink} href={`/posts/${post.id}/react/`}>
+      <a className={styles.commentsLink} href={`/posts/${post.id}/`}>
         {post.comments_count} comentarios
       </a>
     </article>

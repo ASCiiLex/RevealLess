@@ -65,7 +65,7 @@ class NotificacionesComentariosTests(TestCase):
             'post_id': self.post.id, 'text': 'respuesta', 'parent_id': padre.id,
         })
         notificacion = Notification.objects.get(user=self.autor)
-        self.assertEqual(notificacion.url, f'/posts/{self.post.id}/react/')
+        self.assertEqual(notificacion.url, f'/posts/{self.post.id}/')
 
     def test_enlace_de_una_reaccion_a_comentario_apunta_al_post_del_comentario(self):
         comentario = self._comentario_del_autor()
@@ -74,4 +74,4 @@ class NotificacionesComentariosTests(TestCase):
             {'reaction': 'me_gusta'},
         )
         notificacion = Notification.objects.get(user=self.autor)
-        self.assertEqual(notificacion.url, f'/posts/{self.post.id}/react/')
+        self.assertEqual(notificacion.url, f'/posts/{self.post.id}/')

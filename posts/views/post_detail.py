@@ -1,12 +1,8 @@
-from django.shortcuts import redirect, get_object_or_404, render
+from django.shortcuts import get_object_or_404, render
 from django.db.models import Count, Prefetch
 
 from comments.models import Comment
 from ..models import Post
-
-
-def post_detail(request, post_id):
-    return redirect('post_detail_react', post_id=post_id)
 
 
 def get_sorted_comments(user, post, sort):

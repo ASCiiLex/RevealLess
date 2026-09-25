@@ -19,7 +19,7 @@ export default function BottomNav() {
     }
 
     return (
-      <a className={styles.item} href={`/feed/react/?view=${target}`}>
+      <a className={styles.item} href={`/feed/?view=${target}`}>
         {label}
       </a>
     )
@@ -29,7 +29,7 @@ export default function BottomNav() {
     <nav className={styles.nav}>
       {renderItem('biblioteca', 'Biblioteca')}
 
-      <a className={styles.createButton} href="/posts/crear-react/" aria-label="Crear publicación">
+      <a className={styles.createButton} href="/posts/post/" aria-label="Crear publicación">
         +
       </a>
 

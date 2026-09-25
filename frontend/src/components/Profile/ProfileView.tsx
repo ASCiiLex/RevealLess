@@ -56,7 +56,7 @@ export default function ProfileView({ username }: Props) {
       ) : (
         <div className={styles.grid}>
           {profile.posts.map((post) => (
-            <a key={post.id} className={styles.gridItem} href={`/posts/${post.id}/react/`}>
+            <a key={post.id} className={styles.gridItem} href={`/posts/${post.id}/`}>
               <img className={styles.gridImage} src={post.image_url} alt="" />
             </a>
           ))}

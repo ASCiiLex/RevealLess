@@ -1,4 +1,4 @@
-from .post_detail import post_detail, post_detail_react_view
+from .post_detail import post_detail_react_view
 from .create import publicar_react_view
 from .reactions import toggle_reaction_post, post_reactions_list
 from .hashtags import hashtag_detail

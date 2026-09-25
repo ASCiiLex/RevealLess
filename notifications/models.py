@@ -95,7 +95,7 @@ class Notification(models.Model):
         if self.target_type in ("post", "comment", "reply"):
             post = self._related_post
             if post:
-                return f"/posts/{post.id}/react/"
+                return f"/posts/{post.id}/"
             return f"/notificaciones/post-no-existe/{self.id}/"
 
         if self.target_type == "follow":

@@ -56,7 +56,7 @@ export async function toggleReactionPost(postId: number, reaction: string) {
   formData.append('post_id', String(postId))
   formData.append('reaction', reaction)
 
-  const response = await fetch('/posts/react/', {
+  const response = await fetch('/posts/reaction/', {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'X-CSRFToken': getCsrfToken() },
@@ -166,7 +166,7 @@ export async function toggleReactionComment(commentId: number, reaction: string)
   const formData = new FormData()
   formData.append('reaction', reaction)
 
-  const response = await fetch(`/comments/react/${commentId}/`, {
+  const response = await fetch(`/comments/${commentId}/reaction/`, {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'X-CSRFToken': getCsrfToken() },

@@ -78,7 +78,7 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
-        <a className={styles.logoLink} href="/feed/react/">
+        <a className={styles.logoLink} href="/feed/">
           <img className={styles.logoImg} src={logo} alt="RevealLess" />
         </a>
 
@@ -95,7 +95,7 @@ export default function Header() {
         </div>
 
         <div className={styles.right}>
-          <a className={styles.createLink} href="/posts/crear-react/" aria-label="Crear publicación">
+          <a className={styles.createLink} href="/posts/post/" aria-label="Crear publicación">
             +
           </a>
           <button

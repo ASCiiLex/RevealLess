@@ -173,7 +173,7 @@ function UsuarioRow({ usuario }: { usuario: UsuarioBusqueda }) {
 
 function HashtagRow({ hashtag }: { hashtag: HashtagBusqueda }) {
   return (
-    <a className={styles.rowLink} href={`/feed/react/?hashtag=${encodeURIComponent(hashtag.name)}`}>
+    <a className={styles.rowLink} href={`/feed/?hashtag=${encodeURIComponent(hashtag.name)}`}>
       <span className={styles.titulo}>#{hashtag.name}</span>
     </a>
   )
@@ -181,7 +181,7 @@ function HashtagRow({ hashtag }: { hashtag: HashtagBusqueda }) {
 
 function PostRow({ post }: { post: PostBusqueda }) {
   return (
-    <a className={styles.rowLink} href={`/posts/${post.id}/react/`}>
+    <a className={styles.rowLink} href={`/posts/${post.id}/`}>
       <img className={styles.thumb} src={post.image} alt="" />
       <span className={styles.postText}>{post.text}</span>
     </a>
