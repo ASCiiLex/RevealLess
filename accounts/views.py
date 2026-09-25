@@ -17,12 +17,12 @@ def login_react_view(request):
     """Monta React para el login. ensure_csrf_cookie: la página no renderiza
     {% csrf_token %}, así que sin él el POST desde React fallaría por CSRF."""
     if request.user.is_authenticated:
-        return redirect('feed_react')
+        return redirect('feed')
     return render(request, 'accounts/login_react.html')
 
 
 @ensure_csrf_cookie
 def register_react_view(request):
     if request.user.is_authenticated:
-        return redirect('feed_react')
+        return redirect('feed')
     return render(request, 'accounts/register_react.html')

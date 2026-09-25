@@ -9,7 +9,7 @@ from posts.models import Post
 
 def feed_view(request):
     if request.user.is_authenticated:
-        return redirect('feed_react')
+        return redirect('feed')
 
     # Visitante sin sesión: catálogo + estadísticas agregadas, sin contenido narrativo.
     obras = list(Obra.objects.annotate(posts_total=Count('posts')).order_by('-posts_total', 'titulo'))
