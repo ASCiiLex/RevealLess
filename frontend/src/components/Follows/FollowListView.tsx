@@ -31,7 +31,7 @@ export default function FollowListView({ username, tipo }: Props) {
         <p className={styles.empty}>{mensajeVacio}</p>
       ) : (
         items.map((item) => (
-          <a key={item.username} className={styles.row} href={`/perfil/${item.username}/react/`}>
+          <a key={item.username} className={styles.row} href={`/perfil/${item.username}/`}>
             <img className={styles.avatar} src={item.avatar_url} alt="" />
             <span className={styles.username}>@{item.username}</span>
           </a>

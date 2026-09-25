@@ -164,7 +164,7 @@ function TemaRow({ tema }: { tema: TemaBusqueda }) {
 
 function UsuarioRow({ usuario }: { usuario: UsuarioBusqueda }) {
   return (
-    <a className={styles.rowLink} href={`/perfil/${usuario.username}/react/`}>
+    <a className={styles.rowLink} href={`/perfil/${usuario.username}/`}>
       <img className={styles.avatarThumb} src={usuario.avatar_url} alt="" />
       <span className={styles.titulo}>@{usuario.username}</span>
     </a>

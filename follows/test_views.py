@@ -8,17 +8,17 @@ class VistasReactSeguidoresTests(TestCase):
         User.objects.create_user('lista_react', password='x')
 
     def test_seguidores_responde_200_sin_login(self):
-        response = self.client.get(reverse('followers_react', args=['lista_react']))
+        response = self.client.get(reverse('followers', args=['lista_react']))
         self.assertEqual(response.status_code, 200)
 
     def test_seguidores_devuelve_404_si_el_usuario_no_existe(self):
-        response = self.client.get(reverse('followers_react', args=['no_existe']))
+        response = self.client.get(reverse('followers', args=['no_existe']))
         self.assertEqual(response.status_code, 404)
 
     def test_siguiendo_responde_200_sin_login(self):
-        response = self.client.get(reverse('following_react', args=['lista_react']))
+        response = self.client.get(reverse('following', args=['lista_react']))
         self.assertEqual(response.status_code, 200)
 
     def test_siguiendo_devuelve_404_si_el_usuario_no_existe(self):
-        response = self.client.get(reverse('following_react', args=['no_existe']))
+        response = self.client.get(reverse('following', args=['no_existe']))
         self.assertEqual(response.status_code, 404)

@@ -21,7 +21,7 @@ export default function AccountMenuLinks({ me, itemClassName, logoutClassName, d
 
   return (
     <>
-      <a className={itemClassName} href={`/perfil/${me.username}/react/`} role="menuitem">
+      <a className={itemClassName} href={`/perfil/${me.username}/`} role="menuitem">
         Mi perfil
       </a>
       <a className={itemClassName} href="/notificaciones/react/" role="menuitem">

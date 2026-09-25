@@ -42,7 +42,7 @@ export default function RegisterForm() {
   function finalizarOnboarding() {
     // Si no siguio nada, Biblioteca estaria vacia -- lo llevamos
     // directamente a Descubrir para que aterrice con contenido.
-    window.location.href = totalSeguidos > 0 ? '/feed/react/' : '/feed/react/?view=descubrir'
+    window.location.href = totalSeguidos > 0 ? '/feed/' : '/feed/?view=descubrir'
   }
 
   if (paso === 'onboarding') {

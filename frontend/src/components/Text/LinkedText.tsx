@@ -15,7 +15,7 @@ export default function LinkedText({ text }: Props) {
       {partes.map((parte, i) => {
         if (parte.startsWith('@')) {
           return (
-            <a key={i} className={styles.link} href={`/perfil/${parte.slice(1)}/react/`}>
+            <a key={i} className={styles.link} href={`/perfil/${parte.slice(1)}/`}>
               {parte}
             </a>
           )

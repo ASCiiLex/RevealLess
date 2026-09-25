@@ -12,7 +12,7 @@ function getRedirectDestino(): string {
   if (next && next.startsWith('/') && !next.startsWith('//')) {
     return next
   }
-  return '/feed/react/'
+  return '/feed/'
 }
 
 export default function LoginForm() {

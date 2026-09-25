@@ -29,17 +29,17 @@ export default function ProfileView({ username }: Props) {
 
           <div className={styles.stats}>
             <span><strong>{profile.posts.length}</strong> publicaciones</span>
-            <a href={`/follows/seguidores-react/${profile.username}/`}>
+            <a href={`/follows/${profile.username}/seguidores/`}>
               <strong>{profile.followers_count}</strong> seguidores
             </a>
-            <a href={`/follows/siguiendo-react/${profile.username}/`}>
+            <a href={`/follows/${profile.username}/siguiendo/`}>
               <strong>{profile.following_count}</strong> seguidos
             </a>
           </div>
 
           <div className={styles.actions}>
             {profile.is_own_profile ? (
-              <a className={styles.button} href="/perfil/editar-react/">Editar perfil</a>
+              <a className={styles.button} href="/perfil/editar/">Editar perfil</a>
             ) : (
               <FollowActions username={profile.username} isFollowingInicial={profile.is_following} />
             )}
