@@ -11,7 +11,7 @@ export default function FilterHeader({ titulo, obraSlug }: Props) {
       <div>
         <a className={styles.backLink} href="/feed/react/">← Volver a Biblioteca</a>
         {obraSlug ? (
-          <a className={styles.title} href={`/narrative/obra/${obraSlug}/react/`}>{titulo}</a>
+          <a className={styles.title} href={`/narrative/obra/${obraSlug}/`}>{titulo}</a>
         ) : (
           <h1 className={styles.title}>{titulo}</h1>
         )}

@@ -49,7 +49,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
 
   function handleVerInfo(e: React.MouseEvent) {
     e.stopPropagation()
-    window.location.href = `/narrative/obra/${obra.slug}/react/`
+    window.location.href = `/narrative/obra/${obra.slug}/`
   }
 
   return (
@@ -81,7 +81,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
       </button>
 
       {mostrarProgreso && (
-        <a className={styles.progressLink} href={`/narrative/progreso-react/${obra.slug}/`}>
+        <a className={styles.progressLink} href={`/narrative/progreso/${obra.slug}/`}>
           <span className={styles.progressIcon} aria-hidden="true">📖</span>
           <span className={styles.actionText}>Progreso</span>
         </a>

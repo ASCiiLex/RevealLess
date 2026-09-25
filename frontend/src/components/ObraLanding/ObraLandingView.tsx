@@ -94,7 +94,7 @@ export default function ObraLandingView({ obraSlug }: Props) {
             <a className={styles.button} href={`/feed/react/?obra=${obra.id}`}>
               Ver feed
             </a>
-            <a className={styles.button} href={`/narrative/obra/${obra.slug}/temas/react/`}>
+            <a className={styles.button} href={`/narrative/obra/${obra.slug}/temas/`}>
               Temas
             </a>
           </div>

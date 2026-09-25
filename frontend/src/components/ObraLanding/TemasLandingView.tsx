@@ -44,7 +44,7 @@ export default function TemasLandingView({ obraSlug }: Props) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <a className={styles.backLink} href={`/narrative/obra/${obra.slug}/react/`}>← Volver a {obra.titulo}</a>
+        <a className={styles.backLink} href={`/narrative/obra/${obra.slug}/`}>← Volver a {obra.titulo}</a>
         <h1 className={styles.title}>Temas</h1>
       </div>
 

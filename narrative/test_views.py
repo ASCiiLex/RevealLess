@@ -12,21 +12,21 @@ class ObraReactViewsTests(TestCase):
         self.client.force_login(self.user)
 
     def test_progreso_react_devuelve_404_si_obra_no_existe(self):
-        url = reverse('narrative_progreso_react', kwargs={'obra_slug': 'no-existe'})
+        url = reverse('narrative_progreso', kwargs={'obra_slug': 'no-existe'})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
     def test_progreso_react_ok_si_obra_existe(self):
-        url = reverse('narrative_progreso_react', kwargs={'obra_slug': self.obra.slug})
+        url = reverse('narrative_progreso', kwargs={'obra_slug': self.obra.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
     def test_obra_landing_react_devuelve_404_si_obra_no_existe(self):
-        url = reverse('narrative_obra_landing_react', kwargs={'obra_slug': 'no-existe'})
+        url = reverse('narrative_obra_landing', kwargs={'obra_slug': 'no-existe'})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
     def test_obra_temas_react_devuelve_404_si_obra_no_existe(self):
-        url = reverse('narrative_obra_temas_react', kwargs={'obra_slug': 'no-existe'})
+        url = reverse('narrative_obra_temas', kwargs={'obra_slug': 'no-existe'})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)

@@ -102,7 +102,7 @@ function ObraRow({ obra }: { obra: LomoObra }) {
   }
 
   return (
-    <a className={styles.row} href={`/narrative/obra/${obra.slug}/react/`}>
+    <a className={styles.row} href={`/narrative/obra/${obra.slug}/`}>
       <div className={styles.rowMain}>
         <img className={styles.thumb} src={obra.imagen_url} alt="" />
         <span className={styles.titulo}>{obra.titulo}</span>
