@@ -26,14 +26,6 @@ class Profile(models.Model):
         return f'Perfil de {self.user.username}'
 
     @property
-    def followers_count(self):
-        return self.user.followed_by.count()
-
-    @property
-    def following_count(self):
-        return self.user.following.count()
-
-    @property
     def image_url(self):
         if self.image and hasattr(self.image, "url"):
             try:
@@ -43,8 +35,5 @@ class Profile(models.Model):
         return "/static/img/default_profile.jpg"
 
 @receiver(post_save, sender=User)
-def ensure_user_profile(sender, instance, raw=False, **kwargs):
-    # Garantiza un perfil por usuario; get_or_create no falla si ya existe o falta.
-    if raw:
-        return
+def ensure_user_profile(sender, instance, created, **kwargs):
     Profile.objects.get_or_create(user=instance)

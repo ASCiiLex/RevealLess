@@ -20,7 +20,7 @@ from narrative.ai_assistant import proponer_clasificacion
 from narrative.serializers import PostSerializer
 from .models import Post
 from .serializers import PostCreateSerializer, PostUpdateSerializer
-from .views.post_detail import get_sorted_comments
+from .selectors import get_sorted_comments
 
 
 def _serializar_detecciones(detecciones):
