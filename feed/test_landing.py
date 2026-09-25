@@ -90,3 +90,18 @@ class RedireccionesHaciaVistasReactTests(TestCase):
         response = self.client.get(reverse('post_not_found', args=[1]))
         self.assertContains(response, '<footer class="pl-footer">')
         self.assertNotContains(response, 'pl-footer-links')
+
+
+class FeedReactLegacyRedirectTests(TestCase):
+    """/feed/react/ ya no es una ruta propia; comprueba que redirige
+    en vez de dar 404, por si queda marcada en favoritos o en enlaces
+    compartidos de antes de la limpieza de rutas."""
+
+    def test_visitante_va_a_la_landing(self):
+        response = self.client.get('/feed/react/')
+        self.assertRedirects(response, reverse('feed_publico'), fetch_redirect_response=False)
+
+    def test_autenticado_va_al_feed_real(self):
+        self.client.force_login(User.objects.create_user('legacy_feed_user', password='x'))
+        response = self.client.get('/feed/react/')
+        self.assertRedirects(response, reverse('feed'), fetch_redirect_response=False)
