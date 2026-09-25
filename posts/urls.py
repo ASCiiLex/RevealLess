@@ -8,7 +8,6 @@ from .views.search import (
     mentions_search,
     hashtags_search,
     suggested_hashtags,
-    global_search,
 )
 from .api_views import PostCreateAPIView, PostDetailAPIView, PostUpdateAPIView
 
@@ -27,5 +26,4 @@ urlpatterns = [
     path('mentions-search/', mentions_search, name='mentions_search'),
     path('hashtags-search/', hashtags_search, name='hashtags_search'),
     path('suggested-hashtags/', suggested_hashtags, name='suggested_hashtags'),
-    path('search/', global_search, name='global_search'),
 ]

@@ -1,9 +1,0 @@
-<div class="mt-4 d-flex justify-content-center">
-    {% if posts.has_previous %}
-        <a href="?page={{ posts.previous_page_number }}" class="btn btn-outline-primary me-2">Anterior</a>
-    {% endif %}
-
-    {% if posts.has_next %}
-        <a href="?page={{ posts.next_page_number }}" class="btn btn-outline-primary">Siguiente</a>
-    {% endif %}
-</div>

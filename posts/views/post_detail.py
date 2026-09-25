@@ -1,24 +1,12 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.db.models import Count, Prefetch
 
-from comments.models import Comment, CommentReaction
-from likes.models import PostReaction
+from comments.models import Comment
 from ..models import Post
 
 
 def post_detail(request, post_id):
-    post = get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
-    sort = request.GET.get('sort', 'recent')
-
-    comments = get_sorted_comments(request.user, post, sort)
-    post_reaction = apply_user_reactions(request, comments, post)
-
-    return render(request, 'posts/post_detail.html', {
-        'post': post,
-        'comments': comments,
-        'current_sort': sort,
-        'post_reaction': post_reaction,
-    })
+    return redirect('post_detail_react', post_id=post_id)
 
 
 def get_sorted_comments(user, post, sort):
@@ -46,38 +34,8 @@ def get_sorted_comments(user, post, sort):
     return qs.order_by('-created_at')
 
 
-def apply_user_reactions(request, comments, post):
-    if not request.user.is_authenticated:
-        for c in comments:
-            c.user_reaction = None
-            for r in c.replies.all():
-                r.user_reaction = None
-        return None
-
-    reactions = CommentReaction.objects.filter(
-        user=request.user,
-        comment__post=post
-    ).values('comment_id', 'reaction')
-
-    reaction_map = {r['comment_id']: r['reaction'] for r in reactions}
-
-    for c in comments:
-        c.user_reaction = reaction_map.get(c.id)
-        for r in c.replies.all():
-            r.user_reaction = reaction_map.get(r.id)
-
-    pr = PostReaction.objects.filter(
-        user=request.user,
-        post=post
-    ).first()
-
-    return pr.reaction if pr else None
-
-
 def post_detail_react_view(request, post_id):
-    """Vista mínima que monta el punto de entrada de React para el
-    detalle de post (Fase 4). No reemplaza post_detail. No requiere
-    login -- visible_for() ya filtra correctamente tanto para usuarios
-    autenticados como anónimos."""
+    """Monta React para el detalle de post. Sin login: visible_for() filtra
+    igual a usuarios autenticados y anónimos."""
     get_object_or_404(Post.objects.visible_for(request.user), id=post_id)
     return render(request, 'posts/post_detail_react.html', {'post_id': post_id})
