@@ -12,7 +12,7 @@ export default function AccountMenuLinks({ me, itemClassName, logoutClassName, d
   function handleLogout() {
     logout()
       .then(() => {
-        window.location.href = '/cuentas/login-react/'
+        window.location.href = '/cuentas/login/'
       })
       .catch(() => {
         // Si falla, la sesión sigue abierta y el usuario permanece en la página.

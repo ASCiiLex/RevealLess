@@ -44,7 +44,7 @@ export default function LoginForm() {
   return (
     <AuthLayout
       titulo="Iniciar sesión"
-      footer={<span>¿No tienes cuenta? <a href="/cuentas/register-react/">Regístrate</a></span>}
+      footer={<span>¿No tienes cuenta? <a href="/cuentas/register/">Regístrate</a></span>}
     >
       <form className={styles.form} onSubmit={handleSubmit}>
         {error && <p className={styles.error}>{error}</p>}

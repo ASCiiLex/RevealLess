@@ -66,7 +66,7 @@ export default function RegisterForm() {
   return (
     <AuthLayout
       titulo="Crear cuenta"
-      footer={<span>¿Ya tienes cuenta? <a href="/cuentas/login-react/">Inicia sesión</a></span>}
+      footer={<span>¿Ya tienes cuenta? <a href="/cuentas/login/">Inicia sesión</a></span>}
     >
       <form className={styles.form} onSubmit={handleSubmit}>
         {errores.map((msg, i) => (

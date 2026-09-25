@@ -17,12 +17,12 @@ class LandingPublicaTests(TestCase):
 
     def test_landing_enlaza_a_login_y_registro_react(self):
         response = self.client.get(reverse('feed'))
-        self.assertContains(response, 'href="/cuentas/login-react/"')
-        self.assertContains(response, 'href="/cuentas/register-react/"')
+        self.assertContains(response, 'href="/cuentas/login/"')
+        self.assertContains(response, 'href="/cuentas/register/"')
 
     def test_landing_no_enlaza_a_vistas_clasicas(self):
         response = self.client.get(reverse('feed'))
-        self.assertNotContains(response, 'href="/cuentas/login/"')
+        self.assertNotContains(response, 'href="/cuentas/login/legacy/"')
 
     def test_sinopsis_es_colapsable(self):
         response = self.client.get(reverse('feed'))
@@ -64,14 +64,14 @@ class RedireccionesHaciaVistasReactTests(TestCase):
         response = self.client.get(reverse('home'))
         self.assertRedirects(response, reverse('feed_react'), fetch_redirect_response=False)
 
-    def test_login_react_autenticado_va_al_feed_react(self):
+    def test_login_autenticado_va_al_feed_react(self):
         self.client.force_login(self.usuario)
-        response = self.client.get(reverse('login_react'))
+        response = self.client.get(reverse('login'))
         self.assertRedirects(response, reverse('feed_react'), fetch_redirect_response=False)
 
-    def test_register_react_autenticado_va_al_feed_react(self):
+    def test_register_autenticado_va_al_feed_react(self):
         self.client.force_login(self.usuario)
-        response = self.client.get(reverse('register_react'))
+        response = self.client.get(reverse('register'))
         self.assertRedirects(response, reverse('feed_react'), fetch_redirect_response=False)
 
     def test_post_no_existe_enlaza_a_notificaciones_react(self):
@@ -82,7 +82,7 @@ class RedireccionesHaciaVistasReactTests(TestCase):
     def test_post_no_existe_no_muestra_botones_de_acceso(self):
         self.client.force_login(self.usuario)
         response = self.client.get(reverse('post_not_found', args=[1]))
-        self.assertNotContains(response, 'href="/cuentas/login-react/"')
+        self.assertNotContains(response, 'href="/cuentas/login/"')
         self.assertNotContains(response, 'class="pl-bottom-nav"')
 
     def test_post_no_existe_footer_sin_enlaces_de_acceso(self):
