@@ -1,0 +1,10 @@
+{% extends "base_react.html" %}
+{% load vite_tags %}
+
+{% block content %}
+<div id="root" data-tema-id="{{ tema_id }}"></div>
+{% endblock %}
+
+{% block scripts %}
+{% vite_asset entry="src/tema_landing.tsx" %}
+{% endblock %}

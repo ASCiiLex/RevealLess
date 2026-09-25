@@ -52,15 +52,19 @@ export default function TemasLandingView({ obraSlug }: Props) {
         <p className={styles.empty}>Esta obra aún no tiene temas registrados.</p>
       ) : (
         obra.temas.map((tema) => (
-          <div key={tema.id} className={styles.temaRow}>
+          <a key={tema.id} className={styles.temaRow} href={`/narrative/tema/${tema.id}/`}>
             <span className={styles.temaNombre}>{tema.nombre}</span>
             <button
               className={`${styles.temaButton} ${tema.suscrito ? styles.temaButtonActive : ''}`}
-              onClick={() => handleToggleTema(tema)}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleToggleTema(tema)
+              }}
             >
               {tema.suscrito ? 'Siguiendo' : 'Seguir'}
             </button>
-          </div>
+          </a>
         ))
       )}
     </div>

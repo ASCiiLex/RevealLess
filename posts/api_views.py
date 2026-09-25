@@ -74,6 +74,13 @@ class PostCreateAPIView(APIView):
                 'detail': 'Indica la obra cruzada y su frontera juntas, o ninguna de las dos.',
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        tema = datos.get('tema')
+        if tema and tema.obra_id != obra.id:
+            return Response(
+                {'detail': {'tema': ['Debe pertenecer a la obra del post.']}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if not obra_cruzada and not datos.get('descartar_referencia_cruzada'):
             detecciones = detectar_posibles_referencias_cruzadas(datos['text'], obra)
             if detecciones:
@@ -114,6 +121,10 @@ class PostCreateAPIView(APIView):
             return Response({'detail': exc.message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
         post.save()
+
+        if tema:
+            post.temas_transversales.set([tema])
+
         return Response(PostSerializer(post, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
 
@@ -140,6 +151,14 @@ class PostUpdateAPIView(APIView):
         entrada.is_valid(raise_exception=True)
         datos = entrada.validated_data
 
+        tema_provisto = 'tema' in datos
+        tema = datos.get('tema') if tema_provisto else None
+        if tema_provisto and tema and tema.obra_id != post.obra_id:
+            return Response(
+                {'detail': {'tema': ['Debe pertenecer a la obra del post.']}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if 'text' in datos:
             post.text = datos['text']
         if 'image' in datos:
@@ -164,6 +183,10 @@ class PostUpdateAPIView(APIView):
             return Response({'detail': exc.message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
         post.save()
+
+        if tema_provisto:
+            post.temas_transversales.set([tema] if tema else [])
+
         return Response(PostSerializer(post, context={'request': request}).data)
 
 

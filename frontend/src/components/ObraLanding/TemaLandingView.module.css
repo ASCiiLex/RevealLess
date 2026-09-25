@@ -1,0 +1,74 @@
+.wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.header {
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  margin-bottom: 20px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 6px 0;
+}
+
+.suscriptores {
+  font-size: 12px;
+  color: var(--fog);
+  margin-bottom: 10px;
+}
+
+.obrasChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.obraChip {
+  font-size: 11px;
+  color: var(--fog);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-decoration: none;
+}
+
+.obraChip:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.button {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+}
+
+.buttonPrimary {
+  background: var(--gold);
+  color: var(--paper);
+  border-color: var(--gold);
+}

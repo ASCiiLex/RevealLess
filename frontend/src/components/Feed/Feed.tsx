@@ -3,10 +3,11 @@ import styles from './Feed.module.css'
 import PostCard from './PostCard'
 import FilterHeader from './FilterHeader'
 import { fetchFeed, type FeedPost } from '../../api/feed'
+import { fetchTemaLanding } from '../../api/temaLanding'
 import { useCatalogView } from '../../context/CatalogViewContext'
 
 interface FiltroExterno {
-  tipo: 'obra' | 'hashtag'
+  tipo: 'obra' | 'hashtag' | 'tema'
   valor: string
 }
 
@@ -17,19 +18,30 @@ interface Props {
 export default function Feed({ filtroExterno }: Props) {
   const { obraFiltro } = useCatalogView()
   const [posts, setPosts] = useState<FeedPost[] | null>(null)
+  const [tituloTema, setTituloTema] = useState<string | null>(null)
 
   useEffect(() => {
     setPosts(null)
+    setTituloTema(null)
 
     if (filtroExterno?.tipo === 'hashtag') {
-      fetchFeed(undefined, filtroExterno.valor)
+      fetchFeed({ hashtag: filtroExterno.valor })
+        .then((data) => setPosts(data.results))
+        .catch(() => setPosts([]))
+      return
+    }
+
+    if (filtroExterno?.tipo === 'tema') {
+      const temaId = Number(filtroExterno.valor)
+      fetchTemaLanding(temaId).then((data) => setTituloTema(data.nombre))
+      fetchFeed({ temaId })
         .then((data) => setPosts(data.results))
         .catch(() => setPosts([]))
       return
     }
 
     const obraId = filtroExterno?.tipo === 'obra' ? Number(filtroExterno.valor) : obraFiltro
-    fetchFeed(obraId)
+    fetchFeed({ obraId })
       .then((data) => setPosts(data.results))
       .catch(() => setPosts([]))
   }, [obraFiltro, filtroExterno])
@@ -43,15 +55,22 @@ export default function Feed({ filtroExterno }: Props) {
   const tituloFiltro =
     filtroExterno?.tipo === 'hashtag'
       ? `#${filtroExterno.valor}`
-      : filtroExterno?.tipo === 'obra'
-        ? posts[0]?.obra_titulo ?? 'Obra'
-        : null
+      : filtroExterno?.tipo === 'tema'
+        ? tituloTema ?? ''
+        : filtroExterno?.tipo === 'obra'
+          ? posts[0]?.obra_titulo ?? 'Obra'
+          : null
 
-  const obraSlugFiltro = filtroExterno?.tipo === 'obra' ? posts[0]?.obra_slug : undefined
+  const linkHrefFiltro =
+    filtroExterno?.tipo === 'obra' && posts[0]
+      ? `/narrative/obra/${posts[0].obra_slug}/`
+      : filtroExterno?.tipo === 'tema'
+        ? `/narrative/tema/${filtroExterno.valor}/`
+        : undefined
 
   return (
     <div className={styles.feed}>
-      {filtroExterno && <FilterHeader titulo={tituloFiltro ?? ''} obraSlug={obraSlugFiltro} />}
+      {filtroExterno && <FilterHeader titulo={tituloFiltro ?? ''} linkHref={linkHrefFiltro} />}
 
       {posts.length === 0 ? (
         <p className={styles.empty}>

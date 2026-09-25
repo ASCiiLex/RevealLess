@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from posts.models import Post
 from subscriptions.services import filtro_posts_suscripciones, filtro_posts_silenciados
-from .models import Obra, ProgresoUsuario, UnidadNarrativa
+from .models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa
 from .serializers import PostSerializer, ProgresoUsuarioSerializer, UnidadNarrativaSerializer
 from .services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
 
@@ -53,6 +53,15 @@ class FeedAPIView(generics.ListAPIView):
         hashtag = self.request.query_params.get('hashtag')
         if hashtag is not None:
             queryset = queryset.filter(post_hashtags__hashtag__name=hashtag)
+
+        tema_id = self.request.query_params.get('tema')
+        if tema_id is not None:
+            tema = get_object_or_404(TemaTransversal.objects.select_related('obra'), id=tema_id)
+            familia_ids = [tema.obra_id] + [o.id for o in tema.obra.obras_relacionadas()]
+            queryset = queryset.filter(
+                temas_transversales__nombre=tema.nombre,
+                temas_transversales__obra_id__in=familia_ids,
+            )
 
         return queryset.order_by('-created_at')
 

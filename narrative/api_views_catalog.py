@@ -33,19 +33,6 @@ def _suscripcion_id_por_tema(user):
     return {s.tema_id: s.id for s in suscripciones_de_tema}
 
 
-def _obras_relacionadas(obra):
-    """Continuidades de la misma franquicia (MVP del blindaje): la obra
-    de la que esta se adapta, y las que se adaptan de esta. Puramente
-    informativo para poblar el selector de 'obra cruzada' en posts/
-    comentarios -- no implica ningun mapeo de equivalencia entre las
-    escalas de orden de cada una."""
-    relacionadas = []
-    if obra.adapta_a_id:
-        relacionadas.append(obra.adapta_a)
-    relacionadas.extend(obra.adaptaciones.all())
-    return relacionadas
-
-
 class CatalogoObrasAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -77,9 +64,13 @@ class ObraDetalleAPIView(APIView):
 
     def get(self, request, obra_slug):
         obra = get_object_or_404(Obra, slug=obra_slug)
-        unidades = UnidadNarrativa.objects.filter(obra=obra).order_by('orden_inicio')
+        # select_related('padre'): sin esto, UnidadNarrativaSerializer.
+        # get_padre_etiqueta() disparaba una consulta por cada unidad
+        # (N+1) -- con obras de cientos de capitulos (importados via
+        # Jikan) esto tardaba mas de 1s por peticion.
+        unidades = UnidadNarrativa.objects.filter(obra=obra).select_related('padre').order_by('orden_inicio')
         temas = TemaTransversal.objects.filter(obra=obra).order_by('nombre')
-        relacionadas = _obras_relacionadas(obra)
+        relacionadas = obra.obras_relacionadas()
 
         return Response({
             'obra': {'id': obra.id, 'titulo': obra.titulo, 'slug': obra.slug},
@@ -118,6 +109,44 @@ class ObraLandingAPIView(APIView):
         }
 
         return Response(ObraLandingSerializer(obra, context=contexto).data)
+
+
+class TemaLandingAPIView(APIView):
+    """Landing de un tema transversal (Plan A): agrupa por nombre todos
+    los TemaTransversal de la misma franquicia (obra + sus continuidades
+    relacionadas via adapta_a/adaptaciones), en tiempo de consulta, sin
+    cambiar el modelo -- cada TemaTransversal sigue perteneciendo a una
+    unica obra. El motor de visibilidad no se ve afectado: cada post
+    sigue blindado por su propia referencia_narrativa/frontera_spoiler,
+    atada a su propia obra. 'Seguir' siempre actua sobre el
+    TemaTransversal concreto de la URL (obra_slug/id devueltos), no
+    sobre el grupo -- Suscripcion exige un TemaTransversal real."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, tema_id):
+        tema = get_object_or_404(TemaTransversal.objects.select_related('obra'), id=tema_id)
+        familia_ids = [tema.obra_id] + [o.id for o in tema.obra.obras_relacionadas()]
+        temas_grupo = list(
+            TemaTransversal.objects.filter(nombre=tema.nombre, obra_id__in=familia_ids)
+            .select_related('obra')
+        )
+
+        suscripcion = Suscripcion.objects.filter(usuario=request.user, tema__in=temas_grupo).first()
+        total_suscriptores = Suscripcion.objects.filter(tema__in=temas_grupo).values('usuario').distinct().count()
+
+        return Response({
+            'id': tema.id,
+            'nombre': tema.nombre,
+            'obra_slug': tema.obra.slug,
+            'obras': [
+                {'id': t.obra.id, 'titulo': t.obra.titulo, 'slug': t.obra.slug, 'tema_id': t.id}
+                for t in temas_grupo
+            ],
+            'suscrito': suscripcion is not None,
+            'suscripcion_id': suscripcion.id if suscripcion else None,
+            'total_suscriptores': total_suscriptores,
+        })
 
 
 class SolicitudTemaListCreateAPIView(APIView):

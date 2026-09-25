@@ -43,10 +43,17 @@ interface PaginatedResponse<T> {
   results: T[]
 }
 
-export function fetchFeed(obraId?: number | null, hashtag?: string): Promise<PaginatedResponse<FeedPost>> {
+export interface FetchFeedOptions {
+  obraId?: number | null
+  hashtag?: string
+  temaId?: number
+}
+
+export function fetchFeed(opciones: FetchFeedOptions = {}): Promise<PaginatedResponse<FeedPost>> {
   const params = new URLSearchParams()
-  if (obraId) params.set('obra', String(obraId))
-  if (hashtag) params.set('hashtag', hashtag)
+  if (opciones.obraId) params.set('obra', String(opciones.obraId))
+  if (opciones.hashtag) params.set('hashtag', opciones.hashtag)
+  if (opciones.temaId) params.set('tema', String(opciones.temaId))
   const query = params.toString()
   return api.get<PaginatedResponse<FeedPost>>(
     `/narrative/api/feed/${query ? `?${query}` : ''}`

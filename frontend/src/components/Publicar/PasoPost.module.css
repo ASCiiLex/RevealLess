@@ -27,14 +27,35 @@
 .label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--fog);
+  color: var(--paper);
+  opacity: 0.85;
+}
+
+.postBox {
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
 .textareaWrap {
   position: relative;
 }
 
-.textarea,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 140px;
+}
+
 .select,
 .input {
   padding: 10px 12px;
@@ -46,23 +67,17 @@
   font-size: 14px;
 }
 
-.textarea {
-  width: 100%;
-  box-sizing: border-box;
-  resize: vertical;
-  min-height: 90px;
-}
-
 .hint {
   font-size: 12px;
-  color: var(--fog);
+  color: var(--paper);
+  opacity: 0.7;
 }
 
 .hashtagsSugeridos {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .hashtagChip {
@@ -78,6 +93,56 @@
 
 .hashtagChip:hover {
   background: var(--border);
+}
+
+.postBoxFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 0.5px solid var(--border);
+}
+
+.emocionElegida {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--gold) 12%, var(--paper));
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
+.emocionQuitar {
+  border: none;
+  background: none;
+  color: var(--fog);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+}
+
+.imageButton {
+  border: 1px solid var(--border);
+  background: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.imageButton:hover {
+  background: var(--border);
+}
+
+.imageInputHidden {
+  display: none;
 }
 
 .checkboxRow {
@@ -97,18 +162,24 @@
 }
 
 .submit {
-  padding: 10px;
+  padding: 14px;
   border: none;
   border-radius: var(--radius);
   background: var(--gold);
   color: var(--paper);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(184, 144, 46, 0.4);
+}
+
+.submit:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--gold) 85%, black);
 }
 
 .submit:disabled {
   background: var(--border);
+  box-shadow: none;
   cursor: default;
 }

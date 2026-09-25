@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import styles from './PasoObra.module.css'
-import { fetchProgreso } from '../../api/progreso'
-import { actualizarProgreso } from '../../api/progreso'
+import styles from './PasoProgreso.module.css'
+import { fetchProgreso, actualizarProgreso } from '../../api/progreso'
 import UnidadNode from '../Progreso/UnidadNode'
 import { buildTree } from '../../utils/buildTree'
 
@@ -38,11 +37,13 @@ export default function PasoProgreso({ obraSlug, obraTitulo, onProgresoDeclarado
   return (
     <div className={styles.wrapper}>
       <h1 className={styles.title}>¿Por dónde vas en {obraTitulo}?</h1>
-      <p>Necesitamos saber tu progreso antes de publicar sobre esta obra.</p>
+      <p className={styles.subtitle}>Necesitamos saber tu progreso antes de publicar sobre esta obra.</p>
 
-      {arbol.map((nodo) => (
-        <UnidadNode key={nodo.id} nodo={nodo} actualId={-1} actualOrden={-1} onSelect={handleSelect} />
-      ))}
+      <div className={styles.tree}>
+        {arbol.map((nodo) => (
+          <UnidadNode key={nodo.id} nodo={nodo} actualId={-1} actualOrden={-1} onSelect={handleSelect} />
+        ))}
+      </div>
     </div>
   )
 }

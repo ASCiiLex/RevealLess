@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from narrative.models import ClasificacionNarrativa, Obra, UnidadNarrativa
+from narrative.models import ClasificacionNarrativa, Obra, TemaTransversal, UnidadNarrativa
 from .models import Post
 
 
@@ -20,6 +20,9 @@ class PostCreateSerializer(serializers.Serializer):
     )
     emocion_autor = serializers.ChoiceField(
         choices=EMOCION_CHOICES, required=False, allow_null=True
+    )
+    tema = serializers.PrimaryKeyRelatedField(
+        queryset=TemaTransversal.objects.all(), required=False, allow_null=True
     )
     nuevo_progreso = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
@@ -56,6 +59,9 @@ class PostUpdateSerializer(serializers.Serializer):
     )
     emocion_autor = serializers.ChoiceField(
         choices=EMOCION_CHOICES, required=False, allow_null=True
+    )
+    tema = serializers.PrimaryKeyRelatedField(
+        queryset=TemaTransversal.objects.all(), required=False, allow_null=True
     )
     obra_cruzada = serializers.PrimaryKeyRelatedField(
         queryset=Obra.objects.all(), required=False, allow_null=True

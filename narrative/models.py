@@ -95,6 +95,20 @@ class Obra(models.Model):
             pass
         return '/static/img/default_post.jpg'
 
+    def obras_relacionadas(self):
+        """Continuidades de la misma franquicia (MVP del blindaje): la obra
+        de la que esta se adapta, y las que se adaptan de esta. Puramente
+        informativo -- no implica ningun mapeo de equivalencia entre las
+        escalas de orden de cada una. Usado para agrupar temas
+        transversales del mismo nombre entre obras relacionadas (Plan A:
+        agrupacion en tiempo de consulta, sin cambiar el modelo)."""
+        relacionadas = []
+        if self.adapta_a_id:
+            relacionadas.append(self.adapta_a)
+        relacionadas.extend(self.adaptaciones.all())
+        return relacionadas
+
+
     def recalcular_orden(self):
         """Recalcula orden_inicio/orden_fin de todas sus unidades narrativas.
         orden_manual es un índice de inserción (1-based) sobre la secuencia

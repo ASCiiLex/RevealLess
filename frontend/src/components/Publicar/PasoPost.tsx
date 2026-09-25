@@ -1,28 +1,33 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
+import BuscadorLocal, { type BuscadorItem } from './BuscadorLocal'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { crearPost } from '../../api/publicar'
 import type { DeteccionCruzada } from '../../api/publicar'
 import { fetchSuggestedHashtags } from '../../api/textAutocomplete'
 import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
 import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
-import EmocionSelector from '../Emociones/EmocionSelector'
+import EmocionPopover from '../Emociones/EmocionPopover'
+import { EMOCIONES } from '../../constants/emociones'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 
 interface Props {
   obraSlug: string
   obraTitulo: string
+  temaIdInicial?: number | null
   onPublicado: (postId: number) => void
   onProgresoRequerido: () => void
 }
 
-export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgresoRequerido }: Props) {
+export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublicado, onProgresoRequerido }: Props) {
   const [detalle, setDetalle] = useState<ObraDetalle | null>(null)
   const [text, setText] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [referenciaId, setReferenciaId] = useState<number | null>(null)
   const [fronteraId, setFronteraId] = useState<number | null>(null)
   const [emocionAutor, setEmocionAutor] = useState<string | null>(null)
+  const [emocionAbierta, setEmocionAbierta] = useState(false)
+  const [temaId, setTemaId] = useState<number | null>(temaIdInicial ?? null)
   const [nuevoProgresoId, setNuevoProgresoId] = useState<number | null>(null)
   const [confirmarSalto, setConfirmarSalto] = useState(false)
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
@@ -32,6 +37,7 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
   const [hashtagsSugeridos, setHashtagsSugeridos] = useState<string[]>([])
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
 
   useEffect(() => {
@@ -69,6 +75,7 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
         referenciaNarrativaId: referenciaId,
         fronteraSpoilerId: fronteraId,
         emocionAutor,
+        temaId,
         nuevoProgresoId,
         confirmarSaltoProgreso: confirmarSalto,
         ...overrides,
@@ -105,6 +112,10 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
     return null
   }
 
+  const unidadesItems: BuscadorItem[] = detalle.unidades.map((u) => ({ id: u.id, label: u.etiqueta }))
+  const temasItems: BuscadorItem[] = detalle.temas.map((t) => ({ id: t.id, label: t.nombre }))
+  const emocionActual = EMOCIONES.find((e) => e.clave === emocionAutor)
+
   return (
     <div className={styles.wrapper}>
       <h1 className={styles.title}>Publicar · {obraTitulo}</h1>
@@ -122,104 +133,119 @@ export default function PasoPost({ obraSlug, obraTitulo, onPublicado, onProgreso
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="referencia">¿De qué parte habla?</label>
-          <select
+          <BuscadorLocal
             id="referencia"
-            className={styles.select}
-            value={referenciaId ?? ''}
-            onChange={(e) => setReferenciaId(Number(e.target.value) || null)}
-            required
-          >
-            <option value="">Elige una unidad</option>
-            {detalle.unidades.map((u) => (
-              <option key={u.id} value={u.id}>{u.etiqueta}</option>
-            ))}
-          </select>
+            items={unidadesItems}
+            value={referenciaId}
+            onChange={setReferenciaId}
+            placeholder="Elige una unidad"
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="tema">Tema transversal (opcional)</label>
+          <BuscadorLocal
+            id="tema"
+            items={temasItems}
+            value={temaId}
+            onChange={setTemaId}
+            placeholder="Buscar tema..."
+            emptyLabel="Ninguno"
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>
+          <div className={styles.postBox}>
+            <div className={styles.textareaWrap}>
+              <textarea
+                id="text"
+                ref={textareaRef}
+                className={styles.textarea}
+                value={text}
+                onChange={(e) => autocomplete.handleChange(e.target.value)}
+                onKeyDown={autocomplete.handleKeyDown}
+                onFocus={() => setEmocionAbierta(true)}
+                onBlur={() => setTimeout(() => { autocomplete.cerrar(); setEmocionAbierta(false) }, 150)}
+                required
+              />
+              <AutocompleteDropdown
+                suggestions={autocomplete.suggestions}
+                activeIndex={autocomplete.activeIndex}
+                onSelect={autocomplete.seleccionar}
+              />
+              <EmocionPopover visible={emocionAbierta} value={emocionAutor} onSelect={setEmocionAutor} />
+            </div>
+
+            {hashtagsSugeridos.length > 0 && (
+              <div className={styles.hashtagsSugeridos}>
+                {hashtagsSugeridos.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={styles.hashtagChip}
+                    onClick={() => insertarHashtagSugerido(tag)}
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.postBoxFooter}>
+              {emocionActual && (
+                <span className={styles.emocionElegida}>
+                  {emocionActual.emoji} {emocionActual.etiqueta}
+                  <button type="button" className={styles.emocionQuitar} onClick={() => setEmocionAutor(null)}>×</button>
+                </span>
+              )}
+              <button
+                type="button"
+                className={styles.imageButton}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {image ? image.name : '📷 Añadir imagen'}
+              </button>
+              <input
+                ref={fileInputRef}
+                className={styles.imageInputHidden}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+              />
+            </div>
+          </div>
         </div>
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="nuevo-progreso">
             Actualizar mi progreso a (opcional)
           </label>
-          <select
+          <BuscadorLocal
             id="nuevo-progreso"
-            className={styles.select}
-            value={nuevoProgresoId ?? ''}
-            onChange={(e) => setNuevoProgresoId(Number(e.target.value) || null)}
-          >
-            <option value="">No actualizar</option>
-            {detalle.unidades.map((u) => (
-              <option key={u.id} value={u.id}>{u.etiqueta}</option>
-            ))}
-          </select>
+            items={unidadesItems}
+            value={nuevoProgresoId}
+            onChange={setNuevoProgresoId}
+            placeholder="Buscar unidad..."
+            emptyLabel="No actualizar"
+          />
         </div>
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="frontera">
             Frontera de spoiler (opcional)
           </label>
-          <select
+          <BuscadorLocal
             id="frontera"
-            className={styles.select}
-            value={fronteraId ?? ''}
-            onChange={(e) => setFronteraId(Number(e.target.value) || null)}
-          >
-            <option value="">Dejar que la IA sugiera (o usar tu progreso actual)</option>
-            {detalle.unidades.map((u) => (
-              <option key={u.id} value={u.id}>{u.etiqueta}</option>
-            ))}
-          </select>
+            items={unidadesItems}
+            value={fronteraId}
+            onChange={setFronteraId}
+            placeholder="Buscar unidad..."
+            emptyLabel="Dejar que la IA sugiera (o usar tu progreso actual)"
+          />
           <span className={styles.hint}>
             Si no se indica, se intenta clasificar automáticamente; si no es posible, se usa tu progreso actual.
           </span>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>
-          <div className={styles.textareaWrap}>
-            <textarea
-              id="text"
-              ref={textareaRef}
-              className={styles.textarea}
-              value={text}
-              onChange={(e) => autocomplete.handleChange(e.target.value)}
-              onKeyDown={autocomplete.handleKeyDown}
-              onBlur={() => setTimeout(autocomplete.cerrar, 150)}
-              required
-            />
-            <AutocompleteDropdown
-              suggestions={autocomplete.suggestions}
-              activeIndex={autocomplete.activeIndex}
-              onSelect={autocomplete.seleccionar}
-            />
-          </div>
-
-          {hashtagsSugeridos.length > 0 && (
-            <div className={styles.hashtagsSugeridos}>
-              {hashtagsSugeridos.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  className={styles.hashtagChip}
-                  onClick={() => insertarHashtagSugerido(tag)}
-                >
-                  #{tag}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} />
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="image">Imagen (opcional)</label>
-          <input
-            id="image"
-            className={styles.input}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-          />
         </div>
 
         <button className={styles.submit} type="submit" disabled={enviando || !referenciaId}>
