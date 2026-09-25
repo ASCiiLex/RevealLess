@@ -33,7 +33,19 @@ export default function SaveButton({ postId, guardadoInicial }: Props) {
       aria-pressed={guardado}
       aria-label={guardado ? 'Quitar de guardados' : 'Guardar publicación'}
     >
-      <span aria-hidden="true">🔖</span>
+      <svg
+        className={styles.icon}
+        viewBox="0 0 24 24"
+        width="14"
+        height="14"
+        aria-hidden="true"
+        fill={guardado ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      >
+        <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" />
+      </svg>
       <span className={styles.label}>{guardado ? 'Guardado' : 'Guardar'}</span>
     </button>
   )

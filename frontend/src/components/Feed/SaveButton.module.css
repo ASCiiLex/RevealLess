@@ -17,8 +17,15 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
+.icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* En móvil, activo = círculo dorado sólido; inactivo = círculo claro. */
 .saveActive {
-  color: var(--gold);
+  background: var(--gold);
+  color: var(--paper);
 }
 
 .save:disabled {
@@ -38,6 +45,14 @@
     border-radius: var(--radius);
     padding: 6px 12px;
     gap: 6px;
+    background: var(--paper);
+    color: var(--fog);
+  }
+
+  .saveActive {
+    /* En escritorio se mantiene el estilo sutil (fondo claro, texto dorado) porque ahí ya hay palabra. */
+    background: var(--paper);
+    color: var(--gold);
   }
 
   .label {
