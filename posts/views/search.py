@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from django.db.models import Count
+from django.db.models import Count, Q
 
+from follows.models import Follow
 from ..models import Hashtag, Post
 
 
@@ -12,8 +13,22 @@ def mentions_search(request):
     results = []
 
     if q:
-        users = User.objects.filter(username__istartswith=q).order_by('username')[:10]
-        results = [{'username': u.username} for u in users]
+        candidatos = User.objects.filter(username__istartswith=q).exclude(id=request.user.id)
+
+        ids_relacionados = set(
+            Follow.objects.filter(
+                Q(follower=request.user) | Q(followed=request.user)
+            ).values_list('follower_id', 'followed_id').distinct()
+        )
+        ids_relacionados = {
+            uid for par in ids_relacionados for uid in par if uid != request.user.id
+        }
+
+        usuarios = list(candidatos.order_by('username'))
+        # Con relación primero (te sigue o le sigues), luego el resto; alfabético dentro de cada grupo.
+        usuarios.sort(key=lambda u: (u.id not in ids_relacionados, u.username.lower()))
+
+        results = [{'username': u.username} for u in usuarios[:10]]
 
     return JsonResponse({'results': results})
 
