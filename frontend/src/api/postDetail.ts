@@ -220,3 +220,15 @@ export async function updatePost(
   }
   return response.json()
 }
+
+export async function deleteComment(commentId: number): Promise<void> {
+  const response = await fetch(`/comments/delete/${commentId}/`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'X-CSRFToken': getCsrfToken() },
+  })
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null)
+    throw detail
+  }
+}

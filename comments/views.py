@@ -64,9 +64,12 @@ def add_comment(request):
         parent = get_object_or_404(
             Comment.objects.visible_for(request.user), id=parent_id, post=post
         )
-        if parent.parent_id is not None:
+        # Máximo 3 niveles: raíz -> respuesta -> respuesta-a-respuesta.
+        # Se rechaza solo si el comentario al que se responde ya tiene
+        # "abuelo" (ya es una respuesta-a-respuesta): eso crearía un 4º nivel.
+        if parent.parent_id and parent.parent.parent_id:
             return JsonResponse(
-                {"error": "No se puede responder a una respuesta ya anidada."},
+                {"error": "No se puede responder más allá de una respuesta anidada."},
                 status=400,
             )
 

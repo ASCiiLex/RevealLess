@@ -101,36 +101,45 @@ class AddCommentViewTests(TestCase):
         })
         self.assertEqual(response.status_code, 400)
 
-    def test_responder_a_una_respuesta_es_rechazado(self):
-        """Limite de 3 niveles: comentario -> respuesta ->
-        respuesta-a-respuesta, y ahi se para."""
+    def test_responder_a_una_respuesta_de_segundo_nivel_crea_nivel_3(self):
+        """Nivel 3 permitido: raíz -> respuesta (nivel 2) -> respuesta
+        a esa respuesta (nivel 3), el límite máximo de anidación."""
         self.client.force_login(self.comentador)
         padre = Comment.objects.create(
             user=self.autor, post=self.post, text='comentario raiz',
             referencia_narrativa=self.e1,
         )
-        respuesta = Comment.objects.create(
+        respuesta_nivel_2 = Comment.objects.create(
             user=self.comentador, post=self.post, parent=padre, text='respuesta nivel 2',
             referencia_narrativa=self.e1,
         )
         response = self.client.post(reverse('add_comment'), {
-            'post_id': self.post.id, 'text': 'intento nivel 4', 'parent_id': respuesta.id,
+            'post_id': self.post.id, 'text': 'respuesta nivel 3', 'parent_id': respuesta_nivel_2.id,
         })
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
+        nivel3 = Comment.objects.get(text='respuesta nivel 3')
+        self.assertEqual(nivel3.parent, respuesta_nivel_2)
 
-    def test_responder_a_un_comentario_raiz_permite_nivel_3(self):
-        """Confirma explicitamente que SI se permite: responder a una
-        respuesta de nivel 2 cuyo padre es un comentario raiz (nivel 1)
-        -- eso crea el nivel 3, el limite maximo permitido."""
+    def test_responder_a_una_respuesta_de_tercer_nivel_es_rechazado(self):
+        """Límite real: no se puede crear un 4º nivel respondiendo a
+        una respuesta-a-respuesta (nivel 3)."""
         self.client.force_login(self.comentador)
         padre = Comment.objects.create(
             user=self.autor, post=self.post, text='comentario raiz',
             referencia_narrativa=self.e1,
         )
+        respuesta_nivel_2 = Comment.objects.create(
+            user=self.comentador, post=self.post, parent=padre, text='respuesta nivel 2',
+            referencia_narrativa=self.e1,
+        )
+        respuesta_nivel_3 = Comment.objects.create(
+            user=self.comentador, post=self.post, parent=respuesta_nivel_2, text='respuesta nivel 3',
+            referencia_narrativa=self.e1,
+        )
         response = self.client.post(reverse('add_comment'), {
-            'post_id': self.post.id, 'text': 'respuesta nivel 2', 'parent_id': padre.id,
+            'post_id': self.post.id, 'text': 'intento nivel 4', 'parent_id': respuesta_nivel_3.id,
         })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
 
     def test_crear_comentario_con_obra_cruzada_y_frontera(self):
         from narrative.models import Obra, UnidadNarrativa

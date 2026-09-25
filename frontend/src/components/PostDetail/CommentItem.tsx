@@ -11,7 +11,7 @@ import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAuto
 import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 import type { DeteccionCruzada } from '../../api/publicar'
 import type { CommentItem as CommentItemType } from '../../api/postDetail'
-import { addComment } from '../../api/postDetail'
+import { addComment, deleteComment } from '../../api/postDetail'
 import type { ObraDetalle } from '../../api/suscripciones'
 
 interface Props {
@@ -19,8 +19,12 @@ interface Props {
   postId: number
   obraDetalle: ObraDetalle | null
   nivel?: number
+  onEliminado?: (commentId: number) => void
 }
 
+// nivel 1 = raíz, nivel 2 = respuesta, nivel 3 = respuesta-a-respuesta.
+// El backend permite responder en nivel 1 y 2 (crea nivel 2 y 3), y
+// rechaza responder en nivel 3 (crearía un nivel 4).
 const NIVEL_MAXIMO = 3
 
 const NARRATIVA_VACIA: NarrativaValue = {
@@ -30,7 +34,7 @@ const NARRATIVA_VACIA: NarrativaValue = {
   fronteraCruzadaId: null,
 }
 
-export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }: Props) {
+export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, onEliminado }: Props) {
   const [replyAbierto, setReplyAbierto] = useState(false)
   const [replyTexto, setReplyTexto] = useState('')
   const [replyNarrativa, setReplyNarrativa] = useState<NarrativaValue>(NARRATIVA_VACIA)
@@ -41,6 +45,8 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
   const [textoActual, setTextoActual] = useState(comment.text)
   const [emocionActual, setEmocionActual] = useState(comment.emocion_autor)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
+  const [eliminando, setEliminando] = useState(false)
+  const [eliminado, setEliminado] = useState(false)
 
   const replyInputRef = useRef<HTMLInputElement>(null)
   const autocomplete = useMentionHashtagAutocomplete({
@@ -110,6 +116,30 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
     if (e.key === 'Enter') enviarReply()
   }
 
+  function handleReplyEliminado(replyId: number) {
+    setReplies((prev) => prev.filter((r) => r.id !== replyId))
+  }
+
+  async function handleEliminar() {
+    if (eliminando) return
+    if (!window.confirm('¿Eliminar este comentario? Esta acción no se puede deshacer.')) return
+
+    setEliminando(true)
+    try {
+      await deleteComment(comment.id)
+      setEliminado(true)
+      onEliminado?.(comment.id)
+    } catch {
+      // Sin cambios visibles: el comentario sigue mostrándose si falla el borrado.
+    } finally {
+      setEliminando(false)
+    }
+  }
+
+  if (eliminado) {
+    return null
+  }
+
   const puedeResponder = nivel < NIVEL_MAXIMO
 
   return (
@@ -119,9 +149,14 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
         <span className={styles.username}>@{comment.user}</span>
         <EmocionBadge emocionAutor={emocionActual} />
         {comment.is_own_comment && (
-          <button className={styles.editButton} onClick={() => setEditando(true)}>
-            Editar
-          </button>
+          <>
+            <button className={styles.editButton} onClick={() => setEditando(true)}>
+              Editar
+            </button>
+            <button className={styles.editButton} onClick={handleEliminar} disabled={eliminando}>
+              {eliminando ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          </>
         )}
       </div>
       <p className={styles.text}><LinkedText text={textoActual} /></p>
@@ -201,6 +236,7 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1 }:
               postId={postId}
               obraDetalle={obraDetalle}
               nivel={nivel + 1}
+              onEliminado={handleReplyEliminado}
             />
           ))}
         </div>

@@ -132,6 +132,11 @@ export default function PostDetailView({ postId }: Props) {
     if (e.key === 'Enter') handleComentar()
   }
 
+  function handleComentarioEliminado(commentId: number) {
+    if (!detalle) return
+    setDetalle({ ...detalle, comments: detalle.comments.filter((c) => c.id !== commentId) })
+  }
+
   function handlePostActualizado(postActualizado: FeedPost) {
     if (!detalle) return
 
@@ -251,6 +256,7 @@ export default function PostDetailView({ postId }: Props) {
             comment={c}
             postId={postId}
             obraDetalle={obraDetalle}
+            onEliminado={handleComentarioEliminado}
           />
         ))
       )}
