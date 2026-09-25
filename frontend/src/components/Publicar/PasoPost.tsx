@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
-import BuscadorLocal, { type BuscadorItem } from './BuscadorLocal'
-import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
+import BuscadorLocal from './BuscadorLocal'
+import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
 import { crearPost } from '../../api/publicar'
 import type { DeteccionCruzada } from '../../api/publicar'
 import { fetchSuggestedHashtags } from '../../api/textAutocomplete'
@@ -20,15 +20,19 @@ interface Props {
 }
 
 export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublicado, onProgresoRequerido }: Props) {
-  const [detalle, setDetalle] = useState<ObraDetalle | null>(null)
+  const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
   const [text, setText] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [referenciaId, setReferenciaId] = useState<number | null>(null)
+  const [referenciaLabel, setReferenciaLabel] = useState<string | null>(null)
   const [fronteraId, setFronteraId] = useState<number | null>(null)
+  const [fronteraLabel, setFronteraLabel] = useState<string | null>(null)
   const [emocionAutor, setEmocionAutor] = useState<string | null>(null)
   const [emocionAbierta, setEmocionAbierta] = useState(false)
   const [temaId, setTemaId] = useState<number | null>(temaIdInicial ?? null)
+  const [temaLabel, setTemaLabel] = useState<string | null>(null)
   const [nuevoProgresoId, setNuevoProgresoId] = useState<number | null>(null)
+  const [nuevoProgresoLabel, setNuevoProgresoLabel] = useState<string | null>(null)
   const [confirmarSalto, setConfirmarSalto] = useState(false)
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
@@ -41,9 +45,20 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
   const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
 
   useEffect(() => {
-    fetchObraDetalle(obraSlug).then(setDetalle)
+    fetchObraContextoPublicar(obraSlug).then(setContexto)
     fetchSuggestedHashtags().then((data) => setHashtagsSugeridos(data.results))
   }, [obraSlug])
+
+  useEffect(() => {
+    if (temaIdInicial && contexto) {
+      const tema = contexto.temas.find((t) => t.id === temaIdInicial)
+      if (tema) setTemaLabel(tema.nombre)
+    }
+  }, [temaIdInicial, contexto])
+
+  function buscarUnidadesObra(q: string) {
+    return buscarUnidades(obraSlug, q)
+  }
 
   function insertarHashtagSugerido(tag: string) {
     const campo = textareaRef.current
@@ -108,12 +123,17 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
     enviar()
   }
 
-  if (!detalle) {
+  if (!contexto) {
     return null
   }
 
-  const unidadesItems: BuscadorItem[] = detalle.unidades.map((u) => ({ id: u.id, label: u.etiqueta }))
-  const temasItems: BuscadorItem[] = detalle.temas.map((t) => ({ id: t.id, label: t.nombre }))
+  function buscarTemas(q: string) {
+    const items = contexto!.temas
+      .filter((t) => t.nombre.toLowerCase().includes(q.toLowerCase()))
+      .map((t) => ({ id: t.id, label: t.nombre }))
+    return Promise.resolve(items)
+  }
+
   const emocionActual = EMOCIONES.find((e) => e.clave === emocionAutor)
 
   return (
@@ -135,10 +155,11 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
           <label className={styles.label} htmlFor="referencia">¿De qué parte habla?</label>
           <BuscadorLocal
             id="referencia"
-            items={unidadesItems}
             value={referenciaId}
-            onChange={setReferenciaId}
+            valueLabel={referenciaLabel}
+            onChange={(id, label) => { setReferenciaId(id); setReferenciaLabel(label) }}
             placeholder="Elige una unidad"
+            buscar={buscarUnidadesObra}
           />
         </div>
 
@@ -146,11 +167,12 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
           <label className={styles.label} htmlFor="tema">Tema transversal (opcional)</label>
           <BuscadorLocal
             id="tema"
-            items={temasItems}
             value={temaId}
-            onChange={setTemaId}
+            valueLabel={temaLabel}
+            onChange={(id, label) => { setTemaId(id); setTemaLabel(label) }}
             placeholder="Buscar tema..."
             emptyLabel="Ninguno"
+            buscar={buscarTemas}
           />
         </div>
 
@@ -223,11 +245,12 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
           </label>
           <BuscadorLocal
             id="nuevo-progreso"
-            items={unidadesItems}
             value={nuevoProgresoId}
-            onChange={setNuevoProgresoId}
+            valueLabel={nuevoProgresoLabel}
+            onChange={(id, label) => { setNuevoProgresoId(id); setNuevoProgresoLabel(label) }}
             placeholder="Buscar unidad..."
             emptyLabel="No actualizar"
+            buscar={buscarUnidadesObra}
           />
         </div>
 
@@ -237,11 +260,12 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
           </label>
           <BuscadorLocal
             id="frontera"
-            items={unidadesItems}
             value={fronteraId}
-            onChange={setFronteraId}
+            valueLabel={fronteraLabel}
+            onChange={(id, label) => { setFronteraId(id); setFronteraLabel(label) }}
             placeholder="Buscar unidad..."
             emptyLabel="Dejar que la IA sugiera (o usar tu progreso actual)"
+            buscar={buscarUnidadesObra}
           />
           <span className={styles.hint}>
             Si no se indica, se intenta clasificar automáticamente; si no es posible, se usa tu progreso actual.

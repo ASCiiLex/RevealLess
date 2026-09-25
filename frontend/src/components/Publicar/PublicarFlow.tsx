@@ -2,7 +2,7 @@ import { useState } from 'react'
 import PasoObra from './PasoObra'
 import PasoProgreso from './PasoProgreso'
 import PasoPost from './PasoPost'
-import { fetchProgreso } from '../../api/progreso'
+import { existeProgreso } from '../../api/progreso'
 import type { TemaBusqueda } from '../../api/buscar'
 
 type Paso = 'obra' | 'cargando' | 'progreso' | 'post'
@@ -20,11 +20,11 @@ export default function PublicarFlow() {
   async function irAPaso(o: ObraSeleccionada) {
     setObra(o)
     setPaso('cargando')
-    // Fuente de verdad real (no heurística sobre datos del catálogo):
-    // se consulta si existe progreso antes de decidir el paso, para no
-    // llegar al formulario y descubrir el 409 a mitad de escritura.
-    const data = await fetchProgreso(o.slug)
-    setPaso(data.progreso ? 'post' : 'progreso')
+    // Solo confirma si existe progreso, sin traer las unidades
+    // completas (que en obras grandes son el coste real) -- si hace
+    // falta declarar progreso, PasoProgreso las pide por su cuenta.
+    const tieneProgreso = await existeProgreso(o.slug)
+    setPaso(tieneProgreso ? 'post' : 'progreso')
   }
 
   function handleElegirObra(o: ObraSeleccionada) {

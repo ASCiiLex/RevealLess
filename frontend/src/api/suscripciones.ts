@@ -88,3 +88,19 @@ export function crearSolicitudTema(obraId: number, nombre: string): Promise<Soli
     nombre,
   })
 }
+
+export function buscarUnidades(obraSlug: string, q: string): Promise<{ id: number; label: string }[]> {
+  const params = q ? `?q=${encodeURIComponent(q)}` : ''
+  return api
+    .get<{ unidades: { id: number; etiqueta: string }[] }>(`/narrative/api/obras/${obraSlug}/unidades/${params}`)
+    .then((data) => data.unidades.map((u) => ({ id: u.id, label: u.etiqueta })))
+}
+
+export interface ObraContextoPublicar {
+  obra: { id: number; titulo: string; slug: string }
+  temas: { id: number; nombre: string }[]
+}
+
+export function fetchObraContextoPublicar(obraSlug: string): Promise<ObraContextoPublicar> {
+  return api.get<ObraContextoPublicar>(`/narrative/api/obras/${obraSlug}/contexto-publicar/`)
+}

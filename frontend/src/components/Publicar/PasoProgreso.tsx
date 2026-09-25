@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './PasoProgreso.module.css'
-import { fetchProgreso, actualizarProgreso } from '../../api/progreso'
+import { fetchProgreso, actualizarProgreso, type UnidadNarrativa } from '../../api/progreso'
 import UnidadNode from '../Progreso/UnidadNode'
 import { buildTree } from '../../utils/buildTree'
 
@@ -11,21 +11,27 @@ interface Props {
 }
 
 export default function PasoProgreso({ obraSlug, obraTitulo, onProgresoDeclarado }: Props) {
-  const [unidades, setUnidades] = useState<Awaited<ReturnType<typeof fetchProgreso>>['unidades'] | null>(null)
+  const [unidades, setUnidades] = useState<UnidadNarrativa[] | null>(null)
+  const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
     fetchProgreso(obraSlug).then((data) => setUnidades(data.unidades))
   }, [obraSlug])
 
   async function handleSelect(unidadId: number) {
-    const resultado = await actualizarProgreso(obraSlug, unidadId)
-    if (!('requiereConfirmacion' in resultado)) {
-      onProgresoDeclarado()
+    setEnviando(true)
+    try {
+      const resultado = await actualizarProgreso(obraSlug, unidadId)
+      if (!('requiereConfirmacion' in resultado)) {
+        onProgresoDeclarado()
+      }
+      // La primera declaración de progreso nunca exige confirmación de
+      // salto grande (mismo criterio que actualizar_progreso() en
+      // backend), así que este caso límite no debería darse aquí en la
+      // práctica -- se deja sin manejar explícitamente por eso.
+    } finally {
+      setEnviando(false)
     }
-    // La primera declaración de progreso nunca exige confirmación de
-    // salto grande (mismo criterio que actualizar_progreso() en
-    // backend), así que este caso límite no debería darse aquí en la
-    // práctica -- se deja sin manejar explícitamente por eso.
   }
 
   if (!unidades) {
@@ -41,7 +47,13 @@ export default function PasoProgreso({ obraSlug, obraTitulo, onProgresoDeclarado
 
       <div className={styles.tree}>
         {arbol.map((nodo) => (
-          <UnidadNode key={nodo.id} nodo={nodo} actualId={-1} actualOrden={-1} onSelect={handleSelect} />
+          <UnidadNode
+            key={nodo.id}
+            nodo={nodo}
+            actualId={-1}
+            actualOrden={-1}
+            onSelect={enviando ? () => {} : handleSelect}
+          />
         ))}
       </div>
     </div>

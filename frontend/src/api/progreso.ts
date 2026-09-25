@@ -65,3 +65,7 @@ export async function actualizarProgreso(
     throw err
   }
 }
+
+export function existeProgreso(obraSlug: string): Promise<boolean> {
+  return api.get<{ existe: boolean }>(`/narrative/api/progreso/${obraSlug}/existe/`).then((data) => data.existe)
+}

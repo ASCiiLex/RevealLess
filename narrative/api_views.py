@@ -112,3 +112,18 @@ class ProgresoAPIView(APIView):
             }, status=status.HTTP_409_CONFLICT)
 
         return Response(ProgresoUsuarioSerializer(progreso).data)
+
+
+class ProgresoExisteAPIView(APIView):
+    """Version ligera de ProgresoAPIView.get(): solo confirma si el
+    usuario ya declaro progreso en esta obra, sin serializar las
+    unidades (en obras grandes -- One Piece: 1229 -- ese payload era
+    el cuello de botella real de PublicarFlow, que solo necesita saber
+    si hace falta o no el paso de declarar progreso)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, obra_slug):
+        obra = get_object_or_404(Obra, slug=obra_slug)
+        existe = ProgresoUsuario.objects.filter(usuario=request.user, obra=obra).exists()
+        return Response({'existe': existe})

@@ -82,6 +82,48 @@ class ObraDetalleAPIView(APIView):
         })
 
 
+class UnidadesBuscarAPIView(APIView):
+    """Busqueda de unidades narrativas de una obra por texto, para
+    BuscadorLocal (referencia/progreso/frontera en el formulario de
+    publicar). Evita cargar de golpe obras con miles de unidades
+    (One Piece: 1229) -- ObraDetalleAPIView sigue sirviendo el listado
+    completo para el arbol de progreso, que si necesita el conjunto
+    entero de una vez."""
+
+    permission_classes = [IsAuthenticated]
+    LIMITE = 30
+
+    def get(self, request, obra_slug):
+        obra = get_object_or_404(Obra, slug=obra_slug)
+        q = request.query_params.get('q', '').strip()
+
+        unidades = UnidadNarrativa.objects.filter(obra=obra)
+        if q:
+            unidades = unidades.filter(nombre__icontains=q)
+        unidades = unidades.order_by('orden_inicio')[:self.LIMITE]
+
+        return Response({'unidades': UnidadNarrativaSerializer(unidades, many=True).data})
+
+
+class ObraContextoPublicarAPIView(APIView):
+    """Version ligera de ObraDetalleAPIView para el formulario de
+    publicar: solo temas y obras relacionadas, sin las unidades (que en
+    obras grandes -- One Piece: 1229 -- eran el grueso real del peso y
+    tiempo de la respuesta, y ya no las usa este formulario desde que
+    BuscadorLocal busca en el servidor)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, obra_slug):
+        obra = get_object_or_404(Obra, slug=obra_slug)
+        temas = TemaTransversal.objects.filter(obra=obra).order_by('nombre')
+
+        return Response({
+            'obra': {'id': obra.id, 'titulo': obra.titulo, 'slug': obra.slug},
+            'temas': [{'id': t.id, 'nombre': t.nombre} for t in temas],
+        })
+    
+
 class ObraLandingAPIView(APIView):
     """Endpoint dedicado a la landing de obra: sinopsis, categorias,
     progreso del usuario, total de suscriptores (cualquier nivel:
