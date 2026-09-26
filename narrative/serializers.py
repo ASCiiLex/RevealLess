@@ -88,9 +88,16 @@ class PostSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
             return None
-        from likes.models import PostReaction
-        reaction = PostReaction.objects.filter(user=request.user, post=obj).first()
-        return reaction.reaction if reaction else None
+        # Igual patrón que get_is_saved: una sola consulta por petición,
+        # cacheada en el contexto compartido, en vez de una por post.
+        reaccion_por_post = self.context.get('_user_reactions')
+        if reaccion_por_post is None:
+            from likes.models import PostReaction
+            reaccion_por_post = dict(
+                PostReaction.objects.filter(user=request.user).values_list('post_id', 'reaction')
+            )
+            self.context['_user_reactions'] = reaccion_por_post
+        return reaccion_por_post.get(obj.id)
 
     def get_is_own_post(self, obj):
         request = self.context.get('request')
