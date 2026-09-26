@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
-from .models import Post
+from ..models import Post
 
 
 class PostUpdateAPIViewTests(TestCase):

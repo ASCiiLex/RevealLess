@@ -5,7 +5,7 @@ from django.urls import reverse
 from likes.models import PostReaction
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
 from narrative.services import actualizar_progreso
-from .models import Post
+from ..models import Post
 
 
 class ListaReaccionesPostTests(TestCase):

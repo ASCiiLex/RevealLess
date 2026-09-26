@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from follows.models import Follow
-from .models import Hashtag
+from ..models import Hashtag
 
 
 class MentionsSearchTests(TestCase):
