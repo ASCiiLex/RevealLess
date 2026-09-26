@@ -39,6 +39,10 @@
   gap: 4px;
 }
 
+.fieldRelativo {
+  position: relative;
+}
+
 .label {
   font-size: 12px;
   font-weight: 600;
@@ -58,7 +62,7 @@
 
 .textarea {
   resize: vertical;
-  min-height: 70px;
+  min-height: 80px;
 }
 
 .error {

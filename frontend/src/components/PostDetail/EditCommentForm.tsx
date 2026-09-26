@@ -1,12 +1,12 @@
-import { useRef, useState, type KeyboardEvent } from 'react'
-import styles from './EditCommentForm.module.css'
+import { useState } from 'react'
+import EdicionModal from './EdicionModal'
+import CampoTextoEdicion from './CampoTextoEdicion'
+import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
+import EmocionSelector from '../Emociones/EmocionSelector'
 import { updateComment, type CommentItem, type CommentUpdate } from '../../api/comentarios'
 import type { ObraDetalle } from '../../api/suscripciones'
-import EmocionSelector from '../Emociones/EmocionSelector'
-import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
-import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import { useAvisoConfirmable } from '../../hooks/useAvisoConfirmable'
 import { detectarReduccion } from '../../utils/avisoReduccion'
-import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 
 interface Props {
   comment: CommentItem
@@ -14,6 +14,8 @@ interface Props {
   onGuardado: (datos: { text: string; emocion_autor: string | null }) => void
   onCancelar: () => void
 }
+
+const ERROR_GUARDADO = 'No se pudo guardar la edición. Revisa los datos e inténtalo de nuevo.'
 
 function cambiosCruzada(comment: CommentItem, narrativa: NarrativaValue): Pick<CommentUpdate, 'obraCruzadaId' | 'fronteraCruzadaId'> {
   // Tenía obra cruzada y el usuario eligió "Esta obra": se vacían ambos campos.
@@ -36,30 +38,21 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
   })
   const [emocionAutor, setEmocionAutor] = useState<string | null>(comment.emocion_autor)
   const [error, setError] = useState<string | null>(null)
-  const [avisoReduccion, setAvisoReduccion] = useState<string | null>(null)
-  const [confirmadoPeseAviso, setConfirmadoPeseAviso] = useState(false)
   const [guardando, setGuardando] = useState(false)
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
+  const aviso = useAvisoConfirmable()
 
   async function handleGuardar() {
     if (!obraDetalle) return
     setError(null)
 
-    if (!confirmadoPeseAviso) {
-      const aviso = detectarReduccion({
-        unidades: obraDetalle.unidades,
-        referenciaOriginalId: comment.referencia_narrativa_id,
-        referenciaNuevaId: narrativa.referenciaId,
-        fronteraOriginalId: comment.frontera_spoiler_id,
-        fronteraNuevaId: narrativa.fronteraId,
-      })
-      if (aviso) {
-        setAvisoReduccion(aviso)
-        return
-      }
-    }
+    const bloqueado = aviso.bloquea(detectarReduccion({
+      unidades: obraDetalle.unidades,
+      referenciaOriginalId: comment.referencia_narrativa_id,
+      referenciaNuevaId: narrativa.referenciaId,
+      fronteraOriginalId: comment.frontera_spoiler_id,
+      fronteraNuevaId: narrativa.fronteraId,
+    }))
+    if (bloqueado) return
 
     setGuardando(true)
     try {
@@ -72,14 +65,10 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
       })
       onGuardado({ text, emocion_autor: emocionAutor })
     } catch {
-      setError('No se pudo guardar la edición. Revisa los datos e inténtalo de nuevo.')
+      setError(ERROR_GUARDADO)
     } finally {
       setGuardando(false)
     }
-  }
-
-  function handleKeyDownTexto(e: KeyboardEvent<HTMLTextAreaElement>) {
-    autocomplete.handleKeyDown(e)
   }
 
   if (!obraDetalle) {
@@ -87,76 +76,37 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
   }
 
   return (
-    <div className={styles.overlay} onClick={onCancelar}>
-      <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
-        <h2 className={styles.title}>Editar comentario</h2>
+    <EdicionModal
+      titulo="Editar comentario"
+      error={error}
+      aviso={aviso.aviso}
+      onConfirmarAviso={aviso.confirmar}
+      guardando={guardando}
+      puedeGuardar={text.trim().length > 0}
+      onGuardar={handleGuardar}
+      onCancelar={onCancelar}
+    >
+      <CampoTextoEdicion
+        id="edit-comment-text"
+        etiqueta="¿Qué quieres comentar?"
+        value={text}
+        onChange={setText}
+      />
 
-        <div className={styles.form}>
-          {error && <p className={styles.error}>{error}</p>}
+      <NarrativaSelector
+        obraLocal={obraDetalle}
+        value={narrativa}
+        onChange={(v) => {
+          setNarrativa(v)
+          aviso.reiniciar()
+        }}
+      />
 
-          {avisoReduccion && (
-            <div className={styles.warningBox}>
-              {avisoReduccion}
-              <br />
-              <button
-                className={styles.confirmLink}
-                onClick={() => {
-                  setConfirmadoPeseAviso(true)
-                  setAvisoReduccion(null)
-                }}
-              >
-                Entiendo, continuar de todas formas
-              </button>
-            </div>
-          )}
-
-          <div className={styles.field} style={{ position: 'relative' }}>
-            <label className={styles.label} htmlFor="edit-comment-text">¿Qué quieres comentar?</label>
-            <textarea
-              id="edit-comment-text"
-              ref={textareaRef}
-              className={styles.textarea}
-              value={text}
-              onChange={(e) => autocomplete.handleChange(e.target.value)}
-              onKeyDown={handleKeyDownTexto}
-              onBlur={() => setTimeout(autocomplete.cerrar, 150)}
-            />
-            <AutocompleteDropdown
-              suggestions={autocomplete.suggestions}
-              activeIndex={autocomplete.activeIndex}
-              onSelect={autocomplete.seleccionar}
-            />
-          </div>
-
-          <NarrativaSelector
-            obraLocal={obraDetalle}
-            value={narrativa}
-            onChange={(v) => {
-              setNarrativa(v)
-              setConfirmadoPeseAviso(false)
-            }}
-          />
-
-          <EmocionSelector
-            value={emocionAutor}
-            onChange={setEmocionAutor}
-            label="¿Quieres añadir emoción de contexto? (opcional)"
-          />
-
-          <div className={styles.actions}>
-            <button className={`${styles.button} ${styles.cancel}`} onClick={onCancelar}>
-              Cancelar
-            </button>
-            <button
-              className={`${styles.button} ${styles.confirm}`}
-              onClick={handleGuardar}
-              disabled={guardando || !text.trim()}
-            >
-              {guardando ? 'Guardando...' : 'Guardar cambios'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <EmocionSelector
+        value={emocionAutor}
+        onChange={setEmocionAutor}
+        label="¿Quieres añadir emoción de contexto? (opcional)"
+      />
+    </EdicionModal>
   )
 }

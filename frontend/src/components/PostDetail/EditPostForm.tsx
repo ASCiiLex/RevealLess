@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import styles from './EditPostForm.module.css'
+import { useEffect, useState } from 'react'
+import styles from './EdicionModal.module.css'
+import EdicionModal from './EdicionModal'
+import CampoTextoEdicion from './CampoTextoEdicion'
+import EmocionSelector from '../Emociones/EmocionSelector'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { updatePost } from '../../api/postDetail'
-import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import { useAvisoConfirmable } from '../../hooks/useAvisoConfirmable'
 import { detectarReduccion } from '../../utils/avisoReduccion'
-import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
-import EmocionSelector from '../Emociones/EmocionSelector'
 import type { FeedPost } from '../../api/feed'
 
 interface Props {
@@ -13,6 +14,14 @@ interface Props {
   onGuardado: (post: FeedPost) => void
   onCancelar: () => void
 }
+
+const NIVELES_SPOILER = [
+  { valor: 'menor', etiqueta: 'Menor' },
+  { valor: 'importante', etiqueta: 'Importante' },
+  { valor: 'trama_central', etiqueta: 'Trama central' },
+]
+
+const ERROR_GUARDADO = 'No se pudo guardar la edición. Revisa los datos e inténtalo de nuevo.'
 
 export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const [detalle, setDetalle] = useState<ObraDetalle | null>(null)
@@ -22,12 +31,8 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const [nivelSpoiler, setNivelSpoiler] = useState(post.nivel_spoiler)
   const [emocionAutor, setEmocionAutor] = useState<string | null>(post.emocion_autor)
   const [error, setError] = useState<string | null>(null)
-  const [avisoReduccion, setAvisoReduccion] = useState<string | null>(null)
-  const [confirmadoPeseAviso, setConfirmadoPeseAviso] = useState(false)
   const [guardando, setGuardando] = useState(false)
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
+  const aviso = useAvisoConfirmable()
 
   useEffect(() => {
     fetchObraDetalle(post.obra_slug).then(setDetalle)
@@ -37,19 +42,14 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
     if (!detalle) return
     setError(null)
 
-    if (!confirmadoPeseAviso) {
-      const aviso = detectarReduccion({
-        unidades: detalle.unidades,
-        referenciaOriginalId: post.referencia_narrativa?.id ?? null,
-        referenciaNuevaId: referenciaId,
-        fronteraOriginalId: post.frontera_spoiler?.id ?? null,
-        fronteraNuevaId: fronteraId,
-      })
-      if (aviso) {
-        setAvisoReduccion(aviso)
-        return
-      }
-    }
+    const bloqueado = aviso.bloquea(detectarReduccion({
+      unidades: detalle.unidades,
+      referenciaOriginalId: post.referencia_narrativa?.id ?? null,
+      referenciaNuevaId: referenciaId,
+      fronteraOriginalId: post.frontera_spoiler?.id ?? null,
+      fronteraNuevaId: fronteraId,
+    }))
+    if (bloqueado) return
 
     setGuardando(true)
     try {
@@ -62,14 +62,10 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
       })
       onGuardado(actualizado)
     } catch {
-      setError('No se pudo guardar la edición. Revisa los datos e inténtalo de nuevo.')
+      setError(ERROR_GUARDADO)
     } finally {
       setGuardando(false)
     }
-  }
-
-  function handleKeyDownTexto(e: KeyboardEvent<HTMLTextAreaElement>) {
-    autocomplete.handleKeyDown(e)
   }
 
   if (!detalle) {
@@ -77,114 +73,70 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   }
 
   return (
-    <div className={styles.overlay} onClick={onCancelar}>
-      <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
-        <h2 className={styles.title}>Editar publicación</h2>
+    <EdicionModal
+      titulo="Editar publicación"
+      error={error}
+      aviso={aviso.aviso}
+      onConfirmarAviso={aviso.confirmar}
+      guardando={guardando}
+      puedeGuardar={text.trim().length > 0}
+      onGuardar={handleGuardar}
+      onCancelar={onCancelar}
+    >
+      <CampoTextoEdicion id="edit-text" etiqueta="Texto" value={text} onChange={setText} />
 
-        <div className={styles.form}>
-          {error && <p className={styles.error}>{error}</p>}
+      <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} colapsable={false} />
 
-          {avisoReduccion && (
-            <div className={styles.warningBox}>
-              {avisoReduccion}
-              <br />
-              <button
-                className={styles.confirmLink}
-                onClick={() => {
-                  setConfirmadoPeseAviso(true)
-                  setAvisoReduccion(null)
-                }}
-              >
-                Entiendo, continuar de todas formas
-              </button>
-            </div>
-          )}
-
-          <div className={styles.field} style={{ position: 'relative' }}>
-            <label className={styles.label} htmlFor="edit-text">Texto</label>
-            <textarea
-              id="edit-text"
-              ref={textareaRef}
-              className={styles.textarea}
-              value={text}
-              onChange={(e) => autocomplete.handleChange(e.target.value)}
-              onKeyDown={handleKeyDownTexto}
-              onBlur={() => setTimeout(autocomplete.cerrar, 150)}
-            />
-            <AutocompleteDropdown
-              suggestions={autocomplete.suggestions}
-              activeIndex={autocomplete.activeIndex}
-              onSelect={autocomplete.seleccionar}
-            />
-          </div>
-
-          <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} colapsable={false} />
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>
-            <select
-              id="edit-referencia"
-              className={styles.select}
-              value={referenciaId ?? ''}
-              onChange={(e) => {
-                setReferenciaId(Number(e.target.value) || null)
-                setConfirmadoPeseAviso(false)
-              }}
-            >
-              {detalle.unidades.map((u) => (
-                <option key={u.id} value={u.id}>{u.etiqueta}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="edit-frontera">
-              Frontera de spoiler (déjalo vacío para no cambiarla)
-            </label>
-            <select
-              id="edit-frontera"
-              className={styles.select}
-              value={fronteraId ?? ''}
-              onChange={(e) => {
-                setFronteraId(Number(e.target.value) || null)
-                setConfirmadoPeseAviso(false)
-              }}
-            >
-              <option value="">No cambiar</option>
-              {detalle.unidades.map((u) => (
-                <option key={u.id} value={u.id}>{u.etiqueta}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="edit-nivel">Nivel de spoiler</label>
-            <select
-              id="edit-nivel"
-              className={styles.select}
-              value={nivelSpoiler}
-              onChange={(e) => setNivelSpoiler(e.target.value)}
-            >
-              <option value="menor">Menor</option>
-              <option value="importante">Importante</option>
-              <option value="trama_central">Trama central</option>
-            </select>
-          </div>
-
-          <div className={styles.actions}>
-            <button className={`${styles.button} ${styles.cancel}`} onClick={onCancelar}>
-              Cancelar
-            </button>
-            <button
-              className={`${styles.button} ${styles.confirm}`}
-              onClick={handleGuardar}
-              disabled={guardando || !text.trim()}
-            >
-              {guardando ? 'Guardando...' : 'Guardar cambios'}
-            </button>
-          </div>
-        </div>
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>
+        <select
+          id="edit-referencia"
+          className={styles.select}
+          value={referenciaId ?? ''}
+          onChange={(e) => {
+            setReferenciaId(Number(e.target.value) || null)
+            aviso.reiniciar()
+          }}
+        >
+          {detalle.unidades.map((u) => (
+            <option key={u.id} value={u.id}>{u.etiqueta}</option>
+          ))}
+        </select>
       </div>
-    </div>
+
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="edit-frontera">
+          Frontera de spoiler (déjalo vacío para no cambiarla)
+        </label>
+        <select
+          id="edit-frontera"
+          className={styles.select}
+          value={fronteraId ?? ''}
+          onChange={(e) => {
+            setFronteraId(Number(e.target.value) || null)
+            aviso.reiniciar()
+          }}
+        >
+          <option value="">No cambiar</option>
+          {detalle.unidades.map((u) => (
+            <option key={u.id} value={u.id}>{u.etiqueta}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="edit-nivel">Nivel de spoiler</label>
+        <select
+          id="edit-nivel"
+          className={styles.select}
+          value={nivelSpoiler}
+          onChange={(e) => setNivelSpoiler(e.target.value)}
+        >
+          {NIVELES_SPOILER.map((n) => (
+            <option key={n.valor} value={n.valor}>{n.etiqueta}</option>
+          ))}
+        </select>
+      </div>
+    </EdicionModal>
   )
 }
