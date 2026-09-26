@@ -39,6 +39,13 @@ class CommentUpdateAPIView(APIView):
             comment.frontera_spoiler = datos['frontera_spoiler']
             comment.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
 
+        # Se valida el estado resultante: la edición puede tocar solo uno de los dos campos.
+        if bool(comment.obra_cruzada_id) != bool(comment.frontera_cruzada_id):
+            return Response(
+                {'detail': 'Indica la obra cruzada y su frontera juntas, o ninguna de las dos.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             comment.full_clean()
         except ValidationError as exc:

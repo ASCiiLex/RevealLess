@@ -6,22 +6,11 @@ from django.views.decorators.http import require_POST
 
 from narrative.models import ClasificacionNarrativa
 from narrative.services import detectar_posibles_referencias_cruzadas
+from narrative.services.detecciones import serializar_detecciones
 from posts.models import Post
 from ..models import Comment
 from ..serializers import CommentCreateSerializer
 from .respuestas import datos_clasificacion
-
-
-def _serializar_detecciones(detecciones):
-    return [
-        {
-            'obra_id': d['obra'].id,
-            'obra_titulo': d['obra'].titulo,
-            'obra_slug': d['obra'].slug,
-            'palabra': d['palabra'],
-        }
-        for d in detecciones
-    ]
 
 
 def _error(mensaje, status=400):
@@ -68,7 +57,7 @@ def add_comment(request):
         if detecciones:
             return JsonResponse({
                 'detail': 'referencia_cruzada_detectada',
-                'detecciones': _serializar_detecciones(detecciones),
+                'detecciones': serializar_detecciones(detecciones),
             }, status=409)
 
     comment = Comment(
