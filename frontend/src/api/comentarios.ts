@@ -1,4 +1,4 @@
-import type { ReferenciaCruzadaDetectada } from './publicar'
+import { mapearDetecciones, type DeteccionApi, type ReferenciaCruzadaDetectada } from './publicar'
 import { construirFormData, enviarFormData, jsonOError } from './formData'
 
 const AVATAR_POR_DEFECTO = '/static/img/default_profile.jpg'
@@ -47,13 +47,6 @@ export interface AddCommentOptions {
   descartarReferenciaCruzada?: boolean
 }
 
-interface DeteccionApi {
-  obra_id: number
-  obra_titulo: string
-  obra_slug: string
-  palabra: string
-}
-
 /** Adapta la respuesta de creación al formato del árbol de comentarios. */
 export function comentarioDesdeCreado(creado: ComentarioCreado): CommentItem {
   return {
@@ -98,12 +91,7 @@ export async function addComment(
   if (response.status === 409 && body?.detail === 'referencia_cruzada_detectada') {
     return {
       referenciaCruzadaDetectada: true,
-      detecciones: ((body.detecciones ?? []) as DeteccionApi[]).map((d) => ({
-        obraId: d.obra_id,
-        obraTitulo: d.obra_titulo,
-        obraSlug: d.obra_slug,
-        palabra: d.palabra,
-      })),
+      detecciones: mapearDetecciones(body.detecciones as DeteccionApi[]),
     }
   }
   if (!response.ok) throw body

@@ -1,15 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
-import BuscadorLocal from './BuscadorLocal'
-import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
-import { crearPost } from '../../api/publicar'
-import type { DeteccionCruzada } from '../../api/publicar'
-import { fetchSuggestedHashtags } from '../../api/textAutocomplete'
-import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
-import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
-import EmocionPopover from '../Emociones/EmocionPopover'
-import { EMOCIONES } from '../../constants/emociones'
+import BuscadorLocal, { type BuscadorItem } from './BuscadorLocal'
+import EditorTexto from './EditorTexto'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
+import { ApiError } from '../../api/client'
+import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
+import { crearPost, type DeteccionCruzada } from '../../api/publicar'
 
 interface Props {
   obraSlug: string
@@ -19,122 +15,149 @@ interface Props {
   onProgresoRequerido: () => void
 }
 
+interface Seleccion {
+  id: number | null
+  label: string | null
+}
+
+// Decisiones del usuario ante los 409: se acumulan para que un reenvío no pierda las anteriores.
+interface Ajustes {
+  confirmarSaltoProgreso?: boolean
+  obraCruzadaId?: number | null
+  fronteraCruzadaId?: number | null
+  descartarReferenciaCruzada?: boolean
+}
+
+const SIN_SELECCION: Seleccion = { id: null, label: null }
+const ERROR_GENERICO = 'No se pudo publicar. Revisa los datos e inténtalo de nuevo.'
+
+function mensajeDeError(err: unknown): string {
+  const cuerpo = err instanceof ApiError ? err.detail : null
+  const detalle = (cuerpo as { detail?: unknown } | null)?.detail ?? cuerpo
+  if (typeof detalle === 'string') return detalle
+  if (detalle && typeof detalle === 'object') {
+    const primero = Object.values(detalle)[0]
+    if (Array.isArray(primero) && typeof primero[0] === 'string') return primero[0]
+  }
+  return ERROR_GENERICO
+}
+
+interface CampoSeleccionProps {
+  id: string
+  etiqueta: string
+  seleccion: Seleccion
+  onChange: (seleccion: Seleccion) => void
+  placeholder: string
+  emptyLabel?: string
+  buscar: (q: string) => Promise<BuscadorItem[]>
+  hint?: string
+}
+
+function CampoSeleccion({ id, etiqueta, seleccion, onChange, placeholder, emptyLabel, buscar, hint }: CampoSeleccionProps) {
+  return (
+    <div className={styles.field}>
+      <label className={styles.label} htmlFor={id}>{etiqueta}</label>
+      <BuscadorLocal
+        id={id}
+        value={seleccion.id}
+        valueLabel={seleccion.label}
+        onChange={(nuevoId, label) => onChange({ id: nuevoId, label })}
+        placeholder={placeholder}
+        emptyLabel={emptyLabel}
+        buscar={buscar}
+      />
+      {hint && <span className={styles.hint}>{hint}</span>}
+    </div>
+  )
+}
+
 export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublicado, onProgresoRequerido }: Props) {
   const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
-  const [text, setText] = useState('')
-  const [image, setImage] = useState<File | null>(null)
-  const [referenciaId, setReferenciaId] = useState<number | null>(null)
-  const [referenciaLabel, setReferenciaLabel] = useState<string | null>(null)
-  const [fronteraId, setFronteraId] = useState<number | null>(null)
-  const [fronteraLabel, setFronteraLabel] = useState<string | null>(null)
-  const [emocionAutor, setEmocionAutor] = useState<string | null>(null)
-  const [emocionAbierta, setEmocionAbierta] = useState(false)
-  const [temaId, setTemaId] = useState<number | null>(temaIdInicial ?? null)
-  const [temaLabel, setTemaLabel] = useState<string | null>(null)
-  const [nuevoProgresoId, setNuevoProgresoId] = useState<number | null>(null)
-  const [nuevoProgresoLabel, setNuevoProgresoLabel] = useState<string | null>(null)
-  const [confirmarSalto, setConfirmarSalto] = useState(false)
+  const [texto, setTexto] = useState('')
+  const [imagen, setImagen] = useState<File | null>(null)
+  const [emocion, setEmocion] = useState<string | null>(null)
+  const [referencia, setReferencia] = useState<Seleccion>(SIN_SELECCION)
+  const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
+  const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
+  const [tema, setTema] = useState<Seleccion>({ id: temaIdInicial ?? null, label: null })
+  const [ajustes, setAjustes] = useState<Ajustes>({})
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
-  const [hashtagsSugeridos, setHashtagsSugeridos] = useState<string[]>([])
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
 
   useEffect(() => {
     fetchObraContextoPublicar(obraSlug).then(setContexto)
-    fetchSuggestedHashtags().then((data) => setHashtagsSugeridos(data.results))
   }, [obraSlug])
 
   useEffect(() => {
-    if (temaIdInicial && contexto) {
-      const tema = contexto.temas.find((t) => t.id === temaIdInicial)
-      if (tema) setTemaLabel(tema.nombre)
+    const inicial = contexto?.temas.find((t) => t.id === temaIdInicial)
+    if (inicial) {
+      setTema((actual) => (actual.id === inicial.id ? { ...actual, label: inicial.nombre } : actual))
     }
   }, [temaIdInicial, contexto])
 
-  function buscarUnidadesObra(q: string) {
-    return buscarUnidades(obraSlug, q)
-  }
+  // Referencias estables: BuscadorLocal relanza la búsqueda si cambia su prop buscar.
+  const buscarUnidadesObra = useCallback((q: string) => buscarUnidades(obraSlug, q), [obraSlug])
 
-  function insertarHashtagSugerido(tag: string) {
-    const campo = textareaRef.current
-    const inserted = `#${tag} `
-    const cursor = campo?.selectionStart ?? text.length
-    const nuevoValor = text.slice(0, cursor) + inserted + text.slice(cursor)
-    setText(nuevoValor)
-    requestAnimationFrame(() => {
-      const pos = cursor + inserted.length
-      campo?.setSelectionRange(pos, pos)
-      campo?.focus()
-    })
-  }
+  const buscarTemas = useCallback(
+    (q: string) => Promise.resolve(
+      (contexto?.temas ?? [])
+        .filter((t) => t.nombre.toLowerCase().includes(q.toLowerCase()))
+        .map((t) => ({ id: t.id, label: t.nombre }))
+    ),
+    [contexto]
+  )
 
-  async function enviar(overrides: {
-    obraCruzadaId?: number | null
-    fronteraCruzadaId?: number | null
-    descartarReferenciaCruzada?: boolean
-  } = {}) {
-    if (!referenciaId) return
+  async function enviar(ajustesEnvio: Ajustes) {
+    if (!referencia.id || enviando) return
     setError(null)
     setAvisoSalto(null)
     setEnviando(true)
 
     try {
       const resultado = await crearPost(obraSlug, {
-        text,
-        image,
-        referenciaNarrativaId: referenciaId,
-        fronteraSpoilerId: fronteraId,
-        emocionAutor,
-        temaId,
-        nuevoProgresoId,
-        confirmarSaltoProgreso: confirmarSalto,
-        ...overrides,
+        text: texto,
+        image: imagen,
+        referenciaNarrativaId: referencia.id,
+        fronteraSpoilerId: frontera.id,
+        emocionAutor: emocion,
+        temaId: tema.id,
+        nuevoProgresoId: nuevoProgreso.id,
+        ...ajustesEnvio,
       })
 
       if ('progresoRequerido' in resultado) {
         onProgresoRequerido()
-        return
-      }
-      if ('requiereConfirmacion' in resultado) {
+      } else if ('requiereConfirmacion' in resultado) {
         setAvisoSalto(resultado.detail)
-        return
-      }
-      if ('referenciaCruzadaDetectada' in resultado) {
+      } else if ('referenciaCruzadaDetectada' in resultado) {
         setDetecciones(resultado.detecciones)
-        return
+      } else {
+        onPublicado(resultado.id)
       }
-
-      setDetecciones(null)
-      onPublicado(resultado.id)
-    } catch {
-      setError('No se pudo publicar. Revisa los datos e inténtalo de nuevo.')
+    } catch (err) {
+      setError(mensajeDeError(err))
     } finally {
       setEnviando(false)
     }
   }
 
+  function enviarCon(nuevos: Ajustes) {
+    const combinados = { ...ajustes, ...nuevos }
+    setAjustes(combinados)
+    setDetecciones(null)
+    enviar(combinados)
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    enviar()
+    enviar(ajustes)
   }
 
   if (!contexto) {
     return null
   }
-
-  function buscarTemas(q: string) {
-    const items = contexto!.temas
-      .filter((t) => t.nombre.toLowerCase().includes(q.toLowerCase()))
-      .map((t) => ({ id: t.id, label: t.nombre }))
-    return Promise.resolve(items)
-  }
-
-  const emocionActual = EMOCIONES.find((e) => e.clave === emocionAutor)
 
   return (
     <div className={styles.wrapper}>
@@ -145,134 +168,66 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
         {avisoSalto && (
           <p className={styles.error}>
             {avisoSalto}{' '}
-            <button type="button" onClick={() => { setConfirmarSalto(true); enviar() }}>
+            <button type="button" onClick={() => enviarCon({ confirmarSaltoProgreso: true })}>
               Confirmar y publicar
             </button>
           </p>
         )}
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="referencia">¿De qué parte habla?</label>
-          <BuscadorLocal
-            id="referencia"
-            value={referenciaId}
-            valueLabel={referenciaLabel}
-            onChange={(id, label) => { setReferenciaId(id); setReferenciaLabel(label) }}
-            placeholder="Elige una unidad"
-            buscar={buscarUnidadesObra}
-          />
-        </div>
+        <CampoSeleccion
+          id="referencia"
+          etiqueta="¿De qué parte habla?"
+          seleccion={referencia}
+          onChange={setReferencia}
+          placeholder="Elige una unidad"
+          buscar={buscarUnidadesObra}
+        />
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="tema">Tema transversal (opcional)</label>
-          <BuscadorLocal
-            id="tema"
-            value={temaId}
-            valueLabel={temaLabel}
-            onChange={(id, label) => { setTemaId(id); setTemaLabel(label) }}
-            placeholder="Buscar tema..."
-            emptyLabel="Ninguno"
-            buscar={buscarTemas}
-          />
-        </div>
+        <CampoSeleccion
+          id="tema"
+          etiqueta="Tema transversal (opcional)"
+          seleccion={tema}
+          onChange={setTema}
+          placeholder="Buscar tema..."
+          emptyLabel="Ninguno"
+          buscar={buscarTemas}
+        />
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>
-          <div className={styles.postBox}>
-            <div className={styles.textareaWrap}>
-              <textarea
-                id="text"
-                ref={textareaRef}
-                className={styles.textarea}
-                value={text}
-                onChange={(e) => autocomplete.handleChange(e.target.value)}
-                onKeyDown={autocomplete.handleKeyDown}
-                onFocus={() => setEmocionAbierta(true)}
-                onBlur={() => setTimeout(() => { autocomplete.cerrar(); setEmocionAbierta(false) }, 150)}
-                required
-              />
-              <AutocompleteDropdown
-                suggestions={autocomplete.suggestions}
-                activeIndex={autocomplete.activeIndex}
-                onSelect={autocomplete.seleccionar}
-              />
-              <EmocionPopover visible={emocionAbierta} value={emocionAutor} onSelect={setEmocionAutor} />
-            </div>
-
-            {hashtagsSugeridos.length > 0 && (
-              <div className={styles.hashtagsSugeridos}>
-                {hashtagsSugeridos.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    className={styles.hashtagChip}
-                    onClick={() => insertarHashtagSugerido(tag)}
-                  >
-                    #{tag}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <div className={styles.postBoxFooter}>
-              {emocionActual && (
-                <span className={styles.emocionElegida}>
-                  {emocionActual.emoji} {emocionActual.etiqueta}
-                  <button type="button" className={styles.emocionQuitar} onClick={() => setEmocionAutor(null)}>×</button>
-                </span>
-              )}
-              <button
-                type="button"
-                className={styles.imageButton}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {image ? image.name : '📷 Añadir imagen'}
-              </button>
-              <input
-                ref={fileInputRef}
-                className={styles.imageInputHidden}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="nuevo-progreso">
-            Actualizar mi progreso a (opcional)
-          </label>
-          <BuscadorLocal
-            id="nuevo-progreso"
-            value={nuevoProgresoId}
-            valueLabel={nuevoProgresoLabel}
-            onChange={(id, label) => { setNuevoProgresoId(id); setNuevoProgresoLabel(label) }}
-            placeholder="Buscar unidad..."
-            emptyLabel="No actualizar"
-            buscar={buscarUnidadesObra}
+          <EditorTexto
+            id="text"
+            texto={texto}
+            onTextoChange={setTexto}
+            emocion={emocion}
+            onEmocionChange={setEmocion}
+            imagen={imagen}
+            onImagenChange={setImagen}
           />
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="frontera">
-            Frontera de spoiler (opcional)
-          </label>
-          <BuscadorLocal
-            id="frontera"
-            value={fronteraId}
-            valueLabel={fronteraLabel}
-            onChange={(id, label) => { setFronteraId(id); setFronteraLabel(label) }}
-            placeholder="Buscar unidad..."
-            emptyLabel="Dejar que la IA sugiera (o usar tu progreso actual)"
-            buscar={buscarUnidadesObra}
-          />
-          <span className={styles.hint}>
-            Si no se indica, se intenta clasificar automáticamente; si no es posible, se usa tu progreso actual.
-          </span>
-        </div>
+        <CampoSeleccion
+          id="nuevo-progreso"
+          etiqueta="Actualizar mi progreso a (opcional)"
+          seleccion={nuevoProgreso}
+          onChange={setNuevoProgreso}
+          placeholder="Buscar unidad..."
+          emptyLabel="No actualizar"
+          buscar={buscarUnidadesObra}
+        />
 
-        <button className={styles.submit} type="submit" disabled={enviando || !referenciaId}>
+        <CampoSeleccion
+          id="frontera"
+          etiqueta="Frontera de spoiler (opcional)"
+          seleccion={frontera}
+          onChange={setFrontera}
+          placeholder="Buscar unidad..."
+          emptyLabel="Dejar que la IA sugiera (o usar tu progreso actual)"
+          buscar={buscarUnidadesObra}
+          hint="Si no se indica, se intenta clasificar automáticamente; si no es posible, se usa tu progreso actual."
+        />
+
+        <button className={styles.submit} type="submit" disabled={enviando || !referencia.id}>
           {enviando ? 'Publicando...' : 'Publicar'}
         </button>
       </form>
@@ -280,14 +235,8 @@ export default function PasoPost({ obraSlug, obraTitulo, temaIdInicial, onPublic
       {detecciones && (
         <ReferenciaCruzadaAviso
           detecciones={detecciones}
-          onConfirmar={(obraCruzadaId, fronteraCruzadaId) => {
-            setDetecciones(null)
-            enviar({ obraCruzadaId, fronteraCruzadaId })
-          }}
-          onDescartar={() => {
-            setDetecciones(null)
-            enviar({ descartarReferenciaCruzada: true })
-          }}
+          onConfirmar={(obraCruzadaId, fronteraCruzadaId) => enviarCon({ obraCruzadaId, fronteraCruzadaId })}
+          onDescartar={() => enviarCon({ descartarReferenciaCruzada: true })}
           onCancelar={() => setDetecciones(null)}
         />
       )}
