@@ -5,6 +5,8 @@ import CategoryChips from './CategoryChips'
 import { fetchCatalogoObras } from '../../api/obras'
 import { useCatalogView } from '../../context/CatalogViewContext'
 
+const CHIP_TEMAS = 'Temas'
+
 export default function Carousel() {
   const { view, obraFiltro, setObraFiltro } = useCatalogView()
   const [obras, setObras] = useState<{ biblioteca: LomoObra[]; descubrir: LomoObra[] } | null>(
@@ -33,13 +35,26 @@ export default function Carousel() {
 
   const categoriasDisponibles = useMemo(() => {
     const set = new Set<string>()
-    listaCompleta.forEach((obra) => obra.categorias?.forEach((cat) => set.add(cat)))
-    return Array.from(set).sort()
+    let hayTemas = false
+    listaCompleta.forEach((obra) => {
+      if (obra.es_tema) {
+        hayTemas = true
+        return
+      }
+      obra.categorias?.forEach((cat) => set.add(cat))
+    })
+    const categorias = Array.from(set).sort()
+    if (hayTemas) {
+      categorias.push(CHIP_TEMAS)
+    }
+    return categorias
   }, [listaCompleta])
 
-  const listaFiltrada = categoriaActiva
-    ? listaCompleta.filter((obra) => obra.categorias?.includes(categoriaActiva))
-    : listaCompleta
+  const listaFiltrada = !categoriaActiva
+    ? listaCompleta
+    : categoriaActiva === CHIP_TEMAS
+      ? listaCompleta.filter((obra) => obra.es_tema)
+      : listaCompleta.filter((obra) => !obra.es_tema && obra.categorias?.includes(categoriaActiva))
 
   function handleSelectObra(obra: LomoObra) {
     setObraFiltro(obraFiltro === obra.id ? null : obra.id)
