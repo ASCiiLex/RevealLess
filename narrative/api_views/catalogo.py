@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from ..models import Obra, ProgresoUsuario, UnidadNarrativa
 from ..serializers import ObraResumenSerializer, UnidadNarrativaSerializer
-from .comun import contexto_suscripcion_obra, obra_basica, temas_planos
+from .comun import contexto_suscripcion_obra, obra_basica, temas_planos, temas_suscritos_serializados
 
 
 class CatalogoObrasAPIView(APIView):
@@ -24,10 +24,12 @@ class CatalogoObrasAPIView(APIView):
         )
         contexto = {'progreso_por_obra': progreso_por_obra, **contexto_suscripcion}
 
+        biblioteca = ObraResumenSerializer(
+            todas.filter(id__in=ids_biblioteca), many=True, context=contexto,
+        ).data
+
         return Response({
-            'biblioteca': ObraResumenSerializer(
-                todas.filter(id__in=ids_biblioteca), many=True, context=contexto,
-            ).data,
+            'biblioteca': biblioteca + temas_suscritos_serializados(request.user),
             'descubrir': ObraResumenSerializer(
                 todas.exclude(id__in=ids_biblioteca), many=True, context=contexto,
             ).data,
@@ -41,7 +43,6 @@ class ObraDetalleAPIView(APIView):
 
     def get(self, request, obra_slug):
         obra = get_object_or_404(Obra, slug=obra_slug)
-        # padre y obra precargados: sin ellos, etiqueta e imagen disparan N+1 en obras de miles de unidades.
         unidades = (
             UnidadNarrativa.objects.filter(obra=obra)
             .select_related('padre', 'obra')

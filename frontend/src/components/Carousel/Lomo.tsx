@@ -11,6 +11,8 @@ export interface LomoObra {
   progreso_pct?: number
   suscrito: boolean
   suscripcion_id: number | null
+  es_tema?: boolean
+  tema_id?: number | null
 }
 
 interface Props {
@@ -26,6 +28,8 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
   const [suscripcionId, setSuscripcionId] = useState(obra.suscripcion_id)
   const [cargando, setCargando] = useState(false)
 
+  const esTema = !!obra.es_tema
+
   async function handleToggleSeguir() {
     if (cargando) return
     setCargando(true)
@@ -37,7 +41,9 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
         setSiguiendo(false)
         setSuscripcionId(null)
       } else {
-        const suscripcion = await crearSuscripcion(obra.slug)
+        const suscripcion = esTema
+          ? await crearSuscripcion(obra.slug, { temaId: obra.tema_id ?? undefined })
+          : await crearSuscripcion(obra.slug)
         setSiguiendo(true)
         setSuscripcionId(suscripcion.id)
       }
@@ -49,8 +55,12 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
 
   function handleVerInfo(e: React.MouseEvent) {
     e.stopPropagation()
-    window.location.href = `/narrative/obra/${obra.slug}/`
+    window.location.href = esTema
+      ? `/narrative/tema/${obra.tema_id}/`
+      : `/narrative/obra/${obra.slug}/`
   }
+
+  const mostrarProgresoFinal = mostrarProgreso && !esTema
 
   return (
     <div className={styles.wrapper}>
@@ -59,7 +69,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
         onClick={() => onSelect(obra)}
         aria-pressed={activa}
       >
-        {typeof obra.progreso_pct === 'number' && (
+        {!esTema && typeof obra.progreso_pct === 'number' && (
           <div className={styles.progressTrack}>
             <div className={styles.progressFill} style={{ width: `${obra.progreso_pct}%` }} />
           </div>
@@ -80,7 +90,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
         <span className={styles.title}>{obra.titulo}</span>
       </button>
 
-      {mostrarProgreso && (
+      {mostrarProgresoFinal && (
         <a className={styles.progressLink} href={`/narrative/progreso/${obra.slug}/`}>
           <span className={styles.progressIcon} aria-hidden="true">📖</span>
           <span className={styles.actionText}>Progreso</span>

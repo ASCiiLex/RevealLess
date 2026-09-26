@@ -218,3 +218,39 @@ class ObraLandingSerializer(serializers.ModelSerializer):
             }
             for t in temas
         ], many=True).data
+
+
+class TemaLomoSerializer(serializers.Serializer):
+    """Representa un TemaTransversal suscrito como si fuera un LomoObra
+    en el carrusel: mismo shape que ObraResumenSerializer (id, titulo,
+    slug, imagen_url, categorias, suscrito, suscripcion_id), sin
+    progreso_pct -- un tema no tiene progreso propio, siempre vive a
+    nivel de obra. 'slug' apunta al slug de la obra dueña del tema (para
+    reutilizar el mismo link de icono 'i' -> landing), categorias
+    siempre ['Tema'] para que CategoryChips lo filtre como una categoria
+    mas, sin tocar ese componente."""
+
+    id = serializers.IntegerField()
+    titulo = serializers.CharField(source='nombre')
+    slug = serializers.CharField(source='obra.slug')
+    imagen_url = serializers.SerializerMethodField()
+    categorias = serializers.SerializerMethodField()
+    suscrito = serializers.SerializerMethodField()
+    suscripcion_id = serializers.SerializerMethodField()
+    es_tema = serializers.SerializerMethodField()
+    tema_id = serializers.IntegerField(source='id')
+
+    def get_imagen_url(self, obj):
+        return obj.image_url
+
+    def get_categorias(self, obj):
+        return ['Tema']
+
+    def get_suscrito(self, obj):
+        return True  # solo se listan temas ya suscritos
+
+    def get_suscripcion_id(self, obj):
+        return self.context.get('suscripcion_id_por_tema', {}).get(obj.id)
+
+    def get_es_tema(self, obj):
+        return True

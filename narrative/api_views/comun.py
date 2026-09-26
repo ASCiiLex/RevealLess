@@ -52,3 +52,17 @@ def suscripcion_id_por_tema(user):
     return dict(
         Suscripcion.objects.filter(usuario=user, tema__isnull=False).values_list('tema_id', 'id')
     )
+
+
+def temas_suscritos_serializados(user):
+    """Temas a los que el usuario esta suscrito individualmente,
+    listos para mostrarse como lomos en el carrusel de Biblioteca."""
+    from ..serializers import TemaLomoSerializer
+
+    ids_temas = set(suscripcion_id_por_tema(user).keys())
+    if not ids_temas:
+        return []
+
+    temas = TemaTransversal.objects.filter(id__in=ids_temas).select_related('obra')
+    contexto = {'suscripcion_id_por_tema': suscripcion_id_por_tema(user)}
+    return TemaLomoSerializer(temas, many=True, context=contexto).data

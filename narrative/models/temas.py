@@ -1,7 +1,14 @@
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
+from core.validators import validate_image_size
+
 from .catalogo import Obra, UnidadNarrativa
+
+
+def tema_image_path(instance, filename):
+    return f'narrative/temas/{instance.obra.slug}/{filename}'
 
 
 class TemaTransversal(models.Model):
@@ -22,6 +29,18 @@ class TemaTransversal(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_TEMATICO)
     # Solo minihistorias: unidades donde aparece. No implica pertenencia narrativa.
     unidades = models.ManyToManyField(UnidadNarrativa, blank=True, related_name='temas_transversales')
+    # Imagen propia del tema, deliberadamente distinta a la de su obra --
+    # para no confundir un "lomo de tema" con un lomo de obra real en el
+    # carrusel. Sin imagen propia -> icono generico via image_url.
+    imagen = models.ImageField(
+        upload_to=tema_image_path,
+        blank=True,
+        null=True,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+            validate_image_size,
+        ],
+    )
 
     class Meta:
         unique_together = ('obra', 'nombre')
@@ -29,6 +48,15 @@ class TemaTransversal(models.Model):
 
     def __str__(self):
         return f'{self.obra.titulo} · {self.nombre}'
+
+    @property
+    def image_url(self):
+        try:
+            if self.imagen and hasattr(self.imagen, 'url'):
+                return self.imagen.url
+        except ValueError:
+            pass
+        return '/static/img/default_tema.jpg'
 
 
 class SolicitudTema(models.Model):

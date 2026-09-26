@@ -66,13 +66,13 @@ class ProgresoUsuarioAdmin(admin.ModelAdmin):
 
 @admin.register(TemaTransversal)
 class TemaTransversalAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'obra', 'tipo')
+    list_display = ('nombre', 'obra', 'tipo', 'imagen')
     list_filter = ('obra', 'tipo')
     search_fields = ('nombre',)
+    raw_id_fields = ('unidades',)
     # raw_id_fields en un M2M da un buscador con lookup en vez de cargar
     # todas las unidades de golpe (que es lo que haría filter_horizontal
     # aquí, con el mismo problema de escala que el padre de arriba).
-    raw_id_fields = ('unidades',)
 
 
 @admin.register(SolicitudTema)
