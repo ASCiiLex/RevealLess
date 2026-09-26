@@ -226,11 +226,14 @@ class TemaLomoSerializer(serializers.Serializer):
     slug, imagen_url, categorias, suscrito, suscripcion_id), sin
     progreso_pct -- un tema no tiene progreso propio, siempre vive a
     nivel de obra. 'slug' apunta al slug de la obra dueña del tema (para
-    reutilizar el mismo link de icono 'i' -> landing), categorias
-    siempre ['Tema'] para que CategoryChips lo filtre como una categoria
-    mas, sin tocar ese componente."""
+    reutilizar el mismo link de icono 'i' -> landing). 'id' se invierte
+    a negativo: los PKs de TemaTransversal y Obra son autoincrementales
+    de tablas distintas y colisionan con normalidad (mismo id numerico
+    para un tema y una obra), lo que corrompe las keys de React y el
+    filtro por obraFiltro en el carrusel -- el id real para
+    enlazar/suscribir sigue disponible en tema_id."""
 
-    id = serializers.IntegerField()
+    id = serializers.SerializerMethodField()
     titulo = serializers.CharField(source='nombre')
     slug = serializers.CharField(source='obra.slug')
     imagen_url = serializers.SerializerMethodField()
@@ -240,11 +243,14 @@ class TemaLomoSerializer(serializers.Serializer):
     es_tema = serializers.SerializerMethodField()
     tema_id = serializers.IntegerField(source='id')
 
+    def get_id(self, obj):
+        return -obj.id
+
     def get_imagen_url(self, obj):
         return obj.image_url
 
     def get_categorias(self, obj):
-        return ['Tema']
+        return ['Temas']
 
     def get_suscrito(self, obj):
         return True  # solo se listan temas ya suscritos
