@@ -4,8 +4,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from posts.models import Hashtag, PostHashtag, Post
-from .models import Obra, TemaTransversal, UnidadNarrativa, ClasificacionNarrativa
-from .services import actualizar_progreso
+from ..models import Obra, TemaTransversal, UnidadNarrativa, ClasificacionNarrativa
+from ..services import actualizar_progreso
 
 
 class BuscarAPIViewTests(TestCase):

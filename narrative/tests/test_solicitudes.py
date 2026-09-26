@@ -3,8 +3,8 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from .models import Obra, TemaTransversal, SolicitudTema
-from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
+from ..models import Obra, TemaTransversal, SolicitudTema
+from ..services import aprobar_solicitud_tema, rechazar_solicitud_tema
 
 
 class SolicitudTemaListCreateAPIViewTests(TestCase):
