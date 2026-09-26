@@ -1,17 +1,11 @@
-import { useRef, useState, type KeyboardEvent } from 'react'
+import { useState } from 'react'
 import styles from './CommentItem.module.css'
+import ComentarioForm from './ComentarioForm'
+import EditCommentForm from './EditCommentForm'
 import EmocionBadge from '../Emociones/EmocionBadge'
-import EmocionPopover from '../Emociones/EmocionPopover'
 import ReactionBar from '../Feed/ReactionBar'
 import LinkedText from '../Text/LinkedText'
-import EditCommentForm from './EditCommentForm'
-import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
-import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
-import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
-import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
-import type { DeteccionCruzada } from '../../api/publicar'
-import type { CommentItem as CommentItemType } from '../../api/postDetail'
-import { addComment, deleteComment } from '../../api/postDetail'
+import { deleteComment, type CommentItem as CommentItemType } from '../../api/comentarios'
 import type { ObraDetalle } from '../../api/suscripciones'
 
 interface Props {
@@ -19,105 +13,33 @@ interface Props {
   postId: number
   obraDetalle: ObraDetalle | null
   nivel?: number
-  onEliminado?: (commentId: number) => void
+  onEliminado: (commentId: number) => void
 }
 
-// nivel 1 = raíz, nivel 2 = respuesta, nivel 3 = respuesta-a-respuesta.
-// El backend permite responder en nivel 1 y 2 (crea nivel 2 y 3), y
-// rechaza responder en nivel 3 (crearía un nivel 4).
+// 1 = raíz, 2 = respuesta, 3 = respuesta-a-respuesta; el backend rechaza un 4º nivel.
 const NIVEL_MAXIMO = 3
-
-const NARRATIVA_VACIA: NarrativaValue = {
-  referenciaId: null,
-  fronteraId: null,
-  obraCruzadaId: null,
-  fronteraCruzadaId: null,
-}
 
 export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, onEliminado }: Props) {
   const [replyAbierto, setReplyAbierto] = useState(false)
-  const [replyTexto, setReplyTexto] = useState('')
-  const [replyNarrativa, setReplyNarrativa] = useState<NarrativaValue>(NARRATIVA_VACIA)
-  const [replyEmocion, setReplyEmocion] = useState<string | null>(null)
-  const [replyEmocionAbierta, setReplyEmocionAbierta] = useState(false)
   const [replies, setReplies] = useState(comment.replies)
   const [editando, setEditando] = useState(false)
   const [textoActual, setTextoActual] = useState(comment.text)
   const [emocionActual, setEmocionActual] = useState(comment.emocion_autor)
-  const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
   const [eliminando, setEliminando] = useState(false)
-  const [eliminado, setEliminado] = useState(false)
 
-  const replyInputRef = useRef<HTMLInputElement>(null)
-  const autocomplete = useMentionHashtagAutocomplete({
-    value: replyTexto,
-    onChange: setReplyTexto,
-    fieldRef: replyInputRef,
-  })
-
-  async function enviarReply(overrides: {
-    obraCruzadaId?: number | null
-    fronteraCruzadaId?: number | null
-    descartarReferenciaCruzada?: boolean
-  } = {}) {
-    if (!replyTexto.trim()) return
-
-    const resultado = await addComment(postId, replyTexto, {
-      parentId: comment.id,
-      referenciaNarrativaId: replyNarrativa.referenciaId,
-      fronteraSpoilerId: replyNarrativa.fronteraId,
-      obraCruzadaId: replyNarrativa.obraCruzadaId,
-      fronteraCruzadaId: replyNarrativa.fronteraCruzadaId,
-      emocionAutor: replyEmocion,
-      ...overrides,
-    })
-
-    if ('referenciaCruzadaDetectada' in resultado) {
-      setDetecciones(resultado.detecciones)
-      return
-    }
-
-    setDetecciones(null)
-    setReplies((prev) => [
-      ...prev,
-      {
-        id: resultado.id,
-        user: resultado.user,
-        avatar: '/static/img/default_profile.jpg',
-        text: resultado.text,
-        created_at: resultado.created_at,
-        parent_id: comment.id,
-        emocion_autor: resultado.emocion_autor,
-        referencia_narrativa_id: resultado.referencia_narrativa_id,
-        frontera_spoiler_id: resultado.frontera_spoiler_id,
-        frontera_origen: resultado.frontera_origen,
-        obra_cruzada_id: resultado.obra_cruzada_id,
-        frontera_cruzada_id: resultado.frontera_cruzada_id,
-        is_own_comment: true,
-        reactions_count: 0,
-        user_reaction: null,
-        replies: [],
-      },
-    ])
-    setReplyTexto('')
-    setReplyNarrativa(NARRATIVA_VACIA)
-    setReplyEmocion(null)
+  function handleReplyCreada(reply: CommentItemType) {
+    setReplies((prev) => [...prev, reply])
     setReplyAbierto(false)
+  }
+
+  function handleReplyEliminada(replyId: number) {
+    setReplies((prev) => prev.filter((r) => r.id !== replyId))
   }
 
   function handleGuardadoEdicion(datos: { text: string; emocion_autor: string | null }) {
     setTextoActual(datos.text)
     setEmocionActual(datos.emocion_autor)
     setEditando(false)
-  }
-
-  function handleKeyDownReply(e: KeyboardEvent<HTMLInputElement>) {
-    if (autocomplete.handleKeyDown(e)) return
-    if (e.key === 'Enter') enviarReply()
-  }
-
-  function handleReplyEliminado(replyId: number) {
-    setReplies((prev) => prev.filter((r) => r.id !== replyId))
   }
 
   async function handleEliminar() {
@@ -127,20 +49,12 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, o
     setEliminando(true)
     try {
       await deleteComment(comment.id)
-      setEliminado(true)
-      onEliminado?.(comment.id)
+      onEliminado(comment.id)
     } catch {
-      // Sin cambios visibles: el comentario sigue mostrándose si falla el borrado.
-    } finally {
+      // Si falla, el comentario sigue visible.
       setEliminando(false)
     }
   }
-
-  if (eliminado) {
-    return null
-  }
-
-  const puedeResponder = nivel < NIVEL_MAXIMO
 
   return (
     <div className={styles.comment}>
@@ -159,15 +73,12 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, o
           </>
         )}
       </div>
+
       <p className={styles.text}><LinkedText text={textoActual} /></p>
 
       <div className={styles.actions}>
-        <ReactionBar
-          targetId={comment.id}
-          target="comment"
-          reaccionInicial={comment.user_reaction}
-        />
-        {puedeResponder && (
+        <ReactionBar targetId={comment.id} target="comment" reaccionInicial={comment.user_reaction} />
+        {nivel < NIVEL_MAXIMO && (
           <button className={styles.replyButton} onClick={() => setReplyAbierto((v) => !v)}>
             Responder
           </button>
@@ -175,47 +86,13 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, o
       </div>
 
       {replyAbierto && (
-        <div className={styles.replyForm}>
-          <div className={styles.replyInputRow}>
-            <div className={styles.inputWrap}>
-              <input
-                ref={replyInputRef}
-                className={styles.replyInput}
-                type="text"
-                value={replyTexto}
-                onChange={(e) => autocomplete.handleChange(e.target.value)}
-                onFocus={() => setReplyEmocionAbierta(true)}
-                onBlur={() => {
-                  setTimeout(() => setReplyEmocionAbierta(false), 150)
-                  setTimeout(autocomplete.cerrar, 150)
-                }}
-                placeholder="Escribe una respuesta..."
-                onKeyDown={handleKeyDownReply}
-              />
-              {autocomplete.suggestions.length > 0 ? (
-                <AutocompleteDropdown
-                  suggestions={autocomplete.suggestions}
-                  activeIndex={autocomplete.activeIndex}
-                  onSelect={autocomplete.seleccionar}
-                />
-              ) : (
-                <EmocionPopover
-                  visible={replyEmocionAbierta}
-                  value={replyEmocion}
-                  onSelect={setReplyEmocion}
-                />
-              )}
-            </div>
-            <button className={styles.quitar} onClick={() => enviarReply()}>Enviar</button>
-          </div>
-          {obraDetalle && (
-            <NarrativaSelector
-              obraLocal={obraDetalle}
-              value={replyNarrativa}
-              onChange={setReplyNarrativa}
-            />
-          )}
-        </div>
+        <ComentarioForm
+          postId={postId}
+          parentId={comment.id}
+          obraDetalle={obraDetalle}
+          variante="respuesta"
+          onCreado={handleReplyCreada}
+        />
       )}
 
       {editando && (
@@ -236,23 +113,10 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, o
               postId={postId}
               obraDetalle={obraDetalle}
               nivel={nivel + 1}
-              onEliminado={handleReplyEliminado}
+              onEliminado={handleReplyEliminada}
             />
           ))}
         </div>
-      )}
-
-      {detecciones && (
-        <ReferenciaCruzadaAviso
-          detecciones={detecciones}
-          onConfirmar={(obraCruzadaId, fronteraCruzadaId) => {
-            enviarReply({ obraCruzadaId, fronteraCruzadaId })
-          }}
-          onDescartar={() => {
-            enviarReply({ descartarReferenciaCruzada: true })
-          }}
-          onCancelar={() => setDetecciones(null)}
-        />
       )}
     </div>
   )

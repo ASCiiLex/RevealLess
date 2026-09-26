@@ -1,0 +1,86 @@
+.formComentario {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.formRespuesta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0 36px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.formRespuesta .inputRow {
+  gap: 6px;
+}
+
+.inputWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.inputRespuesta {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.submitComentario {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--gold);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submitRespuesta {
+  border: none;
+  background: none;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.submitComentario:disabled,
+.submitRespuesta:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger, #b3261e);
+}

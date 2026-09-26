@@ -9,6 +9,13 @@ export interface NarrativaValue {
   fronteraCruzadaId: number | null
 }
 
+export const NARRATIVA_VACIA: NarrativaValue = {
+  referenciaId: null,
+  fronteraId: null,
+  obraCruzadaId: null,
+  fronteraCruzadaId: null,
+}
+
 interface Props {
   obraLocal: ObraDetalle
   value: NarrativaValue
@@ -22,9 +29,8 @@ export default function NarrativaSelector({ obraLocal, value, onChange }: Props)
   const [obraCruzadaDetalle, setObraCruzadaDetalle] = useState<ObraDetalle | null>(null)
 
   const esCruzada = value.obraCruzadaId !== null
-  const obraCruzadaSlug = obraLocal.obras_relacionadas.find(
-    (o) => o.id === value.obraCruzadaId
-  )?.slug
+  const obraCruzadaActual = obraLocal.obras_relacionadas.find((o) => o.id === value.obraCruzadaId)
+  const obraCruzadaSlug = obraCruzadaActual?.slug
 
   useEffect(() => {
     if (obraCruzadaSlug) {
@@ -35,13 +41,14 @@ export default function NarrativaSelector({ obraLocal, value, onChange }: Props)
   }, [obraCruzadaSlug])
 
   const unidadesFrontera = esCruzada ? obraCruzadaDetalle?.unidades ?? [] : obraLocal.unidades
+  const fronteraSeleccionada = esCruzada ? value.fronteraCruzadaId : value.fronteraId
 
   function handleObraChange(idStr: string) {
-    if (idStr === ESTA_OBRA) {
-      onChange({ referenciaId: value.referenciaId, fronteraId: null, obraCruzadaId: null, fronteraCruzadaId: null })
-    } else {
-      onChange({ referenciaId: null, fronteraId: null, obraCruzadaId: Number(idStr), fronteraCruzadaId: null })
-    }
+    onChange(
+      idStr === ESTA_OBRA
+        ? { ...NARRATIVA_VACIA, referenciaId: value.referenciaId }
+        : { ...NARRATIVA_VACIA, obraCruzadaId: Number(idStr) }
+    )
   }
 
   function handleReferenciaChange(idStr: string) {
@@ -50,18 +57,11 @@ export default function NarrativaSelector({ obraLocal, value, onChange }: Props)
 
   function handleFronteraChange(idStr: string) {
     const id = Number(idStr) || null
-    if (esCruzada) {
-      onChange({ ...value, fronteraCruzadaId: id })
-    } else {
-      onChange({ ...value, fronteraId: id })
-    }
+    onChange(esCruzada ? { ...value, fronteraCruzadaId: id } : { ...value, fronteraId: id })
   }
 
   const referenciaActual = obraLocal.unidades.find((u) => u.id === value.referenciaId)
-  const obraCruzadaActual = obraLocal.obras_relacionadas.find((o) => o.id === value.obraCruzadaId)
-  const fronteraActual = unidadesFrontera.find(
-    (u) => u.id === (esCruzada ? value.fronteraCruzadaId : value.fronteraId)
-  )
+  const fronteraActual = unidadesFrontera.find((u) => u.id === fronteraSeleccionada)
 
   const resumen = obraCruzadaActual
     ? `De: ${obraCruzadaActual.titulo}${fronteraActual ? ` · ${fronteraActual.etiqueta}` : ''}`
@@ -112,7 +112,7 @@ export default function NarrativaSelector({ obraLocal, value, onChange }: Props)
 
           <select
             className={styles.select}
-            value={(esCruzada ? value.fronteraCruzadaId : value.fronteraId) ?? ''}
+            value={fronteraSeleccionada ?? ''}
             onChange={(e) => handleFronteraChange(e.target.value)}
             disabled={esCruzada && !obraCruzadaDetalle}
             aria-label="Frontera de spoiler"

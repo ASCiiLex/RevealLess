@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import styles from './EditPostForm.module.css'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { updatePost } from '../../api/postDetail'
 import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import { detectarReduccion } from '../../utils/avisoReduccion'
 import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 import EmocionSelector from '../Emociones/EmocionSelector'
 import type { FeedPost } from '../../api/feed'
@@ -32,42 +33,18 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
     fetchObraDetalle(post.obra_slug).then(setDetalle)
   }, [post.obra_slug])
 
-  const unidadPorId = useMemo(() => {
-    const mapa = new Map<number, { orden_inicio: number }>()
-    detalle?.unidades.forEach((u) => mapa.set(u.id, u))
-    return mapa
-  }, [detalle])
-
-  function detectarReduccion(): string | null {
-    const avisos: string[] = []
-
-    if (
-      referenciaId &&
-      post.referencia_narrativa &&
-      referenciaId !== post.referencia_narrativa.id
-    ) {
-      const nuevaUnidad = unidadPorId.get(referenciaId)
-      if (nuevaUnidad && nuevaUnidad.orden_inicio < post.referencia_narrativa.orden_inicio) {
-        avisos.push('estás moviendo la referencia narrativa hacia atrás')
-      }
-    }
-
-    if (fronteraId && post.frontera_spoiler) {
-      const nuevaFrontera = unidadPorId.get(fronteraId)
-      if (nuevaFrontera && nuevaFrontera.orden_inicio < post.frontera_spoiler.orden_inicio) {
-        avisos.push('estás reduciendo la frontera de spoiler')
-      }
-    }
-
-    if (avisos.length === 0) return null
-    return `Atención: ${avisos.join(' y ')}. Esto no oculta el contenido a lectores que ya lo hayan visto con los valores anteriores, más permisivos desde ahora en adelante.`
-  }
-
   async function handleGuardar() {
+    if (!detalle) return
     setError(null)
 
     if (!confirmadoPeseAviso) {
-      const aviso = detectarReduccion()
+      const aviso = detectarReduccion({
+        unidades: detalle.unidades,
+        referenciaOriginalId: post.referencia_narrativa?.id ?? null,
+        referenciaNuevaId: referenciaId,
+        fronteraOriginalId: post.frontera_spoiler?.id ?? null,
+        fronteraNuevaId: fronteraId,
+      })
       if (aviso) {
         setAvisoReduccion(aviso)
         return
@@ -141,7 +118,7 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
             />
           </div>
 
-                    <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} colapsable={false} />
+          <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} colapsable={false} />
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>

@@ -1,10 +1,11 @@
-import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import styles from './EditCommentForm.module.css'
-import { updateComment, type CommentItem } from '../../api/postDetail'
+import { updateComment, type CommentItem } from '../../api/comentarios'
 import type { ObraDetalle } from '../../api/suscripciones'
 import EmocionSelector from '../Emociones/EmocionSelector'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
 import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import { detectarReduccion } from '../../utils/avisoReduccion'
 import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 
 interface Props {
@@ -20,7 +21,7 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
     referenciaId: comment.referencia_narrativa_id,
     fronteraId: null,
     obraCruzadaId: comment.obra_cruzada_id,
-    fronteraCruzadaId: null,
+    fronteraCruzadaId: comment.frontera_cruzada_id,
   })
   const [emocionAutor, setEmocionAutor] = useState<string | null>(comment.emocion_autor)
   const [error, setError] = useState<string | null>(null)
@@ -31,44 +32,18 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const autocomplete = useMentionHashtagAutocomplete({ value: text, onChange: setText, fieldRef: textareaRef })
 
-  const unidadPorId = useMemo(() => {
-    const mapa = new Map<number, { orden_inicio: number }>()
-    obraDetalle?.unidades.forEach((u) => mapa.set(u.id, u))
-    return mapa
-  }, [obraDetalle])
-
-  function detectarReduccion(): string | null {
-    const avisos: string[] = []
-    const referenciaOriginal = comment.referencia_narrativa_id ? unidadPorId.get(comment.referencia_narrativa_id) : null
-    const fronteraOriginal = comment.frontera_spoiler_id ? unidadPorId.get(comment.frontera_spoiler_id) : null
-
-    if (
-      narrativa.referenciaId &&
-      referenciaOriginal &&
-      narrativa.referenciaId !== comment.referencia_narrativa_id
-    ) {
-      const nuevaUnidad = unidadPorId.get(narrativa.referenciaId)
-      if (nuevaUnidad && nuevaUnidad.orden_inicio < referenciaOriginal.orden_inicio) {
-        avisos.push('estás moviendo la referencia narrativa hacia atrás')
-      }
-    }
-
-    if (narrativa.fronteraId && fronteraOriginal) {
-      const nuevaFrontera = unidadPorId.get(narrativa.fronteraId)
-      if (nuevaFrontera && nuevaFrontera.orden_inicio < fronteraOriginal.orden_inicio) {
-        avisos.push('estás reduciendo la frontera de spoiler')
-      }
-    }
-
-    if (avisos.length === 0) return null
-    return `Atención: ${avisos.join(' y ')}. Esto no oculta el contenido a lectores que ya lo hayan visto con los valores anteriores.`
-  }
-
   async function handleGuardar() {
+    if (!obraDetalle) return
     setError(null)
 
     if (!confirmadoPeseAviso) {
-      const aviso = detectarReduccion()
+      const aviso = detectarReduccion({
+        unidades: obraDetalle.unidades,
+        referenciaOriginalId: comment.referencia_narrativa_id,
+        referenciaNuevaId: narrativa.referenciaId,
+        fronteraOriginalId: comment.frontera_spoiler_id,
+        fronteraNuevaId: narrativa.fronteraId,
+      })
       if (aviso) {
         setAvisoReduccion(aviso)
         return
@@ -79,7 +54,7 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
     try {
       await updateComment(comment.id, {
         text,
-        emocionAutor: emocionAutor,
+        emocionAutor,
         referenciaNarrativaId: narrativa.referenciaId ?? undefined,
         fronteraSpoilerId: narrativa.fronteraId ?? undefined,
         obraCruzadaId: narrativa.obraCruzadaId ?? undefined,

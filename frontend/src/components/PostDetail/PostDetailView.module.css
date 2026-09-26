@@ -87,52 +87,6 @@
   margin: 0 0 12px 0;
 }
 
-.commentForm {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-  background: var(--paper);
-  border-radius: var(--radius);
-  padding: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-}
-
-.commentInputRow {
-  display: flex;
-  gap: 8px;
-}
-
-.inputWrap {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-}
-
-.commentInput {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 14px;
-}
-
-.commentSubmit {
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--radius);
-  background: var(--gold);
-  color: var(--paper);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 .empty {
   color: var(--paper);
   font-size: 14px;
