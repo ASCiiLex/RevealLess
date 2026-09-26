@@ -1,0 +1,115 @@
+.pl-hero {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.pl-hero h1 {
+  font-size: 2rem;
+}
+
+.pl-lead {
+  margin: 8px 0 0;
+  color: var(--gold-light);
+}
+
+.pl-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.pl-stat strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+}
+
+.pl-stat span {
+  font-size: 13px;
+  color: var(--gold-light);
+}
+
+.pl-section-title {
+  font-size: 1.3rem;
+  margin-bottom: 14px;
+  color: var(--paper);
+}
+
+.pl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.pl-card {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.pl-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.pl-card-body {
+  padding: 10px 12px 12px;
+}
+
+.pl-card h3 {
+  font-size: 15px;
+}
+
+.pl-meta {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--fog);
+}
+
+.pl-card details {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.pl-card summary {
+  cursor: pointer;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.pl-card details p {
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+
+.pl-empty {
+  color: var(--gold-light);
+}
+
+.pl-notice {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px;
+  text-align: center;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.pl-notice p {
+  margin: 8px 0 20px;
+}
+
+@media (max-width: 767px) {
+  .pl-stats {
+    gap: 24px;
+  }
+}

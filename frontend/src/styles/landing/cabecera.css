@@ -1,0 +1,81 @@
+.pl-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pl-header {
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+}
+
+.pl-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.pl-logo {
+  display: block;
+  width: 200px;
+  height: 56px;
+  background: url('../../assets/brand/logo-sf-ss.png') left center / contain no-repeat;
+}
+
+.pl-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.pl-main {
+  flex: 1 0 auto;
+  width: 100%;
+  padding-top: 32px;
+  padding-bottom: 48px;
+  color: var(--paper);
+}
+
+.pl-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+}
+
+.pl-btn-sm {
+  padding: 8px 16px;
+}
+
+.pl-btn-primary {
+  background: var(--gold);
+  color: var(--paper);
+}
+
+/* Para fondos claros (cabecera y barra inferior). */
+.pl-btn-outline {
+  background: transparent;
+  color: var(--ink);
+}
+
+@media (max-width: 767px) {
+  .pl-header-inner {
+    justify-content: center;
+  }
+
+  .pl-logo {
+    width: 180px;
+    height: 44px;
+    background-position: center;
+  }
+
+  .pl-header-actions {
+    display: none;
+  }
+}
