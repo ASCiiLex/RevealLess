@@ -31,3 +31,15 @@ class EdicionReferenciaCruzadaTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.post.refresh_from_db()
         self.assertEqual(self.post.obra_cruzada, self.manga)
+
+    def test_quitar_obra_cruzada_con_valores_vacios(self):
+        self.post.obra_cruzada = self.manga
+        self.post.frontera_cruzada = self.cap
+        self.post.save()
+
+        self.assertEqual(self._editar(obra_cruzada='', frontera_cruzada='').status_code, 200)
+
+        self.post.refresh_from_db()
+        self.assertIsNone(self.post.obra_cruzada)
+        self.assertIsNone(self.post.frontera_cruzada)
+        self.assertIsNone(self.post.frontera_cruzada_orden)

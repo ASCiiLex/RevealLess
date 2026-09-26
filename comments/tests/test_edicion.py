@@ -33,9 +33,9 @@ class EdicionComentarioTests(TestCase):
         )
         self.url = reverse('comment_api_update', args=[self.comment.id])
 
-    def _editar(self, user=None, **datos):
+    def _editar(self, user=None, formato='json', **datos):
         self.client.force_authenticate(user=user or self.autor)
-        return self.client.patch(self.url, datos, format='json')
+        return self.client.patch(self.url, datos, format=formato)
 
     def test_otro_usuario_no_puede_editar(self):
         intruso = User.objects.create_user('intruso_comentario', password='x')
@@ -51,3 +51,17 @@ class EdicionComentarioTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.comment.refresh_from_db()
         self.assertEqual(self.comment.obra_cruzada, self.manga)
+
+    def test_quitar_obra_cruzada_con_valores_vacios(self):
+        """El frontend envía '' en multipart para quitar la referencia cruzada."""
+        self.comment.obra_cruzada = self.manga
+        self.comment.frontera_cruzada = self.cap
+        self.comment.save()
+
+        response = self._editar(formato='multipart', obra_cruzada='', frontera_cruzada='')
+        self.assertEqual(response.status_code, 200)
+
+        self.comment.refresh_from_db()
+        self.assertIsNone(self.comment.obra_cruzada)
+        self.assertIsNone(self.comment.frontera_cruzada)
+        self.assertIsNone(self.comment.frontera_cruzada_orden)

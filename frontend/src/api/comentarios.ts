@@ -47,6 +47,20 @@ export interface AddCommentOptions {
   descartarReferenciaCruzada?: boolean
 }
 
+/** En edición: undefined = sin cambios, null = vaciar el campo ('' en el FormData). */
+export interface CommentUpdate {
+  text?: string
+  emocionAutor?: string | null
+  referenciaNarrativaId?: number
+  fronteraSpoilerId?: number
+  obraCruzadaId?: number | null
+  fronteraCruzadaId?: number | null
+}
+
+function vaciable<T>(valor: T | null | undefined): T | '' | undefined {
+  return valor === undefined ? undefined : valor ?? ''
+}
+
 /** Adapta la respuesta de creación al formato del árbol de comentarios. */
 export function comentarioDesdeCreado(creado: ComentarioCreado): CommentItem {
   return {
@@ -99,24 +113,14 @@ export async function addComment(
   return body as ComentarioCreado
 }
 
-export async function updateComment(
-  commentId: number,
-  datos: {
-    text?: string
-    emocionAutor?: string | null
-    referenciaNarrativaId?: number
-    fronteraSpoilerId?: number | null
-    obraCruzadaId?: number | null
-    fronteraCruzadaId?: number | null
-  }
-) {
+export async function updateComment(commentId: number, datos: CommentUpdate) {
   const response = await enviarFormData(`/comments/editar/${commentId}/`, 'PATCH', construirFormData({
     text: datos.text,
-    emocion_autor: datos.emocionAutor === undefined ? undefined : datos.emocionAutor ?? '',
+    emocion_autor: vaciable(datos.emocionAutor),
     referencia_narrativa: datos.referenciaNarrativaId,
     frontera_spoiler: datos.fronteraSpoilerId,
-    obra_cruzada: datos.obraCruzadaId,
-    frontera_cruzada: datos.fronteraCruzadaId,
+    obra_cruzada: vaciable(datos.obraCruzadaId),
+    frontera_cruzada: vaciable(datos.fronteraCruzadaId),
   }))
   return jsonOError(response)
 }

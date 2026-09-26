@@ -1,6 +1,6 @@
 import { useRef, useState, type KeyboardEvent } from 'react'
 import styles from './EditCommentForm.module.css'
-import { updateComment, type CommentItem } from '../../api/comentarios'
+import { updateComment, type CommentItem, type CommentUpdate } from '../../api/comentarios'
 import type { ObraDetalle } from '../../api/suscripciones'
 import EmocionSelector from '../Emociones/EmocionSelector'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
@@ -13,6 +13,17 @@ interface Props {
   obraDetalle: ObraDetalle | null
   onGuardado: (datos: { text: string; emocion_autor: string | null }) => void
   onCancelar: () => void
+}
+
+function cambiosCruzada(comment: CommentItem, narrativa: NarrativaValue): Pick<CommentUpdate, 'obraCruzadaId' | 'fronteraCruzadaId'> {
+  // Tenía obra cruzada y el usuario eligió "Esta obra": se vacían ambos campos.
+  if (narrativa.obraCruzadaId === null && comment.obra_cruzada_id !== null) {
+    return { obraCruzadaId: null, fronteraCruzadaId: null }
+  }
+  return {
+    obraCruzadaId: narrativa.obraCruzadaId ?? undefined,
+    fronteraCruzadaId: narrativa.fronteraCruzadaId ?? undefined,
+  }
 }
 
 export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCancelar }: Props) {
@@ -57,8 +68,7 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
         emocionAutor,
         referenciaNarrativaId: narrativa.referenciaId ?? undefined,
         fronteraSpoilerId: narrativa.fronteraId ?? undefined,
-        obraCruzadaId: narrativa.obraCruzadaId ?? undefined,
-        fronteraCruzadaId: narrativa.fronteraCruzadaId ?? undefined,
+        ...cambiosCruzada(comment, narrativa),
       })
       onGuardado({ text, emocion_autor: emocionAutor })
     } catch {
