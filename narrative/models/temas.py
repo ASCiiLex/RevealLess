@@ -45,6 +45,8 @@ class TemaTransversal(models.Model):
     class Meta:
         unique_together = ('obra', 'nombre')
         ordering = ['nombre']
+        verbose_name = 'Tema transversal'
+        verbose_name_plural = 'Temas transversales'
 
     def __str__(self):
         return f'{self.obra.titulo} · {self.nombre}'
@@ -81,6 +83,8 @@ class SolicitudTema(models.Model):
 
     class Meta:
         ordering = ['-creado_en']
+        verbose_name = 'Solicitud de tema'
+        verbose_name_plural = 'Solicitudes de tema'
 
     def __str__(self):
         return f'{self.usuario.username} propone "{self.nombre}" en {self.obra.titulo} ({self.estado})'
