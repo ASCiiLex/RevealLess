@@ -54,7 +54,12 @@ export default function PostDetailView({ postId }: Props) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.postCard} style={emocionHaloStyle(post.emocion_autor)}>
-        <SaveButton postId={post.id} guardadoInicial={post.is_saved} />
+        {!post.is_own_post && <SaveButton postId={post.id} guardadoInicial={post.is_saved} />}
+        {post.is_own_post && (
+          <button className={styles.editButton} onClick={() => setEditando(true)}>
+            Editar
+          </button>
+        )}
 
         <div className={styles.meta}>
           <img className={styles.avatar} src={post.autor_avatar} alt="" />
@@ -75,12 +80,6 @@ export default function PostDetailView({ postId }: Props) {
                 )}
               </div>
             </div>
-
-            {post.is_own_post && (
-              <button className={styles.editButton} onClick={() => setEditando(true)}>
-                Editar
-              </button>
-            )}
           </div>
         </div>
 

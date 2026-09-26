@@ -13,7 +13,7 @@ interface Props {
 export default function PostCard({ post }: Props) {
   return (
     <article className={styles.post} style={emocionHaloStyle(post.emocion_autor)}>
-      <SaveButton postId={post.id} guardadoInicial={post.is_saved} />
+      {!post.is_own_post && <SaveButton postId={post.id} guardadoInicial={post.is_saved} />}
 
       <div className={styles.meta}>
         <span className={styles.author}>@{post.autor}</span>

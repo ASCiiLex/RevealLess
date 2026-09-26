@@ -55,16 +55,22 @@
 }
 
 .editButton {
-  border: none;
-  background: none;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  border-radius: 999px;
   color: var(--fog);
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 14px;
 }
 
 .editButton:hover {
   color: var(--gold);
+  border-color: var(--gold);
 }
 
 .text {
