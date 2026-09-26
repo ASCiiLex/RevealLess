@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
 from posts.models import Post
-from .models import Comment
+from ..models import Comment
 
 
 class DeleteCommentViewTests(TestCase):
