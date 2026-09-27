@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from .models import (
     Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal,
@@ -12,9 +13,21 @@ class CategoriaAdmin(admin.ModelAdmin):
     search_fields = ('nombre',)
 
 
+class ObraAdminForm(forms.ModelForm):
+    class Meta:
+        model = Obra
+        fields = '__all__'
+        # Solo relabeling de UI -- el campo/columna en BD sigue llamándose
+        # adapta_a, esto no toca el modelo ni pide migración.
+        labels = {
+            'adapta_a': 'Adaptación de',
+        }
+
+
 @admin.register(Obra)
 class ObraAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion')
+    form = ObraAdminForm
+    list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion', 'adapta_a')
     list_filter = ('categorias', 'tipo')
     prepopulated_fields = {'slug': ('titulo',)}
     filter_horizontal = ('categorias',)
