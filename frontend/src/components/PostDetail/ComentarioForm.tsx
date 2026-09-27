@@ -50,6 +50,7 @@ export default function ComentarioForm({ postId, parentId, obraDetalle, variante
   const [error, setError] = useState<string | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
+  const inputWrapRef = useRef<HTMLDivElement>(null)
   const autocomplete = useMentionHashtagAutocomplete({ value: texto, onChange: setTexto, fieldRef: inputRef })
 
   const esRespuesta = variante === 'respuesta'
@@ -103,7 +104,7 @@ export default function ComentarioForm({ postId, parentId, obraDetalle, variante
   return (
     <div className={esRespuesta ? styles.formRespuesta : styles.formComentario}>
       <div className={styles.inputRow}>
-        <div className={styles.inputWrap}>
+        <div className={styles.inputWrap} ref={inputWrapRef}>
           <input
             ref={inputRef}
             className={`${styles.input} ${esRespuesta ? styles.inputRespuesta : ''}`}
@@ -122,7 +123,12 @@ export default function ComentarioForm({ postId, parentId, obraDetalle, variante
               onSelect={autocomplete.seleccionar}
             />
           ) : (
-            <EmocionPopover visible={emocionAbierta} value={emocion} onSelect={setEmocion} />
+            <EmocionPopover
+              visible={emocionAbierta}
+              value={emocion}
+              onSelect={setEmocion}
+              anchorRef={inputWrapRef}
+            />
           )}
         </div>
 
