@@ -27,4 +27,25 @@
     <span class="text-2xl font-semibold">{{ solicitudes_pendientes }}</span>
   {% endcomponent %}
 </div>
+
+<div class="grid grid-cols-1 gap-4 mb-6 lg:grid-cols-2">
+  {% component "unfold/components/card.html" with title="Actividad diaria (últimos 30 días)" %}
+    {% component "unfold/components/chart/line.html" with component_class="ActividadDiariaComponent" %}{% endcomponent %}
+  {% endcomponent %}
+
+  {% component "unfold/components/card.html" with title="Registros diarios (últimos 30 días)" %}
+    {% component "unfold/components/chart/line.html" with component_class="RegistrosDiariosComponent" %}{% endcomponent %}
+  {% endcomponent %}
+</div>
+
+<div class="grid grid-cols-1 gap-4 mb-6">
+  {% component "unfold/components/card.html" with title="Actividad por obra (% de posts)" %}
+    {% for item in actividad_por_obra %}
+      {% component "unfold/components/progress.html" with title=item.title description=item.description value=item.value %}{% endcomponent %}
+    {% endfor %}
+    {% if not actividad_por_obra %}
+      <span class="text-sm text-gray-500">Todavía no hay publicaciones.</span>
+    {% endif %}
+  {% endcomponent %}
+</div>
 {% endblock %}
