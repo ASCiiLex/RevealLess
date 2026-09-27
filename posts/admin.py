@@ -1,17 +1,18 @@
+from unfold.admin import ModelAdmin, TabularInline
 from django.contrib import admin
 from django.db.models import Count
 from .models import Post
 from comments.models import Comment
 
 
-class CommentInline(admin.TabularInline):
+class CommentInline(TabularInline):
     model = Comment
     extra = 0
     readonly_fields = ('user', 'text', 'created_at')
 
 
 @admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(ModelAdmin):
     list_display = (
         'id', 'author', 'obra', 'short_text', 'frontera_origen',
         'created_at', 'likes_count', 'comments_count'

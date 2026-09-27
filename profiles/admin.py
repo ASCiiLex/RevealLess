@@ -1,9 +1,10 @@
+from unfold.admin import ModelAdmin
 from django.contrib import admin
 from .models import Profile
 from django.utils.html import format_html
 
 @admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+class ProfileAdmin(ModelAdmin):
     list_display = ('user', 'bio_short', 'interests', 'image_tag')
     search_fields = ('user__username', 'interests')
     list_filter = ('interests',)

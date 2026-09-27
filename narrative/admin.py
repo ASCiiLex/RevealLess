@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html
+from unfold.admin import ModelAdmin
 from .models import (
     Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal,
     Categoria, SolicitudTema, ExternalId,
@@ -8,7 +10,7 @@ from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
 
 
 @admin.register(Categoria)
-class CategoriaAdmin(admin.ModelAdmin):
+class CategoriaAdmin(ModelAdmin):
     list_display = ('nombre',)
     search_fields = ('nombre',)
 
@@ -25,18 +27,44 @@ class ObraAdminForm(forms.ModelForm):
 
 
 @admin.register(Obra)
-class ObraAdmin(admin.ModelAdmin):
+class ObraAdmin(ModelAdmin):
     form = ObraAdminForm
-    list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion', 'adapta_a')
+    list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion', 'adapta_a', 'imagen_tag')
     list_filter = ('categorias', 'tipo')
     prepopulated_fields = {'slug': ('titulo',)}
     filter_horizontal = ('categorias',)
     raw_id_fields = ('adapta_a',)  # el propio catálogo de Obras ya no es pequeño
+    date_hierarchy = 'fecha_publicacion'
+    actions = ['recalcular_orden_seleccionadas']
+
+    fieldsets = (
+        ('Identidad', {
+            'fields': ('titulo', 'slug', 'tipo', 'sinopsis', 'imagen')
+        }),
+        ('Metadata', {
+            'fields': ('autor', 'fecha_publicacion', 'categorias')
+        }),
+        ('Relaciones narrativas', {
+            'fields': ('adapta_a',)
+        }),
+    )
+
+    def imagen_tag(self, obj):
+        if obj.imagen:
+            return format_html('<img src="{}" width="40" height="40" style="object-fit:cover;border-radius:6px"/>', obj.imagen.url)
+        return "-"
+    imagen_tag.short_description = "Portada"
+
+    @admin.action(description='Recalcular orden narrativo de las obras seleccionadas')
+    def recalcular_orden_seleccionadas(self, request, queryset):
+        for obra in queryset:
+            obra.recalcular_orden()
+        self.message_user(request, f'{queryset.count()} obra(s) recalculada(s).')
 
 
 @admin.register(UnidadNarrativa)
-class UnidadNarrativaAdmin(admin.ModelAdmin):
-    list_display = ('obra', 'nombre', 'tipo', 'padre', 'orden_local', 'orden_inicio', 'orden_fin', 'fecha')
+class UnidadNarrativaAdmin(ModelAdmin):
+    list_display = ('obra', 'nombre', 'tipo', 'padre', 'orden_local', 'orden_inicio', 'orden_fin', 'fecha', 'imagen_tag')
     list_filter = ('obra', 'tipo')
     search_fields = ('nombre',)
     readonly_fields = ('orden_inicio', 'orden_fin')
@@ -44,6 +72,12 @@ class UnidadNarrativaAdmin(admin.ModelAdmin):
     # de la obra en el HTML del formulario — con 1160+ episodios de One
     # Piece, eso hace el formulario prácticamente inutilizable.
     raw_id_fields = ('padre',)
+
+    def imagen_tag(self, obj):
+        if obj.imagen:
+            return format_html('<img src="{}" width="32" height="32" style="object-fit:cover;border-radius:4px"/>', obj.imagen.url)
+        return "-"
+    imagen_tag.short_description = "Portada"
 
     # orden_inicio/orden_fin son el valor que consulta frontera_orden — una
     # edición manual de padre/orden_local sin recalcular deja el motor
@@ -70,7 +104,7 @@ class UnidadNarrativaAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProgresoUsuario)
-class ProgresoUsuarioAdmin(admin.ModelAdmin):
+class ProgresoUsuarioAdmin(ModelAdmin):
     list_display = ('usuario', 'obra', 'unidad_actual', 'orden_absoluto', 'actualizado_en')
     list_filter = ('obra',)
     readonly_fields = ('orden_absoluto',)
@@ -78,7 +112,7 @@ class ProgresoUsuarioAdmin(admin.ModelAdmin):
 
 
 @admin.register(TemaTransversal)
-class TemaTransversalAdmin(admin.ModelAdmin):
+class TemaTransversalAdmin(ModelAdmin):
     list_display = ('nombre', 'obra', 'tipo', 'imagen')
     list_filter = ('obra', 'tipo')
     search_fields = ('nombre',)
@@ -89,7 +123,7 @@ class TemaTransversalAdmin(admin.ModelAdmin):
 
 
 @admin.register(SolicitudTema)
-class SolicitudTemaAdmin(admin.ModelAdmin):
+class SolicitudTemaAdmin(ModelAdmin):
     list_display = ('nombre', 'obra', 'usuario', 'estado', 'creado_en', 'resuelto_en')
     list_filter = ('estado', 'obra')
     readonly_fields = ('resuelto_en',)
@@ -107,7 +141,7 @@ class SolicitudTemaAdmin(admin.ModelAdmin):
 
 
 @admin.register(ExternalId)
-class ExternalIdAdmin(admin.ModelAdmin):
+class ExternalIdAdmin(ModelAdmin):
     list_display = ('source', 'external_id', 'obra', 'unidad')
     list_filter = ('source',)
     search_fields = ('external_id', 'obra__titulo', 'unidad__nombre')

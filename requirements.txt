@@ -13,6 +13,7 @@ django-ratelimit==4.1.0
 psycopg2-binary==2.9.13
 python-dotenv==1.2.3
 dj-database-url==2.3.0
+django-unfold==0.105.0
 
 # Testing
 pytest==9.1.1

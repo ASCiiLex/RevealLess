@@ -61,6 +61,8 @@ SECURE_HSTS_PRELOAD = not DEBUG
 # ==========================================================
 
 INSTALLED_APPS = [
+    'unfold',  # antes de django.contrib.admin
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -232,6 +234,18 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 12,
+}
+
+# ==========================================================
+# DJANGO UNFOLD (tema del admin)
+# ==========================================================
+
+UNFOLD = {
+    "SITE_TITLE": "RevealLess admin",
+    "SITE_HEADER": "RevealLess",
+    "SITE_SYMBOL": "auto_stories",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
 }
 
 # ==========================================================
