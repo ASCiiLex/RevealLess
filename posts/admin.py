@@ -9,6 +9,11 @@ class CommentInline(TabularInline):
     model = Comment
     extra = 0
     readonly_fields = ('user', 'text', 'created_at')
+    # Mismo motivo que en CommentAdmin/PostAdmin: sin esto, el
+    # "formulario vacío" oculto de este inline carga un <select> con
+    # todo el catálogo de UnidadNarrativa, y eso es lo que ralentizaba
+    # /admin/posts/post/add/ aunque el post fuera nuevo y sin comentarios.
+    autocomplete_fields = ('referencia_narrativa', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada')
 
 
 @admin.register(Post)
@@ -21,10 +26,6 @@ class PostAdmin(ModelAdmin):
     list_filter = ('created_at', 'obra', 'frontera_origen')
     readonly_fields = ('frontera_orden',)
     inlines = [CommentInline]
-    # referencia_narrativa/frontera_spoiler apuntan a UnidadNarrativa
-    # (1000+ filas en catálogos grandes) y obra_cruzada/frontera_cruzada
-    # son opcionales del blindaje entre continuidades -- sin esto, editar
-    # cualquier post carga un <select> con todo el catálogo de golpe.
     autocomplete_fields = ('referencia_narrativa', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada')
 
     def get_queryset(self, request):
