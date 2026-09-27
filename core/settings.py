@@ -246,6 +246,9 @@ UNFOLD = {
     "SITE_SYMBOL": "auto_stories",
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
+    "SIDEBAR": {
+        "show_search": True,
+    },
 }
 
 # ==========================================================
