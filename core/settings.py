@@ -249,6 +249,7 @@ UNFOLD = {
     "SIDEBAR": {
         "show_search": True,
     },
+    "DASHBOARD_CALLBACK": "core.dashboard.dashboard_callback",
 }
 
 # ==========================================================

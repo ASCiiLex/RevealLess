@@ -21,6 +21,11 @@ class PostAdmin(ModelAdmin):
     list_filter = ('created_at', 'obra', 'frontera_origen')
     readonly_fields = ('frontera_orden',)
     inlines = [CommentInline]
+    # referencia_narrativa/frontera_spoiler apuntan a UnidadNarrativa
+    # (1000+ filas en catálogos grandes) y obra_cruzada/frontera_cruzada
+    # son opcionales del blindaje entre continuidades -- sin esto, editar
+    # cualquier post carga un <select> con todo el catálogo de golpe.
+    autocomplete_fields = ('referencia_narrativa', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

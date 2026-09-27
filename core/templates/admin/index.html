@@ -1,0 +1,30 @@
+{% extends 'admin/base.html' %}
+{% load i18n unfold %}
+
+{% block title %}
+  {% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block branding %}
+  {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+  {% component "unfold/components/card.html" with title="Obras en el catálogo" %}
+    <span class="text-2xl font-semibold">{{ obras_count }}</span>
+  {% endcomponent %}
+
+  {% component "unfold/components/card.html" with title="Publicaciones" %}
+    <span class="text-2xl font-semibold">{{ posts_count }}</span>
+  {% endcomponent %}
+
+  {% component "unfold/components/card.html" with title="Usuarios registrados" %}
+    <span class="text-2xl font-semibold">{{ usuarios_count }}</span>
+  {% endcomponent %}
+
+  {% component "unfold/components/card.html" with title="Solicitudes de tema pendientes" %}
+    <span class="text-2xl font-semibold">{{ solicitudes_pendientes }}</span>
+  {% endcomponent %}
+</div>
+{% endblock %}

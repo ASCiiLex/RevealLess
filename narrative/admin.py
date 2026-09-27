@@ -31,9 +31,12 @@ class ObraAdmin(ModelAdmin):
     form = ObraAdminForm
     list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion', 'adapta_a', 'imagen_tag')
     list_filter = ('categorias', 'tipo')
+    # Necesario para que el widget autocomplete de otros admins (Post,
+    # Comment, ExternalId...) pueda buscar Obras por estos campos.
+    search_fields = ('titulo', 'slug')
     prepopulated_fields = {'slug': ('titulo',)}
     filter_horizontal = ('categorias',)
-    raw_id_fields = ('adapta_a',)  # el propio catálogo de Obras ya no es pequeño
+    autocomplete_fields = ('adapta_a',)  # el propio catálogo de Obras ya no es pequeño
     date_hierarchy = 'fecha_publicacion'
     actions = ['recalcular_orden_seleccionadas']
 
@@ -71,7 +74,11 @@ class UnidadNarrativaAdmin(ModelAdmin):
     # Sin esto, el desplegable de "padre" intenta listar TODAS las unidades
     # de la obra en el HTML del formulario — con 1160+ episodios de One
     # Piece, eso hace el formulario prácticamente inutilizable.
-    raw_id_fields = ('padre',)
+    autocomplete_fields = ('padre',)
+    # Reordenar hermanos sin abrir cada ficha. save_model() de abajo ya
+    # se invoca por fila cuando Django procesa este guardado en bloque
+    # (list_editable no lo salta), así que el recálculo sigue disparándose.
+    list_editable = ('orden_local',)
 
     def imagen_tag(self, obj):
         if obj.imagen:
@@ -108,7 +115,7 @@ class ProgresoUsuarioAdmin(ModelAdmin):
     list_display = ('usuario', 'obra', 'unidad_actual', 'orden_absoluto', 'actualizado_en')
     list_filter = ('obra',)
     readonly_fields = ('orden_absoluto',)
-    raw_id_fields = ('unidad_actual',)  # mismo problema de escala que arriba
+    autocomplete_fields = ('unidad_actual',)  # mismo problema de escala que arriba
 
 
 @admin.register(TemaTransversal)
@@ -116,10 +123,9 @@ class TemaTransversalAdmin(ModelAdmin):
     list_display = ('nombre', 'obra', 'tipo', 'imagen')
     list_filter = ('obra', 'tipo')
     search_fields = ('nombre',)
-    raw_id_fields = ('unidades',)
-    # raw_id_fields en un M2M da un buscador con lookup en vez de cargar
-    # todas las unidades de golpe (que es lo que haría filter_horizontal
-    # aquí, con el mismo problema de escala que el padre de arriba).
+    autocomplete_fields = ('unidades',)
+    # autocomplete en un M2M da un buscador con lookup en vez de cargar
+    # todas las unidades de golpe, mismo problema de escala que padre.
 
 
 @admin.register(SolicitudTema)
@@ -145,4 +151,4 @@ class ExternalIdAdmin(ModelAdmin):
     list_display = ('source', 'external_id', 'obra', 'unidad')
     list_filter = ('source',)
     search_fields = ('external_id', 'obra__titulo', 'unidad__nombre')
-    raw_id_fields = ('obra', 'unidad')
+    autocomplete_fields = ('obra', 'unidad')
