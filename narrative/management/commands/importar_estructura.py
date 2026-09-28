@@ -59,16 +59,20 @@ class Command(BaseCommand):
             crudo = yaml.safe_load(f)
         return {int(vol): date.fromisoformat(str(fecha)) for vol, fecha in crudo.items()}
 
-    # -- Parte / Saga / Arco ---------------------------------------------
+    # -- Parte / Saga / Arco / Libro / etc. --------------------------------
 
     def _construir_nodo(self, obra, padre, nodo):
+        # Clave de identidad: (obra, padre, tipo, orden_local) — NUNCA
+        # nombre. Un nodo estructural puede cambiar de nombre entre
+        # pasadas (p.ej. título de capítulo placeholder -> título real)
+        # y debe seguir siendo la misma fila, no duplicarse.
         unidad, creada = UnidadNarrativa.objects.get_or_create(
-            obra=obra, padre=padre, tipo=nodo['tipo'], nombre=nodo['nombre'],
-            defaults={'orden_local': nodo['orden_local']},
+            obra=obra, padre=padre, tipo=nodo['tipo'], orden_local=nodo['orden_local'],
+            defaults={'nombre': nodo['nombre']},
         )
-        if not creada and unidad.orden_local != nodo['orden_local']:
-            unidad.orden_local = nodo['orden_local']
-            unidad.save(update_fields=['orden_local'])
+        if not creada and unidad.nombre != nodo['nombre']:
+            unidad.nombre = nodo['nombre']
+            unidad.save(update_fields=['nombre'])
 
         # Fecha directa en el propio nodo — caso de curación manual sin
         # Jikan de por medio (Star Wars, LOTR...), donde la fecha real ya
