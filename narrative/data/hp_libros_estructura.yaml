@@ -1,0 +1,259 @@
+# Curación de estructura narrativa — Harry Potter (LIBROS)
+# obra_external_id: creada vía crear_obra_manual (no hay fuente API para libros).
+#
+# AVISO: harrypotter.fandom.com (única fuente con títulos de capítulo en
+# español) devuelve HTTP 402 en esta sesión — igual que con el resto de
+# wikis Fandom usadas en este proyecto. Los capítulos se numeran como
+# placeholder ("Capítulo N") pendientes de título real (v2), mismo
+# tratamiento que los episodios de anime sin título verificado.
+#
+# Fechas de publicación (Reino Unido, edición original): verificadas.
+# Nº de capítulos por libro: verificado en varias fuentes en inglés.
+# Libro 7: la mayoría de fuentes dan 36 capítulos + epílogo; una fuente
+# consultada discrepaba con 37 — se usa 36 (cifra mayoritaria), revisar: true.
+obra_external_id: {source: manual, external_id: harry-potter-libro}
+sinopsis_en: [libro]   # nunca en capítulo suelto
+
+nodos:
+  - tipo: libro
+    nombre: "Harry Potter y la piedra filosofal"
+    orden_local: 1
+    fecha: "1997-06-26"
+    hijos:
+      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+
+  - tipo: libro
+    nombre: "Harry Potter y la cámara secreta"
+    orden_local: 2
+    fecha: "1998-07-02"
+    hijos:
+      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
+
+  - tipo: libro
+    nombre: "Harry Potter y el prisionero de Azkaban"
+    orden_local: 3
+    fecha: "1999-07-08"
+    hijos:
+      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
+      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
+      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
+      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
+      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
+
+  - tipo: libro
+    nombre: "Harry Potter y el cáliz de fuego"
+    orden_local: 4
+    fecha: "2000-07-08"
+    hijos:
+      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
+      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
+      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
+      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
+      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
+      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
+      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
+      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
+      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
+      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
+      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
+      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
+      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
+      - {tipo: capitulo, nombre: "Capítulo 31", orden_local: 31}
+      - {tipo: capitulo, nombre: "Capítulo 32", orden_local: 32}
+      - {tipo: capitulo, nombre: "Capítulo 33", orden_local: 33}
+      - {tipo: capitulo, nombre: "Capítulo 34", orden_local: 34}
+      - {tipo: capitulo, nombre: "Capítulo 35", orden_local: 35}
+      - {tipo: capitulo, nombre: "Capítulo 36", orden_local: 36}
+      - {tipo: capitulo, nombre: "Capítulo 37", orden_local: 37}
+
+  - tipo: libro
+    nombre: "Harry Potter y la Orden del Fénix"
+    orden_local: 5
+    fecha: "2003-06-21"
+    hijos:
+      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
+      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
+      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
+      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
+      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
+      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
+      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
+      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
+      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
+      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
+      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
+      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
+      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
+      - {tipo: capitulo, nombre: "Capítulo 31", orden_local: 31}
+      - {tipo: capitulo, nombre: "Capítulo 32", orden_local: 32}
+      - {tipo: capitulo, nombre: "Capítulo 33", orden_local: 33}
+      - {tipo: capitulo, nombre: "Capítulo 34", orden_local: 34}
+      - {tipo: capitulo, nombre: "Capítulo 35", orden_local: 35}
+      - {tipo: capitulo, nombre: "Capítulo 36", orden_local: 36}
+      - {tipo: capitulo, nombre: "Capítulo 37", orden_local: 37}
+      - {tipo: capitulo, nombre: "Capítulo 38", orden_local: 38}
+
+  - tipo: libro
+    nombre: "Harry Potter y el misterio del príncipe"
+    orden_local: 6
+    fecha: "2005-07-16"
+    hijos:
+      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
+      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
+      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
+      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
+      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
+      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
+      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
+      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
+      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
+      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
+      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
+      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
+      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
+
+  - tipo: libro
+    nombre: "Harry Potter y las Reliquias de la Muerte"
+    orden_local: 7
+    fecha: "2007-07-21"
+    hijos:
+      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
+      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
+      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
+      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
+      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
+      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
+      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
+      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
+      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
+      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
+      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
+      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
+      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
+      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
+      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
+      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
+      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
+      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
+      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
+      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
+      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
+      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
+      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
+      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
+      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
+      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
+      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
+      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
+      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
+      - {tipo: capitulo, nombre: "Capítulo 31", orden_local: 31}
+      - {tipo: capitulo, nombre: "Capítulo 32", orden_local: 32}
+      - {tipo: capitulo, nombre: "Capítulo 33", orden_local: 33}
+      - {tipo: capitulo, nombre: "Capítulo 34", orden_local: 34}
+      - {tipo: capitulo, nombre: "Capítulo 35", orden_local: 35}
+      - {tipo: capitulo, nombre: "Capítulo 36", orden_local: 36}
+      - {tipo: capitulo, nombre: "Epílogo", orden_local: 37}
+
+# Total esperado: 17+18+22+37+38+30+36+1(epílogo) = 199 capítulos/hojas.

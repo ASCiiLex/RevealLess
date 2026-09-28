@@ -1,0 +1,21 @@
+# Curación de estructura narrativa — Harry Potter (PELÍCULAS)
+# obra_external_id: creada vía crear_obra_manual.
+#
+# AVISO: solo se han verificado (Wikipedia) las fechas de estreno de las
+# películas 1, 7 y 8 en esta sesión. Las fechas de las películas 2-6 son
+# las de estreno en Reino Unido tal como se recuerdan, PENDIENTES de
+# confirmación explícita antes de darlas por definitivas — revisar: true.
+obra_external_id: {source: manual, external_id: harry-potter-peliculas}
+sinopsis_en: [pelicula]
+
+nodos:
+  - {tipo: pelicula, nombre: "Harry Potter y la piedra filosofal", orden_local: 1, fecha: "2001-11-16"}
+  - {tipo: pelicula, nombre: "Harry Potter y la cámara secreta", orden_local: 2, fecha: "2002-11-15", revisar: true}
+  - {tipo: pelicula, nombre: "Harry Potter y el prisionero de Azkaban", orden_local: 3, fecha: "2004-05-31", revisar: true}
+  - {tipo: pelicula, nombre: "Harry Potter y el cáliz de fuego", orden_local: 4, fecha: "2005-11-18", revisar: true}
+  - {tipo: pelicula, nombre: "Harry Potter y la Orden del Fénix", orden_local: 5, fecha: "2007-07-11", revisar: true}
+  - {tipo: pelicula, nombre: "Harry Potter y el misterio del príncipe", orden_local: 6, fecha: "2009-07-15", revisar: true}
+  - {tipo: pelicula, nombre: "Harry Potter y las Reliquias de la Muerte - Parte 1", orden_local: 7, fecha: "2010-11-19"}
+  - {tipo: pelicula, nombre: "Harry Potter y las Reliquias de la Muerte - Parte 2", orden_local: 8, fecha: "2011-07-15"}
+
+# Total esperado: 8 películas.
