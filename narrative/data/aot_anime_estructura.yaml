@@ -1,0 +1,23 @@
+# Curación de estructura narrativa — Attack on Titan / Shingeki no Kyojin (ANIME)
+# Fase B: aplicar DESPUÉS de la fusión de las 7 Obras de Jikan en una sola
+# (ver script de consolidación) — este fichero NO crea episodios nuevos,
+# solo agrupa los ya existentes (con título/fecha reales de Jikan) bajo
+# su Temporada correspondiente, igual que se hizo con One Piece/Naruto.
+#
+# Numeración continua tras la fusión (evita el bug de colisión de Naruto:
+# dos partes empezando cada una en episodio 1 se "roban" episodios entre
+# sí porque orden_local se busca a nivel de Obra completa, no por parte).
+obra_external_id: {source: jikan, external_id: 16498}
+tipo_unidad_raiz: temporada
+sinopsis_en: [temporada]
+
+nodos:
+  - {tipo: temporada, nombre: "Temporada 1", orden_local: 1, vincular_episodios: [1, 25]}
+  - {tipo: temporada, nombre: "Temporada 2", orden_local: 2, vincular_episodios: [26, 37]}
+  - {tipo: temporada, nombre: "Temporada 3", orden_local: 3, vincular_episodios: [38, 49]}
+  - {tipo: temporada, nombre: "Temporada 3 Parte 2", orden_local: 4, vincular_episodios: [50, 59]}
+  - {tipo: temporada, nombre: "Temporada Final", orden_local: 5, vincular_episodios: [60, 75]}
+  - {tipo: temporada, nombre: "Temporada Final Parte 2", orden_local: 6, vincular_episodios: [76, 87]}
+  - {tipo: temporada, nombre: "Temporada Final - Kanketsu-hen", orden_local: 7, vincular_episodios: [88, 89]}
+
+# Total esperado: 89 episodios en 7 temporadas.
