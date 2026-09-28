@@ -1,15 +1,30 @@
 /* Catálogo público y avisos. */
+.pl-catalogo-cabecera {
+  margin-bottom: 28px;
+}
+
 .pl-section-title {
-  font-size: 1.6rem;
-  margin-bottom: 8px;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  margin-bottom: 10px;
   color: var(--paper);
 }
 
 .pl-catalogo-intro {
-  margin: 0 0 24px;
+  margin: 0;
+  max-width: 78ch;
+  font-size: 17px;
+  line-height: 1.5;
   color: var(--gold-light);
-  font-size: 14px;
-  max-width: 60ch;
+}
+
+.pl-catalogo-intro strong {
+  color: var(--paper);
+  font-weight: 600;
+}
+
+/* Referencia de posicionamiento del panel de sinopsis. */
+.pl-catalogo {
+  position: relative;
 }
 
 .pl-grid {
@@ -27,7 +42,7 @@
   overflow: hidden;
 }
 
-.pl-card img {
+.pl-card-portada {
   display: block;
   width: 100%;
   aspect-ratio: 2 / 3;
@@ -48,20 +63,89 @@
   color: var(--fog);
 }
 
-.pl-card details {
+.pl-sinopsis {
   margin-top: 8px;
   font-size: 13px;
 }
 
-.pl-card summary {
+.pl-sinopsis summary {
   cursor: pointer;
   color: var(--gold);
   font-weight: 600;
 }
 
-.pl-card details p {
+.pl-sinopsis p {
   margin: 6px 0 0;
   line-height: 1.45;
+}
+
+/* Panel flotante (solo escritorio) */
+.pl-sinopsis-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  padding: 20px 48px 22px 24px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pl-sinopsis-panel[hidden] {
+  display: none;
+}
+
+.pl-sinopsis-panel h3 {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+
+.pl-sinopsis-panel p {
+  margin: 0;
+  max-width: 90ch;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.pl-sinopsis-flecha {
+  position: absolute;
+  top: -8px;
+  width: 14px;
+  height: 14px;
+  background: var(--paper);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.pl-sinopsis-cerrar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: none;
+  color: var(--fog);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pl-sinopsis-cerrar:hover,
+.pl-sinopsis-cerrar:focus-visible {
+  color: var(--ink);
+}
+
+.pl-ver-mas {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.pl-ver-mas .pl-btn[aria-busy='true'] {
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .pl-empty {
@@ -81,4 +165,39 @@
 
 .pl-notice p {
   margin: 8px 0 20px;
+}
+
+/* En escritorio el texto se muestra en el panel flotante. */
+@media (min-width: 768px) {
+  .pl-sinopsis p {
+    display: none;
+  }
+}
+
+/* Mobile: lista con miniatura; la sinopsis se despliega dentro de la tarjeta. */
+@media (max-width: 767px) {
+  .pl-catalogo-intro {
+    font-size: 15px;
+  }
+
+  .pl-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .pl-card {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px;
+    align-items: start;
+  }
+
+  .pl-card-portada {
+    border-radius: calc(var(--radius) - 2px);
+  }
+
+  .pl-card-body {
+    padding: 2px 4px 2px 0;
+  }
 }

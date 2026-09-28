@@ -1,0 +1,13 @@
+{% for obra in pagina %}
+<article class="pl-card">
+    <img class="pl-card-portada" src="{{ obra.image_url }}" alt="{{ obra.titulo }}" loading="lazy">
+    <div class="pl-card-body">
+        <h3>{{ obra.titulo }}</h3>
+        <p class="pl-meta">{{ obra.posts_total }} publicaci{{ obra.posts_total|pluralize:"ón,ones" }}</p>
+        <details class="pl-sinopsis" name="sinopsis">
+            <summary>Sinopsis</summary>
+            <p>{{ obra.sinopsis|default:"Sin sinopsis todavía." }}</p>
+        </details>
+    </div>
+</article>
+{% endfor %}
