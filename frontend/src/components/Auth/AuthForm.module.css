@@ -45,6 +45,13 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+/* Mismo hover que los CTA dorados de las páginas públicas. */
+.submit:hover:not(:disabled),
+.submit:focus-visible {
+  background: var(--gold-hover);
 }
 
 .submit:disabled {

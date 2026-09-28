@@ -5,6 +5,7 @@
   --fog: #7C8B9B;
   /* Relleno de CTA, botones y progreso (texto papel encima). */
   --gold: #B8902E;
+  --gold-hover: #9C7822;
   --gold-light: #E8D9B8;
 
   /* Sobre fondo oscuro: acento de marca (texto, enlaces, selección) y texto secundario. */

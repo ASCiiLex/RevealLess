@@ -50,6 +50,10 @@
   font-weight: 600;
   text-decoration: none;
   text-align: center;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .pl-btn-sm {
@@ -60,6 +64,12 @@
 .pl-btn-primary {
   background: var(--gold);
   color: var(--paper);
+}
+
+.pl-btn-primary:hover,
+.pl-btn-primary:focus-visible {
+  background: var(--gold-hover);
+  border-color: var(--gold-hover);
 }
 
 /* Para fondos claros (cabecera y barra inferior). */
