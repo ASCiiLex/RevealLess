@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './ProfileView.module.css'
+import botones from '../../styles/botones.module.css'
 import { fetchProfile, type ProfileDetail } from '../../api/profile'
 import { seguirUsuario, dejarDeSeguirUsuario } from '../../api/follow'
 
@@ -39,7 +40,7 @@ export default function ProfileView({ username }: Props) {
 
           <div className={styles.actions}>
             {profile.is_own_profile ? (
-              <a className={styles.button} href="/perfil/editar/">Editar perfil</a>
+              <a className={botones.secundario} href="/perfil/editar/">Editar perfil</a>
             ) : (
               <FollowActions username={profile.username} isFollowingInicial={profile.is_following} />
             )}
@@ -94,14 +95,23 @@ function FollowActions({
 
   return (
     <>
-      <button
-        className={`${styles.button} ${siguiendo ? '' : styles.buttonPrimary}`}
-        onClick={handleToggle}
-        disabled={cargando}
-      >
-        {siguiendo ? 'Dejar de seguir' : 'Seguir'}
-      </button>
-      <a className={styles.button} href={`/mensajes/${username}/`}>
+      {siguiendo ? (
+        <button
+          type="button"
+          className={botones.activo}
+          onClick={handleToggle}
+          disabled={cargando}
+          aria-label={`Dejar de seguir a ${username}`}
+        >
+          <span className={botones.enReposo} aria-hidden="true">✓ Siguiendo</span>
+          <span className={botones.alPasar} aria-hidden="true">Dejar de seguir</span>
+        </button>
+      ) : (
+        <button type="button" className={botones.primario} onClick={handleToggle} disabled={cargando}>
+          Seguir
+        </button>
+      )}
+      <a className={botones.secundario} href={`/mensajes/${username}/`}>
         Enviar mensaje
       </a>
     </>

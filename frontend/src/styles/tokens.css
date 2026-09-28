@@ -12,7 +12,10 @@
   --accent: #6FC4F7;
   --on-dark-soft: #D3DAE2;
 
-  /* Marino tinta derivado del logo: fondo de las páginas públicas. */
+  /* Acciones destructivas (dejar de seguir, errores). */
+  --danger: #B3261E;
+
+  /* Marino tinta derivado del logo: fondo general dentro y fuera de la app. */
   --marino: #111A2C;
 
   --border: #D9D2C2;
@@ -22,7 +25,7 @@
   --shelf-bg: #524F49;
   --shelf-bg-dark: #3E3B37;
 
-  --page-bg: #4A5560;
+  --page-bg: var(--marino);
 
   --emocion-gusta: #E5484D;
   --emocion-encanta: #C94F7C;

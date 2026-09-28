@@ -1,6 +1,5 @@
-/* Páginas públicas: fondo marino tinta en lugar de la pizarra de la app. */
+/* Fondo común con la app (--page-bg ya es marino en tokens). */
 .pl-body {
-  --page-bg: var(--marino);
   min-height: 100vh;
   display: flex;
   flex-direction: column;

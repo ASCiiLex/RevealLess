@@ -10,22 +10,34 @@
   display: none;
 }
 
+/* Filtros, no acciones: identidad de acento, nunca dorado. */
 .chip {
   flex: 0 0 auto;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--on-dark-soft) 35%, transparent);
   background: none;
-  color: var(--fog);
+  color: var(--on-dark-soft);
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.chipActive {
-  background: var(--ink);
+.chip:hover,
+.chip:focus-visible {
+  border-color: var(--on-dark-soft);
   color: var(--paper);
-  border-color: var(--ink);
+}
+
+.chipActive,
+.chipActive:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--marino);
 }

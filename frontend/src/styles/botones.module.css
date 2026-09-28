@@ -1,0 +1,77 @@
+/* Sistema de botones de la app: primario, secundario y estado activo (toggle seguir). */
+.base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.base:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Acción principal: relleno dorado. */
+.primario {
+  composes: base;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--paper);
+}
+
+.primario:hover:not(:disabled),
+.primario:focus-visible {
+  background: var(--gold-hover);
+  border-color: var(--gold-hover);
+}
+
+/* Acción secundaria: papel con borde tenue. */
+.secundario {
+  composes: base;
+  background: var(--paper);
+  border-color: color-mix(in srgb, var(--ink) 20%, transparent);
+  color: var(--ink);
+}
+
+.secundario:hover:not(:disabled),
+.secundario:focus-visible {
+  border-color: var(--ink);
+}
+
+/* Estado activo ("Siguiendo"): al pasar el ratón anuncia la acción destructiva. */
+.activo {
+  composes: secundario;
+}
+
+.activo .alPasar {
+  display: none;
+}
+
+.activo:hover:not(:disabled),
+.activo:focus-visible {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.activo:hover:not(:disabled) .enReposo,
+.activo:focus-visible .enReposo {
+  display: none;
+}
+
+.activo:hover:not(:disabled) .alPasar,
+.activo:focus-visible .alPasar {
+  display: inline;
+}
