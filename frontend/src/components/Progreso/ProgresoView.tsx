@@ -57,7 +57,7 @@ export default function ProgresoView({ obraSlug }: Props) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <a className={styles.backLink} href="/feed/react/">← Volver al feed</a>
+        <a className={styles.backLink} href="/feed/">← Volver al feed</a>
         <h1 className={styles.title}>{data.obra.titulo}</h1>
         {data.progreso && (
           <p className={styles.currentProgress}>
