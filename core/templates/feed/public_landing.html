@@ -3,35 +3,96 @@
 {% block body_class %}pl-has-nav{% endblock %}
 
 {% block content %}
-<main class="container pl-main">
-    <section class="pl-hero">
-        <h1>Disfruta sin spoilers</h1>
-        <p class="pl-lead">Habla de tus series, libros y pelis a tu propio ritmo.</p>
-    </section>
-
-    <section class="pl-stats">
-        <div class="pl-stat"><strong>{{ stats.obras_count }}</strong><span>obras en el catálogo</span></div>
-        <div class="pl-stat"><strong>{{ stats.posts_count }}</strong><span>publicaciones</span></div>
-        <div class="pl-stat"><strong>{{ stats.usuarios_count }}</strong><span>usuarios</span></div>
-    </section>
-
-    <h2 class="pl-section-title" id="catalogo">Catálogo</h2>
-    <div class="pl-grid">
-        {% for obra in obras %}
-        <article class="pl-card">
-            <img src="{{ obra.image_url }}" alt="{{ obra.titulo }}" loading="lazy">
-            <div class="pl-card-body">
-                <h3>{{ obra.titulo }}</h3>
-                <p class="pl-meta">{{ obra.posts_total }} publicaci{{ obra.posts_total|pluralize:"ón,ones" }}</p>
-                <details>
-                    <summary>Sinopsis</summary>
-                    <p>{{ obra.sinopsis|default:"Sin sinopsis todavía." }}</p>
-                </details>
+<main class="pl-main pl-escaparate">
+    <section class="container pl-hero-split">
+        <div class="pl-hero-texto">
+            <h1>Habla de lo que ves. <span>Sin adelantar nada.</span></h1>
+            <p class="pl-lead">Cada publicación lleva su frontera narrativa: solo aparece cuando tu progreso en la obra la alcanza.</p>
+            <div class="pl-hero-ctas">
+                <a class="pl-btn pl-btn-primary" href="/cuentas/register/">Crear cuenta</a>
+                <a class="pl-btn pl-btn-claro" href="/cuentas/login/">Iniciar sesión</a>
             </div>
-        </article>
-        {% empty %}
-        <p class="pl-empty">Todavía no hay obras en el catálogo.</p>
-        {% endfor %}
-    </div>
+            <p class="pl-hero-cifras">
+                {{ stats.obras_count }} obra{{ stats.obras_count|pluralize }} ·
+                {{ stats.posts_count }} publicaci{{ stats.posts_count|pluralize:"ón,ones" }} ·
+                {{ stats.usuarios_count }} usuario{{ stats.usuarios_count|pluralize }}
+            </p>
+        </div>
+
+        {# Demo ilustrativa y estática: nunca publicaciones reales. #}
+        <div class="pl-demo" aria-hidden="true">
+            <div class="pl-demo-card">
+                <div class="pl-demo-meta"><strong>@lectora</strong> · Capítulo 12</div>
+                <div class="pl-demo-linea" style="width: 88%"></div>
+                <div class="pl-demo-linea" style="width: 62%"></div>
+            </div>
+            <div class="pl-demo-card pl-demo-bloqueada">
+                <div class="pl-demo-meta"><strong>@maratoniano</strong> · Capítulo 48</div>
+                <div class="pl-demo-linea" style="width: 90%"></div>
+                <div class="pl-demo-linea" style="width: 55%"></div>
+                <div class="pl-demo-candado">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                    Visible cuando llegues al capítulo 48
+                </div>
+            </div>
+            <div class="pl-demo-card">
+                <div class="pl-demo-meta"><strong>@teorico</strong> · Capítulo 20</div>
+                <div class="pl-demo-linea" style="width: 72%"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pl-banda">
+        <div class="container">
+            <h2>Cómo funciona</h2>
+            <p class="pl-banda-intro">Nada de etiquetas de spoiler que dependan de la buena voluntad de nadie: el sistema compara tu progreso con la frontera de cada contenido.</p>
+
+            <div class="pl-progreso" aria-hidden="true">
+                <div class="pl-progreso-relleno"></div>
+                <div class="pl-progreso-punto"></div>
+            </div>
+
+            <ol class="pl-pasos">
+                <li>
+                    <h3>Tu progreso</h3>
+                    <p>Marca hasta dónde has llegado en cada serie, libro o manga.</p>
+                </li>
+                <li>
+                    <h3>Tu frontera</h3>
+                    <p>Al publicar, indicas hasta dónde hay que haber visto o leído.</p>
+                </li>
+                <li>
+                    <h3>Tu feed</h3>
+                    <p>Se abre a medida que avanzas. Lo que aún no has alcanzado, no aparece.</p>
+                </li>
+            </ol>
+
+            <p class="pl-ia">Una IA te propone la frontera de cada publicación. La decisión final es siempre tuya.</p>
+        </div>
+    </section>
+
+    {% if obras %}
+    <section class="container pl-adelanto">
+        <div class="pl-adelanto-cabecera">
+            <h2>En el catálogo</h2>
+            <a class="pl-enlace" href="{% url 'catalogo_publico' %}">Ver catálogo completo →</a>
+        </div>
+        <div class="pl-portadas">
+            {% for obra in obras %}
+            <figure class="pl-portada">
+                <img src="{{ obra.image_url }}" alt="{{ obra.titulo }}" loading="lazy">
+                <figcaption>{{ obra.titulo }}</figcaption>
+            </figure>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="container">
+        <div class="pl-cta-final">
+            <h2>¿Por dónde vas tú?</h2>
+            <a class="pl-btn pl-btn-papel" href="/cuentas/register/">Crear cuenta</a>
+        </div>
+    </section>
 </main>
 {% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base_public.html' %}
+
+{% block body_class %}pl-has-nav{% endblock %}
+
+{% block content %}
+<main class="container pl-main">
+    <h1 class="pl-section-title">Catálogo</h1>
+    <p class="pl-catalogo-intro">Obras disponibles en RevealLess. Crea una cuenta para declarar tu progreso y entrar en la conversación.</p>
+
+    <div class="pl-grid">
+        {% for obra in obras %}
+        <article class="pl-card">
+            <img src="{{ obra.image_url }}" alt="{{ obra.titulo }}" loading="lazy">
+            <div class="pl-card-body">
+                <h3>{{ obra.titulo }}</h3>
+                <p class="pl-meta">{{ obra.posts_total }} publicaci{{ obra.posts_total|pluralize:"ón,ones" }}</p>
+                <details>
+                    <summary>Sinopsis</summary>
+                    <p>{{ obra.sinopsis|default:"Sin sinopsis todavía." }}</p>
+                </details>
+            </div>
+        </article>
+        {% empty %}
+        <p class="pl-empty">Todavía no hay obras en el catálogo.</p>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

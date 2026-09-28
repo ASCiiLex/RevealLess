@@ -1,4 +1,5 @@
-/* Páginas públicas de Django (landing, "post no existe"): mismos tokens que la app. */
+/* Páginas públicas de Django (landing, catálogo, "post no existe"): mismos tokens que la app. */
 @import './landing/cabecera.css';
 @import './landing/contenido.css';
+@import './landing/escaparate.css';
 @import './landing/pie.css';
