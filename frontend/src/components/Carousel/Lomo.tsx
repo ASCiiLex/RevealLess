@@ -53,42 +53,39 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
     }
   }
 
-  function handleVerInfo(e: React.MouseEvent) {
-    e.stopPropagation()
-    window.location.href = esTema
-      ? `/narrative/tema/${obra.tema_id}/`
-      : `/narrative/obra/${obra.slug}/`
-  }
-
+  const hrefInfo = esTema ? `/narrative/tema/${obra.tema_id}/` : `/narrative/obra/${obra.slug}/`
   const mostrarProgresoFinal = mostrarProgreso && !esTema
 
   return (
     <div className={styles.wrapper}>
-      <button
-        className={`${styles.lomo} ${activa ? styles.lomoActive : ''}`}
-        onClick={() => onSelect(obra)}
-        aria-pressed={activa}
-      >
-        {!esTema && typeof obra.progreso_pct === 'number' && (
-          <div className={styles.progressTrack}>
-            <div className={styles.progressFill} style={{ width: `${obra.progreso_pct}%` }} />
-          </div>
-        )}
-
+      {/* Contenedor visual: el botón de filtro y el enlace de info son hermanos, no anidados. */}
+      <div className={`${styles.lomo} ${activa ? styles.lomoActive : ''}`}>
         <button
           type="button"
+          className={styles.lomoButton}
+          onClick={() => onSelect(obra)}
+          aria-pressed={activa}
+        >
+          {!esTema && typeof obra.progreso_pct === 'number' && (
+            <div className={styles.progressTrack}>
+              <div className={styles.progressFill} style={{ width: `${obra.progreso_pct}%` }} />
+            </div>
+          )}
+
+          <img className={styles.image} src={obra.imagen_url} alt="" />
+          <div className={styles.overlay} />
+          <span className={styles.title}>{obra.titulo}</span>
+        </button>
+
+        <a
           className={styles.infoIcon}
-          onClick={handleVerInfo}
+          href={hrefInfo}
           aria-label={`Ver información de ${obra.titulo}`}
           title="Ver información"
         >
           i
-        </button>
-
-        <img className={styles.image} src={obra.imagen_url} alt="" />
-        <div className={styles.overlay} />
-        <span className={styles.title}>{obra.titulo}</span>
-      </button>
+        </a>
+      </div>
 
       {mostrarProgresoFinal && (
         <a className={styles.progressLink} href={`/narrative/progreso/${obra.slug}/`}>
@@ -98,6 +95,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
       )}
 
       <button
+        type="button"
         className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
         onClick={handleToggleSeguir}
         disabled={cargando}

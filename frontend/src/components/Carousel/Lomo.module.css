@@ -19,13 +19,8 @@
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--border);
-  text-decoration: none;
-  display: block;
   scroll-snap-align: start;
   border: 2px solid transparent;
-  padding: 0;
-  cursor: pointer;
-  font: inherit;
   order: 2;
   box-shadow: 0 10px 14px -6px rgba(0, 0, 0, 0.5);
   transition: border-color 0.18s ease;
@@ -34,6 +29,24 @@
 .lomoActive {
   border-color: var(--gold);
   transform: scale(1.06);
+}
+
+.lomoButton {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Dentro del overflow hidden: el outline se dibuja hacia dentro para no recortarse. */
+.lomoButton:focus-visible {
+  outline-offset: -3px;
 }
 
 .progressTrack {
@@ -67,12 +80,11 @@
   font-size: 11px;
   font-weight: 700;
   font-style: italic;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+  text-decoration: none;
 }
 
-.infoIcon:hover {
+.infoIcon:hover,
+.infoIcon:focus-visible {
   background: var(--gold);
 }
 
@@ -106,11 +118,9 @@
   line-height: 1.25;
   text-align: center;
   display: -webkit-box;
-  display: box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  box-orient: vertical;
   overflow: hidden;
 }
 
