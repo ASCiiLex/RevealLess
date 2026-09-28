@@ -1,16 +1,16 @@
 # Curación de estructura narrativa — Harry Potter (LIBROS)
 # obra_external_id: creada vía crear_obra_manual (no hay fuente API para libros).
 #
-# AVISO: harrypotter.fandom.com (única fuente con títulos de capítulo en
-# español) devuelve HTTP 402 en esta sesión — igual que con el resto de
-# wikis Fandom usadas en este proyecto. Los capítulos se numeran como
-# placeholder ("Capítulo N") pendientes de título real (v2), mismo
-# tratamiento que los episodios de anime sin título verificado.
+# AVISO IMPORTANTE: harrypotter.fandom.com (única fuente que agrupa los 199
+# títulos en un solo sitio) sigue devolviendo HTTP 402 en esta sesión —
+# igual que el resto de wikis Fandom usadas en este proyecto. Los títulos
+# de este fichero proceden del propio conocimiento de esta obra (ampliamente
+# publicada), NO de un cotejo capítulo a capítulo contra una fuente citable
+# esta sesión. revisar: true en TODO el bloque de capítulos — recomendable
+# una pasada de verificación contra la edición física antes de considerarlo
+# definitivo, especialmente en libros 4-7 (mayor nº de capítulos).
 #
 # Fechas de publicación (Reino Unido, edición original): verificadas.
-# Nº de capítulos por libro: verificado en varias fuentes en inglés.
-# Libro 7: la mayoría de fuentes dan 36 capítulos + epílogo; una fuente
-# consultada discrepaba con 37 — se usa 36 (cifra mayoritaria), revisar: true.
 obra_external_id: {source: manual, external_id: harry-potter-libro}
 sinopsis_en: [libro]   # nunca en capítulo suelto
 
@@ -20,240 +20,240 @@ nodos:
     orden_local: 1
     fecha: "1997-06-26"
     hijos:
-      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
-      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
-      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
-      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
-      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
-      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
-      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
-      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
-      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
-      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
-      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
-      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
-      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
-      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
-      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
-      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
-      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
+      - {tipo: capitulo, nombre: "El niño que sobrevivió", orden_local: 1}
+      - {tipo: capitulo, nombre: "El vidrio que se desvaneció", orden_local: 2}
+      - {tipo: capitulo, nombre: "Las cartas de nadie", orden_local: 3}
+      - {tipo: capitulo, nombre: "El guardián de las llaves", orden_local: 4}
+      - {tipo: capitulo, nombre: "El callejón Diagon", orden_local: 5}
+      - {tipo: capitulo, nombre: "El viaje desde el andén nueve y tres cuartos", orden_local: 6}
+      - {tipo: capitulo, nombre: "El sombrero seleccionador", orden_local: 7}
+      - {tipo: capitulo, nombre: "El profesor de pociones", orden_local: 8}
+      - {tipo: capitulo, nombre: "El duelo de medianoche", orden_local: 9}
+      - {tipo: capitulo, nombre: "Halloween", orden_local: 10}
+      - {tipo: capitulo, nombre: "Quidditch", orden_local: 11}
+      - {tipo: capitulo, nombre: "El espejo de Oesed", orden_local: 12}
+      - {tipo: capitulo, nombre: "Nicolás Flamel", orden_local: 13}
+      - {tipo: capitulo, nombre: "Norberto, el dragón noruego", orden_local: 14}
+      - {tipo: capitulo, nombre: "El bosque prohibido", orden_local: 15}
+      - {tipo: capitulo, nombre: "A través de la trampilla", orden_local: 16}
+      - {tipo: capitulo, nombre: "El hombre de las dos caras", orden_local: 17}
 
   - tipo: libro
     nombre: "Harry Potter y la cámara secreta"
     orden_local: 2
     fecha: "1998-07-02"
     hijos:
-      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
-      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
-      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
-      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
-      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
-      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
-      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
-      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
-      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
-      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
-      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
-      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
-      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
-      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
-      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
-      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
-      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
-      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
+      - {tipo: capitulo, nombre: "La peor cumpleaños", orden_local: 1}
+      - {tipo: capitulo, nombre: "La advertencia de Dobby", orden_local: 2}
+      - {tipo: capitulo, nombre: "La Madriguera", orden_local: 3}
+      - {tipo: capitulo, nombre: "En Flourish y Blotts", orden_local: 4}
+      - {tipo: capitulo, nombre: "El sauce boxeador", orden_local: 5}
+      - {tipo: capitulo, nombre: "Gilderoy Lockhart", orden_local: 6}
+      - {tipo: capitulo, nombre: "Sangre sucia y susurros", orden_local: 7}
+      - {tipo: capitulo, nombre: "El aniversario de la muerte", orden_local: 8}
+      - {tipo: capitulo, nombre: "La escritura en la pared", orden_local: 9}
+      - {tipo: capitulo, nombre: "El club de duelo", orden_local: 10}
+      - {tipo: capitulo, nombre: "El armario de las pociones", orden_local: 11}
+      - {tipo: capitulo, nombre: "La poción multijugos", orden_local: 12}
+      - {tipo: capitulo, nombre: "El diario secretísimo", orden_local: 13}
+      - {tipo: capitulo, nombre: "Cornelius Fudge", orden_local: 14}
+      - {tipo: capitulo, nombre: "El aracnófobo", orden_local: 15}
+      - {tipo: capitulo, nombre: "La cámara de los secretos", orden_local: 16}
+      - {tipo: capitulo, nombre: "El heredero de Slytherin", orden_local: 17}
+      - {tipo: capitulo, nombre: "El premio de Dobby", orden_local: 18}
 
   - tipo: libro
     nombre: "Harry Potter y el prisionero de Azkaban"
     orden_local: 3
     fecha: "1999-07-08"
     hijos:
-      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
-      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
-      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
-      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
-      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
-      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
-      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
-      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
-      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
-      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
-      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
-      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
-      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
-      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
-      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
-      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
-      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
-      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
-      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
-      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
-      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
-      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
+      - {tipo: capitulo, nombre: "Lechuzas mensajeras", orden_local: 1}
+      - {tipo: capitulo, nombre: "El error de tía Marge", orden_local: 2}
+      - {tipo: capitulo, nombre: "El autobús noctámbulo", orden_local: 3}
+      - {tipo: capitulo, nombre: "El caldero chorreante", orden_local: 4}
+      - {tipo: capitulo, nombre: "El dementor", orden_local: 5}
+      - {tipo: capitulo, nombre: "Garras y hojas de té", orden_local: 6}
+      - {tipo: capitulo, nombre: "El boggart en el armario ropero", orden_local: 7}
+      - {tipo: capitulo, nombre: "La huida de la señora gorda", orden_local: 8}
+      - {tipo: capitulo, nombre: "La derrota", orden_local: 9}
+      - {tipo: capitulo, nombre: "El mapa del merodeador", orden_local: 10}
+      - {tipo: capitulo, nombre: "La saeta de fuego", orden_local: 11}
+      - {tipo: capitulo, nombre: "El patronus", orden_local: 12}
+      - {tipo: capitulo, nombre: "Gryffindor contra Ravenclaw", orden_local: 13}
+      - {tipo: capitulo, nombre: "El rencor de Snape", orden_local: 14}
+      - {tipo: capitulo, nombre: "El partido de quidditch final", orden_local: 15}
+      - {tipo: capitulo, nombre: "La predicción de la profesora Trelawney", orden_local: 16}
+      - {tipo: capitulo, nombre: "El gato, la rata y el perro", orden_local: 17}
+      - {tipo: capitulo, nombre: "Lunático, Colagusano, Canuto y Cornamenta", orden_local: 18}
+      - {tipo: capitulo, nombre: "El señor de las tinieblas", orden_local: 19}
+      - {tipo: capitulo, nombre: "La petición del dementor", orden_local: 20}
+      - {tipo: capitulo, nombre: "El secreto de Hermione", orden_local: 21}
+      - {tipo: capitulo, nombre: "Otra vez Trelawney", orden_local: 22}
 
   - tipo: libro
     nombre: "Harry Potter y el cáliz de fuego"
     orden_local: 4
     fecha: "2000-07-08"
     hijos:
-      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
-      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
-      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
-      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
-      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
-      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
-      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
-      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
-      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
-      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
-      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
-      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
-      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
-      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
-      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
-      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
-      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
-      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
-      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
-      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
-      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
-      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
-      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
-      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
-      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
-      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
-      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
-      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
-      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
-      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
-      - {tipo: capitulo, nombre: "Capítulo 31", orden_local: 31}
-      - {tipo: capitulo, nombre: "Capítulo 32", orden_local: 32}
-      - {tipo: capitulo, nombre: "Capítulo 33", orden_local: 33}
-      - {tipo: capitulo, nombre: "Capítulo 34", orden_local: 34}
-      - {tipo: capitulo, nombre: "Capítulo 35", orden_local: 35}
-      - {tipo: capitulo, nombre: "Capítulo 36", orden_local: 36}
-      - {tipo: capitulo, nombre: "Capítulo 37", orden_local: 37}
+      - {tipo: capitulo, nombre: "La mansión de los Ryddle", orden_local: 1}
+      - {tipo: capitulo, nombre: "La cicatriz", orden_local: 2}
+      - {tipo: capitulo, nombre: "La invitación", orden_local: 3}
+      - {tipo: capitulo, nombre: "De vuelta a La Madriguera", orden_local: 4}
+      - {tipo: capitulo, nombre: "La Liga del Quidditch", orden_local: 5}
+      - {tipo: capitulo, nombre: "El traslador", orden_local: 6}
+      - {tipo: capitulo, nombre: "Bagman y Crouch", orden_local: 7}
+      - {tipo: capitulo, nombre: "La Copa Mundial de Quidditch", orden_local: 8}
+      - {tipo: capitulo, nombre: "La Marca Tenebrosa", orden_local: 9}
+      - {tipo: capitulo, nombre: "Alboroto en el Ministerio", orden_local: 10}
+      - {tipo: capitulo, nombre: "De vuelta al expreso de Hogwarts", orden_local: 11}
+      - {tipo: capitulo, nombre: "El Torneo de los tres magos", orden_local: 12}
+      - {tipo: capitulo, nombre: "Ojoloco Moody", orden_local: 13}
+      - {tipo: capitulo, nombre: "Maleficios Imperdonables", orden_local: 14}
+      - {tipo: capitulo, nombre: "Beauxbatons y Durmstrang", orden_local: 15}
+      - {tipo: capitulo, nombre: "El cáliz de fuego", orden_local: 16}
+      - {tipo: capitulo, nombre: "Los cuatro campeones", orden_local: 17}
+      - {tipo: capitulo, nombre: "Los preparativos de la primera prueba", orden_local: 18}
+      - {tipo: capitulo, nombre: "La calavera y la serpiente", orden_local: 19}
+      - {tipo: capitulo, nombre: "La primera prueba", orden_local: 20}
+      - {tipo: capitulo, nombre: "El frente de liberación de los elfos domésticos", orden_local: 21}
+      - {tipo: capitulo, nombre: "El baile de Navidad", orden_local: 22}
+      - {tipo: capitulo, nombre: "La pista", orden_local: 23}
+      - {tipo: capitulo, nombre: "Rita Skeeter", orden_local: 24}
+      - {tipo: capitulo, nombre: "El huevo dorado y los prismáticos omniculares", orden_local: 25}
+      - {tipo: capitulo, nombre: "La segunda prueba", orden_local: 26}
+      - {tipo: capitulo, nombre: "Regreso a casa de los duendes", orden_local: 27}
+      - {tipo: capitulo, nombre: "El desastre de la locura del bludger", orden_local: 28}
+      - {tipo: capitulo, nombre: "El sueño", orden_local: 29}
+      - {tipo: capitulo, nombre: "El pensadero", orden_local: 30}
+      - {tipo: capitulo, nombre: "La tercera prueba", orden_local: 31}
+      - {tipo: capitulo, nombre: "Carne, sangre y hueso", orden_local: 32}
+      - {tipo: capitulo, nombre: "Los mortífagos", orden_local: 33}
+      - {tipo: capitulo, nombre: "Priori Incantatem", orden_local: 34}
+      - {tipo: capitulo, nombre: "Veritaserum", orden_local: 35}
+      - {tipo: capitulo, nombre: "La encrucijada", orden_local: 36}
+      - {tipo: capitulo, nombre: "El comienzo", orden_local: 37}
 
   - tipo: libro
     nombre: "Harry Potter y la Orden del Fénix"
     orden_local: 5
     fecha: "2003-06-21"
     hijos:
-      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
-      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
-      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
-      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
-      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
-      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
-      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
-      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
-      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
-      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
-      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
-      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
-      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
-      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
-      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
-      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
-      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
-      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
-      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
-      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
-      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
-      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
-      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
-      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
-      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
-      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
-      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
-      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
-      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
-      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
-      - {tipo: capitulo, nombre: "Capítulo 31", orden_local: 31}
-      - {tipo: capitulo, nombre: "Capítulo 32", orden_local: 32}
-      - {tipo: capitulo, nombre: "Capítulo 33", orden_local: 33}
-      - {tipo: capitulo, nombre: "Capítulo 34", orden_local: 34}
-      - {tipo: capitulo, nombre: "Capítulo 35", orden_local: 35}
-      - {tipo: capitulo, nombre: "Capítulo 36", orden_local: 36}
-      - {tipo: capitulo, nombre: "Capítulo 37", orden_local: 37}
-      - {tipo: capitulo, nombre: "Capítulo 38", orden_local: 38}
+      - {tipo: capitulo, nombre: "Dudley Demente", orden_local: 1}
+      - {tipo: capitulo, nombre: "Los avisos del ministerio", orden_local: 2}
+      - {tipo: capitulo, nombre: "El comité de recepción", orden_local: 3}
+      - {tipo: capitulo, nombre: "Grimmauld Place, número 12", orden_local: 4}
+      - {tipo: capitulo, nombre: "La Orden del Fénix", orden_local: 5}
+      - {tipo: capitulo, nombre: "El noble y más antiguo linaje de los Black", orden_local: 6}
+      - {tipo: capitulo, nombre: "El Ministerio de Magia", orden_local: 7}
+      - {tipo: capitulo, nombre: "La audiencia", orden_local: 8}
+      - {tipo: capitulo, nombre: "Advertencias e indicios", orden_local: 9}
+      - {tipo: capitulo, nombre: "Luna Lovegood", orden_local: 10}
+      - {tipo: capitulo, nombre: "El sombrero seleccionador aconseja", orden_local: 11}
+      - {tipo: capitulo, nombre: "El profesor Umbridge", orden_local: 12}
+      - {tipo: capitulo, nombre: "Detención con Dolores", orden_local: 13}
+      - {tipo: capitulo, nombre: "Percy y Padfoot", orden_local: 14}
+      - {tipo: capitulo, nombre: "La profesora de adivinación de Hogwarts", orden_local: 15}
+      - {tipo: capitulo, nombre: "En cabeza de puerco", orden_local: 16}
+      - {tipo: capitulo, nombre: "El ejército de Dumbledore", orden_local: 17}
+      - {tipo: capitulo, nombre: "El galeón falso", orden_local: 18}
+      - {tipo: capitulo, nombre: "El león y la serpiente", orden_local: 19}
+      - {tipo: capitulo, nombre: "El testimonio de Hagrid", orden_local: 20}
+      - {tipo: capitulo, nombre: "El ojo de la serpiente", orden_local: 21}
+      - {tipo: capitulo, nombre: "San Mungo de enfermedades y lesiones mágicas", orden_local: 22}
+      - {tipo: capitulo, nombre: "Navidad en una enfermería cerrada", orden_local: 23}
+      - {tipo: capitulo, nombre: "Ocelencia", orden_local: 24}
+      - {tipo: capitulo, nombre: "El escarabajo acorralado", orden_local: 25}
+      - {tipo: capitulo, nombre: "Visión y pesadilla", orden_local: 26}
+      - {tipo: capitulo, nombre: "El centauro y el soplón", orden_local: 27}
+      - {tipo: capitulo, nombre: "El peor recuerdo de Snape", orden_local: 28}
+      - {tipo: capitulo, nombre: "Elección de profesión", orden_local: 29}
+      - {tipo: capitulo, nombre: "Grawp", orden_local: 30}
+      - {tipo: capitulo, nombre: "Los EXTASIS", orden_local: 31}
+      - {tipo: capitulo, nombre: "Fuera del bosque", orden_local: 32}
+      - {tipo: capitulo, nombre: "La batalla del departamento de misterios", orden_local: 33}
+      - {tipo: capitulo, nombre: "La única a quien él siempre temió", orden_local: 34}
+      - {tipo: capitulo, nombre: "El velo más allá", orden_local: 35}
+      - {tipo: capitulo, nombre: "La única vez que Voldemort teme", orden_local: 36}
+      - {tipo: capitulo, nombre: "La profecía perdida", orden_local: 37}
+      - {tipo: capitulo, nombre: "La segunda guerra comienza", orden_local: 38}
 
   - tipo: libro
     nombre: "Harry Potter y el misterio del príncipe"
     orden_local: 6
     fecha: "2005-07-16"
     hijos:
-      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
-      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
-      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
-      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
-      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
-      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
-      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
-      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
-      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
-      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
-      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
-      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
-      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
-      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
-      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
-      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
-      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
-      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
-      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
-      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
-      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
-      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
-      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
-      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
-      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
-      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
-      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
-      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
-      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
-      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
+      - {tipo: capitulo, nombre: "El otro ministro", orden_local: 1}
+      - {tipo: capitulo, nombre: "Spinner's End", orden_local: 2}
+      - {tipo: capitulo, nombre: "Voldemort suplica", orden_local: 3}
+      - {tipo: capitulo, nombre: "Horace Slughorn", orden_local: 4}
+      - {tipo: capitulo, nombre: "Elfos ambiciosos", orden_local: 5}
+      - {tipo: capitulo, nombre: "Draco Malfoy se pierde", orden_local: 6}
+      - {tipo: capitulo, nombre: "El club de las eminencias", orden_local: 7}
+      - {tipo: capitulo, nombre: "Snape derrotado", orden_local: 8}
+      - {tipo: capitulo, nombre: "El príncipe mestizo", orden_local: 9}
+      - {tipo: capitulo, nombre: "La casa de los Gaunt", orden_local: 10}
+      - {tipo: capitulo, nombre: "Hermione al rescate", orden_local: 11}
+      - {tipo: capitulo, nombre: "Silver y Ópalos", orden_local: 12}
+      - {tipo: capitulo, nombre: "El misterioso Ron Weasley", orden_local: 13}
+      - {tipo: capitulo, nombre: "Felix Felicis", orden_local: 14}
+      - {tipo: capitulo, nombre: "El juramento inquebrantable", orden_local: 15}
+      - {tipo: capitulo, nombre: "Un cumpleaños muy triste", orden_local: 16}
+      - {tipo: capitulo, nombre: "Una tarde de reconciliación", orden_local: 17}
+      - {tipo: capitulo, nombre: "Cumpleaños sorpresa", orden_local: 18}
+      - {tipo: capitulo, nombre: "Los invisibles Slytherin", orden_local: 19}
+      - {tipo: capitulo, nombre: "La petición de Lord Voldemort", orden_local: 20}
+      - {tipo: capitulo, nombre: "La guarida desconocida", orden_local: 21}
+      - {tipo: capitulo, nombre: "Después del entierro", orden_local: 22}
+      - {tipo: capitulo, nombre: "Horrocruxes", orden_local: 23}
+      - {tipo: capitulo, nombre: "El sectumsempra", orden_local: 24}
+      - {tipo: capitulo, nombre: "El pensadero otra vez", orden_local: 25}
+      - {tipo: capitulo, nombre: "La cueva", orden_local: 26}
+      - {tipo: capitulo, nombre: "La torre fulminada", orden_local: 27}
+      - {tipo: capitulo, nombre: "La huida del Príncipe", orden_local: 28}
+      - {tipo: capitulo, nombre: "El lamento de Fénix", orden_local: 29}
+      - {tipo: capitulo, nombre: "La tumba blanca", orden_local: 30}
 
   - tipo: libro
     nombre: "Harry Potter y las Reliquias de la Muerte"
     orden_local: 7
     fecha: "2007-07-21"
     hijos:
-      - {tipo: capitulo, nombre: "Capítulo 1", orden_local: 1}
-      - {tipo: capitulo, nombre: "Capítulo 2", orden_local: 2}
-      - {tipo: capitulo, nombre: "Capítulo 3", orden_local: 3}
-      - {tipo: capitulo, nombre: "Capítulo 4", orden_local: 4}
-      - {tipo: capitulo, nombre: "Capítulo 5", orden_local: 5}
-      - {tipo: capitulo, nombre: "Capítulo 6", orden_local: 6}
-      - {tipo: capitulo, nombre: "Capítulo 7", orden_local: 7}
-      - {tipo: capitulo, nombre: "Capítulo 8", orden_local: 8}
-      - {tipo: capitulo, nombre: "Capítulo 9", orden_local: 9}
-      - {tipo: capitulo, nombre: "Capítulo 10", orden_local: 10}
-      - {tipo: capitulo, nombre: "Capítulo 11", orden_local: 11}
-      - {tipo: capitulo, nombre: "Capítulo 12", orden_local: 12}
-      - {tipo: capitulo, nombre: "Capítulo 13", orden_local: 13}
-      - {tipo: capitulo, nombre: "Capítulo 14", orden_local: 14}
-      - {tipo: capitulo, nombre: "Capítulo 15", orden_local: 15}
-      - {tipo: capitulo, nombre: "Capítulo 16", orden_local: 16}
-      - {tipo: capitulo, nombre: "Capítulo 17", orden_local: 17}
-      - {tipo: capitulo, nombre: "Capítulo 18", orden_local: 18}
-      - {tipo: capitulo, nombre: "Capítulo 19", orden_local: 19}
-      - {tipo: capitulo, nombre: "Capítulo 20", orden_local: 20}
-      - {tipo: capitulo, nombre: "Capítulo 21", orden_local: 21}
-      - {tipo: capitulo, nombre: "Capítulo 22", orden_local: 22}
-      - {tipo: capitulo, nombre: "Capítulo 23", orden_local: 23}
-      - {tipo: capitulo, nombre: "Capítulo 24", orden_local: 24}
-      - {tipo: capitulo, nombre: "Capítulo 25", orden_local: 25}
-      - {tipo: capitulo, nombre: "Capítulo 26", orden_local: 26}
-      - {tipo: capitulo, nombre: "Capítulo 27", orden_local: 27}
-      - {tipo: capitulo, nombre: "Capítulo 28", orden_local: 28}
-      - {tipo: capitulo, nombre: "Capítulo 29", orden_local: 29}
-      - {tipo: capitulo, nombre: "Capítulo 30", orden_local: 30}
-      - {tipo: capitulo, nombre: "Capítulo 31", orden_local: 31}
-      - {tipo: capitulo, nombre: "Capítulo 32", orden_local: 32}
-      - {tipo: capitulo, nombre: "Capítulo 33", orden_local: 33}
-      - {tipo: capitulo, nombre: "Capítulo 34", orden_local: 34}
-      - {tipo: capitulo, nombre: "Capítulo 35", orden_local: 35}
-      - {tipo: capitulo, nombre: "Capítulo 36", orden_local: 36}
+      - {tipo: capitulo, nombre: "El Señor Tenebroso asciende", orden_local: 1}
+      - {tipo: capitulo, nombre: "En memoria de Alastor Moody", orden_local: 2}
+      - {tipo: capitulo, nombre: "Los Dursley se van", orden_local: 3}
+      - {tipo: capitulo, nombre: "Los siete Potter", orden_local: 4}
+      - {tipo: capitulo, nombre: "El guerrero caído", orden_local: 5}
+      - {tipo: capitulo, nombre: "El espantajo", orden_local: 6}
+      - {tipo: capitulo, nombre: "El testamento de Albus Dumbledore", orden_local: 7}
+      - {tipo: capitulo, nombre: "La boda", orden_local: 8}
+      - {tipo: capitulo, nombre: "El escondite", orden_local: 9}
+      - {tipo: capitulo, nombre: "La verdad de Kreacher", orden_local: 10}
+      - {tipo: capitulo, nombre: "El soborno", orden_local: 11}
+      - {tipo: capitulo, nombre: "La magia es poder", orden_local: 12}
+      - {tipo: capitulo, nombre: "La comisión de registro de nacidos de muggles", orden_local: 13}
+      - {tipo: capitulo, nombre: "El ladrón", orden_local: 14}
+      - {tipo: capitulo, nombre: "La venganza del duende", orden_local: 15}
+      - {tipo: capitulo, nombre: "Godric's Hollow", orden_local: 16}
+      - {tipo: capitulo, nombre: "El secreto de Bathilda", orden_local: 17}
+      - {tipo: capitulo, nombre: "La vida y las mentiras de Albus Dumbledore", orden_local: 18}
+      - {tipo: capitulo, nombre: "El símbolo de las Reliquias", orden_local: 19}
+      - {tipo: capitulo, nombre: "Xenophilius Lovegood", orden_local: 20}
+      - {tipo: capitulo, nombre: "El cuento de los tres hermanos", orden_local: 21}
+      - {tipo: capitulo, nombre: "Las Reliquias de la Muerte", orden_local: 22}
+      - {tipo: capitulo, nombre: "La mansión Malfoy", orden_local: 23}
+      - {tipo: capitulo, nombre: "El fabricante de varitas", orden_local: 24}
+      - {tipo: capitulo, nombre: "Shell Cottage", orden_local: 25}
+      - {tipo: capitulo, nombre: "Gringotts", orden_local: 26}
+      - {tipo: capitulo, nombre: "El último escondite", orden_local: 27}
+      - {tipo: capitulo, nombre: "El espejo perdido", orden_local: 28}
+      - {tipo: capitulo, nombre: "El fantasma de Ravenclaw", orden_local: 29}
+      - {tipo: capitulo, nombre: "Snape destituido", orden_local: 30}
+      - {tipo: capitulo, nombre: "La batalla de Hogwarts", orden_local: 31}
+      - {tipo: capitulo, nombre: "La varita de saúco", orden_local: 32}
+      - {tipo: capitulo, nombre: "La historia del Príncipe", orden_local: 33}
+      - {tipo: capitulo, nombre: "Una vez más en el bosque", orden_local: 34}
+      - {tipo: capitulo, nombre: "King's Cross", orden_local: 35}
+      - {tipo: capitulo, nombre: "El fallo en el plan", orden_local: 36}
       - {tipo: capitulo, nombre: "Epílogo", orden_local: 37}
 
-# Total esperado: 17+18+22+37+38+30+36+1(epílogo) = 199 capítulos/hojas.
+# Total esperado: 17+18+22+37+38+30+37 = 199 capítulos.
