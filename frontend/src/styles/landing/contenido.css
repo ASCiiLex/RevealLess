@@ -3,6 +3,7 @@
   margin-bottom: 32px;
 }
 
+/* Alineado a la izquierda; solo el titular y el CTA van centrados. */
 .pl-volver {
   display: inline-block;
   margin-bottom: 14px;
@@ -17,19 +18,24 @@
   color: var(--gold-light);
 }
 
-/* Titular (display, negrita) + subtítulo (cuerpo, regular); mismo color. */
+/* Recuento en cuerpo regular; el CTA destaca en display negrita. Mismo color. */
 .pl-catalogo-titulo {
   margin: 0;
-  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
-  line-height: 1.25;
+  font-family: var(--font-body);
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: center;
   color: var(--paper);
 }
 
 .pl-catalogo-subtitulo {
-  margin: 8px 0 0;
-  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
-  font-weight: 400;
-  line-height: 1.45;
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
   color: var(--paper);
 }
 
@@ -210,11 +216,11 @@
 /* Mobile: lista con miniatura; la sinopsis se despliega dentro de la tarjeta. */
 @media (max-width: 767px) {
   .pl-catalogo-titulo {
-    font-size: 1.35rem;
+    font-size: 1rem;
   }
 
   .pl-catalogo-subtitulo {
-    font-size: 1rem;
+    font-size: 1.35rem;
   }
 
   .pl-grid {
