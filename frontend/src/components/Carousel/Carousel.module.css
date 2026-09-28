@@ -82,6 +82,11 @@
 }
 
 @media (max-width: 767px) {
+  /* El gutter ya lo pone main.container: mismo ancho que los posts. */
+  .wrapper {
+    padding: 16px 0 0;
+  }
+
   .track {
     padding-left: 12px;
     padding-right: 12px;
