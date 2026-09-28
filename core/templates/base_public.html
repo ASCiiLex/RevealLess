@@ -1,9 +1,11 @@
-{% load vite_tags %}<!DOCTYPE html>
+{% load static vite_tags %}<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RevealLess</title>
+    <link rel="icon" type="image/png" href="{% static 'img/isotipo-semi.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/isotipo-semi.png' %}">
     {% vite_asset 'src/landing.tsx' %}
 </head>
 <body class="pl-body {% block body_class %}{% endblock %}">
