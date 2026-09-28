@@ -1,0 +1,27 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 6px 4px 10px;
+  border: 1.5px solid var(--emocion-color, var(--gold));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--emocion-color, var(--gold)) 12%, var(--paper));
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.quitar {
+  border: none;
+  background: none;
+  color: var(--fog);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.quitar:hover {
+  color: var(--ink);
+}

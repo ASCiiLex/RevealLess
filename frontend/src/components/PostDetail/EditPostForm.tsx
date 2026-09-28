@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import styles from './EdicionModal.module.css'
 import EdicionModal from './EdicionModal'
 import CampoTextoEdicion from './CampoTextoEdicion'
-import EmocionSelector from '../Emociones/EmocionSelector'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { updatePost } from '../../api/postDetail'
 import { useAvisoConfirmable } from '../../hooks/useAvisoConfirmable'
@@ -83,9 +82,14 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
       onGuardar={handleGuardar}
       onCancelar={onCancelar}
     >
-      <CampoTextoEdicion id="edit-text" etiqueta="Texto" value={text} onChange={setText} />
-
-      <EmocionSelector value={emocionAutor} onChange={setEmocionAutor} colapsable={false} />
+      <CampoTextoEdicion
+        id="edit-text"
+        etiqueta="Texto"
+        value={text}
+        onChange={setText}
+        emocion={emocionAutor}
+        onEmocionChange={setEmocionAutor}
+      />
 
       <div className={styles.field}>
         <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>

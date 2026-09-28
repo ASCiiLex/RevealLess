@@ -2,7 +2,6 @@ import { useState } from 'react'
 import EdicionModal from './EdicionModal'
 import CampoTextoEdicion from './CampoTextoEdicion'
 import NarrativaSelector, { type NarrativaValue } from './NarrativaSelector'
-import EmocionSelector from '../Emociones/EmocionSelector'
 import { updateComment, type CommentItem, type CommentUpdate } from '../../api/comentarios'
 import type { ObraDetalle } from '../../api/suscripciones'
 import { useAvisoConfirmable } from '../../hooks/useAvisoConfirmable'
@@ -91,6 +90,8 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
         etiqueta="¿Qué quieres comentar?"
         value={text}
         onChange={setText}
+        emocion={emocionAutor}
+        onEmocionChange={setEmocionAutor}
       />
 
       <NarrativaSelector
@@ -100,12 +101,6 @@ export default function EditCommentForm({ comment, obraDetalle, onGuardado, onCa
           setNarrativa(v)
           aviso.reiniciar()
         }}
-      />
-
-      <EmocionSelector
-        value={emocionAutor}
-        onChange={setEmocionAutor}
-        label="¿Quieres añadir emoción de contexto? (opcional)"
       />
     </EdicionModal>
   )
