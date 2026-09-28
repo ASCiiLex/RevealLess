@@ -1,15 +1,19 @@
-.wrapper {
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 24px 0;
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.title {
-  font-family: var(--font-display);
-  font-size: 20px;
+/* Mismo estilo de etiqueta que el resto de campos de PasoPost. */
+.label {
+  font-size: 12px;
   font-weight: 600;
   color: var(--paper);
-  margin: 0 0 16px 0;
+  opacity: 0.85;
+}
+
+.buscador {
+  position: relative;
 }
 
 .searchInput {
@@ -24,12 +28,18 @@
   font-size: 14px;
 }
 
+/* Desplegable superpuesto: no empuja el formulario al buscar. */
 .results {
-  margin-top: 10px;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 360px;
+  overflow-y: auto;
   background: var(--paper);
   border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
 }
 
 .resultRow {
@@ -52,6 +62,10 @@
 
 .resultRow:hover {
   background: color-mix(in srgb, var(--gold) 8%, var(--paper));
+}
+
+.resultRowActive {
+  background: color-mix(in srgb, var(--gold) 10%, var(--paper));
 }
 
 .resultThumb {
@@ -88,13 +102,44 @@
   color: var(--fog);
 }
 
-.resultRowActive {
-  background: color-mix(in srgb, var(--gold) 10%, var(--paper));
+/* Obra ya elegida: ficha con opción de cambiarla. */
+.seleccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.seleccionTitulo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cambiar {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fog);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cambiar:hover,
+.cambiar:focus-visible {
+  color: var(--ink);
 }
 
 .hint {
-  margin-top: 10px;
+  margin: 6px 0 0;
   font-size: 13px;
-  color: var(--paper);
-  opacity: 0.8;
+  color: var(--on-dark-soft);
 }

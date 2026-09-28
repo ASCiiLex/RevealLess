@@ -1,21 +1,23 @@
-.wrapper {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 24px 0 40px;
-}
-
-.title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--paper);
-  margin: 0 0 16px 0;
-}
-
 .form {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* Agrupa los campos para poder desactivarlos juntos. */
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  transition: opacity 0.2s ease;
+}
+
+.campos:disabled {
+  opacity: 0.5;
 }
 
 .field {
@@ -56,10 +58,12 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(184, 144, 46, 0.4);
+  transition: background-color 0.15s ease;
 }
 
-.submit:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--gold) 85%, black);
+.submit:hover:not(:disabled),
+.submit:focus-visible {
+  background: var(--gold-hover);
 }
 
 .submit:disabled {

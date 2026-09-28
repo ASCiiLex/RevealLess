@@ -1,73 +1,73 @@
-import { useState } from 'react'
-import PasoObra from './PasoObra'
+import { useRef, useState } from 'react'
+import styles from './PublicarFlow.module.css'
+import SelectorObra, { type ObraSeleccionada } from './SelectorObra'
 import PasoProgreso from './PasoProgreso'
 import PasoPost from './PasoPost'
 import { existeProgreso } from '../../api/progreso'
 import type { TemaBusqueda } from '../../api/buscar'
 
-type Paso = 'obra' | 'cargando' | 'progreso' | 'post'
+type Estado = 'sin-obra' | 'cargando' | 'progreso' | 'post'
 
-interface ObraSeleccionada {
-  slug: string
-  titulo: string
-}
-
+// Formulario único: visible desde el inicio, se activa al elegir la obra en el primer campo.
 export default function PublicarFlow() {
-  const [paso, setPaso] = useState<Paso>('obra')
   const [obra, setObra] = useState<ObraSeleccionada | null>(null)
   const [temaId, setTemaId] = useState<number | null>(null)
+  const [estado, setEstado] = useState<Estado>('sin-obra')
+  const obraActual = useRef<string | null>(null)
 
-  async function irAPaso(o: ObraSeleccionada) {
+  async function seleccionar(o: ObraSeleccionada, tema: number | null) {
+    obraActual.current = o.slug
     setObra(o)
-    setPaso('cargando')
-    // Solo confirma si existe progreso, sin traer las unidades
-    // completas (que en obras grandes son el coste real) -- si hace
-    // falta declarar progreso, PasoProgreso las pide por su cuenta.
+    setTemaId(tema)
+    setEstado('cargando')
+    // Solo el booleano: el árbol completo lo pide PasoProgreso si hace falta.
     const tieneProgreso = await existeProgreso(o.slug)
-    setPaso(tieneProgreso ? 'post' : 'progreso')
-  }
-
-  function handleElegirObra(o: ObraSeleccionada) {
-    setTemaId(null)
-    irAPaso(o)
+    // Descarta la respuesta si el usuario cambió de obra mientras tanto.
+    if (obraActual.current === o.slug) {
+      setEstado(tieneProgreso ? 'post' : 'progreso')
+    }
   }
 
   function handleElegirTema(tema: TemaBusqueda) {
-    setTemaId(tema.id)
-    irAPaso({ slug: tema.obra_slug, titulo: tema.obra_titulo })
+    seleccionar({ slug: tema.obra_slug, titulo: tema.obra_titulo }, tema.id)
   }
 
-  if (paso === 'obra') {
-    return <PasoObra onElegirObra={handleElegirObra} onElegirTema={handleElegirTema} />
+  function handleCambiar() {
+    obraActual.current = null
+    setObra(null)
+    setTemaId(null)
+    setEstado('sin-obra')
   }
 
-  if (paso === 'cargando') {
-    return null
-  }
+  return (
+    <div className={styles.wrapper}>
+      <h1 className={styles.title}>Publicar</h1>
 
-  if (paso === 'progreso' && obra) {
-    return (
-      <PasoProgreso
-        obraSlug={obra.slug}
-        obraTitulo={obra.titulo}
-        onProgresoDeclarado={() => setPaso('post')}
+      <SelectorObra
+        seleccion={obra}
+        onElegirObra={(o) => seleccionar(o, null)}
+        onElegirTema={handleElegirTema}
+        onCambiar={handleCambiar}
       />
-    )
-  }
 
-  if (paso === 'post' && obra) {
-    return (
-      <PasoPost
-        obraSlug={obra.slug}
-        obraTitulo={obra.titulo}
-        temaIdInicial={temaId}
-        onPublicado={() => {
-          window.location.href = '/feed/react/'
-        }}
-        onProgresoRequerido={() => setPaso('progreso')}
-      />
-    )
-  }
-
-  return null
+      {estado === 'progreso' && obra ? (
+        <PasoProgreso
+          key={obra.slug}
+          obraSlug={obra.slug}
+          obraTitulo={obra.titulo}
+          onProgresoDeclarado={() => setEstado('post')}
+        />
+      ) : (
+        <PasoPost
+          key={`${obra?.slug ?? 'sin-obra'}-${temaId ?? ''}`}
+          obraSlug={estado === 'post' && obra ? obra.slug : null}
+          temaIdInicial={temaId}
+          onPublicado={() => {
+            window.location.href = '/feed/'
+          }}
+          onProgresoRequerido={() => setEstado('progreso')}
+        />
+      )}
+    </div>
+  )
 }

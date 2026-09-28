@@ -22,13 +22,10 @@ export default function PasoProgreso({ obraSlug, obraTitulo, onProgresoDeclarado
     setEnviando(true)
     try {
       const resultado = await actualizarProgreso(obraSlug, unidadId)
+      // La primera declaración nunca exige confirmación de salto grande (mismo criterio que el backend).
       if (!('requiereConfirmacion' in resultado)) {
         onProgresoDeclarado()
       }
-      // La primera declaración de progreso nunca exige confirmación de
-      // salto grande (mismo criterio que actualizar_progreso() en
-      // backend), así que este caso límite no debería darse aquí en la
-      // práctica -- se deja sin manejar explícitamente por eso.
     } finally {
       setEnviando(false)
     }
@@ -42,7 +39,7 @@ export default function PasoProgreso({ obraSlug, obraTitulo, onProgresoDeclarado
 
   return (
     <div className={styles.wrapper}>
-      <h1 className={styles.title}>¿Por dónde vas en {obraTitulo}?</h1>
+      <h2 className={styles.title}>¿Por dónde vas en {obraTitulo}?</h2>
       <p className={styles.subtitle}>Necesitamos saber tu progreso antes de publicar sobre esta obra.</p>
 
       <div className={styles.tree}>
