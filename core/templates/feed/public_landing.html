@@ -1,73 +1,80 @@
 {% extends 'base_public.html' %}
 
-{% block body_class %}pl-has-nav{% endblock %}
+{# Sin cabecera: logo y acceso viven en el hero. #}
+{% block header %}{% endblock %}
 
 {% block content %}
 <main class="pl-main pl-escaparate">
-    <section class="container pl-hero-split">
-        <div class="pl-hero-texto">
-            <h1>Habla de lo que ves. <span>Sin adelantar nada.</span></h1>
-            <p class="pl-lead">Cada publicación lleva su frontera narrativa: solo aparece cuando tu progreso en la obra la alcanza.</p>
-            <div class="pl-hero-ctas">
+    <section class="pl-hero">
+        <div class="container pl-hero-split">
+            <div class="pl-hero-texto">
+                <h1>Habla de lo que ves. <span>Sin adelantar nada.</span></h1>
+                <p class="pl-lead">Cada publicación lleva su frontera narrativa: solo aparece cuando tu progreso en la obra la alcanza.</p>
                 <a class="pl-btn pl-btn-primary" href="/cuentas/register/">Crear cuenta</a>
-                <a class="pl-btn pl-btn-claro" href="/cuentas/login/">Iniciar sesión</a>
+                <p class="pl-hero-cifras">
+                    {{ stats.obras_count }} obra{{ stats.obras_count|pluralize }} ·
+                    {{ stats.posts_count }} publicaci{{ stats.posts_count|pluralize:"ón,ones" }} ·
+                    {{ stats.usuarios_count }} usuario{{ stats.usuarios_count|pluralize }}
+                </p>
             </div>
-            <p class="pl-hero-cifras">
-                {{ stats.obras_count }} obra{{ stats.obras_count|pluralize }} ·
-                {{ stats.posts_count }} publicaci{{ stats.posts_count|pluralize:"ón,ones" }} ·
-                {{ stats.usuarios_count }} usuario{{ stats.usuarios_count|pluralize }}
-            </p>
-        </div>
 
-        {# Demo ilustrativa y estática: nunca publicaciones reales. #}
-        <div class="pl-demo" aria-hidden="true">
-            <div class="pl-demo-card">
-                <div class="pl-demo-meta"><strong>@lectora</strong> · Capítulo 12</div>
-                <div class="pl-demo-linea" style="width: 88%"></div>
-                <div class="pl-demo-linea" style="width: 62%"></div>
-            </div>
-            <div class="pl-demo-card pl-demo-bloqueada">
-                <div class="pl-demo-meta"><strong>@maratoniano</strong> · Capítulo 48</div>
-                <div class="pl-demo-linea" style="width: 90%"></div>
-                <div class="pl-demo-linea" style="width: 55%"></div>
-                <div class="pl-demo-candado">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                    Visible cuando llegues al capítulo 48
+            <div class="pl-acceso">
+                <a class="pl-acceso-logo" href="/" aria-label="RevealLess"></a>
+                {# Isla React (HeroLoginForm). El csrf_token garantiza la cookie para la API de login. #}
+                <div id="hero-login" class="pl-acceso-montaje">
+                    {% csrf_token %}
+                    <a class="pl-btn pl-btn-claro" href="/cuentas/login/">Iniciar sesión</a>
                 </div>
-            </div>
-            <div class="pl-demo-card">
-                <div class="pl-demo-meta"><strong>@teorico</strong> · Capítulo 20</div>
-                <div class="pl-demo-linea" style="width: 72%"></div>
             </div>
         </div>
     </section>
 
     <section class="pl-banda">
-        <div class="container">
-            <h2>Cómo funciona</h2>
-            <p class="pl-banda-intro">Nada de etiquetas de spoiler que dependan de la buena voluntad de nadie: el sistema compara tu progreso con la frontera de cada contenido.</p>
+        <div class="container pl-banda-grid">
+            <div class="pl-banda-texto">
+                <h2>Cómo funciona</h2>
+                <p class="pl-banda-intro">Nada de etiquetas de spoiler que dependan de la buena voluntad de nadie: el sistema compara tu progreso con la frontera de cada contenido.</p>
 
-            <div class="pl-progreso" aria-hidden="true">
-                <div class="pl-progreso-relleno"></div>
-                <div class="pl-progreso-punto"></div>
+                {# Línea de tiempo: los dos primeros pasos "alcanzados", el feed pendiente de desbloquear. #}
+                <ol class="pl-pasos">
+                    <li class="pl-paso pl-paso-alcanzado">
+                        <h3>Tu progreso</h3>
+                        <p>Marca hasta dónde has llegado en cada serie, libro o manga.</p>
+                    </li>
+                    <li class="pl-paso pl-paso-alcanzado">
+                        <h3>Tu frontera</h3>
+                        <p>Al publicar, indicas hasta dónde hay que haber visto o leído.</p>
+                    </li>
+                    <li class="pl-paso">
+                        <h3>Tu feed</h3>
+                        <p>Se abre a medida que avanzas. Lo que aún no has alcanzado, no aparece.</p>
+                    </li>
+                </ol>
+
+                <p class="pl-ia">Una IA te propone la frontera de cada publicación. La decisión final es siempre tuya.</p>
             </div>
 
-            <ol class="pl-pasos">
-                <li>
-                    <h3>Tu progreso</h3>
-                    <p>Marca hasta dónde has llegado en cada serie, libro o manga.</p>
-                </li>
-                <li>
-                    <h3>Tu frontera</h3>
-                    <p>Al publicar, indicas hasta dónde hay que haber visto o leído.</p>
-                </li>
-                <li>
-                    <h3>Tu feed</h3>
-                    <p>Se abre a medida que avanzas. Lo que aún no has alcanzado, no aparece.</p>
-                </li>
-            </ol>
-
-            <p class="pl-ia">Una IA te propone la frontera de cada publicación. La decisión final es siempre tuya.</p>
+            {# Demo ilustrativa y estática: nunca publicaciones reales. #}
+            <div class="pl-demo" aria-hidden="true">
+                <div class="pl-demo-card">
+                    <div class="pl-demo-meta"><strong>@lectora</strong> · Capítulo 12</div>
+                    <div class="pl-demo-linea" style="width: 88%"></div>
+                    <div class="pl-demo-linea" style="width: 62%"></div>
+                </div>
+                <div class="pl-demo-card pl-demo-bloqueada">
+                    <div class="pl-demo-meta"><strong>@maratoniano</strong> · Capítulo 48</div>
+                    <div class="pl-demo-linea" style="width: 90%"></div>
+                    <div class="pl-demo-linea" style="width: 55%"></div>
+                    <div class="pl-demo-candado">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                        Visible cuando llegues al capítulo 48
+                    </div>
+                </div>
+                <div class="pl-demo-card">
+                    <div class="pl-demo-meta"><strong>@teorico</strong> · Capítulo 20</div>
+                    <div class="pl-demo-linea" style="width: 72%"></div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -91,8 +98,11 @@
     <section class="container">
         <div class="pl-cta-final">
             <h2>¿Por dónde vas tú?</h2>
-            <a class="pl-btn pl-btn-papel" href="/cuentas/register/">Crear cuenta</a>
+            <a class="pl-btn pl-btn-claro" href="/cuentas/register/">Crear cuenta</a>
         </div>
     </section>
 </main>
 {% endblock %}
+
+{# El acceso ya está en el hero: sin barra inferior en mobile. #}
+{% block bottom_nav %}{% endblock %}

@@ -5,6 +5,10 @@ from django.urls import reverse
 from narrative.models import Obra
 
 
+def crear_obras(n, prefijo='Obra'):
+    return [Obra.objects.create(titulo=f'{prefijo} {i:02d}', slug=f'{prefijo.lower()}-{i}') for i in range(n)]
+
+
 class LandingPublicaTests(TestCase):
     def setUp(self):
         Obra.objects.create(titulo='Obra Landing', slug='obra-landing')
@@ -24,9 +28,22 @@ class LandingPublicaTests(TestCase):
         response = self.client.get(reverse('feed_publico'))
         self.assertNotContains(response, 'href="/cuentas/login/legacy/"')
 
-    def test_sinopsis_es_colapsable(self):
+    def test_landing_sin_cabecera_ni_barra_inferior(self):
+        # Logo y acceso viven en el hero.
         response = self.client.get(reverse('feed_publico'))
-        self.assertContains(response, '<details>')
+        self.assertNotContains(response, '<header class="pl-header">')
+        self.assertNotContains(response, 'class="pl-bottom-nav"')
+
+    def test_hero_monta_el_login_con_cookie_csrf(self):
+        response = self.client.get(reverse('feed_publico'))
+        self.assertContains(response, 'id="hero-login"')
+        self.assertIn('csrftoken', response.cookies)
+
+    def test_landing_limita_el_adelanto_a_seis_obras(self):
+        crear_obras(7)
+        response = self.client.get(reverse('feed_publico'))
+        self.assertEqual(len(response.context['obras']), 6)
+        self.assertEqual(response.context['stats']['obras_count'], 8)
 
     def test_landing_tiene_footer(self):
         response = self.client.get(reverse('feed_publico'))
@@ -38,17 +55,50 @@ class LandingPublicaTests(TestCase):
 
     def test_footer_enlaza_al_catalogo(self):
         response = self.client.get(reverse('feed_publico'))
-        self.assertContains(response, 'href="#catalogo"')
-        self.assertContains(response, 'id="catalogo"')
-
-    def test_landing_tiene_barra_inferior_de_acceso(self):
-        response = self.client.get(reverse('feed_publico'))
-        self.assertContains(response, 'class="pl-bottom-nav"')
+        self.assertContains(response, f'href="{reverse("catalogo_publico")}"')
 
     def test_usuario_autenticado_va_al_feed_react(self):
         self.client.force_login(User.objects.create_user('landing_user', password='x'))
         response = self.client.get(reverse('feed_publico'))
         self.assertRedirects(response, reverse('feed'), fetch_redirect_response=False)
+
+
+class CatalogoPublicoTests(TestCase):
+    def test_catalogo_muestra_la_primera_tanda(self):
+        crear_obras(14)
+        response = self.client.get(reverse('catalogo_publico'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['total_obras'], 14)
+        self.assertEqual(len(response.context['pagina']), 12)
+        self.assertTrue(response.context['pagina'].has_next())
+
+    def test_catalogo_tiene_cabecera_y_barra_inferior(self):
+        response = self.client.get(reverse('catalogo_publico'))
+        self.assertContains(response, '<header class="pl-header">')
+        self.assertContains(response, 'class="pl-bottom-nav"')
+
+    def test_sinopsis_es_colapsable(self):
+        crear_obras(1)
+        response = self.client.get(reverse('catalogo_publico'))
+        self.assertContains(response, '<details class="pl-sinopsis"')
+
+    def test_catalogo_parcial_devuelve_solo_tarjetas_y_la_pagina_siguiente(self):
+        crear_obras(14)
+        response = self.client.get(reverse('catalogo_publico'), {'pagina': 2, 'parcial': 1})
+        self.assertEqual([t.name for t in response.templates], ['feed/_catalogo_tarjetas.html'])
+        self.assertEqual(len(response.context['pagina']), 2)
+        self.assertEqual(response['X-Pagina-Siguiente'], '')
+
+    def test_catalogo_parcial_indica_la_siguiente_si_quedan_obras(self):
+        crear_obras(30)
+        response = self.client.get(reverse('catalogo_publico'), {'pagina': 1, 'parcial': 1})
+        self.assertEqual(response['X-Pagina-Siguiente'], '2')
+
+    def test_catalogo_pagina_no_numerica_cae_en_la_primera(self):
+        crear_obras(3)
+        response = self.client.get(reverse('catalogo_publico'), {'pagina': 'abc'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['pagina'].number, 1)
 
 
 class RedireccionesHaciaVistasReactTests(TestCase):

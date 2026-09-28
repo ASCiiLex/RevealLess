@@ -1,0 +1,29 @@
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.title {
+  font-size: 20px;
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+.footer {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--fog);
+}
+
+.footer a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -1,22 +1,24 @@
-/* Landing pública (versión B): hero partido, banda de funcionamiento, adelanto del catálogo y CTA. */
+/* Landing pública: hero marino con acceso, banda "Cómo funciona" con demo, adelanto del catálogo y CTA. */
 .pl-escaparate {
   padding-top: 0;
   padding-bottom: 0;
 }
 
-/* Hero */
+/* Hero: texto a la izquierda, logo + login a la derecha. */
+.pl-hero {
+  padding: 72px 0 88px;
+}
+
 .pl-hero-split {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 56px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 64px;
   align-items: center;
-  padding-top: 72px;
-  padding-bottom: 72px;
 }
 
 .pl-hero-texto h1 {
-  font-size: clamp(2rem, 4vw, 2.9rem);
-  line-height: 1.12;
+  font-size: clamp(2.2rem, 4.4vw, 3.2rem);
+  line-height: 1.1;
   color: var(--paper);
 }
 
@@ -25,17 +27,17 @@
 }
 
 .pl-lead {
-  margin: 18px 0 28px;
-  max-width: 44ch;
-  font-size: 16px;
+  margin: 20px 0 30px;
+  max-width: 46ch;
+  font-size: 17px;
   line-height: 1.55;
   color: var(--on-dark-soft);
 }
 
-.pl-hero-ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+.pl-hero-cifras {
+  margin: 24px 0 0;
+  font-size: 13px;
+  color: var(--on-dark-soft);
 }
 
 /* Contorno para fondo oscuro. */
@@ -45,23 +47,152 @@
   border-color: var(--accent);
 }
 
-.pl-btn-papel {
-  background: var(--paper);
-  color: var(--ink);
+.pl-btn-claro:hover,
+.pl-btn-claro:focus-visible {
+  color: var(--paper);
   border-color: var(--paper);
 }
 
-.pl-hero-cifras {
-  margin: 22px 0 0;
-  font-size: 13px;
-  color: var(--on-dark-soft);
+.pl-acceso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
-/* Demo ilustrativa */
+.pl-acceso-logo {
+  display: block;
+  width: 260px;
+  height: 78px;
+  background: url('../../assets/brand/logo-sf-neg.png') center / contain no-repeat;
+}
+
+.pl-acceso-montaje {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Banda "Cómo funciona": texto con línea de tiempo a la izquierda, demo a la derecha. */
+.pl-banda {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 64px 0;
+}
+
+.pl-banda-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 56px;
+  align-items: center;
+}
+
+.pl-banda h2 {
+  font-size: 1.7rem;
+  margin-bottom: 8px;
+}
+
+.pl-banda-intro {
+  margin: 0 0 32px;
+  max-width: 56ch;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--page-bg);
+}
+
+/* Línea de tiempo vertical: pista gris, tramo dorado hasta el último paso alcanzado. */
+.pl-pasos {
+  position: relative;
+  display: grid;
+  gap: 26px;
+  margin: 0;
+  padding: 0 0 0 40px;
+  list-style: none;
+}
+
+.pl-pasos::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 9px;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.pl-paso {
+  position: relative;
+}
+
+/* Punto de cada paso: hueco si está pendiente. */
+.pl-paso::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: -40px;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--border);
+  border-radius: 50%;
+  background: var(--paper);
+  z-index: 1;
+}
+
+.pl-paso-alcanzado::before {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
+/* Tramo dorado que une el paso alcanzado con el siguiente. */
+.pl-paso-alcanzado::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: -31px;
+  width: 4px;
+  height: calc(100% + 26px);
+  background: var(--gold);
+}
+
+/* El último paso alcanzado lleva el halo de "estás aquí"; su tramo llega solo a mitad. */
+.pl-paso-alcanzado:not(:has(+ .pl-paso-alcanzado))::before {
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold) 25%, transparent);
+}
+
+.pl-paso-alcanzado:not(:has(+ .pl-paso-alcanzado))::after {
+  height: calc(50% + 13px);
+}
+
+.pl-pasos h3 {
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.pl-pasos p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--page-bg);
+}
+
+.pl-ia {
+  margin: 32px 0 0;
+  padding: 14px 18px;
+  border-left: 3px solid var(--gold);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--gold) 8%, var(--paper));
+  font-size: 14px;
+}
+
+/* Demo ilustrativa: panel marino para que las tarjetas de papel destaquen sobre la banda. */
 .pl-demo {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding: 32px 28px;
+  border-radius: 12px;
+  background: var(--page-bg);
 }
 
 .pl-demo-card {
@@ -70,7 +201,7 @@
   border-radius: var(--radius);
   padding: 14px 16px;
   font-size: 13px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
 .pl-demo-card:nth-child(2) {
@@ -121,86 +252,9 @@
   color: var(--gold);
 }
 
-/* Banda "Cómo funciona" */
-.pl-banda {
-  background: var(--paper);
-  color: var(--ink);
-  padding: 56px 0;
-}
-
-.pl-banda h2 {
-  font-size: 1.7rem;
-  margin-bottom: 8px;
-}
-
-.pl-banda-intro {
-  margin: 0 0 32px;
-  max-width: 62ch;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--page-bg);
-}
-
-.pl-progreso {
-  position: relative;
-  height: 4px;
-  margin-bottom: 32px;
-  border-radius: 2px;
-  background: var(--border);
-}
-
-.pl-progreso-relleno {
-  width: 55%;
-  height: 100%;
-  border-radius: 2px;
-  background: var(--gold);
-}
-
-.pl-progreso-punto {
-  position: absolute;
-  top: 50%;
-  left: 55%;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--gold);
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold) 25%, transparent);
-}
-
-.pl-pasos {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 32px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pl-pasos h3 {
-  font-size: 1.15rem;
-  margin-bottom: 6px;
-}
-
-.pl-pasos p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--page-bg);
-}
-
-.pl-ia {
-  margin: 36px 0 0;
-  padding: 14px 18px;
-  border-left: 3px solid var(--gold);
-  border-radius: 0;
-  background: color-mix(in srgb, var(--gold) 8%, var(--paper));
-  font-size: 14px;
-}
-
 /* Adelanto del catálogo */
 .pl-adelanto {
-  padding-top: 56px;
+  padding-top: 64px;
 }
 
 .pl-adelanto-cabecera {
@@ -260,17 +314,18 @@
   overflow: hidden;
 }
 
-/* CTA final */
+/* CTA final: tarjeta sobria, sin relleno dorado. */
 .pl-cta-final {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin: 48px 0 64px;
+  margin: 56px 0 72px;
   padding: 26px 30px;
-  border-radius: var(--radius);
-  background: var(--gold);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 4%, transparent);
   color: var(--paper);
 }
 
@@ -282,14 +337,30 @@
   .pl-portadas {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .pl-hero-split,
+  .pl-banda-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
 }
 
 @media (max-width: 767px) {
-  .pl-hero-split {
-    grid-template-columns: 1fr;
-    gap: 36px;
-    padding-top: 40px;
-    padding-bottom: 40px;
+  .pl-hero {
+    padding: 40px 0 56px;
+  }
+
+  /* Mobile: logo arriba, luego texto y login. */
+  .pl-acceso {
+    order: -1;
+  }
+
+  .pl-acceso-logo {
+    width: 200px;
+    height: 60px;
+  }
+
+  .pl-hero-texto {
     text-align: center;
   }
 
@@ -298,25 +369,16 @@
     margin-right: auto;
   }
 
-  .pl-hero-ctas {
-    justify-content: center;
+  .pl-banda {
+    padding: 44px 0;
   }
 
   .pl-demo {
-    text-align: left;
+    padding: 22px 16px;
   }
 
   .pl-demo-card:nth-child(2) {
     margin-left: 0;
-  }
-
-  .pl-banda {
-    padding: 40px 0;
-  }
-
-  .pl-pasos {
-    grid-template-columns: 1fr;
-    gap: 20px;
   }
 
   .pl-cta-final {
