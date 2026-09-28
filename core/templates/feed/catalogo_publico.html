@@ -6,10 +6,8 @@
 <main class="container pl-main">
     <header class="pl-catalogo-cabecera">
         <a class="pl-volver" href="{% url 'feed_publico' %}">← Volver al inicio</a>
-        <h1 class="pl-catalogo-titulo">
-            {{ total_obras }} obra{{ total_obras|pluralize }} disponible{{ total_obras|pluralize }} en RevealLess.
-            Crea una cuenta para declarar tu progreso y entrar en la conversación.
-        </h1>
+        <h1 class="pl-catalogo-titulo">{{ total_obras }} obra{{ total_obras|pluralize }} disponible{{ total_obras|pluralize }} en RevealLess.</h1>
+        <p class="pl-catalogo-subtitulo">Crea una cuenta para declarar tu progreso y entrar en la conversación.</p>
     </header>
 
     {% if total_obras %}
