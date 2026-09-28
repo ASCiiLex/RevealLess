@@ -5,6 +5,7 @@ import EditCommentForm from './EditCommentForm'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import ReactionBar from '../Feed/ReactionBar'
 import LinkedText from '../Text/LinkedText'
+import { emocionHaloStyle } from '../../utils/emocionHalo'
 import { deleteComment, type CommentItem as CommentItemType } from '../../api/comentarios'
 import type { ObraDetalle } from '../../api/suscripciones'
 
@@ -57,7 +58,7 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, o
   }
 
   return (
-    <div className={styles.comment}>
+    <div className={styles.comment} style={emocionHaloStyle(emocionActual, 'comentario')}>
       <div className={styles.header}>
         <img className={styles.avatar} src={comment.avatar} alt="" />
         <span className={styles.username}>@{comment.user}</span>
