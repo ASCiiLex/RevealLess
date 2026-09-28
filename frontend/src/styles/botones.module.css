@@ -51,27 +51,39 @@
   border-color: var(--ink);
 }
 
-/* Estado activo ("Siguiendo"): al pasar el ratón anuncia la acción destructiva. */
+/* Estado activo ("Siguiendo"): acento celeste; al pasar el ratón anuncia la acción destructiva. */
 .activo {
-  composes: secundario;
+  composes: base;
+  display: inline-grid;
+  background: color-mix(in srgb, var(--accent) 22%, var(--paper));
+  border-color: var(--accent);
+  color: var(--marino);
 }
 
-.activo .alPasar {
-  display: none;
+/* Ambos textos en la misma celda: el ancho es siempre el del más largo. */
+.enReposo,
+.alPasar {
+  grid-area: 1 / 1;
+  text-align: center;
+}
+
+.alPasar {
+  visibility: hidden;
 }
 
 .activo:hover:not(:disabled),
 .activo:focus-visible {
+  background: color-mix(in srgb, var(--danger) 10%, var(--paper));
   border-color: var(--danger);
   color: var(--danger);
 }
 
 .activo:hover:not(:disabled) .enReposo,
 .activo:focus-visible .enReposo {
-  display: none;
+  visibility: hidden;
 }
 
 .activo:hover:not(:disabled) .alPasar,
 .activo:focus-visible .alPasar {
-  display: inline;
+  visibility: visible;
 }
