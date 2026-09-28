@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from django.db.models import Count
+from django.db.models import Case, Count, IntegerField, Q, Value, When
+from django.utils.text import slugify
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,11 +34,31 @@ def _tema_data(tema, ids_por_tema):
     }
 
 
+def buscar_obras(q, limite):
+    """Título o slug (el slug tolera tildes y espacios: 'peliculas' encuentra 'Películas').
+    Primero los títulos que empiezan por la búsqueda; orden estable por título."""
+    filtro = Q(titulo__icontains=q)
+    q_slug = slugify(q)
+    if q_slug:
+        filtro |= Q(slug__icontains=q_slug)
+    return (
+        Obra.objects.filter(filtro)
+        .annotate(relevancia=Case(
+            When(titulo__istartswith=q, then=Value(0)),
+            default=Value(1),
+            output_field=IntegerField(),
+        ))
+        .order_by('relevancia', 'titulo')[:limite]
+    )
+
+
 class BuscarAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     MIN_CARACTERES = 2
     LIMITE_POR_TIPO = 5
+    # Las franquicias con muchas obras (Star Wars: 9) no deben quedar recortadas.
+    LIMITE_OBRAS = 10
 
     def get(self, request):
         q = request.query_params.get('q', '').strip()
@@ -52,7 +73,7 @@ class BuscarAPIView(APIView):
 
         ids_por_tema = suscripcion_id_por_tema(request.user)
 
-        obras = Obra.objects.filter(titulo__icontains=q)[:limite]
+        obras = buscar_obras(q, self.LIMITE_OBRAS)
         temas = TemaTransversal.objects.filter(nombre__icontains=q).select_related('obra')[:limite]
         usuarios = (
             User.objects.filter(username__icontains=q)
