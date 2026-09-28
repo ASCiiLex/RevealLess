@@ -1,0 +1,337 @@
+# Curación de estructura narrativa — Attack on Titan / Shingeki no Kyojin (MANGA)
+# Fase B: aplicar DESPUÉS de crear la Obra manualmente (ver comando más abajo).
+# Se usa fuente manual en vez de Jikan (source=jikan, id 23390) porque el
+# manga no necesita nada que solo dé Jikan (no trae capítulos de todas
+# formas) y MyAnimeList está devolviendo 504 en esta sesión — evita
+# depender de su disponibilidad para esta Obra en concreto.
+#
+# Estructura por Volumen (tankōbon), no por Arco todavía — los arcos
+# narrativos (Trost, Titán Hembra, Choque de titanes, Alzamiento, Retorno
+# a Shiganshina, Marley, arco final) quedan pendientes de una pasada
+# posterior; por ahora Volumen es el nodo intermedio directo.
+#
+# Capítulos: título real (traducción propia al español a partir del
+# título oficial en inglés de Wikipedia) y numeración 1-139 — se excluyen
+# los "Side Story" (Capitán Levi, Cuaderno de Ilse) del conteo principal,
+# igual que hace la numeración oficial de 139 capítulos; quedan fuera de
+# este fichero, pendientes de modelarse como TemaTransversal si se quiere
+# recuperar ese contenido más adelante.
+# Fecha = fecha de publicación original japonesa del volumen (tankōbon).
+# Fuente: https://en.wikipedia.org/wiki/List_of_Attack_on_Titan_chapters
+obra_external_id: {source: manual, external_id: attack-on-titan-manga}
+sinopsis_en: [volumen]
+nodos:
+  - tipo: volumen
+    nombre: "Volumen 1"
+    orden_local: 1
+    fecha: "2010-03-17"
+    hijos:
+      - {tipo: capitulo, nombre: "Hacia ti, dentro de 2.000 años", orden_local: 1}
+      - {tipo: capitulo, nombre: "Aquel día", orden_local: 2}
+      - {tipo: capitulo, nombre: "La noche de la ceremonia de disolución", orden_local: 3}
+      - {tipo: capitulo, nombre: "Primera batalla", orden_local: 4}
+  - tipo: volumen
+    nombre: "Volumen 2"
+    orden_local: 2
+    fecha: "2010-07-16"
+    hijos:
+      - {tipo: capitulo, nombre: "Un resplandor apagado en medio de la desesperación", orden_local: 5}
+      - {tipo: capitulo, nombre: "El mundo que vio la muchacha", orden_local: 6}
+      - {tipo: capitulo, nombre: "Hoja pequeña", orden_local: 7}
+      - {tipo: capitulo, nombre: "Rugido", orden_local: 8}
+      - {tipo: capitulo, nombre: "Se puede oír el latido de un corazón", orden_local: 9}
+  - tipo: volumen
+    nombre: "Volumen 3"
+    orden_local: 3
+    fecha: "2010-12-09"
+    hijos:
+      - {tipo: capitulo, nombre: "¿Dónde está el brazo izquierdo?", orden_local: 10}
+      - {tipo: capitulo, nombre: "Respuesta", orden_local: 11}
+      - {tipo: capitulo, nombre: "Ícono", orden_local: 12}
+      - {tipo: capitulo, nombre: "Herida", orden_local: 13}
+  - tipo: volumen
+    nombre: "Volumen 4"
+    orden_local: 4
+    fecha: "2011-04-08"
+    hijos:
+      - {tipo: capitulo, nombre: "Deseo primitivo", orden_local: 14}
+      - {tipo: capitulo, nombre: "Uno por uno", orden_local: 15}
+      - {tipo: capitulo, nombre: "Necesidad", orden_local: 16}
+      - {tipo: capitulo, nombre: "Delirios de fuerza", orden_local: 17}
+      - {tipo: capitulo, nombre: "¿Qué debería hacer ahora?", orden_local: 18}
+  - tipo: volumen
+    nombre: "Volumen 5"
+    orden_local: 5
+    fecha: "2011-08-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Todavía no puedo ver", orden_local: 19}
+      - {tipo: capitulo, nombre: "Escuadrón de Operaciones Especiales", orden_local: 20}
+      - {tipo: capitulo, nombre: "Abriendo la puerta", orden_local: 21}
+      - {tipo: capitulo, nombre: "Formación de reconocimiento de largo alcance", orden_local: 22}
+  - tipo: volumen
+    nombre: "Volumen 6"
+    orden_local: 6
+    fecha: "2011-12-09"
+    hijos:
+      - {tipo: capitulo, nombre: "La Titán Hembra", orden_local: 23}
+      - {tipo: capitulo, nombre: "El bosque de los titanes", orden_local: 24}
+      - {tipo: capitulo, nombre: "Mordisco", orden_local: 25}
+      - {tipo: capitulo, nombre: "El camino fácil", orden_local: 26}
+  - tipo: volumen
+    nombre: "Volumen 7"
+    orden_local: 7
+    fecha: "2012-04-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Erwin Smith", orden_local: 27}
+      - {tipo: capitulo, nombre: "Decisiones y consecuencias", orden_local: 28}
+      - {tipo: capitulo, nombre: "Golpe demoledor", orden_local: 29}
+      - {tipo: capitulo, nombre: "Perdedores", orden_local: 30}
+  - tipo: volumen
+    nombre: "Volumen 8"
+    orden_local: 8
+    fecha: "2012-08-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Mueca", orden_local: 31}
+      - {tipo: capitulo, nombre: "Piedad", orden_local: 32}
+      - {tipo: capitulo, nombre: "Muro", orden_local: 33}
+      - {tipo: capitulo, nombre: "La danza de los soldados", orden_local: 34}
+  - tipo: volumen
+    nombre: "Volumen 9"
+    orden_local: 9
+    fecha: "2012-12-07"
+    hijos:
+      - {tipo: capitulo, nombre: "El Titán Bestia", orden_local: 35}
+      - {tipo: capitulo, nombre: "Estoy en casa", orden_local: 36}
+      - {tipo: capitulo, nombre: "Hacia el suroeste", orden_local: 37}
+      - {tipo: capitulo, nombre: "Castillo Utgard", orden_local: 38}
+  - tipo: volumen
+    nombre: "Volumen 10"
+    orden_local: 10
+    fecha: "2013-04-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Soldado", orden_local: 39}
+      - {tipo: capitulo, nombre: "Ymir", orden_local: 40}
+      - {tipo: capitulo, nombre: "Historia", orden_local: 41}
+      - {tipo: capitulo, nombre: "Guerrero", orden_local: 42}
+  - tipo: volumen
+    nombre: "Volumen 11"
+    orden_local: 11
+    fecha: "2013-08-09"
+    hijos:
+      - {tipo: capitulo, nombre: "El Titán Acorazado", orden_local: 43}
+      - {tipo: capitulo, nombre: "Golpear, lanzar, someter", orden_local: 44}
+      - {tipo: capitulo, nombre: "Los cazadores", orden_local: 45}
+      - {tipo: capitulo, nombre: "Apertura", orden_local: 46}
+  - tipo: volumen
+    nombre: "Volumen 12"
+    orden_local: 12
+    fecha: "2013-12-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Niños", orden_local: 47}
+      - {tipo: capitulo, nombre: "Alguien", orden_local: 48}
+      - {tipo: capitulo, nombre: "Carga", orden_local: 49}
+      - {tipo: capitulo, nombre: "Grito", orden_local: 50}
+  - tipo: volumen
+    nombre: "Volumen 13"
+    orden_local: 13
+    fecha: "2014-04-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Escuadrón Levi", orden_local: 51}
+      - {tipo: capitulo, nombre: "Krista Lenz", orden_local: 52}
+      - {tipo: capitulo, nombre: "Señal de humo", orden_local: 53}
+      - {tipo: capitulo, nombre: "Ubicación del contraataque", orden_local: 54}
+  - tipo: volumen
+    nombre: "Volumen 14"
+    orden_local: 14
+    fecha: "2014-08-08"
+    hijos:
+      - {tipo: capitulo, nombre: "Dolor", orden_local: 55}
+      - {tipo: capitulo, nombre: "Actores", orden_local: 56}
+      - {tipo: capitulo, nombre: "Kenny el Destripador", orden_local: 57}
+      - {tipo: capitulo, nombre: "Disparos", orden_local: 58}
+  - tipo: volumen
+    nombre: "Volumen 15"
+    orden_local: 15
+    fecha: "2014-12-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Alma de hereje", orden_local: 59}
+      - {tipo: capitulo, nombre: "Confianza", orden_local: 60}
+      - {tipo: capitulo, nombre: "Respuesta", orden_local: 61}
+      - {tipo: capitulo, nombre: "Pecado", orden_local: 62}
+  - tipo: volumen
+    nombre: "Volumen 16"
+    orden_local: 16
+    fecha: "2015-04-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Cadenas", orden_local: 63}
+      - {tipo: capitulo, nombre: "Fiesta de bienvenida", orden_local: 64}
+      - {tipo: capitulo, nombre: "Sueños y maldiciones", orden_local: 65}
+      - {tipo: capitulo, nombre: "Deseo", orden_local: 66}
+  - tipo: volumen
+    nombre: "Volumen 17"
+    orden_local: 17
+    fecha: "2015-08-07"
+    hijos:
+      - {tipo: capitulo, nombre: "Fuera de los muros del distrito de Orvud", orden_local: 67}
+      - {tipo: capitulo, nombre: "Soberana de los muros", orden_local: 68}
+      - {tipo: capitulo, nombre: "Amigos", orden_local: 69}
+      - {tipo: capitulo, nombre: "Un sueño que tuve una vez", orden_local: 70}
+  - tipo: volumen
+    nombre: "Volumen 18"
+    orden_local: 18
+    fecha: "2015-12-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Espectador", orden_local: 71}
+      - {tipo: capitulo, nombre: "La noche de la batalla para recuperar el muro", orden_local: 72}
+      - {tipo: capitulo, nombre: "El pueblo donde todo empezó", orden_local: 73}
+      - {tipo: capitulo, nombre: "Objetivos de la misión", orden_local: 74}
+  - tipo: volumen
+    nombre: "Volumen 19"
+    orden_local: 19
+    fecha: "2016-04-08"
+    hijos:
+      - {tipo: capitulo, nombre: "Guerra en dos frentes", orden_local: 75}
+      - {tipo: capitulo, nombre: "Las lanzas de trueno", orden_local: 76}
+      - {tipo: capitulo, nombre: "El mundo que ellos vieron", orden_local: 77}
+      - {tipo: capitulo, nombre: "Descenso", orden_local: 78}
+  - tipo: volumen
+    nombre: "Volumen 20"
+    orden_local: 20
+    fecha: "2016-08-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Partido perfecto", orden_local: 79}
+      - {tipo: capitulo, nombre: "Los soldados desconocidos", orden_local: 80}
+      - {tipo: capitulo, nombre: "Promesa", orden_local: 81}
+      - {tipo: capitulo, nombre: "Héroe", orden_local: 82}
+  - tipo: volumen
+    nombre: "Volumen 21"
+    orden_local: 21
+    fecha: "2016-12-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Cuchilla", orden_local: 83}
+      - {tipo: capitulo, nombre: "Sol de medianoche", orden_local: 84}
+      - {tipo: capitulo, nombre: "El sótano", orden_local: 85}
+      - {tipo: capitulo, nombre: "Aquel día", orden_local: 86}
+  - tipo: volumen
+    nombre: "Volumen 22"
+    orden_local: 22
+    fecha: "2017-04-07"
+    hijos:
+      - {tipo: capitulo, nombre: "Límite", orden_local: 87}
+      - {tipo: capitulo, nombre: "El Titán de Ataque", orden_local: 88}
+      - {tipo: capitulo, nombre: "Encuentro", orden_local: 89}
+      - {tipo: capitulo, nombre: "Al otro lado del muro", orden_local: 90}
+  - tipo: volumen
+    nombre: "Volumen 23"
+    orden_local: 23
+    fecha: "2017-08-09"
+    hijos:
+      - {tipo: capitulo, nombre: "El otro lado del océano", orden_local: 91}
+      - {tipo: capitulo, nombre: "Los soldados de Marley", orden_local: 92}
+      - {tipo: capitulo, nombre: "El tren de medianoche", orden_local: 93}
+      - {tipo: capitulo, nombre: "El chico de dentro de los muros", orden_local: 94}
+  - tipo: volumen
+    nombre: "Volumen 24"
+    orden_local: 24
+    fecha: "2017-12-08"
+    hijos:
+      - {tipo: capitulo, nombre: "Mentiroso", orden_local: 95}
+      - {tipo: capitulo, nombre: "La puerta de la esperanza", orden_local: 96}
+      - {tipo: capitulo, nombre: "De una mano a otra", orden_local: 97}
+      - {tipo: capitulo, nombre: "Qué alegría verte", orden_local: 98}
+  - tipo: volumen
+    nombre: "Volumen 25"
+    orden_local: 25
+    fecha: "2018-04-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Sombra culpable", orden_local: 99}
+      - {tipo: capitulo, nombre: "Declaración de guerra", orden_local: 100}
+      - {tipo: capitulo, nombre: "El Titán Martillo de Guerra", orden_local: 101}
+      - {tipo: capitulo, nombre: "Demasiado poco, demasiado tarde", orden_local: 102}
+  - tipo: volumen
+    nombre: "Volumen 26"
+    orden_local: 26
+    fecha: "2018-08-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Asalto", orden_local: 103}
+      - {tipo: capitulo, nombre: "Vencedores", orden_local: 104}
+      - {tipo: capitulo, nombre: "La bala del asesino", orden_local: 105}
+      - {tipo: capitulo, nombre: "Voluntarios valientes", orden_local: 106}
+  - tipo: volumen
+    nombre: "Volumen 27"
+    orden_local: 27
+    fecha: "2018-12-07"
+    hijos:
+      - {tipo: capitulo, nombre: "Visitante", orden_local: 107}
+      - {tipo: capitulo, nombre: "Un argumento sólido", orden_local: 108}
+      - {tipo: capitulo, nombre: "Guías", orden_local: 109}
+      - {tipo: capitulo, nombre: "Falsificación", orden_local: 110}
+  - tipo: volumen
+    nombre: "Volumen 28"
+    orden_local: 28
+    fecha: "2019-04-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Los niños del bosque", orden_local: 111}
+      - {tipo: capitulo, nombre: "Ignorancia", orden_local: 112}
+      - {tipo: capitulo, nombre: "Salvajismo", orden_local: 113}
+      - {tipo: capitulo, nombre: "Única salvación", orden_local: 114}
+  - tipo: volumen
+    nombre: "Volumen 29"
+    orden_local: 29
+    fecha: "2019-08-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Apoyo", orden_local: 115}
+      - {tipo: capitulo, nombre: "Arriba y abajo", orden_local: 116}
+      - {tipo: capitulo, nombre: "Juicio", orden_local: 117}
+      - {tipo: capitulo, nombre: "Ataque sorpresa", orden_local: 118}
+  - tipo: volumen
+    nombre: "Volumen 30"
+    orden_local: 30
+    fecha: "2019-12-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Dos hermanos", orden_local: 119}
+      - {tipo: capitulo, nombre: "Un momento fugaz", orden_local: 120}
+      - {tipo: capitulo, nombre: "Recuerdos del futuro", orden_local: 121}
+      - {tipo: capitulo, nombre: "De ti, hace 2.000 años", orden_local: 122}
+  - tipo: volumen
+    nombre: "Volumen 31"
+    orden_local: 31
+    fecha: "2020-04-09"
+    hijos:
+      - {tipo: capitulo, nombre: "Los demonios de la isla", orden_local: 123}
+      - {tipo: capitulo, nombre: "Deshielo", orden_local: 124}
+      - {tipo: capitulo, nombre: "Atardecer", orden_local: 125}
+      - {tipo: capitulo, nombre: "Orgullo", orden_local: 126}
+  - tipo: volumen
+    nombre: "Volumen 32"
+    orden_local: 32
+    fecha: "2020-09-09"
+    hijos:
+      - {tipo: capitulo, nombre: "La noche del fin", orden_local: 127}
+      - {tipo: capitulo, nombre: "Traidor", orden_local: 128}
+      - {tipo: capitulo, nombre: "Retrospectiva", orden_local: 129}
+      - {tipo: capitulo, nombre: "El amanecer de la humanidad", orden_local: 130}
+  - tipo: volumen
+    nombre: "Volumen 33"
+    orden_local: 33
+    fecha: "2021-01-08"
+    hijos:
+      - {tipo: capitulo, nombre: "El Retumbar", orden_local: 131}
+      - {tipo: capitulo, nombre: "Las alas de la libertad", orden_local: 132}
+      - {tipo: capitulo, nombre: "Pecadores", orden_local: 133}
+      - {tipo: capitulo, nombre: "En las profundidades de la desesperación", orden_local: 134}
+  - tipo: volumen
+    nombre: "Volumen 34"
+    orden_local: 34
+    fecha: "2021-06-09"
+    hijos:
+      - {tipo: capitulo, nombre: "La batalla del cielo y la tierra", orden_local: 135}
+      - {tipo: capitulo, nombre: "Dedica tu corazón", orden_local: 136}
+      - {tipo: capitulo, nombre: "Titanes", orden_local: 137}
+      - {tipo: capitulo, nombre: "Un largo sueño", orden_local: 138}
+      - {tipo: capitulo, nombre: "Hacia el árbol en aquella colina", orden_local: 139}
+
+# Total esperado: 139 capítulos en 34 volúmenes.
+# Títulos: traducción propia al español desde el título oficial en inglés
+# (Wikipedia) — no verificado contra la edición española (Norma Editorial),
+# revisar si se quiere cotejo exacto con esa traducción concreta.
