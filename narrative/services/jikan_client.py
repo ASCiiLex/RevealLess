@@ -14,29 +14,46 @@ class JikanError(Exception):
 
 
 def _get(path, params=None, intentos=INTENTOS_POR_DEFECTO):
+    """Toda llamada a Jikan pasa por aquí — por eso el progreso se
+    imprime en un solo sitio. Sin esto, un fallo transitorio con
+    reintento (backoff hasta 8s por intento, hasta 4 intentos) es
+    indistinguible de un cuelgue: no hay NINGÚN output hasta que se
+    agotan los reintentos o responde con éxito."""
     url = f'{BASE_URL}{path}'
     ultimo_error = 'sin detalle'
+    multiples = intentos > 1
 
     for intento in range(1, intentos + 1):
+        if multiples:
+            print(f'  jikan: {path} (intento {intento}/{intentos})...', end=' ', flush=True)
         time.sleep(DELAY_ENTRE_LLAMADAS)
         try:
             resp = requests.get(url, params=params, timeout=15)
         except requests.RequestException as exc:
             ultimo_error = f'error de red: {exc}'
+            if multiples:
+                print(f'FALLO ({ultimo_error})')
             continue
 
         if resp.status_code == 429:
             ultimo_error = '429 rate limit'
+            if multiples:
+                print(f'{ultimo_error}, esperando 2s...')
             time.sleep(2)
             continue
 
         if resp.status_code in ERRORES_TRANSITORIOS:
             ultimo_error = f'{resp.status_code}: {resp.text[:200]}'
-            time.sleep(2 * intento)  # backoff creciente
+            espera = 2 * intento  # backoff creciente
+            if multiples:
+                print(f'FALLO ({ultimo_error}), esperando {espera}s...')
+            time.sleep(espera)
             continue
 
         if resp.status_code != 200:
             # Error no transitorio (404, 400...) — no tiene sentido reintentar.
+            if multiples:
+                print('FALLO (no reintentable)')
             raise JikanError(f'{resp.status_code} en {url}: {resp.text[:200]}')
 
         body = resp.json()
@@ -44,9 +61,14 @@ def _get(path, params=None, intentos=INTENTOS_POR_DEFECTO):
             # 200 con cuerpo inesperado (a veces Jikan lo devuelve así en
             # sus propias caídas) — se trata igual que un fallo transitorio.
             ultimo_error = f'respuesta 200 sin "data": {str(body)[:200]}'
-            time.sleep(2 * intento)
+            espera = 2 * intento
+            if multiples:
+                print(f'FALLO ({ultimo_error}), esperando {espera}s...')
+            time.sleep(espera)
             continue
 
+        if multiples:
+            print('ok')
         return body
 
     raise JikanError(f'Fallo tras {intentos} intentos en {url} — último error: {ultimo_error}')

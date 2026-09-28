@@ -30,6 +30,12 @@ class Command(BaseCommand):
                              help='Endpoint de Jikan a consultar.')
         parser.add_argument('--external-id', required=True, type=int, help='MAL ID.')
         parser.add_argument('--slug', help='Slug a usar. Por defecto, derivado del título.')
+        parser.add_argument(
+            '--sin-relaciones', action='store_true',
+            help='No consulta /relations para enlazar adapta_a. Endpoint de mejor esfuerzo, '
+                 'prescindible y con fallos 504 frecuentes en la propia MyAnimeList — '
+                 'sáltalo si solo interesan la obra y sus episodios.',
+        )
 
     def handle(self, *args, **options):
         source = options['source']
@@ -53,7 +59,10 @@ class Command(BaseCommand):
         if tipo_endpoint == 'anime':
             self._importar_episodios(obra, source, mal_id, data.get('episodes'))
 
-        self._enlazar_adaptaciones(obra, source, mal_id, tipo_endpoint)
+        if options['sin_relaciones']:
+            self.stdout.write('adapta_a: omitido (--sin-relaciones).')
+        else:
+            self._enlazar_adaptaciones(obra, source, mal_id, tipo_endpoint)
 
         if tipo_endpoint == 'anime':
             obra.recalcular_orden()
