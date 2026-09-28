@@ -9,17 +9,19 @@
     {% vite_asset 'src/landing.tsx' %}
 </head>
 <body class="pl-body {% block body_class %}{% endblock %}">
+    {% block header %}
     <header class="pl-header">
         <div class="container pl-header-inner">
             <a class="pl-logo" href="/" aria-label="RevealLess"></a>
             {% block header_actions %}
             <nav class="pl-header-actions">
-                <a class="pl-btn pl-btn-primary pl-btn-sm" href="/cuentas/login/">Iniciar sesión</a>
-                <a class="pl-btn pl-btn-outline pl-btn-sm" href="/cuentas/register/">Registrarse</a>
+                <a class="pl-btn pl-btn-outline pl-btn-sm" href="/cuentas/login/">Iniciar sesión</a>
+                <a class="pl-btn pl-btn-primary pl-btn-sm" href="/cuentas/register/">Registrarse</a>
             </nav>
             {% endblock %}
         </div>
     </header>
+    {% endblock %}
 
     {% block content %}
     {% endblock %}
@@ -41,8 +43,8 @@
 
     {% block bottom_nav %}
     <nav class="pl-bottom-nav" aria-label="Acceso">
-        <a class="pl-btn pl-btn-primary" href="/cuentas/login/">Iniciar sesión</a>
-        <a class="pl-btn pl-btn-outline" href="/cuentas/register/">Registrarse</a>
+        <a class="pl-btn pl-btn-outline" href="/cuentas/login/">Iniciar sesión</a>
+        <a class="pl-btn pl-btn-primary" href="/cuentas/register/">Registrarse</a>
     </nav>
     {% endblock %}
 </body>

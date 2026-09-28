@@ -46,7 +46,8 @@
 
 .pl-footer-links a:hover,
 .pl-footer-links a:focus-visible {
-  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .pl-footer-copy {
