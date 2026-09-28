@@ -1,4 +1,4 @@
-/* Catálogo público y avisos. */
+/* Catálogo público: cabecera, rejilla de obras y sinopsis. */
 .pl-catalogo-cabecera {
   margin-bottom: 32px;
 }
@@ -167,21 +167,6 @@
 
 .pl-empty {
   color: var(--on-dark-soft);
-}
-
-.pl-notice {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 24px;
-  text-align: center;
-  background: var(--paper);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-.pl-notice p {
-  margin: 8px 0 20px;
 }
 
 /* Escritorio: tarjetas de igual alto y sinopsis en el panel flotante. */

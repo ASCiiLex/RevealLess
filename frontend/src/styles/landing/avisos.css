@@ -1,0 +1,15 @@
+/* Avisos de página completa ("post no existe"). */
+.pl-notice {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px;
+  text-align: center;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.pl-notice p {
+  margin: 8px 0 20px;
+}

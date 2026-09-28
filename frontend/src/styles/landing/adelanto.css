@@ -1,0 +1,93 @@
+/* Adelanto del catálogo en la landing y CTA final. */
+.pl-adelanto {
+  padding-top: 64px;
+}
+
+.pl-adelanto-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.pl-adelanto-cabecera h2 {
+  font-size: 1.5rem;
+  color: var(--paper);
+}
+
+.pl-enlace {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pl-enlace:hover,
+.pl-enlace:focus-visible {
+  color: var(--paper);
+}
+
+.pl-portadas {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pl-portada {
+  margin: 0;
+}
+
+.pl-portada img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 14px -6px rgba(0, 0, 0, 0.5);
+}
+
+.pl-portada figcaption {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--on-dark-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* CTA final: tarjeta sobria, sin relleno dorado. */
+.pl-cta-final {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 56px 0 72px;
+  padding: 26px 30px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 4%, transparent);
+  color: var(--paper);
+}
+
+.pl-cta-final h2 {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .pl-portadas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .pl-cta-final {
+    flex-direction: column;
+    text-align: center;
+  }
+}
