@@ -5,11 +5,11 @@
 {% block content %}
 <main class="container pl-main">
     <header class="pl-catalogo-cabecera">
-        <h1 class="pl-section-title">Catálogo</h1>
-        <p class="pl-catalogo-intro">
-            <strong>{{ total_obras }} obra{{ total_obras|pluralize }}</strong> disponible{{ total_obras|pluralize }} en RevealLess.
+        <a class="pl-volver" href="{% url 'feed_publico' %}">← Volver al inicio</a>
+        <h1 class="pl-catalogo-titulo">
+            {{ total_obras }} obra{{ total_obras|pluralize }} disponible{{ total_obras|pluralize }} en RevealLess.
             Crea una cuenta para declarar tu progreso y entrar en la conversación.
-        </p>
+        </h1>
     </header>
 
     {% if total_obras %}

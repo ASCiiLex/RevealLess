@@ -1,25 +1,28 @@
 /* Catálogo público y avisos. */
 .pl-catalogo-cabecera {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
-.pl-section-title {
-  font-size: clamp(1.8rem, 3vw, 2.2rem);
-  margin-bottom: 10px;
-  color: var(--paper);
+.pl-volver {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold);
+  text-decoration: none;
 }
 
-.pl-catalogo-intro {
-  margin: 0;
-  max-width: 78ch;
-  font-size: 17px;
-  line-height: 1.5;
+.pl-volver:hover,
+.pl-volver:focus-visible {
   color: var(--gold-light);
 }
 
-.pl-catalogo-intro strong {
+/* La frase hace de titular: mismo ancho que la rejilla y un solo color. */
+.pl-catalogo-titulo {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  line-height: 1.3;
   color: var(--paper);
-  font-weight: 600;
 }
 
 /* Referencia de posicionamiento del panel de sinopsis. */
@@ -176,8 +179,8 @@
 
 /* Mobile: lista con miniatura; la sinopsis se despliega dentro de la tarjeta. */
 @media (max-width: 767px) {
-  .pl-catalogo-intro {
-    font-size: 15px;
+  .pl-catalogo-titulo {
+    font-size: 1.3rem;
   }
 
   .pl-grid {
