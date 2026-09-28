@@ -19,14 +19,14 @@
 }
 
 .tab:hover {
-  color: var(--gold-light);
+  color: var(--on-dark-soft);
 }
 
-/* Sobre --page-bg oscuro: la pestaña activa en papel. */
+/* Sobre --page-bg oscuro: la pestaña activa en papel con subrayado de acento. */
 .tabActive,
 .tabActive:hover {
   color: var(--paper);
-  border-bottom-color: var(--gold);
+  border-bottom-color: var(--accent);
 }
 
 @media (max-width: 767px) {

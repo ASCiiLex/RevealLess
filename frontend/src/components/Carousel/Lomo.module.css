@@ -27,7 +27,7 @@
 }
 
 .lomoActive {
-  border-color: var(--gold);
+  border-color: var(--accent);
   transform: scale(1.06);
 }
 
@@ -138,7 +138,7 @@
 
 .progressLink:hover,
 .progressLink:focus-visible {
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .progressIcon {
@@ -165,7 +165,7 @@
 
 .followButton:hover,
 .followButton:focus-visible {
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .followButtonActive {

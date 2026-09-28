@@ -21,7 +21,7 @@
 }
 
 .pl-hero-texto h1 span {
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .pl-lead {
@@ -29,7 +29,7 @@
   max-width: 44ch;
   font-size: 16px;
   line-height: 1.55;
-  color: var(--gold-light);
+  color: var(--on-dark-soft);
 }
 
 .pl-hero-ctas {
@@ -41,7 +41,8 @@
 /* Contorno para fondo oscuro. */
 .pl-btn-claro {
   background: transparent;
-  color: var(--paper);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .pl-btn-papel {
@@ -53,7 +54,7 @@
 .pl-hero-cifras {
   margin: 22px 0 0;
   font-size: 13px;
-  color: var(--gold-light);
+  color: var(--on-dark-soft);
 }
 
 /* Demo ilustrativa */
@@ -216,7 +217,7 @@
 }
 
 .pl-enlace {
-  color: var(--gold);
+  color: var(--accent);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -225,7 +226,7 @@
 
 .pl-enlace:hover,
 .pl-enlace:focus-visible {
-  color: var(--gold-light);
+  color: var(--paper);
 }
 
 .pl-portadas {
@@ -251,7 +252,7 @@
   margin-top: 8px;
   font-size: 12px;
   line-height: 1.3;
-  color: var(--gold-light);
+  color: var(--on-dark-soft);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;

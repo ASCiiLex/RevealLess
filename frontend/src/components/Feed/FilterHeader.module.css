@@ -9,24 +9,25 @@
 
 .backLink {
   font-size: 13px;
-  color: var(--fog);
+  color: var(--on-dark-soft);
   text-decoration: none;
 }
 
 .backLink:hover {
-  color: var(--gold);
+  color: var(--accent);
 }
 
+/* Va sobre el fondo oscuro del feed. */
 .title {
   display: block;
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--paper);
   margin: 4px 0 0 0;
   text-decoration: none;
 }
 
 a.title:hover {
-  color: var(--gold);
+  color: var(--accent);
 }

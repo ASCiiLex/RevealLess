@@ -9,13 +9,13 @@
   margin-bottom: 14px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--gold);
+  color: var(--accent);
   text-decoration: none;
 }
 
 .pl-volver:hover,
 .pl-volver:focus-visible {
-  color: var(--gold-light);
+  color: var(--paper);
 }
 
 /* Recuento en cuerpo regular; el CTA destaca en display negrita. Mismo color. */
@@ -166,7 +166,7 @@
 }
 
 .pl-empty {
-  color: var(--gold-light);
+  color: var(--on-dark-soft);
 }
 
 .pl-notice {

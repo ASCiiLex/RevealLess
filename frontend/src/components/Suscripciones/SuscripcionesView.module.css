@@ -12,7 +12,7 @@
 
 .subtitle {
   font-size: 13px;
-  color: var(--gold-light);
+  color: var(--on-dark-soft);
   margin: 0 0 20px 0;
 }
 
@@ -35,12 +35,12 @@
 
 .addButton:hover,
 .addButton:focus-visible {
-  color: var(--gold);
-  border-color: var(--gold);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .empty {
-  color: var(--gold-light);
+  color: var(--on-dark-soft);
   font-size: 14px;
   padding: 24px 0;
 }

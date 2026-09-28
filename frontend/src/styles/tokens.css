@@ -3,8 +3,13 @@
   --ink: #15130F;
 
   --fog: #7C8B9B;
+  /* Relleno de CTA, botones y progreso (texto papel encima). */
   --gold: #B8902E;
   --gold-light: #E8D9B8;
+
+  /* Sobre fondo oscuro: acento de marca (texto, enlaces, selección) y texto secundario. */
+  --accent: #6FC4F7;
+  --on-dark-soft: #D3DAE2;
 
   --border: #D9D2C2;
 
