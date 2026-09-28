@@ -15,10 +15,17 @@
   color: var(--fog);
   cursor: pointer;
   border-bottom: 2px solid transparent;
+  transition: color 0.15s ease;
 }
 
-.tabActive {
-  color: var(--ink);
+.tab:hover {
+  color: var(--gold-light);
+}
+
+/* Sobre --page-bg oscuro: la pestaña activa en papel. */
+.tabActive,
+.tabActive:hover {
+  color: var(--paper);
   border-bottom-color: var(--gold);
 }
 
