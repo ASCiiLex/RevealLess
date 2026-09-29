@@ -1,0 +1,53 @@
+# Curación de estructura narrativa — House of the Dragon / La Casa del Dragón (SERIE)
+# obra_external_id: creada vía crear_obra_manual (no hay fuente API para esta serie).
+# Obra independiente de "Juego de Tronos" (serie) — precuela autoconclusiva,
+# relacionada solo por Categoria "Juego de Tronos", sin jerarquía ni adapta_a.
+#
+# 3 temporadas, 26 episodios. Títulos en español (FormulaTV) y fechas de
+# emisión original en EE.UU. (Wikipedia).
+obra_external_id: {source: manual, external_id: hotd-serie}
+tipo_unidad_raiz: temporada
+
+nodos:
+  - tipo: temporada
+    nombre: "Temporada 1"
+    orden_local: 1
+    hijos:
+      - {tipo: episodio, nombre: "Los herederos del dragón", orden_local: 1, fecha: "2022-08-21"}
+      - {tipo: episodio, nombre: "El príncipe canalla", orden_local: 2, fecha: "2022-08-28"}
+      - {tipo: episodio, nombre: "El segundo de su nombre", orden_local: 3, fecha: "2022-09-04"}
+      - {tipo: episodio, nombre: "El rey del mar Angosto", orden_local: 4, fecha: "2022-09-11"}
+      - {tipo: episodio, nombre: "Iluminamos el camino", orden_local: 5, fecha: "2022-09-18"}
+      - {tipo: episodio, nombre: "La princesa y la reina", orden_local: 6, fecha: "2022-09-25"}
+      - {tipo: episodio, nombre: "Marcaderiva", orden_local: 7, fecha: "2022-10-02"}
+      - {tipo: episodio, nombre: "El señor de las mareas", orden_local: 8, fecha: "2022-10-09"}
+      - {tipo: episodio, nombre: "El consejo verde", orden_local: 9, fecha: "2022-10-16"}
+      - {tipo: episodio, nombre: "La reina negra", orden_local: 10, fecha: "2022-10-23"}
+
+  - tipo: temporada
+    nombre: "Temporada 2"
+    orden_local: 2
+    hijos:
+      - {tipo: episodio, nombre: "Hijo por hijo", orden_local: 1, fecha: "2024-06-16"}
+      - {tipo: episodio, nombre: "Rhaenyra la Cruel", orden_local: 2, fecha: "2024-06-23"}
+      - {tipo: episodio, nombre: "El Molino Ardiente", orden_local: 3, fecha: "2024-06-30"}
+      - {tipo: episodio, nombre: "El dragón rojo y el dorado", orden_local: 4, fecha: "2024-07-07"}
+      - {tipo: episodio, nombre: "Regente", orden_local: 5, fecha: "2024-07-14"}
+      - {tipo: episodio, nombre: "El populacho", orden_local: 6, fecha: "2024-07-21"}
+      - {tipo: episodio, nombre: "La cosecha roja", orden_local: 7, fecha: "2024-07-28"}
+      - {tipo: episodio, nombre: "La mujer que debía reinar", orden_local: 8, fecha: "2024-08-04"}
+
+  - tipo: temporada
+    nombre: "Temporada 3"
+    orden_local: 3
+    hijos:
+      - {tipo: episodio, nombre: "Sal y Mar, Fuego y Sangre", orden_local: 1, fecha: "2026-06-21"}
+      - {tipo: episodio, nombre: "Desembarco de la Reina", orden_local: 2, fecha: "2026-06-28"}
+      - {tipo: episodio, nombre: "Rhaenyra Triunfante", orden_local: 3, fecha: "2026-07-05"}
+      - {tipo: episodio, nombre: "Tumbleton", orden_local: 4, fecha: "2026-07-12"}
+      - {tipo: episodio, nombre: "Nunca doblegado, nunca roto", orden_local: 5, fecha: "2026-07-19"}
+      - {tipo: episodio, nombre: "Hombres sin rostro", orden_local: 6, fecha: "2026-07-26"}
+      - {tipo: episodio, nombre: "El dragón de invierno", orden_local: 7, fecha: "2026-08-02"}
+      - {tipo: episodio, nombre: "Las traiciones de Ladera", orden_local: 8, fecha: "2026-08-09"}
+
+# Total esperado: 10+8+8 = 26 episodios en 3 temporadas.
