@@ -1,0 +1,126 @@
+# Curación de estructura narrativa — Game of Thrones (SERIE)
+# obra_external_id: creada vía crear_obra_manual (no hay fuente API para esta serie).
+#
+# 8 temporadas, 73 episodios. Títulos en español (doblaje/emisión España,
+# fuente FormulaTV) y fechas de emisión original en EE.UU. (Wikipedia).
+# orden_local reinicia en 1 por temporada — nodos hijos explícitos, no
+# vincular_episodios (que numera a nivel de Obra completa y colisionaría
+# igual que en ASOIAF).
+obra_external_id: {source: manual, external_id: got-serie}
+tipo_unidad_raiz: temporada
+
+nodos:
+  - tipo: temporada
+    nombre: "Temporada 1"
+    orden_local: 1
+    hijos:
+      - {tipo: episodio, nombre: "Se acerca el invierno", orden_local: 1, fecha: "2011-04-17"}
+      - {tipo: episodio, nombre: "El camino real", orden_local: 2, fecha: "2011-04-24"}
+      - {tipo: episodio, nombre: "Lord Nieve", orden_local: 3, fecha: "2011-05-01"}
+      - {tipo: episodio, nombre: "Tullidos, bastardos y cosas rotas", orden_local: 4, fecha: "2011-05-08"}
+      - {tipo: episodio, nombre: "El lobo y el león", orden_local: 5, fecha: "2011-05-15"}
+      - {tipo: episodio, nombre: "Una corona de oro", orden_local: 6, fecha: "2011-05-22"}
+      - {tipo: episodio, nombre: "Ganas o mueres", orden_local: 7, fecha: "2011-05-29"}
+      - {tipo: episodio, nombre: "Por el lado de la punta", orden_local: 8, fecha: "2011-06-05"}
+      - {tipo: episodio, nombre: "Baelor", orden_local: 9, fecha: "2011-06-12"}
+      - {tipo: episodio, nombre: "Fuego y Hielo", orden_local: 10, fecha: "2011-06-19"}
+
+  - tipo: temporada
+    nombre: "Temporada 2"
+    orden_local: 2
+    hijos:
+      - {tipo: episodio, nombre: "El Norte no olvida", orden_local: 1, fecha: "2012-04-01"}
+      - {tipo: episodio, nombre: "Las tierras de la noche", orden_local: 2, fecha: "2012-04-08"}
+      - {tipo: episodio, nombre: "Lo que está muerto no puede morir", orden_local: 3, fecha: "2012-04-15"}
+      - {tipo: episodio, nombre: "Jardín de huesos", orden_local: 4, fecha: "2012-04-22"}
+      - {tipo: episodio, nombre: "El fantasma de Harrenhal", orden_local: 5, fecha: "2012-04-29"}
+      - {tipo: episodio, nombre: "Los dioses antiguos y nuevos", orden_local: 6, fecha: "2012-05-06"}
+      - {tipo: episodio, nombre: "Un hombre sin honor", orden_local: 7, fecha: "2012-05-13"}
+      - {tipo: episodio, nombre: "Un príncipe de Invernalia", orden_local: 8, fecha: "2012-05-20"}
+      - {tipo: episodio, nombre: "Aguasnegras", orden_local: 9, fecha: "2012-05-27"}
+      - {tipo: episodio, nombre: "Valar Morghulis", orden_local: 10, fecha: "2012-06-03"}
+
+  - tipo: temporada
+    nombre: "Temporada 3"
+    orden_local: 3
+    hijos:
+      - {tipo: episodio, nombre: "Valar Dohaeris", orden_local: 1, fecha: "2013-03-31"}
+      - {tipo: episodio, nombre: "Alas negras, palabras negras", orden_local: 2, fecha: "2013-04-07"}
+      - {tipo: episodio, nombre: "El camino del castigo", orden_local: 3, fecha: "2013-04-14"}
+      - {tipo: episodio, nombre: "Y ahora su guardia ha terminado", orden_local: 4, fecha: "2013-04-21"}
+      - {tipo: episodio, nombre: "Besado por el fuego", orden_local: 5, fecha: "2013-04-28"}
+      - {tipo: episodio, nombre: "El ascenso", orden_local: 6, fecha: "2013-05-05"}
+      - {tipo: episodio, nombre: "El oso y la doncella", orden_local: 7, fecha: "2013-05-12"}
+      - {tipo: episodio, nombre: "Los segundos hijos", orden_local: 8, fecha: "2013-05-19"}
+      - {tipo: episodio, nombre: "Las lluvias de Castamere", orden_local: 9, fecha: "2013-06-02"}
+      - {tipo: episodio, nombre: "Mhysa", orden_local: 10, fecha: "2013-06-09"}
+
+  - tipo: temporada
+    nombre: "Temporada 4"
+    orden_local: 4
+    hijos:
+      - {tipo: episodio, nombre: "Dos espadas", orden_local: 1, fecha: "2014-04-06"}
+      - {tipo: episodio, nombre: "El león y la rosa", orden_local: 2, fecha: "2014-04-13"}
+      - {tipo: episodio, nombre: "Rompedora de cadenas", orden_local: 3, fecha: "2014-04-20"}
+      - {tipo: episodio, nombre: "Guardajuramentos", orden_local: 4, fecha: "2014-04-27"}
+      - {tipo: episodio, nombre: "El primero de su nombre", orden_local: 5, fecha: "2014-05-04"}
+      - {tipo: episodio, nombre: "Leyes de dioses y hombres", orden_local: 6, fecha: "2014-05-11"}
+      - {tipo: episodio, nombre: "Sinsonte", orden_local: 7, fecha: "2014-05-18"}
+      - {tipo: episodio, nombre: "La montaña y la víbora", orden_local: 8, fecha: "2014-06-01"}
+      - {tipo: episodio, nombre: "Los vigilantes del Muro", orden_local: 9, fecha: "2014-06-08"}
+      - {tipo: episodio, nombre: "Los niños", orden_local: 10, fecha: "2014-06-15"}
+
+  - tipo: temporada
+    nombre: "Temporada 5"
+    orden_local: 5
+    hijos:
+      - {tipo: episodio, nombre: "Las guerras venideras", orden_local: 1, fecha: "2015-04-12"}
+      - {tipo: episodio, nombre: "La casa de Negro y Blanco", orden_local: 2, fecha: "2015-04-19"}
+      - {tipo: episodio, nombre: "Gorrión supremo", orden_local: 3, fecha: "2015-04-26"}
+      - {tipo: episodio, nombre: "Hijos de la Arpía", orden_local: 4, fecha: "2015-05-03"}
+      - {tipo: episodio, nombre: "Matad al chico", orden_local: 5, fecha: "2015-05-10"}
+      - {tipo: episodio, nombre: "Nunca doblegado, nunca roto", orden_local: 6, fecha: "2015-05-17"}
+      - {tipo: episodio, nombre: "El regalo", orden_local: 7, fecha: "2015-05-24"}
+      - {tipo: episodio, nombre: "Casa Austera", orden_local: 8, fecha: "2015-05-31"}
+      - {tipo: episodio, nombre: "Danza de dragones", orden_local: 9, fecha: "2015-06-07"}
+      - {tipo: episodio, nombre: "Misericordia", orden_local: 10, fecha: "2015-06-14"}
+
+  - tipo: temporada
+    nombre: "Temporada 6"
+    orden_local: 6
+    hijos:
+      - {tipo: episodio, nombre: "La mujer roja", orden_local: 1, fecha: "2016-04-24"}
+      - {tipo: episodio, nombre: "A casa", orden_local: 2, fecha: "2016-05-01"}
+      - {tipo: episodio, nombre: "Perjurio", orden_local: 3, fecha: "2016-05-08"}
+      - {tipo: episodio, nombre: "Libro del desconocido", orden_local: 4, fecha: "2016-05-15"}
+      - {tipo: episodio, nombre: "El portón", orden_local: 5, fecha: "2016-05-22"}
+      - {tipo: episodio, nombre: "Sangre de mi sangre", orden_local: 6, fecha: "2016-05-29"}
+      - {tipo: episodio, nombre: "El hombre destrozado", orden_local: 7, fecha: "2016-06-05"}
+      - {tipo: episodio, nombre: "Nadie", orden_local: 8, fecha: "2016-06-12"}
+      - {tipo: episodio, nombre: "La batalla de los bastardos", orden_local: 9, fecha: "2016-06-19"}
+      - {tipo: episodio, nombre: "Vientos de invierno", orden_local: 10, fecha: "2016-06-26"}
+
+  - tipo: temporada
+    nombre: "Temporada 7"
+    orden_local: 7
+    hijos:
+      - {tipo: episodio, nombre: "Rocadragón", orden_local: 1, fecha: "2017-07-16"}
+      - {tipo: episodio, nombre: "Bajo la Tormenta", orden_local: 2, fecha: "2017-07-23"}
+      - {tipo: episodio, nombre: "La Justicia de la Reina", orden_local: 3, fecha: "2017-07-30"}
+      - {tipo: episodio, nombre: "Botines de Guerra", orden_local: 4, fecha: "2017-08-06"}
+      - {tipo: episodio, nombre: "Guardiaoriente", orden_local: 5, fecha: "2017-08-13"}
+      - {tipo: episodio, nombre: "Más allá del Muro", orden_local: 6, fecha: "2017-08-20"}
+      - {tipo: episodio, nombre: "El Dragón y el Lobo", orden_local: 7, fecha: "2017-08-27"}
+
+  - tipo: temporada
+    nombre: "Temporada 8"
+    orden_local: 8
+    hijos:
+      - {tipo: episodio, nombre: "Invernalia", orden_local: 1, fecha: "2019-04-14"}
+      - {tipo: episodio, nombre: "El caballero de los Siete Reinos", orden_local: 2, fecha: "2019-04-21"}
+      - {tipo: episodio, nombre: "La larga noche", orden_local: 3, fecha: "2019-04-28"}
+      - {tipo: episodio, nombre: "El último de los Starks", orden_local: 4, fecha: "2019-05-05"}
+      - {tipo: episodio, nombre: "Las campanas", orden_local: 5, fecha: "2019-05-12"}
+      - {tipo: episodio, nombre: "El Trono de Hierro", orden_local: 6, fecha: "2019-05-19"}
+
+# Total esperado: 10+10+10+10+10+10+7+6 = 73 episodios en 8 temporadas.
