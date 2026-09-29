@@ -1,0 +1,42 @@
+# Curación de estructura narrativa — Luke Cage (SERIE, Netflix)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: luke-cage}
+tipo_unidad_raiz: temporada
+
+nodos:
+  - tipo: temporada
+    orden_local: 1
+    nombre: "Temporada 1"
+    hijos:
+      - {tipo: episodio, nombre: "El momento de la verdad", orden_local: 1, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "El código de la calle", orden_local: 2, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "¿Quién cargará con el peso?", orden_local: 3, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Entra en la arena", orden_local: 4, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Solo por hacerse un nombre", orden_local: 5, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Los pardillos necesitan guardaespaldas", orden_local: 6, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Manifiesto", orden_local: 7, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Reventando el local", orden_local: 8, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "DWYCK", orden_local: 9, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Tómatelo como algo personal", orden_local: 10, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Ahora eres mío", orden_local: 11, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Soliloquio del caos", orden_local: 12, fecha: "2016-09-30", revisar: true}
+      - {tipo: episodio, nombre: "Conoces mi estilo", orden_local: 13, fecha: "2016-09-30", revisar: true}
+  - tipo: temporada
+    orden_local: 2
+    nombre: "Temporada 2"
+    hijos:
+      - {tipo: episodio, nombre: "Hermano del alma #1", orden_local: 1, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Ponlo en orden", orden_local: 2, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Perder la cabeza", orden_local: 3, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Me pongo físico", orden_local: 4, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Con toda el alma", orden_local: 5, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "El sótano", orden_local: 6, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Una y otra vez", orden_local: 7, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Si no es duro, no está bien", orden_local: 8, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Por el amor de Dios", orden_local: 9, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "El ingrediente principal", orden_local: 10, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "El creador", orden_local: 11, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "No puedes engañarme", orden_local: 12, fecha: "2018-06-22", revisar: true}
+      - {tipo: episodio, nombre: "Te recuerdan con cariño", orden_local: 13, fecha: "2018-06-22", revisar: true}
+
+# Total esperado: 2 temporadas, 26 episodios.

@@ -1,0 +1,59 @@
+# Curación de estructura narrativa — Daredevil (2015, SERIE, Netflix)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: daredevil-2015}
+tipo_unidad_raiz: temporada
+
+nodos:
+  - tipo: temporada
+    orden_local: 1
+    nombre: "Temporada 1"
+    hijos:
+      - {tipo: episodio, nombre: "Subir al ring", orden_local: 1, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "El hombre de las heridas", orden_local: 2, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Conejo en la tormenta de nieve", orden_local: 3, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "En la sangre", orden_local: 4, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "El mundo en llamas", orden_local: 5, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Condenado", orden_local: 6, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Stick", orden_local: 7, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Sombras en el cristal", orden_local: 8, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Hablando del diablo", orden_local: 9, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Nelson contra Murdock", orden_local: 10, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "El camino de los justos", orden_local: 11, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Los que dejamos atrás", orden_local: 12, fecha: "2015-04-10", revisar: true}
+      - {tipo: episodio, nombre: "Daredevil", orden_local: 13, fecha: "2015-04-10", revisar: true}
+  - tipo: temporada
+    orden_local: 2
+    nombre: "Temporada 2"
+    hijos:
+      - {tipo: episodio, nombre: "Bang", orden_local: 1, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Perros en un tiroteo", orden_local: 2, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Lo mejor de Nueva York", orden_local: 3, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Penique y diez centavos", orden_local: 4, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Kinbaku", orden_local: 5, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Solo lamentos", orden_local: 6, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Semper Fidelis", orden_local: 7, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Culpable como el pecado", orden_local: 8, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Siete minutos en el cielo", orden_local: 9, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "El hombre en la caja", orden_local: 10, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: ".380", orden_local: 11, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "La oscuridad al final del túnel", orden_local: 12, fecha: "2016-03-18", revisar: true}
+      - {tipo: episodio, nombre: "Un día frío en Hell's Kitchen", orden_local: 13, fecha: "2016-03-18", revisar: true}
+  - tipo: temporada
+    orden_local: 3
+    nombre: "Temporada 3"
+    hijos:
+      - {tipo: episodio, nombre: "Resurrección", orden_local: 1, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Por favor", orden_local: 2, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Ninguna buena acción", orden_local: 3, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Cogido por sorpresa", orden_local: 4, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "El partido perfecto", orden_local: 5, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Más vale malo conocido", orden_local: 6, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Consecuencias", orden_local: 7, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Arriba/Abajo", orden_local: 8, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Revelaciones", orden_local: 9, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Karen", orden_local: 10, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Reencuentro", orden_local: 11, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Una última oportunidad", orden_local: 12, fecha: "2018-10-19", revisar: true}
+      - {tipo: episodio, nombre: "Una servilleta nueva", orden_local: 13, fecha: "2018-10-19", revisar: true}
+
+# Total esperado: 3 temporadas, 39 episodios.

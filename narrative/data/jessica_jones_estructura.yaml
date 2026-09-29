@@ -1,0 +1,59 @@
+# Curación de estructura narrativa — Jessica Jones (SERIE, Netflix)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: jessica-jones}
+tipo_unidad_raiz: temporada
+
+nodos:
+  - tipo: temporada
+    orden_local: 1
+    nombre: "Temporada 1"
+    hijos:
+      - {tipo: episodio, nombre: "AKA Noche de chicas", orden_local: 1, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA Síndrome de aplastamiento", orden_local: 2, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA Se llama whisky", orden_local: 3, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA 99 amigos", orden_local: 4, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA El sándwich me salvó", orden_local: 5, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA ¡Eres una ganadora!", orden_local: 6, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA Pervertidos de primera", orden_local: 7, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA ¿Qué haría Jessica?", orden_local: 8, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA El cubo de los pecados", orden_local: 9, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA 1.000 cortes", orden_local: 10, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA Tengo la depre", orden_local: 11, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA Coge un maldito número", orden_local: 12, fecha: "2015-11-20", revisar: true}
+      - {tipo: episodio, nombre: "AKA Sonríe", orden_local: 13, fecha: "2015-11-20", revisar: true}
+  - tipo: temporada
+    orden_local: 2
+    nombre: "Temporada 2"
+    hijos:
+      - {tipo: episodio, nombre: "AKA Empieza por el principio", orden_local: 1, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Accidente extraño", orden_local: 2, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Única superviviente", orden_local: 3, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Que Dios ayude al vagabundo", orden_local: 4, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA El pulpo", orden_local: 5, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Videollamada", orden_local: 6, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Quiero tu locura", orden_local: 7, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Qué divertido es esto", orden_local: 8, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Tiburón en la bañera, monstruo en la cama", orden_local: 9, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Chuleta de cerdo", orden_local: 10, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Tres vidas y contando", orden_local: 11, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Reza por mi Patsy", orden_local: 12, fecha: "2018-03-08", revisar: true}
+      - {tipo: episodio, nombre: "AKA Playland", orden_local: 13, fecha: "2018-03-08", revisar: true}
+  - tipo: temporada
+    orden_local: 3
+    nombre: "Temporada 3"
+    hijos:
+      - {tipo: episodio, nombre: "AKA La hamburguesa perfecta", orden_local: 1, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA De nada", orden_local: 2, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA No tengo bazo", orden_local: 3, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Atención al cliente en espera", orden_local: 4, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Ojalá", orden_local: 5, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Cara de arrepentida", orden_local: 6, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA El doble medio Wappinger", orden_local: 7, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Buena ante la cámara", orden_local: 8, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Hoy hice algo", orden_local: 9, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Pantalones de heroína", orden_local: 10, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Hellcat", orden_local: 11, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Un montón de gusanos", orden_local: 12, fecha: "2019-06-14", revisar: true}
+      - {tipo: episodio, nombre: "AKA Todo", orden_local: 13, fecha: "2019-06-14", revisar: true}
+
+# Total esperado: 3 temporadas, 39 episodios.

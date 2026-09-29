@@ -1,0 +1,39 @@
+# Curación de estructura narrativa — Iron Fist (SERIE, Netflix)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: iron-fist}
+tipo_unidad_raiz: temporada
+
+nodos:
+  - tipo: temporada
+    orden_local: 1
+    nombre: "Temporada 1"
+    hijos:
+      - {tipo: episodio, nombre: "La nieve da paso", orden_local: 1, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "El halcón sombrío alza el vuelo", orden_local: 2, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "Puñetazo cañón trueno rodante", orden_local: 3, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "Palma del dragón de ocho diagramas", orden_local: 4, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "Bajo la hoja, arranca el loto", orden_local: 5, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "El inmortal emerge de la cueva", orden_local: 6, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "Talar el árbol de raíz", orden_local: 7, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "La bendición de muchas fracturas", orden_local: 8, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "La señora de todas las agonías", orden_local: 9, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "El tigre negro roba el corazón", orden_local: 10, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "Devuelve el caballo al establo", orden_local: 11, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "Cierra el paso al gran jefe", orden_local: 12, fecha: "2017-03-17", revisar: true}
+      - {tipo: episodio, nombre: "El dragón juega con fuego", orden_local: 13, fecha: "2017-03-17", revisar: true}
+  - tipo: temporada
+    orden_local: 2
+    nombre: "Temporada 2"
+    hijos:
+      - {tipo: episodio, nombre: "La furia de Puño de Hierro", orden_local: 1, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "La ciudad no está para arder", orden_local: 2, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "Este secreto mortal", orden_local: 3, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "Objetivo: Puño de Hierro", orden_local: 4, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "Corazón de dragón", orden_local: 5, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "El dragón muere al amanecer", orden_local: 6, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "La mañana de la tormenta mental", orden_local: 7, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "Ciudadela al borde de la venganza", orden_local: 8, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "Guerra sin fin", orden_local: 9, fecha: "2018-09-07", revisar: true}
+      - {tipo: episodio, nombre: "Un duelo de hierro", orden_local: 10, fecha: "2018-09-07", revisar: true}
+
+# Total esperado: 2 temporadas, 23 episodios.

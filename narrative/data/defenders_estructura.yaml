@@ -1,0 +1,16 @@
+# Curación de estructura narrativa — The Defenders (MINISERIE, Netflix)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: the-defenders}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "La palabra con H", orden_local: 1, fecha: "2017-08-18", revisar: true}
+  - {tipo: episodio, nombre: "Un gancho de derecha brutal", orden_local: 2, fecha: "2017-08-18", revisar: true}
+  - {tipo: episodio, nombre: "El peor comportamiento", orden_local: 3, fecha: "2017-08-18", revisar: true}
+  - {tipo: episodio, nombre: "Dragón Real", orden_local: 4, fecha: "2017-08-18", revisar: true}
+  - {tipo: episodio, nombre: "Busca refugio", orden_local: 5, fecha: "2017-08-18", revisar: true}
+  - {tipo: episodio, nombre: "Cenizas, cenizas", orden_local: 6, fecha: "2017-08-18", revisar: true}
+  - {tipo: episodio, nombre: "Pez en la cárcel", orden_local: 7, fecha: "2017-08-18", revisar: true}
+  - {tipo: episodio, nombre: "Los Defensores", orden_local: 8, fecha: "2017-08-18", revisar: true}
+
+# Total esperado: 8 episodios.
