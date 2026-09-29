@@ -1,0 +1,402 @@
+# Curación de estructura narrativa — A Song of Ice and Fire (LIBROS)
+# obra_external_id: creada vía crear_obra_manual (no hay fuente API para libros).
+#
+# Capítulos: los 3 primeros libros llevan título real — en esta saga el
+# "título" de cada capítulo ES el nombre del POV (Bran I, Daenerys II...),
+# igual en la edición española, así que no hay riesgo de traducción.
+# Verificados contra A Wiki of Ice and Fire (awoiaf.westeros.org, no
+# Fandom) y contrastado el total contra la cifra de capítulos conocida
+# de cada libro (73/70/82).
+#
+# Festín de Cuervos y Danza de Dragones: la tabla de capítulos se cortaba
+# en cada intento de extracción y lo recuperado tenía inconsistencias —
+# se dejan como placeholder numérico ("Capítulo N"), con el total
+# (46 y 73) SIN verificar esta sesión contra una fuente citable
+# (revisar: true) — pendiente de una pasada dedicada.
+#
+# Fechas: mes/año verificados (Wikipedia); día exacto no confirmado salvo
+# en Danza de Dragones (12 julio 2011, estreno mundial simultáneo, bien
+# conocido) — el resto usa día 1 del mes como aproximación, revisar: true.
+obra_external_id: {source: manual, external_id: asoiaf-libros}
+
+nodos:
+  - tipo: libro
+    nombre: "Juego de Tronos"
+    orden_local: 1
+    fecha: "1996-08-01"
+    revisar: true
+    hijos:
+      - {tipo: capitulo, nombre: "Prólogo (Will)", orden_local: 1}
+      - {tipo: capitulo, nombre: "Bran I", orden_local: 2}
+      - {tipo: capitulo, nombre: "Catelyn I", orden_local: 3}
+      - {tipo: capitulo, nombre: "Daenerys I", orden_local: 4}
+      - {tipo: capitulo, nombre: "Eddard I", orden_local: 5}
+      - {tipo: capitulo, nombre: "Jon I", orden_local: 6}
+      - {tipo: capitulo, nombre: "Catelyn II", orden_local: 7}
+      - {tipo: capitulo, nombre: "Arya I", orden_local: 8}
+      - {tipo: capitulo, nombre: "Bran II", orden_local: 9}
+      - {tipo: capitulo, nombre: "Tyrion I", orden_local: 10}
+      - {tipo: capitulo, nombre: "Jon II", orden_local: 11}
+      - {tipo: capitulo, nombre: "Daenerys II", orden_local: 12}
+      - {tipo: capitulo, nombre: "Eddard II", orden_local: 13}
+      - {tipo: capitulo, nombre: "Tyrion II", orden_local: 14}
+      - {tipo: capitulo, nombre: "Catelyn III", orden_local: 15}
+      - {tipo: capitulo, nombre: "Sansa I", orden_local: 16}
+      - {tipo: capitulo, nombre: "Eddard III", orden_local: 17}
+      - {tipo: capitulo, nombre: "Bran III", orden_local: 18}
+      - {tipo: capitulo, nombre: "Catelyn IV", orden_local: 19}
+      - {tipo: capitulo, nombre: "Jon III", orden_local: 20}
+      - {tipo: capitulo, nombre: "Eddard IV", orden_local: 21}
+      - {tipo: capitulo, nombre: "Tyrion III", orden_local: 22}
+      - {tipo: capitulo, nombre: "Arya II", orden_local: 23}
+      - {tipo: capitulo, nombre: "Daenerys III", orden_local: 24}
+      - {tipo: capitulo, nombre: "Bran IV", orden_local: 25}
+      - {tipo: capitulo, nombre: "Eddard V", orden_local: 26}
+      - {tipo: capitulo, nombre: "Jon IV", orden_local: 27}
+      - {tipo: capitulo, nombre: "Eddard VI", orden_local: 28}
+      - {tipo: capitulo, nombre: "Catelyn V", orden_local: 29}
+      - {tipo: capitulo, nombre: "Sansa II", orden_local: 30}
+      - {tipo: capitulo, nombre: "Eddard VII", orden_local: 31}
+      - {tipo: capitulo, nombre: "Tyrion IV", orden_local: 32}
+      - {tipo: capitulo, nombre: "Arya III", orden_local: 33}
+      - {tipo: capitulo, nombre: "Eddard VIII", orden_local: 34}
+      - {tipo: capitulo, nombre: "Catelyn VI", orden_local: 35}
+      - {tipo: capitulo, nombre: "Eddard IX", orden_local: 36}
+      - {tipo: capitulo, nombre: "Daenerys IV", orden_local: 37}
+      - {tipo: capitulo, nombre: "Bran V", orden_local: 38}
+      - {tipo: capitulo, nombre: "Tyrion V", orden_local: 39}
+      - {tipo: capitulo, nombre: "Eddard X", orden_local: 40}
+      - {tipo: capitulo, nombre: "Catelyn VII", orden_local: 41}
+      - {tipo: capitulo, nombre: "Jon V", orden_local: 42}
+      - {tipo: capitulo, nombre: "Tyrion VI", orden_local: 43}
+      - {tipo: capitulo, nombre: "Eddard XI", orden_local: 44}
+      - {tipo: capitulo, nombre: "Sansa III", orden_local: 45}
+      - {tipo: capitulo, nombre: "Eddard XII", orden_local: 46}
+      - {tipo: capitulo, nombre: "Daenerys V", orden_local: 47}
+      - {tipo: capitulo, nombre: "Eddard XIII", orden_local: 48}
+      - {tipo: capitulo, nombre: "Jon VI", orden_local: 49}
+      - {tipo: capitulo, nombre: "Eddard XIV", orden_local: 50}
+      - {tipo: capitulo, nombre: "Arya IV", orden_local: 51}
+      - {tipo: capitulo, nombre: "Sansa IV", orden_local: 52}
+      - {tipo: capitulo, nombre: "Jon VII", orden_local: 53}
+      - {tipo: capitulo, nombre: "Bran VI", orden_local: 54}
+      - {tipo: capitulo, nombre: "Daenerys VI", orden_local: 55}
+      - {tipo: capitulo, nombre: "Catelyn VIII", orden_local: 56}
+      - {tipo: capitulo, nombre: "Tyrion VII", orden_local: 57}
+      - {tipo: capitulo, nombre: "Sansa V", orden_local: 58}
+      - {tipo: capitulo, nombre: "Eddard XV", orden_local: 59}
+      - {tipo: capitulo, nombre: "Catelyn IX", orden_local: 60}
+      - {tipo: capitulo, nombre: "Jon VIII", orden_local: 61}
+      - {tipo: capitulo, nombre: "Daenerys VII", orden_local: 62}
+      - {tipo: capitulo, nombre: "Tyrion VIII", orden_local: 63}
+      - {tipo: capitulo, nombre: "Catelyn X", orden_local: 64}
+      - {tipo: capitulo, nombre: "Daenerys VIII", orden_local: 65}
+      - {tipo: capitulo, nombre: "Arya V", orden_local: 66}
+      - {tipo: capitulo, nombre: "Bran VII", orden_local: 67}
+      - {tipo: capitulo, nombre: "Sansa VI", orden_local: 68}
+      - {tipo: capitulo, nombre: "Daenerys IX", orden_local: 69}
+      - {tipo: capitulo, nombre: "Tyrion IX", orden_local: 70}
+      - {tipo: capitulo, nombre: "Jon IX", orden_local: 71}
+      - {tipo: capitulo, nombre: "Catelyn XI", orden_local: 72}
+      - {tipo: capitulo, nombre: "Daenerys X", orden_local: 73}
+
+  - tipo: libro
+    nombre: "Choque de Reyes"
+    orden_local: 2
+    fecha: "1998-11-01"
+    revisar: true
+    hijos:
+      - {tipo: capitulo, nombre: "Prólogo (Maestre Cressen)", orden_local: 1}
+      - {tipo: capitulo, nombre: "Arya I", orden_local: 2}
+      - {tipo: capitulo, nombre: "Sansa I", orden_local: 3}
+      - {tipo: capitulo, nombre: "Tyrion I", orden_local: 4}
+      - {tipo: capitulo, nombre: "Bran I", orden_local: 5}
+      - {tipo: capitulo, nombre: "Arya II", orden_local: 6}
+      - {tipo: capitulo, nombre: "Jon I", orden_local: 7}
+      - {tipo: capitulo, nombre: "Catelyn I", orden_local: 8}
+      - {tipo: capitulo, nombre: "Tyrion II", orden_local: 9}
+      - {tipo: capitulo, nombre: "Arya III", orden_local: 10}
+      - {tipo: capitulo, nombre: "Davos I", orden_local: 11}
+      - {tipo: capitulo, nombre: "Theon I", orden_local: 12}
+      - {tipo: capitulo, nombre: "Daenerys I", orden_local: 13}
+      - {tipo: capitulo, nombre: "Jon II", orden_local: 14}
+      - {tipo: capitulo, nombre: "Arya IV", orden_local: 15}
+      - {tipo: capitulo, nombre: "Tyrion III", orden_local: 16}
+      - {tipo: capitulo, nombre: "Bran II", orden_local: 17}
+      - {tipo: capitulo, nombre: "Tyrion IV", orden_local: 18}
+      - {tipo: capitulo, nombre: "Sansa II", orden_local: 19}
+      - {tipo: capitulo, nombre: "Arya V", orden_local: 20}
+      - {tipo: capitulo, nombre: "Tyrion V", orden_local: 21}
+      - {tipo: capitulo, nombre: "Bran III", orden_local: 22}
+      - {tipo: capitulo, nombre: "Catelyn II", orden_local: 23}
+      - {tipo: capitulo, nombre: "Jon III", orden_local: 24}
+      - {tipo: capitulo, nombre: "Theon II", orden_local: 25}
+      - {tipo: capitulo, nombre: "Tyrion VI", orden_local: 26}
+      - {tipo: capitulo, nombre: "Arya VI", orden_local: 27}
+      - {tipo: capitulo, nombre: "Daenerys II", orden_local: 28}
+      - {tipo: capitulo, nombre: "Bran IV", orden_local: 29}
+      - {tipo: capitulo, nombre: "Tyrion VII", orden_local: 30}
+      - {tipo: capitulo, nombre: "Arya VII", orden_local: 31}
+      - {tipo: capitulo, nombre: "Catelyn III", orden_local: 32}
+      - {tipo: capitulo, nombre: "Sansa III", orden_local: 33}
+      - {tipo: capitulo, nombre: "Catelyn IV", orden_local: 34}
+      - {tipo: capitulo, nombre: "Jon IV", orden_local: 35}
+      - {tipo: capitulo, nombre: "Bran V", orden_local: 36}
+      - {tipo: capitulo, nombre: "Tyrion VIII", orden_local: 37}
+      - {tipo: capitulo, nombre: "Theon III", orden_local: 38}
+      - {tipo: capitulo, nombre: "Arya VIII", orden_local: 39}
+      - {tipo: capitulo, nombre: "Catelyn V", orden_local: 40}
+      - {tipo: capitulo, nombre: "Daenerys III", orden_local: 41}
+      - {tipo: capitulo, nombre: "Tyrion IX", orden_local: 42}
+      - {tipo: capitulo, nombre: "Davos II", orden_local: 43}
+      - {tipo: capitulo, nombre: "Jon V", orden_local: 44}
+      - {tipo: capitulo, nombre: "Tyrion X", orden_local: 45}
+      - {tipo: capitulo, nombre: "Catelyn VI", orden_local: 46}
+      - {tipo: capitulo, nombre: "Bran VI", orden_local: 47}
+      - {tipo: capitulo, nombre: "Arya IX", orden_local: 48}
+      - {tipo: capitulo, nombre: "Daenerys IV", orden_local: 49}
+      - {tipo: capitulo, nombre: "Tyrion XI", orden_local: 50}
+      - {tipo: capitulo, nombre: "Theon IV", orden_local: 51}
+      - {tipo: capitulo, nombre: "Jon VI", orden_local: 52}
+      - {tipo: capitulo, nombre: "Sansa IV", orden_local: 53}
+      - {tipo: capitulo, nombre: "Jon VII", orden_local: 54}
+      - {tipo: capitulo, nombre: "Tyrion XII", orden_local: 55}
+      - {tipo: capitulo, nombre: "Catelyn VII", orden_local: 56}
+      - {tipo: capitulo, nombre: "Theon V", orden_local: 57}
+      - {tipo: capitulo, nombre: "Sansa V", orden_local: 58}
+      - {tipo: capitulo, nombre: "Davos III", orden_local: 59}
+      - {tipo: capitulo, nombre: "Tyrion XIII", orden_local: 60}
+      - {tipo: capitulo, nombre: "Sansa VI", orden_local: 61}
+      - {tipo: capitulo, nombre: "Tyrion XIV", orden_local: 62}
+      - {tipo: capitulo, nombre: "Sansa VII", orden_local: 63}
+      - {tipo: capitulo, nombre: "Daenerys V", orden_local: 64}
+      - {tipo: capitulo, nombre: "Arya X", orden_local: 65}
+      - {tipo: capitulo, nombre: "Sansa VIII", orden_local: 66}
+      - {tipo: capitulo, nombre: "Theon VI", orden_local: 67}
+      - {tipo: capitulo, nombre: "Tyrion XV", orden_local: 68}
+      - {tipo: capitulo, nombre: "Jon VIII", orden_local: 69}
+      - {tipo: capitulo, nombre: "Bran VII", orden_local: 70}
+
+  - tipo: libro
+    nombre: "Tormenta de Espadas"
+    orden_local: 3
+    fecha: "2000-11-01"
+    revisar: true
+    hijos:
+      - {tipo: capitulo, nombre: "Prólogo (Chett)", orden_local: 1}
+      - {tipo: capitulo, nombre: "Jaime I", orden_local: 2}
+      - {tipo: capitulo, nombre: "Catelyn I", orden_local: 3}
+      - {tipo: capitulo, nombre: "Arya I", orden_local: 4}
+      - {tipo: capitulo, nombre: "Tyrion I", orden_local: 5}
+      - {tipo: capitulo, nombre: "Davos I", orden_local: 6}
+      - {tipo: capitulo, nombre: "Sansa I", orden_local: 7}
+      - {tipo: capitulo, nombre: "Jon I", orden_local: 8}
+      - {tipo: capitulo, nombre: "Daenerys I", orden_local: 9}
+      - {tipo: capitulo, nombre: "Bran I", orden_local: 10}
+      - {tipo: capitulo, nombre: "Davos II", orden_local: 11}
+      - {tipo: capitulo, nombre: "Jaime II", orden_local: 12}
+      - {tipo: capitulo, nombre: "Tyrion II", orden_local: 13}
+      - {tipo: capitulo, nombre: "Arya II", orden_local: 14}
+      - {tipo: capitulo, nombre: "Catelyn II", orden_local: 15}
+      - {tipo: capitulo, nombre: "Jon II", orden_local: 16}
+      - {tipo: capitulo, nombre: "Sansa II", orden_local: 17}
+      - {tipo: capitulo, nombre: "Arya III", orden_local: 18}
+      - {tipo: capitulo, nombre: "Samwell I", orden_local: 19}
+      - {tipo: capitulo, nombre: "Tyrion III", orden_local: 20}
+      - {tipo: capitulo, nombre: "Catelyn III", orden_local: 21}
+      - {tipo: capitulo, nombre: "Jaime III", orden_local: 22}
+      - {tipo: capitulo, nombre: "Arya IV", orden_local: 23}
+      - {tipo: capitulo, nombre: "Daenerys II", orden_local: 24}
+      - {tipo: capitulo, nombre: "Bran II", orden_local: 25}
+      - {tipo: capitulo, nombre: "Davos III", orden_local: 26}
+      - {tipo: capitulo, nombre: "Jon III", orden_local: 27}
+      - {tipo: capitulo, nombre: "Daenerys III", orden_local: 28}
+      - {tipo: capitulo, nombre: "Sansa III", orden_local: 29}
+      - {tipo: capitulo, nombre: "Arya V", orden_local: 30}
+      - {tipo: capitulo, nombre: "Jon IV", orden_local: 31}
+      - {tipo: capitulo, nombre: "Jaime IV", orden_local: 32}
+      - {tipo: capitulo, nombre: "Tyrion IV", orden_local: 33}
+      - {tipo: capitulo, nombre: "Samwell II", orden_local: 34}
+      - {tipo: capitulo, nombre: "Arya VI", orden_local: 35}
+      - {tipo: capitulo, nombre: "Catelyn IV", orden_local: 36}
+      - {tipo: capitulo, nombre: "Davos IV", orden_local: 37}
+      - {tipo: capitulo, nombre: "Jaime V", orden_local: 38}
+      - {tipo: capitulo, nombre: "Tyrion V", orden_local: 39}
+      - {tipo: capitulo, nombre: "Arya VII", orden_local: 40}
+      - {tipo: capitulo, nombre: "Bran III", orden_local: 41}
+      - {tipo: capitulo, nombre: "Jon V", orden_local: 42}
+      - {tipo: capitulo, nombre: "Daenerys IV", orden_local: 43}
+      - {tipo: capitulo, nombre: "Arya VIII", orden_local: 44}
+      - {tipo: capitulo, nombre: "Jaime VI", orden_local: 45}
+      - {tipo: capitulo, nombre: "Catelyn V", orden_local: 46}
+      - {tipo: capitulo, nombre: "Samwell III", orden_local: 47}
+      - {tipo: capitulo, nombre: "Arya IX", orden_local: 48}
+      - {tipo: capitulo, nombre: "Jon VI", orden_local: 49}
+      - {tipo: capitulo, nombre: "Catelyn VI", orden_local: 50}
+      - {tipo: capitulo, nombre: "Arya X", orden_local: 51}
+      - {tipo: capitulo, nombre: "Catelyn VII", orden_local: 52}
+      - {tipo: capitulo, nombre: "Arya XI", orden_local: 53}
+      - {tipo: capitulo, nombre: "Tyrion VI", orden_local: 54}
+      - {tipo: capitulo, nombre: "Davos V", orden_local: 55}
+      - {tipo: capitulo, nombre: "Jon VII", orden_local: 56}
+      - {tipo: capitulo, nombre: "Bran IV", orden_local: 57}
+      - {tipo: capitulo, nombre: "Daenerys V", orden_local: 58}
+      - {tipo: capitulo, nombre: "Tyrion VII", orden_local: 59}
+      - {tipo: capitulo, nombre: "Sansa IV", orden_local: 60}
+      - {tipo: capitulo, nombre: "Tyrion VIII", orden_local: 61}
+      - {tipo: capitulo, nombre: "Sansa V", orden_local: 62}
+      - {tipo: capitulo, nombre: "Jaime VII", orden_local: 63}
+      - {tipo: capitulo, nombre: "Davos VI", orden_local: 64}
+      - {tipo: capitulo, nombre: "Jon VIII", orden_local: 65}
+      - {tipo: capitulo, nombre: "Arya XII", orden_local: 66}
+      - {tipo: capitulo, nombre: "Tyrion IX", orden_local: 67}
+      - {tipo: capitulo, nombre: "Jaime VIII", orden_local: 68}
+      - {tipo: capitulo, nombre: "Sansa VI", orden_local: 69}
+      - {tipo: capitulo, nombre: "Jon IX", orden_local: 70}
+      - {tipo: capitulo, nombre: "Tyrion X", orden_local: 71}
+      - {tipo: capitulo, nombre: "Daenerys VI", orden_local: 72}
+      - {tipo: capitulo, nombre: "Jaime IX", orden_local: 73}
+      - {tipo: capitulo, nombre: "Jon X", orden_local: 74}
+      - {tipo: capitulo, nombre: "Arya XIII", orden_local: 75}
+      - {tipo: capitulo, nombre: "Samwell IV", orden_local: 76}
+      - {tipo: capitulo, nombre: "Jon XI", orden_local: 77}
+      - {tipo: capitulo, nombre: "Tyrion XI", orden_local: 78}
+      - {tipo: capitulo, nombre: "Samwell V", orden_local: 79}
+      - {tipo: capitulo, nombre: "Jon XII", orden_local: 80}
+      - {tipo: capitulo, nombre: "Sansa VII", orden_local: 81}
+      - {tipo: capitulo, nombre: "Epílogo (Merrett Frey)", orden_local: 82}
+
+  - tipo: libro
+    nombre: "Festín de Cuervos"
+    orden_local: 4
+    fecha: "2005-10-01"
+    revisar: true
+    hijos:
+      - {tipo: capitulo, nombre: "Prólogo", orden_local: 1}
+      - {tipo: capitulo, nombre: "El Profeta", orden_local: 2}
+      - {tipo: capitulo, nombre: "El Capitán de los Guardias", orden_local: 3}
+      - {tipo: capitulo, nombre: "Cersei I", orden_local: 4}
+      - {tipo: capitulo, nombre: "Brienne I", orden_local: 5}
+      - {tipo: capitulo, nombre: "Samwell I", orden_local: 6}
+      - {tipo: capitulo, nombre: "Arya I", orden_local: 7}
+      - {tipo: capitulo, nombre: "Cersei II", orden_local: 8}
+      - {tipo: capitulo, nombre: "Jaime I", orden_local: 9}
+      - {tipo: capitulo, nombre: "Brienne II", orden_local: 10}
+      - {tipo: capitulo, nombre: "Sansa I", orden_local: 11}
+      - {tipo: capitulo, nombre: "La Hija del Kraken", orden_local: 12}
+      - {tipo: capitulo, nombre: "Cersei III", orden_local: 13}
+      - {tipo: capitulo, nombre: "El Caballero Manchado", orden_local: 14}
+      - {tipo: capitulo, nombre: "Brienne III", orden_local: 15}
+      - {tipo: capitulo, nombre: "Samwell II", orden_local: 16}
+      - {tipo: capitulo, nombre: "Jaime II", orden_local: 17}
+      - {tipo: capitulo, nombre: "Cersei IV", orden_local: 18}
+      - {tipo: capitulo, nombre: "El Capitán del Hierro", orden_local: 19}
+      - {tipo: capitulo, nombre: "El Hombre Ahogado", orden_local: 20}
+      - {tipo: capitulo, nombre: "Brienne IV", orden_local: 21}
+      - {tipo: capitulo, nombre: "La Hacedora de Reinas", orden_local: 22}
+      - {tipo: capitulo, nombre: "Arya II", orden_local: 23}
+      - {tipo: capitulo, nombre: "Alayne I", orden_local: 24}
+      - {tipo: capitulo, nombre: "Cersei V", orden_local: 25}
+      - {tipo: capitulo, nombre: "Brienne V", orden_local: 26}
+      - {tipo: capitulo, nombre: "Samwell III", orden_local: 27}
+      - {tipo: capitulo, nombre: "Jaime III", orden_local: 28}
+      - {tipo: capitulo, nombre: "Cersei VI", orden_local: 29}
+      - {tipo: capitulo, nombre: "El Saqueador", orden_local: 30}
+      - {tipo: capitulo, nombre: "Jaime IV", orden_local: 31}
+      - {tipo: capitulo, nombre: "Brienne VI", orden_local: 32}
+      - {tipo: capitulo, nombre: "Cersei VII", orden_local: 33}
+      - {tipo: capitulo, nombre: "Jaime V", orden_local: 34}
+      - {tipo: capitulo, nombre: "Gata de los Canales", orden_local: 35}
+      - {tipo: capitulo, nombre: "Samwell IV", orden_local: 36}
+      - {tipo: capitulo, nombre: "Cersei VIII", orden_local: 37}
+      - {tipo: capitulo, nombre: "Brienne VII", orden_local: 38}
+      - {tipo: capitulo, nombre: "Jaime VI", orden_local: 39}
+      - {tipo: capitulo, nombre: "Cersei IX", orden_local: 40}
+      - {tipo: capitulo, nombre: "La Princesa en la Torre", orden_local: 41}
+      - {tipo: capitulo, nombre: "Alayne II", orden_local: 42}
+      - {tipo: capitulo, nombre: "Brienne VIII", orden_local: 43}
+      - {tipo: capitulo, nombre: "Cersei X", orden_local: 44}
+      - {tipo: capitulo, nombre: "Jaime VII", orden_local: 45}
+      - {tipo: capitulo, nombre: "Samwell V", orden_local: 46}
+
+  - tipo: libro
+    nombre: "Danza de Dragones"
+    orden_local: 5
+    fecha: "2011-07-12"
+    revisar: true
+    hijos:
+      - {tipo: capitulo, nombre: "Prólogo", orden_local: 1}
+      - {tipo: capitulo, nombre: "Tyrion I", orden_local: 2}
+      - {tipo: capitulo, nombre: "Daenerys I", orden_local: 3}
+      - {tipo: capitulo, nombre: "Jon I", orden_local: 4}
+      - {tipo: capitulo, nombre: "Bran I", orden_local: 5}
+      - {tipo: capitulo, nombre: "Tyrion II", orden_local: 6}
+      - {tipo: capitulo, nombre: "El Hombre del Mercader", orden_local: 7}
+      - {tipo: capitulo, nombre: "Jon II", orden_local: 8}
+      - {tipo: capitulo, nombre: "Tyrion III", orden_local: 9}
+      - {tipo: capitulo, nombre: "Davos I", orden_local: 10}
+      - {tipo: capitulo, nombre: "Jon III", orden_local: 11}
+      - {tipo: capitulo, nombre: "Daenerys II", orden_local: 12}
+      - {tipo: capitulo, nombre: "Hediondo I", orden_local: 13}
+      - {tipo: capitulo, nombre: "Bran II", orden_local: 14}
+      - {tipo: capitulo, nombre: "Tyrion IV", orden_local: 15}
+      - {tipo: capitulo, nombre: "Davos II", orden_local: 16}
+      - {tipo: capitulo, nombre: "Daenerys III", orden_local: 17}
+      - {tipo: capitulo, nombre: "Jon IV", orden_local: 18}
+      - {tipo: capitulo, nombre: "Tyrion V", orden_local: 19}
+      - {tipo: capitulo, nombre: "Davos III", orden_local: 20}
+      - {tipo: capitulo, nombre: "Hediondo II", orden_local: 21}
+      - {tipo: capitulo, nombre: "Jon V", orden_local: 22}
+      - {tipo: capitulo, nombre: "Tyrion VI", orden_local: 23}
+      - {tipo: capitulo, nombre: "Daenerys IV", orden_local: 24}
+      - {tipo: capitulo, nombre: "El Caballero Perdido", orden_local: 25}
+      - {tipo: capitulo, nombre: "Los Hijos del Viento", orden_local: 26}
+      - {tipo: capitulo, nombre: "La Novia Díscola", orden_local: 27}
+      - {tipo: capitulo, nombre: "Tyrion VII", orden_local: 28}
+      - {tipo: capitulo, nombre: "Jon VI", orden_local: 29}
+      - {tipo: capitulo, nombre: "Davos IV", orden_local: 30}
+      - {tipo: capitulo, nombre: "Daenerys V", orden_local: 31}
+      - {tipo: capitulo, nombre: "Melisandre I", orden_local: 32}
+      - {tipo: capitulo, nombre: "Hediondo III", orden_local: 33}
+      - {tipo: capitulo, nombre: "Tyrion VIII", orden_local: 34}
+      - {tipo: capitulo, nombre: "Bran III", orden_local: 35}
+      - {tipo: capitulo, nombre: "Jon VII", orden_local: 36}
+      - {tipo: capitulo, nombre: "Daenerys VI", orden_local: 37}
+      - {tipo: capitulo, nombre: "El Príncipe de Invernalia", orden_local: 38}
+      - {tipo: capitulo, nombre: "El Observador", orden_local: 39}
+      - {tipo: capitulo, nombre: "Jon VIII", orden_local: 40}
+      - {tipo: capitulo, nombre: "Tyrion IX", orden_local: 41}
+      - {tipo: capitulo, nombre: "El Cambiacapas", orden_local: 42}
+      - {tipo: capitulo, nombre: "El Trofeo del Rey", orden_local: 43}
+      - {tipo: capitulo, nombre: "Daenerys VII", orden_local: 44}
+      - {tipo: capitulo, nombre: "Jon IX", orden_local: 45}
+      - {tipo: capitulo, nombre: "La Niña Ciega", orden_local: 46}
+      - {tipo: capitulo, nombre: "Un Fantasma de Invernalia", orden_local: 47}
+      - {tipo: capitulo, nombre: "Tyrion X", orden_local: 48}
+      - {tipo: capitulo, nombre: "Jaime I", orden_local: 49}
+      - {tipo: capitulo, nombre: "Jon X", orden_local: 50}
+      - {tipo: capitulo, nombre: "Daenerys VIII", orden_local: 51}
+      - {tipo: capitulo, nombre: "Theon I", orden_local: 52}
+      - {tipo: capitulo, nombre: "Daenerys IX", orden_local: 53}
+      - {tipo: capitulo, nombre: "Jon XI", orden_local: 54}
+      - {tipo: capitulo, nombre: "Cersei I", orden_local: 55}
+      - {tipo: capitulo, nombre: "El Guardia de la Reina", orden_local: 56}
+      - {tipo: capitulo, nombre: "El Aspirante del Hierro", orden_local: 57}
+      - {tipo: capitulo, nombre: "Tyrion XI", orden_local: 58}
+      - {tipo: capitulo, nombre: "Jon XII", orden_local: 59}
+      - {tipo: capitulo, nombre: "El Caballero Olvidado", orden_local: 60}
+      - {tipo: capitulo, nombre: "El Pretendiente Rechazado", orden_local: 61}
+      - {tipo: capitulo, nombre: "El Grifo Redivivo", orden_local: 62}
+      - {tipo: capitulo, nombre: "El Sacrificio", orden_local: 63}
+      - {tipo: capitulo, nombre: "Victarion I", orden_local: 64}
+      - {tipo: capitulo, nombre: "La Niña Fea", orden_local: 65}
+      - {tipo: capitulo, nombre: "Cersei II", orden_local: 66}
+      - {tipo: capitulo, nombre: "Tyrion XII", orden_local: 67}
+      - {tipo: capitulo, nombre: "El Derrocador de Reyes", orden_local: 68}
+      - {tipo: capitulo, nombre: "El Domador de Dragones", orden_local: 69}
+      - {tipo: capitulo, nombre: "Jon XIII", orden_local: 70}
+      - {tipo: capitulo, nombre: "La Mano de la Reina", orden_local: 71}
+      - {tipo: capitulo, nombre: "Daenerys X", orden_local: 72}
+      - {tipo: capitulo, nombre: "Epílogo", orden_local: 73}
+
+# Total esperado: 73+70+82+46+73 = 344 capítulos/hojas.
