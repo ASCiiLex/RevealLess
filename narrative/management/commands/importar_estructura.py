@@ -164,10 +164,31 @@ class Command(BaseCommand):
             tema_obj.tipo = tipo
             tema_obj.save(update_fields=['tipo'])
 
+        # tipo de las hojas a vincular — 'capitulo' por defecto (histórico),
+        # pero una obra de películas (MCU, Star Wars...) usa 'pelicula'.
+        tipo_unidad = tema.get('tipo_unidad', 'capitulo')
+
+        unidades = tema.get('unidades')
+        if unidades:
+            # Lista explícita de orden_local — para temas NO contiguos (un
+            # personaje que aparece en películas salteadas a lo largo del
+            # catálogo, no un rango seguido).
+            qs = UnidadNarrativa.objects.filter(
+                obra=obra, tipo=tipo_unidad, orden_local__in=unidades,
+            )
+            tema_obj.unidades.set(qs)
+            encontrados = qs.count()
+            aviso = '' if encontrados == len(unidades) else (
+                f' (ATENCIÓN: se esperaban {len(unidades)}, encontrados {encontrados} — '
+                f'revisa los orden_local)'
+            )
+            self.stdout.write(f'{tema["nombre"]}: {encontrados} unidades vinculadas por lista explícita.{aviso}')
+            return
+
         rango = tema.get('rango_capitulos')
         if rango:
             inicio, fin = rango
-            qs = UnidadNarrativa.objects.filter(obra=obra, tipo='capitulo', orden_local__gte=inicio)
+            qs = UnidadNarrativa.objects.filter(obra=obra, tipo=tipo_unidad, orden_local__gte=inicio)
             if fin is not None:
                 qs = qs.filter(orden_local__lte=fin)
             tema_obj.unidades.set(qs)

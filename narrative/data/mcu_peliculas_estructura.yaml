@@ -1,0 +1,98 @@
+# Curación de estructura narrativa — Marvel Cinematic Universe (PELÍCULAS)
+# obra_external_id: creada vía crear_obra_manual (no hay fuente API para MCU).
+#
+# Obra ÚNICA para todo el UCM (mismo criterio que Star Wars: franquicia
+# vendida y organizada bajo un solo título/marca, no productos separados
+# como GoT/HotD). Así se evita el problema de a qué Obra asignar los
+# crossover (Vengadores, Civil War...): no hay que elegir, solo hay una.
+#
+# Jerarquía: Fase → película, sin nivel de Saga intermedio.
+# Orden = fecha de estreno real (mismo criterio que Star Wars y LOTR), no
+# orden cronológico interno de la historia — el MCU no fija una única
+# tabla cronológica oficial, y el estreno es el criterio ya validado en
+# el resto del catálogo.
+#
+# 40 películas confirmadas con fecha oficial (Iron Man 2008 -> Avengers:
+# Secret Wars 2027, verificado 2026-09-29). Quedan fuera 3 títulos
+# anunciados para 2028 (X-Men, Ghost Rider, Black Panther III) por ser
+# aún demasiado preliminares — mismo criterio que el arco abierto de One
+# Piece (orden_local null).
+# Fuente: https://en.wikipedia.org/wiki/List_of_Marvel_Cinematic_Universe_films
+obra_external_id: {source: manual, external_id: mcu-peliculas}
+tipo_unidad_raiz: fase
+
+nodos:
+  - tipo: fase
+    nombre: "Fase Uno"
+    orden_local: 1
+    hijos:
+      - {tipo: pelicula, nombre: "Iron Man", orden_local: 1, fecha: "2008-05-02"}
+      - {tipo: pelicula, nombre: "El increíble Hulk", orden_local: 2, fecha: "2008-06-13"}
+      - {tipo: pelicula, nombre: "Iron Man 2", orden_local: 3, fecha: "2010-05-07"}
+      - {tipo: pelicula, nombre: "Thor", orden_local: 4, fecha: "2011-05-06"}
+      - {tipo: pelicula, nombre: "Capitán América: El primer vengador", orden_local: 5, fecha: "2011-07-22"}
+      - {tipo: pelicula, nombre: "Los Vengadores", orden_local: 6, fecha: "2012-05-04"}
+
+  - tipo: fase
+    nombre: "Fase Dos"
+    orden_local: 2
+    hijos:
+      - {tipo: pelicula, nombre: "Iron Man 3", orden_local: 1, fecha: "2013-05-03"}
+      - {tipo: pelicula, nombre: "Thor: Un mundo oscuro", orden_local: 2, fecha: "2013-11-08"}
+      - {tipo: pelicula, nombre: "Capitán América: El soldado de invierno", orden_local: 3, fecha: "2014-04-04"}
+      - {tipo: pelicula, nombre: "Guardianes de la Galaxia", orden_local: 4, fecha: "2014-08-01"}
+      - {tipo: pelicula, nombre: "Vengadores: La era de Ultrón", orden_local: 5, fecha: "2015-05-01"}
+      - {tipo: pelicula, nombre: "Ant-Man", orden_local: 6, fecha: "2015-07-17"}
+
+  - tipo: fase
+    nombre: "Fase Tres"
+    orden_local: 3
+    hijos:
+      - {tipo: pelicula, nombre: "Capitán América: Civil War", orden_local: 1, fecha: "2016-05-06"}
+      - {tipo: pelicula, nombre: "Doctor Strange", orden_local: 2, fecha: "2016-11-04"}
+      - {tipo: pelicula, nombre: "Guardianes de la Galaxia Vol. 2", orden_local: 3, fecha: "2017-05-05"}
+      - {tipo: pelicula, nombre: "Spider-Man: Homecoming", orden_local: 4, fecha: "2017-07-07"}
+      - {tipo: pelicula, nombre: "Thor: Ragnarok", orden_local: 5, fecha: "2017-11-03"}
+      - {tipo: pelicula, nombre: "Black Panther", orden_local: 6, fecha: "2018-02-16"}
+      - {tipo: pelicula, nombre: "Vengadores: Infinity War", orden_local: 7, fecha: "2018-04-27"}
+      - {tipo: pelicula, nombre: "Ant-Man y la Avispa", orden_local: 8, fecha: "2018-07-06"}
+      - {tipo: pelicula, nombre: "Capitana Marvel", orden_local: 9, fecha: "2019-03-08"}
+      - {tipo: pelicula, nombre: "Vengadores: Endgame", orden_local: 10, fecha: "2019-04-26"}
+      - {tipo: pelicula, nombre: "Spider-Man: Lejos de casa", orden_local: 11, fecha: "2019-07-02"}
+
+  - tipo: fase
+    nombre: "Fase Cuatro"
+    orden_local: 4
+    hijos:
+      - {tipo: pelicula, nombre: "Black Widow", orden_local: 1, fecha: "2021-07-09"}
+      - {tipo: pelicula, nombre: "Shang-Chi y la leyenda de los diez anillos", orden_local: 2, fecha: "2021-09-03"}
+      - {tipo: pelicula, nombre: "Eternals", orden_local: 3, fecha: "2021-11-05"}
+      - {tipo: pelicula, nombre: "Spider-Man: No Way Home", orden_local: 4, fecha: "2021-12-17"}
+      - {tipo: pelicula, nombre: "Doctor Strange en el multiverso de la locura", orden_local: 5, fecha: "2022-05-06"}
+      - {tipo: pelicula, nombre: "Thor: Love and Thunder", orden_local: 6, fecha: "2022-07-08"}
+      - {tipo: pelicula, nombre: "Black Panther: Wakanda Forever", orden_local: 7, fecha: "2022-11-11"}
+
+  - tipo: fase
+    nombre: "Fase Cinco"
+    orden_local: 5
+    hijos:
+      - {tipo: pelicula, nombre: "Ant-Man y la Avispa: Quantumania", orden_local: 1, fecha: "2023-02-17"}
+      - {tipo: pelicula, nombre: "Guardianes de la Galaxia Vol. 3", orden_local: 2, fecha: "2023-05-05"}
+      - {tipo: pelicula, nombre: "The Marvels", orden_local: 3, fecha: "2023-11-10"}
+      - {tipo: pelicula, nombre: "Deadpool y Lobezno", orden_local: 4, fecha: "2024-07-26"}
+      - {tipo: pelicula, nombre: "Capitán América: Un nuevo mundo", orden_local: 5, fecha: "2025-02-14"}
+      - {tipo: pelicula, nombre: "Thunderbolts*", orden_local: 6, fecha: "2025-05-02"}
+
+  - tipo: fase
+    nombre: "Fase Seis"
+    orden_local: 6
+    hijos:
+      - {tipo: pelicula, nombre: "Los 4 Fantásticos: Primeros pasos", orden_local: 1, fecha: "2025-07-25"}
+      - {tipo: pelicula, nombre: "Spider-Man: Brand New Day", orden_local: 2, fecha: "2026-07-31"}
+      - {tipo: pelicula, nombre: "Vengadores: Doomsday", orden_local: 3, fecha: "2026-12-18", revisar: true}
+      - {tipo: pelicula, nombre: "Vengadores: Secret Wars", orden_local: 4, fecha: "2027-12-17", revisar: true}
+
+# Total esperado: 6+6+11+7+6+4 = 40 películas en 6 fases.
+# revisar: true en Doomsday/Secret Wars — fechas anunciadas por Marvel
+# Studios pero a más de un año vista, sujetas al histórico de retrasos de
+# la propia franquicia (ya se movieron una vez, dic-2026/dic-2027).
