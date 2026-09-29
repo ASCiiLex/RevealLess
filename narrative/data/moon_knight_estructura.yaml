@@ -1,0 +1,14 @@
+# Curación de estructura narrativa — Moon Knight (SERIE)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: moon-knight}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "El problema del pez de colores", orden_local: 1, fecha: "2022-03-30", revisar: true}
+  - {tipo: episodio, nombre: "Invoca el traje", orden_local: 2, fecha: "2022-04-06", revisar: true}
+  - {tipo: episodio, nombre: "El tipo simpático", orden_local: 3, fecha: "2022-04-13", revisar: true}
+  - {tipo: episodio, nombre: "La tumba", orden_local: 4, fecha: "2022-04-20", revisar: true}
+  - {tipo: episodio, nombre: "Asilo", orden_local: 5, fecha: "2022-04-27", revisar: true}
+  - {tipo: episodio, nombre: "Dioses y monstruos", orden_local: 6, fecha: "2022-05-04", revisar: true}
+
+# Total esperado: 6 episodios.

@@ -1,0 +1,14 @@
+# Curación de estructura narrativa — Echo (SERIE)
+# Títulos originales en choctaw, se mantienen tal cual (no son traducibles
+# como palabra suelta al español sin perder su sentido cultural).
+obra_external_id: {source: manual, external_id: echo-serie}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Chafa", orden_local: 1, fecha: "2024-01-09"}
+  - {tipo: episodio, nombre: "Lowak", orden_local: 2, fecha: "2024-01-09"}
+  - {tipo: episodio, nombre: "Tuklo", orden_local: 3, fecha: "2024-01-09"}
+  - {tipo: episodio, nombre: "Taloa", orden_local: 4, fecha: "2024-01-09"}
+  - {tipo: episodio, nombre: "Maya", orden_local: 5, fecha: "2024-01-09"}
+
+# Total esperado: 5 episodios.

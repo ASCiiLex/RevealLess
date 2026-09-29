@@ -1,0 +1,14 @@
+# Curación de estructura narrativa — Ironheart (SERIE)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: ironheart}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Llévame a casa", orden_local: 1, fecha: "2025-06-24", revisar: true}
+  - {tipo: episodio, nombre: "¿Puede la verdadera Natalie ponerse de pie?", orden_local: 2, fecha: "2025-06-24", revisar: true}
+  - {tipo: episodio, nombre: "Estamos en peligro, chica", orden_local: 3, fecha: "2025-06-24", revisar: true}
+  - {tipo: episodio, nombre: "Magia mala", orden_local: 4, fecha: "2025-07-01", revisar: true}
+  - {tipo: episodio, nombre: "El karma es un fallo", orden_local: 5, fecha: "2025-07-01", revisar: true}
+  - {tipo: episodio, nombre: "El pasado es pasado", orden_local: 6, fecha: "2025-07-01", revisar: true}
+
+# Total esperado: 6 episodios.

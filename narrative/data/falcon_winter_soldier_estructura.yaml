@@ -1,0 +1,14 @@
+# Curación de estructura narrativa — The Falcon and the Winter Soldier (SERIE)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: falcon-winter-soldier}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Nuevo orden mundial", orden_local: 1, fecha: "2021-03-19", revisar: true}
+  - {tipo: episodio, nombre: "El hombre con la bandera", orden_local: 2, fecha: "2021-03-26", revisar: true}
+  - {tipo: episodio, nombre: "El intermediario", orden_local: 3, fecha: "2021-04-02", revisar: true}
+  - {tipo: episodio, nombre: "Todo el mundo está mirando", orden_local: 4, fecha: "2021-04-09", revisar: true}
+  - {tipo: episodio, nombre: "Verdad", orden_local: 5, fecha: "2021-04-16", revisar: true}
+  - {tipo: episodio, nombre: "Un mundo, un pueblo", orden_local: 6, fecha: "2021-04-23", revisar: true}
+
+# Total esperado: 6 episodios.

@@ -1,0 +1,18 @@
+# Curación de estructura narrativa — Agatha All Along (SERIE)
+# Títulos en español: traducción propia (varios son dobles/rimados en el
+# original) — revisar: true.
+obra_external_id: {source: manual, external_id: agatha-all-along}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Buscas el camino", orden_local: 1, fecha: "2024-09-18", revisar: true}
+  - {tipo: episodio, nombre: "Círculo cosido con destino / Abre tu puerta oculta", orden_local: 2, fecha: "2024-09-18", revisar: true}
+  - {tipo: episodio, nombre: "A través de muchas millas / De trucos y pruebas", orden_local: 3, fecha: "2024-09-25", revisar: true}
+  - {tipo: episodio, nombre: "Si no puedo alcanzarte / Deja que mi canción te enseñe", orden_local: 4, fecha: "2024-10-02", revisar: true}
+  - {tipo: episodio, nombre: "La hora más oscura / Despierta tu poder", orden_local: 5, fecha: "2024-10-09", revisar: true}
+  - {tipo: episodio, nombre: "Un familiar a tu lado", orden_local: 6, fecha: "2024-10-16", revisar: true}
+  - {tipo: episodio, nombre: "La mano de la Muerte en la mía", orden_local: 7, fecha: "2024-10-23", revisar: true}
+  - {tipo: episodio, nombre: "Sígueme, amigo mío / Hacia la gloria al final", orden_local: 8, fecha: "2024-10-30", revisar: true}
+  - {tipo: episodio, nombre: "Doncella, Madre, Anciana", orden_local: 9, fecha: "2024-10-30", revisar: true}
+
+# Total esperado: 9 episodios.

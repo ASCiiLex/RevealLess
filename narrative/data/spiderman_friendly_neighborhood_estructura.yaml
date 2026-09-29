@@ -1,0 +1,18 @@
+# Curación de estructura narrativa — Your Friendly Neighborhood Spider-Man (SERIE, animada)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: spiderman-friendly-neighborhood}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Fantasía asombrosa", orden_local: 1, fecha: "2025-01-29", revisar: true}
+  - {tipo: episodio, nombre: "La suerte de los Parker", orden_local: 2, fecha: "2025-01-29", revisar: true}
+  - {tipo: episodio, nombre: "Crisis de identidad secreta", orden_local: 3, fecha: "2025-02-05", revisar: true}
+  - {tipo: episodio, nombre: "Llegando a lo grande", orden_local: 4, fecha: "2025-02-05", revisar: true}
+  - {tipo: episodio, nombre: "¡El Unicornio desatado!", orden_local: 5, fecha: "2025-02-05", revisar: true}
+  - {tipo: episodio, nombre: "Duelo con el diablo", orden_local: 6, fecha: "2025-02-12", revisar: true}
+  - {tipo: episodio, nombre: "El ascenso del Escorpión", orden_local: 7, fecha: "2025-02-12", revisar: true}
+  - {tipo: episodio, nombre: "Telaraña enredada", orden_local: 8, fecha: "2025-02-12", revisar: true}
+  - {tipo: episodio, nombre: "Héroe o amenaza", orden_local: 9, fecha: "2025-02-19", revisar: true}
+  - {tipo: episodio, nombre: "Si este es mi destino...", orden_local: 10, fecha: "2025-02-19", revisar: true}
+
+# Total esperado: 10 episodios.

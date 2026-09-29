@@ -1,0 +1,29 @@
+# Curación de estructura narrativa — Loki (SERIE)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: loki-serie}
+tipo_unidad_raiz: temporada
+
+nodos:
+  - tipo: temporada
+    nombre: "Temporada 1"
+    orden_local: 1
+    hijos:
+      - {tipo: episodio, nombre: "Propósito glorioso", orden_local: 1, fecha: "2021-06-09", revisar: true}
+      - {tipo: episodio, nombre: "La Variante", orden_local: 2, fecha: "2021-06-16", revisar: true}
+      - {tipo: episodio, nombre: "Lamentis", orden_local: 3, fecha: "2021-06-23", revisar: true}
+      - {tipo: episodio, nombre: "El Evento Nexo", orden_local: 4, fecha: "2021-06-30", revisar: true}
+      - {tipo: episodio, nombre: "Viaje al misterio", orden_local: 5, fecha: "2021-07-07", revisar: true}
+      - {tipo: episodio, nombre: "Por siempre. Siempre.", orden_local: 6, fecha: "2021-07-14", revisar: true}
+
+  - tipo: temporada
+    nombre: "Temporada 2"
+    orden_local: 2
+    hijos:
+      - {tipo: episodio, nombre: "Ouroboros", orden_local: 1, fecha: "2023-10-05", revisar: true}
+      - {tipo: episodio, nombre: "Rompiendo a Brad", orden_local: 2, fecha: "2023-10-12", revisar: true}
+      - {tipo: episodio, nombre: "1893", orden_local: 3, fecha: "2023-10-19", revisar: true}
+      - {tipo: episodio, nombre: "El corazón de la AVT", orden_local: 4, fecha: "2023-10-26", revisar: true}
+      - {tipo: episodio, nombre: "Ciencia/Ficción", orden_local: 5, fecha: "2023-11-02", revisar: true}
+      - {tipo: episodio, nombre: "Propósito glorioso", orden_local: 6, fecha: "2023-11-09", revisar: true}
+
+# Total esperado: 6+6 = 12 episodios en 2 temporadas.

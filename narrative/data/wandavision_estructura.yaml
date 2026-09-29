@@ -1,0 +1,18 @@
+# Curación de estructura narrativa — WandaVision (SERIE)
+# obra_external_id: creada vía crear_obra_manual.
+# Títulos en español: traducción propia (sin doblaje oficial localizado) — revisar: true.
+obra_external_id: {source: manual, external_id: wandavision}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Grabado ante un público en directo", orden_local: 1, fecha: "2021-01-15", revisar: true}
+  - {tipo: episodio, nombre: "No cambies de canal", orden_local: 2, fecha: "2021-01-15", revisar: true}
+  - {tipo: episodio, nombre: "Ahora en color", orden_local: 3, fecha: "2021-01-22", revisar: true}
+  - {tipo: episodio, nombre: "Interrumpimos este programa", orden_local: 4, fecha: "2021-01-29", revisar: true}
+  - {tipo: episodio, nombre: "En un episodio muy especial...", orden_local: 5, fecha: "2021-02-05", revisar: true}
+  - {tipo: episodio, nombre: "¡El especial de Halloween totalmente nuevo!", orden_local: 6, fecha: "2021-02-12", revisar: true}
+  - {tipo: episodio, nombre: "Rompiendo la cuarta pared", orden_local: 7, fecha: "2021-02-19", revisar: true}
+  - {tipo: episodio, nombre: "Anteriormente en...", orden_local: 8, fecha: "2021-02-26", revisar: true}
+  - {tipo: episodio, nombre: "El final de la serie", orden_local: 9, fecha: "2021-03-05", revisar: true}
+
+# Total esperado: 9 episodios.

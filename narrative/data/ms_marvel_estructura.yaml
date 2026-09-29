@@ -1,0 +1,14 @@
+# Curación de estructura narrativa — Ms. Marvel (SERIE)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: ms-marvel}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Generación Por Qué", orden_local: 1, fecha: "2022-06-08", revisar: true}
+  - {tipo: episodio, nombre: "Enamorada", orden_local: 2, fecha: "2022-06-15", revisar: true}
+  - {tipo: episodio, nombre: "Destinada", orden_local: 3, fecha: "2022-06-22", revisar: true}
+  - {tipo: episodio, nombre: "Ver rojo", orden_local: 4, fecha: "2022-06-29", revisar: true}
+  - {tipo: episodio, nombre: "Una y otra vez", orden_local: 5, fecha: "2022-07-06", revisar: true}
+  - {tipo: episodio, nombre: "Nada normal", orden_local: 6, fecha: "2022-07-13", revisar: true}
+
+# Total esperado: 6 episodios.

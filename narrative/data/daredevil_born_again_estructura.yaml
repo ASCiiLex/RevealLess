@@ -1,0 +1,18 @@
+# Curación de estructura narrativa — Daredevil: Born Again (SERIE)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: daredevil-born-again}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "La media hora del cielo", orden_local: 1, fecha: "2025-03-04", revisar: true}
+  - {tipo: episodio, nombre: "Apariencias", orden_local: 2, fecha: "2025-03-04", revisar: true}
+  - {tipo: episodio, nombre: "El hueco de su mano", orden_local: 3, fecha: "2025-03-11", revisar: true}
+  - {tipo: episodio, nombre: "Sic Semper Systema", orden_local: 4, fecha: "2025-03-18", revisar: true}
+  - {tipo: episodio, nombre: "Con intereses", orden_local: 5, fecha: "2025-03-25", revisar: true}
+  - {tipo: episodio, nombre: "Fuerza excesiva", orden_local: 6, fecha: "2025-03-25", revisar: true}
+  - {tipo: episodio, nombre: "El arte por el arte", orden_local: 7, fecha: "2025-04-01", revisar: true}
+  - {tipo: episodio, nombre: "Isla de la alegría", orden_local: 8, fecha: "2025-04-08", revisar: true}
+  - {tipo: episodio, nombre: "Directo al infierno", orden_local: 9, fecha: "2025-04-15", revisar: true}
+
+# Total esperado: 9 episodios. (Temporada 2 pendiente de estreno — se
+# añadirá como nueva temporada cuando haya fechas confirmadas.)

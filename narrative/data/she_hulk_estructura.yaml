@@ -1,0 +1,17 @@
+# Curación de estructura narrativa — She-Hulk: Attorney at Law (SERIE)
+# Títulos en español: traducción propia — revisar: true.
+obra_external_id: {source: manual, external_id: she-hulk}
+tipo_unidad_raiz: episodio
+
+nodos:
+  - {tipo: episodio, nombre: "Una cantidad normal de rabia", orden_local: 1, fecha: "2022-08-18", revisar: true}
+  - {tipo: episodio, nombre: "Ley sobrehumana", orden_local: 2, fecha: "2022-08-25", revisar: true}
+  - {tipo: episodio, nombre: "El pueblo contra Emil Blonsky", orden_local: 3, fecha: "2022-09-01", revisar: true}
+  - {tipo: episodio, nombre: "¿Esto no es magia de verdad?", orden_local: 4, fecha: "2022-09-08", revisar: true}
+  - {tipo: episodio, nombre: "Verde, mala y embutida en estos vaqueros", orden_local: 5, fecha: "2022-09-15", revisar: true}
+  - {tipo: episodio, nombre: "Solo Jen", orden_local: 6, fecha: "2022-09-22", revisar: true}
+  - {tipo: episodio, nombre: "El retiro", orden_local: 7, fecha: "2022-09-29", revisar: true}
+  - {tipo: episodio, nombre: "Ribbit y a por ello", orden_local: 8, fecha: "2022-10-06", revisar: true}
+  - {tipo: episodio, nombre: "¿De quién es esta serie?", orden_local: 9, fecha: "2022-10-13", revisar: true}
+
+# Total esperado: 9 episodios.
