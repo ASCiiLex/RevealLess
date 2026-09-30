@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './AddSuscripcionForm.module.css'
+import botones from '../../styles/botones.module.css'
 import {
   fetchObraDetalle,
   crearSuscripcion,
@@ -78,6 +79,10 @@ export default function AddSuscripcionForm({ obras, onCreated, onCancel }: Props
     obraSlug !== '' &&
     (nivel === 'obra' || (nivel === 'unidad' && unidadId !== null) || (nivel === 'tema' && temaId !== null))
 
+  function claseNivel(valor: Nivel) {
+    return `${styles.nivelButton} ${nivel === valor ? styles.nivelButtonActive : ''}`
+  }
+
   return (
     <div className={styles.panel}>
       <div className={styles.field}>
@@ -99,27 +104,22 @@ export default function AddSuscripcionForm({ obras, onCreated, onCancel }: Props
       </div>
 
       {detalle && (
-        <>
+        <div className={styles.detalle}>
           <div className={styles.field}>
             <span className={styles.label}>Nivel</span>
             <div className={styles.nivelOptions}>
-              <button
-                className={`${styles.nivelButton} ${nivel === 'obra' ? styles.nivelButtonActive : ''}`}
-                onClick={() => setNivel('obra')}
-              >
+              <button className={claseNivel('obra')} onClick={() => setNivel('obra')} aria-pressed={nivel === 'obra'}>
                 Obra completa
               </button>
               <button
-                className={`${styles.nivelButton} ${nivel === 'unidad' ? styles.nivelButtonActive : ''}`}
+                className={claseNivel('unidad')}
                 onClick={() => setNivel('unidad')}
                 disabled={detalle.unidades.length === 0}
+                aria-pressed={nivel === 'unidad'}
               >
                 Un arco
               </button>
-              <button
-                className={`${styles.nivelButton} ${nivel === 'tema' ? styles.nivelButtonActive : ''}`}
-                onClick={() => setNivel('tema')}
-              >
+              <button className={claseNivel('tema')} onClick={() => setNivel('tema')} aria-pressed={nivel === 'tema'}>
                 Un tema
               </button>
             </div>
@@ -172,14 +172,11 @@ export default function AddSuscripcionForm({ obras, onCreated, onCancel }: Props
                       onChange={(e) => setNombreSolicitud(e.target.value)}
                     />
                     <div className={styles.actions}>
-                      <button
-                        className={`${styles.button} ${styles.cancel}`}
-                        onClick={() => setSolicitarAbierto(false)}
-                      >
+                      <button className={botones.secundario} onClick={() => setSolicitarAbierto(false)}>
                         Cancelar
                       </button>
                       <button
-                        className={`${styles.button} ${styles.confirm}`}
+                        className={botones.primario}
                         onClick={handleSolicitarTema}
                         disabled={!nombreSolicitud.trim() || enviandoSolicitud}
                       >
@@ -201,15 +198,15 @@ export default function AddSuscripcionForm({ obras, onCreated, onCancel }: Props
               )}
             </div>
           )}
-        </>
+        </div>
       )}
 
       <div className={styles.actions}>
-        <button className={`${styles.button} ${styles.cancel}`} onClick={onCancel}>
+        <button className={botones.secundario} onClick={onCancel}>
           Cancelar
         </button>
         <button
-          className={`${styles.button} ${styles.confirm}`}
+          className={botones.primario}
           onClick={handleConfirm}
           disabled={!puedeConfirmar || guardando}
         >

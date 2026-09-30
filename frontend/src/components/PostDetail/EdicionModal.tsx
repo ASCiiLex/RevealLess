@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import styles from './EdicionModal.module.css'
+import botones from '../../styles/botones.module.css'
 
 interface Props {
   titulo: string
@@ -43,11 +44,11 @@ export default function EdicionModal({
           {children}
 
           <div className={styles.actions}>
-            <button className={`${styles.button} ${styles.cancel}`} onClick={onCancelar}>
+            <button className={botones.secundario} onClick={onCancelar}>
               Cancelar
             </button>
             <button
-              className={`${styles.button} ${styles.confirm}`}
+              className={botones.primario}
               onClick={onGuardar}
               disabled={guardando || !puedeGuardar}
             >

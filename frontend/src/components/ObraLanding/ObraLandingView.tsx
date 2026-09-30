@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './ObraLandingView.module.css'
+import botones from '../../styles/botones.module.css'
 import { fetchObraLanding, type ObraLanding } from '../../api/obraLanding'
 import { crearSuscripcion, crearSuscripcionPersonaje, eliminarSuscripcion } from '../../api/suscripciones'
 import { fetchProgreso, actualizarProgreso, type ProgresoData } from '../../api/progreso'
@@ -115,16 +116,24 @@ export default function ObraLandingView({ obraSlug }: Props) {
           )}
 
           <div className={styles.actions}>
-            <button
-              className={`${styles.button} ${obra.suscrito ? '' : styles.buttonPrimary}`}
-              onClick={handleToggleObra}
-            >
-              {obra.suscrito ? 'Siguiendo' : 'Seguir'}
-            </button>
-            <a className={styles.button} href={`/feed/?obra=${obra.id}`}>
+            {obra.suscrito ? (
+              <button
+                className={botones.activo}
+                onClick={handleToggleObra}
+                aria-label={`Dejar de seguir ${obra.titulo}`}
+              >
+                <span className={botones.enReposo}>✓ Siguiendo</span>
+                <span className={botones.alPasar}>Dejar de seguir</span>
+              </button>
+            ) : (
+              <button className={botones.primario} onClick={handleToggleObra}>
+                Seguir
+              </button>
+            )}
+            <a className={botones.secundario} href={`/feed/?obra=${obra.id}`}>
               Ver feed
             </a>
-            <a className={styles.button} href={`/narrative/obra/${obra.slug}/temas/`}>
+            <a className={botones.secundario} href={`/narrative/obra/${obra.slug}/temas/`}>
               Temas
             </a>
           </div>

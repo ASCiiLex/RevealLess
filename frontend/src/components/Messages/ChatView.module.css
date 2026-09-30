@@ -75,15 +75,3 @@
   font-family: var(--font-body);
   font-size: 14px;
 }
-
-.sendButton {
-  padding: 10px 16px;
-  border: none;
-  border-radius: var(--radius);
-  background: var(--gold);
-  color: var(--paper);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}

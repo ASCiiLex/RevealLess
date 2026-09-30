@@ -85,7 +85,7 @@
 .confirmLink {
   background: none;
   border: none;
-  color: var(--gold);
+  color: var(--gold-texto);
   font-weight: 700;
   cursor: pointer;
   padding: 0;
@@ -98,29 +98,4 @@
   gap: 8px;
   justify-content: flex-end;
   margin-top: 4px;
-}
-
-.button {
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.cancel {
-  background: none;
-  color: var(--fog);
-}
-
-.confirm {
-  background: var(--gold);
-  color: var(--paper);
-}
-
-.confirm:disabled {
-  background: var(--border);
-  cursor: default;
 }

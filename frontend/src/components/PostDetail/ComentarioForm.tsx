@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent } from 'react'
 import styles from './ComentarioForm.module.css'
+import botones from '../../styles/botones.module.css'
 import EmocionPopover from '../Emociones/EmocionPopover'
 import AutocompleteDropdown from '../Autocomplete/AutocompleteDropdown'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
@@ -127,7 +128,7 @@ export default function ComentarioForm({ postId, parentId, obraDetalle, variante
         </div>
 
         <button
-          className={esRespuesta ? styles.submitRespuesta : styles.submitComentario}
+          className={esRespuesta ? styles.submitRespuesta : botones.primario}
           onClick={() => enviar()}
           disabled={enviando}
         >

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './ChatView.module.css'
+import botones from '../../styles/botones.module.css'
 import ReactionBar from '../Feed/ReactionBar'
 import { fetchChatHistory, type ChatMessage } from '../../api/messages'
 import { useChatSocket } from '../../hooks/useChatSocket'
@@ -93,7 +94,7 @@ export default function ChatView({ username }: Props) {
             }
           }}
         />
-        <button className={styles.sendButton} onClick={handleEnviar}>
+        <button className={botones.primario} onClick={handleEnviar}>
           Enviar
         </button>
       </div>

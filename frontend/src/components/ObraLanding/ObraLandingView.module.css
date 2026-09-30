@@ -89,32 +89,12 @@
   transition: width 0.3s ease;
 }
 
+/* Botones del sistema común; aquí solo su disposición. */
 .actions {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: auto;
-}
-
-.button {
-  padding: 7px 8px;
-  border-radius: var(--radius);
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: none;
-  color: var(--ink);
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-}
-
-.buttonPrimary {
-  background: var(--gold);
-  color: var(--paper);
-  border-color: var(--gold);
 }
 
 .sinopsisBox {
@@ -298,7 +278,7 @@
     flex-direction: row;
   }
 
-  .button {
+  .actions > * {
     flex: 1;
   }
 }

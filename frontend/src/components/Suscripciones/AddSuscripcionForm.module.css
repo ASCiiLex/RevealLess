@@ -8,6 +8,12 @@
   gap: 10px;
 }
 
+.detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -35,29 +41,46 @@
   gap: 8px;
 }
 
+/* Selector, no acción: misma identidad de acento que los chips. */
 .nivelButton {
   flex: 1;
   padding: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--on-dark-soft) 35%, transparent);
   border-radius: var(--radius);
   background: none;
-  color: var(--fog);
+  color: var(--on-dark-soft);
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.nivelButtonActive {
-  border-color: var(--gold);
-  color: var(--ink);
-  background: color-mix(in srgb, var(--gold) 10%, var(--paper));
+.nivelButton:hover:not(:disabled),
+.nivelButton:focus-visible {
+  border-color: var(--on-dark-soft);
+  color: var(--paper);
+}
+
+.nivelButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nivelButtonActive,
+.nivelButtonActive:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--marino);
 }
 
 .solicitarLink {
   background: none;
   border: none;
-  color: var(--fog);
+  color: var(--on-dark-soft);
   font-size: 12px;
   text-decoration: underline;
   cursor: pointer;
@@ -67,7 +90,7 @@
 
 .solicitarLink:hover,
 .solicitarLink:focus-visible {
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .solicitudPanel {
@@ -91,7 +114,7 @@
 
 .solicitudEnviada {
   font-size: 12px;
-  color: var(--fog);
+  color: var(--on-dark-soft);
 }
 
 .actions {
@@ -99,29 +122,4 @@
   gap: 8px;
   justify-content: flex-end;
   margin-top: 4px;
-}
-
-.button {
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.cancel {
-  background: none;
-  color: var(--fog);
-}
-
-.confirm {
-  background: var(--gold);
-  color: var(--paper);
-}
-
-.confirm:disabled {
-  background: var(--border);
-  cursor: default;
 }

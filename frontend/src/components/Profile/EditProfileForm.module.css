@@ -4,11 +4,12 @@
   padding: 24px 0 40px;
 }
 
+/* Sobre el fondo marino: papel, no tinta. */
 .title {
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--paper);
   margin: 0 0 20px 0;
 }
 
@@ -41,7 +42,7 @@
 .label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--fog);
+  color: var(--on-dark-soft);
 }
 
 .input,
@@ -69,24 +70,12 @@
 }
 
 .success {
-  color: var(--fog);
+  color: var(--accent);
   font-size: 13px;
 }
 
 .submit {
   margin-top: 6px;
   padding: 10px;
-  border: none;
-  border-radius: var(--radius);
-  background: var(--gold);
-  color: var(--paper);
-  font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.submit:disabled {
-  background: var(--border);
-  cursor: default;
 }

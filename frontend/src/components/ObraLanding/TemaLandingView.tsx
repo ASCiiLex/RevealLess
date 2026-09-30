@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './TemaLandingView.module.css'
+import botones from '../../styles/botones.module.css'
 import { fetchTemaLanding, type TemaLanding } from '../../api/temaLanding'
 import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
 
@@ -57,14 +58,22 @@ export default function TemaLandingView({ temaId }: Props) {
       </div>
 
       <div className={styles.actions}>
-        <button
-          className={`${styles.button} ${tema.suscrito ? '' : styles.buttonPrimary}`}
-          onClick={handleToggleSeguir}
-          disabled={cargando}
-        >
-          {tema.suscrito ? 'Siguiendo' : 'Seguir'}
-        </button>
-        <a className={styles.button} href={`/feed/?tema=${tema.id}`}>
+        {tema.suscrito ? (
+          <button
+            className={botones.activo}
+            onClick={handleToggleSeguir}
+            disabled={cargando}
+            aria-label={`Dejar de seguir ${tema.nombre}`}
+          >
+            <span className={botones.enReposo}>✓ Siguiendo</span>
+            <span className={botones.alPasar}>Dejar de seguir</span>
+          </button>
+        ) : (
+          <button className={botones.primario} onClick={handleToggleSeguir} disabled={cargando}>
+            Seguir
+          </button>
+        )}
+        <a className={botones.secundario} href={`/feed/?tema=${tema.id}`}>
           Ver feed
         </a>
       </div>

@@ -29,23 +29,3 @@
   gap: 10px;
   justify-content: flex-end;
 }
-
-.button {
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.cancel {
-  background: none;
-  color: var(--fog);
-}
-
-.confirm {
-  background: var(--gold);
-  color: var(--paper);
-}

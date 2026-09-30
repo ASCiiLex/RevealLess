@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import styles from './EditProfileForm.module.css'
+import botones from '../../styles/botones.module.css'
 import { fetchProfileEditData, updateProfile, type ProfileEditData } from '../../api/profile'
 
 export default function EditProfileForm() {
@@ -120,7 +121,7 @@ export default function EditProfileForm() {
           />
         </div>
 
-        <button className={styles.submit} type="submit" disabled={cargando}>
+        <button className={`${botones.primario} ${styles.submit}`} type="submit" disabled={cargando}>
           {cargando ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>
