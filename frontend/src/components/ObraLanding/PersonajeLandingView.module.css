@@ -37,6 +37,14 @@
   margin: 0 0 4px 0;
 }
 
+/* Dato de la etapa ya superada (ej. recompensa). */
+.dato {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-texto);
+}
+
 .suscriptores {
   font-size: 12px;
   color: var(--fog);

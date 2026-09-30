@@ -6,9 +6,18 @@ from core.validators import validate_image_size
 
 from .catalogo import UnidadNarrativa
 
+IMAGEN_VALIDATORS = [
+    FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+    validate_image_size,
+]
+
 
 def personaje_image_path(instance, filename):
     return f'narrative/personajes/{slugify(instance.nombre)}/{filename}'
+
+
+def etapa_image_path(instance, filename):
+    return f'narrative/personajes/{slugify(instance.personaje.nombre)}/etapas/{filename}'
 
 
 class Personaje(models.Model):
@@ -22,20 +31,18 @@ class Personaje(models.Model):
     unidades: solo apariciones confirmadas. Es lo único que leen las landings;
     las propuestas pendientes viven en PropuestaAparicion."""
 
-    nombre = models.CharField(max_length=150, unique=True)
+    nombre = models.CharField(
+        max_length=150, unique=True,
+        help_text='Nombre en su primera aparición. Los que revelan algo después van como alias en sus etapas.',
+    )
     wikidata_id = models.CharField(
         max_length=20, unique=True, null=True, blank=True,
         help_text='Identificador Q de Wikidata: une al mismo personaje entre obras sin depender del nombre.',
     )
     unidades = models.ManyToManyField(UnidadNarrativa, blank=True, related_name='personajes')
     imagen = models.ImageField(
-        upload_to=personaje_image_path,
-        blank=True,
-        null=True,
-        validators=[
-            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
-            validate_image_size,
-        ],
+        upload_to=personaje_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS,
+        help_text='Imagen base: la de su primera aparición.',
     )
 
     class Meta:
@@ -54,6 +61,38 @@ class Personaje(models.Model):
         except ValueError:
             pass
         return '/static/img/default_personaje.jpg'
+
+
+class EtapaPersonaje(models.Model):
+    """Cambio de nombre, aspecto o dato de un personaje. Solo se muestra cuando el
+    lector ha terminado 'visible_tras' (criterio conservador: al acabar el arco,
+    no al empezarlo). Los campos vacíos heredan de la etapa anterior."""
+
+    personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='etapas')
+    visible_tras = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.CASCADE, related_name='etapas_personaje',
+        help_text='Unidad tras la que se revela el cambio. Elige el arco completo salvo que quieras precisar el episodio.',
+    )
+    alias = models.CharField(
+        max_length=150, blank=True,
+        help_text='Nombre con el que se le conoce desde esta etapa. En la web se muestra como su nombre, sin indicar que es un alias.',
+    )
+    nota = models.CharField(
+        max_length=120, blank=True,
+        help_text='Dato breve visible desde esta etapa (ej. «Recompensa: 30.000.000 ฿»).',
+    )
+    imagen = models.ImageField(upload_to=etapa_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS)
+
+    class Meta:
+        ordering = ['visible_tras__orden_fin']
+        verbose_name = 'Etapa de personaje'
+        verbose_name_plural = 'Etapas de personaje'
+        constraints = [
+            models.UniqueConstraint(fields=['personaje', 'visible_tras'], name='uniq_etapa_personaje_unidad'),
+        ]
+
+    def __str__(self):
+        return f'{self.personaje} · tras {self.visible_tras}'
 
 
 class PropuestaAparicion(models.Model):

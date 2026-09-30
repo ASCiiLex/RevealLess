@@ -178,6 +178,7 @@ export default function ObraLandingView({ obraSlug }: Props) {
                   <a className={styles.personajeEnlace} href={`/narrative/personaje/${p.id}/`}>
                     <img className={styles.personajeImagen} src={p.imagen_url} alt="" />
                     <span className={styles.personajeNombre}>{p.nombre}</span>
+                    {p.nota && <span className={styles.personajeNota}>{p.nota}</span>}
                   </a>
                   <button
                     className={`${styles.personajeSeguir} ${siguiendo ? styles.personajeSiguiendo : ''}`}

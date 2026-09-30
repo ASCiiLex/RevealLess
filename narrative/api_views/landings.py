@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from subscriptions.models import Suscripcion
 from ..models import Categoria, Obra, Personaje, ProgresoUsuario, TemaTransversal
 from ..serializers import ObraLandingSerializer, ObraResumenSerializer
+from ..services.personajes import presentacion_personaje, progreso_por_obra
 from .comun import contexto_suscripcion_obra, ids_familia, suscripcion_id_por_tema
 
 
@@ -24,6 +25,7 @@ def personajes_visibles(obra, progreso):
         Personaje.objects.filter(unidades__obra=obra)
         .annotate(primera_aparicion=Min('unidades__orden_fin', filter=Q(unidades__obra=obra)))
         .filter(primera_aparicion__lte=progreso.orden_absoluto)
+        .prefetch_related('etapas__visible_tras')
         .distinct()
         .order_by('nombre')
     )
@@ -32,16 +34,14 @@ def personajes_visibles(obra, progreso):
 def obras_visibles_de_personaje(personaje, usuario):
     """Obras donde el usuario ya alcanzó la primera aparición del personaje.
     Las demás no se listan: saber que aparece ahí ya es un spoiler."""
-    progreso_por_obra = dict(
-        ProgresoUsuario.objects.filter(usuario=usuario).values_list('obra_id', 'orden_absoluto')
-    )
+    progreso = progreso_por_obra(usuario)
     primeras = personaje.unidades.order_by().values('obra_id').annotate(primera=Min('orden_fin'))
     ids = [
         fila['obra_id']
         for fila in primeras
         if fila['primera'] is not None
-        and fila['obra_id'] in progreso_por_obra
-        and progreso_por_obra[fila['obra_id']] >= fila['primera']
+        and fila['obra_id'] in progreso
+        and progreso[fila['obra_id']] >= fila['primera']
     ]
     return Obra.objects.filter(id__in=ids).order_by('titulo')
 
@@ -73,6 +73,7 @@ class ObraLandingAPIView(APIView):
             'suscripcion_id_por_tema': suscripcion_id_por_tema(request.user),
             'personajes_visibles': personajes_visibles(obra, progreso),
             'suscripcion_id_por_personaje': _suscripcion_id_por_personaje(request.user),
+            'progreso_por_obra': progreso_por_obra(request.user),
         }
 
         return Response(ObraLandingSerializer(obra, context=contexto).data)
@@ -121,9 +122,7 @@ class CategoriaLandingAPIView(APIView):
             .order_by('titulo')
         )
         contexto = {
-            'progreso_por_obra': dict(
-                ProgresoUsuario.objects.filter(usuario=request.user).values_list('obra_id', 'orden_absoluto')
-            ),
+            'progreso_por_obra': progreso_por_obra(request.user),
             **contexto_suscripcion_obra(request.user),
         }
         datos = ObraResumenSerializer(obras, many=True, context=contexto).data
@@ -138,22 +137,23 @@ class CategoriaLandingAPIView(APIView):
 
 class PersonajeLandingAPIView(APIView):
     """Landing de personaje filtrada por progreso. Sin ninguna aparición alcanzada
-    responde 404, igual que si no existiera: la URL directa no debe revelarlo."""
+    responde 404, igual que si no existiera: la URL directa no debe revelarlo.
+    Nombre, imagen y nota salen de la etapa más reciente ya superada."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, personaje_id):
-        personaje = get_object_or_404(Personaje, id=personaje_id)
+        personaje = get_object_or_404(Personaje.objects.prefetch_related('etapas__visible_tras'), id=personaje_id)
         obras = list(obras_visibles_de_personaje(personaje, request.user))
         if not obras:
             raise Http404
 
+        presentacion = presentacion_personaje(personaje, progreso_por_obra(request.user))
         suscripcion = Suscripcion.objects.filter(usuario=request.user, personaje=personaje).first()
 
         return Response({
             'id': personaje.id,
-            'nombre': personaje.nombre,
-            'imagen_url': personaje.image_url,
+            **presentacion,
             'obras': [
                 {'id': o.id, 'titulo': o.titulo, 'slug': o.slug, 'imagen_url': o.image_url}
                 for o in obras

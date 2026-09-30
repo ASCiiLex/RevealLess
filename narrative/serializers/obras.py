@@ -3,6 +3,7 @@ import math
 from rest_framework import serializers
 
 from ..models import Obra
+from ..services.personajes import presentacion_personaje
 from .temas import CarruselMixin, TemaConSuscripcionSerializer
 
 
@@ -91,14 +92,15 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         return [{'id': o.id, 'titulo': o.titulo, 'slug': o.slug} for o in obj.obras_relacionadas()]
 
     def get_personajes(self, obj):
-        # La vista ya filtra por progreso: aquí solo se da forma.
+        # La vista ya filtra por progreso; aquí se resuelve la etapa visible dentro de esta obra.
         suscripciones = self.context.get('suscripcion_id_por_personaje', {})
-        return [
+        progreso = self.context.get('progreso_por_obra', {})
+        datos = [
             {
                 'id': p.id,
-                'nombre': p.nombre,
-                'imagen_url': p.image_url,
+                **presentacion_personaje(p, progreso, obra_id=obj.id),
                 'suscripcion_id': suscripciones.get(p.id),
             }
             for p in self.context.get('personajes_visibles', [])
         ]
+        return sorted(datos, key=lambda d: d['nombre'].lower())

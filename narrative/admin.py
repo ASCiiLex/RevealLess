@@ -6,8 +6,8 @@ from unfold.admin import ModelAdmin, TabularInline
 
 from core.imagenes_remotas import descargar_imagen
 from .models import (
-    Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal,
-    Categoria, SolicitudTema, ExternalId, Personaje, PropuestaAparicion,
+    Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal, Categoria, SolicitudTema,
+    ExternalId, Personaje, EtapaPersonaje, PropuestaAparicion,
 )
 from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
 from .services.personajes import aprobar_propuesta, rechazar_propuesta
@@ -173,6 +173,22 @@ class PersonajeAdminForm(ImagenDesdeUrlForm):
         fields = '__all__'
 
 
+class EtapaPersonajeForm(ImagenDesdeUrlForm):
+    class Meta:
+        model = EtapaPersonaje
+        fields = '__all__'
+
+
+class EtapaPersonajeInline(TabularInline):
+    """Etapas: alias, nota e imagen que se revelan al terminar 'visible_tras'."""
+
+    model = EtapaPersonaje
+    form = EtapaPersonajeForm
+    extra = 0
+    fields = ('visible_tras', 'alias', 'nota', 'imagen', 'imagen_desde_url')
+    autocomplete_fields = ('visible_tras',)
+
+
 class PropuestaAparicionInline(TabularInline):
     """Solo consulta: las propuestas se revisan desde su propio listado."""
 
@@ -190,14 +206,15 @@ class PropuestaAparicionInline(TabularInline):
 @admin.register(Personaje)
 class PersonajeAdmin(ModelAdmin):
     form = PersonajeAdminForm
-    list_display = ('nombre', 'wikidata_id', 'total_apariciones', 'total_pendientes', 'imagen_tag')
-    search_fields = ('nombre', 'wikidata_id')
+    list_display = ('nombre', 'wikidata_id', 'total_apariciones', 'total_etapas', 'total_pendientes', 'imagen_tag')
+    search_fields = ('nombre', 'wikidata_id', 'etapas__alias')
     autocomplete_fields = ('unidades',)
-    inlines = [PropuestaAparicionInline]
+    inlines = [EtapaPersonajeInline, PropuestaAparicionInline]
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
             apariciones=Count('unidades', distinct=True),
+            num_etapas=Count('etapas', distinct=True),
             pendientes=Count(
                 'propuestas',
                 filter=Q(propuestas__estado=PropuestaAparicion.ESTADO_PENDIENTE),
@@ -208,6 +225,10 @@ class PersonajeAdmin(ModelAdmin):
     @admin.display(description='Apariciones', ordering='apariciones')
     def total_apariciones(self, obj):
         return obj.apariciones
+
+    @admin.display(description='Etapas', ordering='num_etapas')
+    def total_etapas(self, obj):
+        return obj.num_etapas
 
     @admin.display(description='Pendientes', ordering='pendientes')
     def total_pendientes(self, obj):

@@ -22,6 +22,7 @@ export interface PersonajeLanding {
   id: number
   nombre: string
   imagen_url: string
+  nota: string | null
   suscripcion_id: number | null
 }
 

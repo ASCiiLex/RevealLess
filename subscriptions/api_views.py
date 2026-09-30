@@ -4,19 +4,27 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from narrative.services.personajes import progreso_por_obra
 from .models import Suscripcion
 from .serializers import SuscripcionSerializer, SuscripcionCreateSerializer
 from .services import crear_suscripcion, eliminar_suscripcion, silenciar_suscripcion, reactivar_suscripcion
+
+
+def _contexto(request):
+    # El personaje se presenta con la etapa que el usuario ya ha superado.
+    return {'progreso_por_obra': progreso_por_obra(request.user)}
 
 
 class SuscripcionListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        suscripciones = Suscripcion.objects.filter(usuario=request.user).select_related(
-            'obra', 'unidad', 'tema', 'personaje'
+        suscripciones = (
+            Suscripcion.objects.filter(usuario=request.user)
+            .select_related('obra', 'unidad', 'tema', 'personaje')
+            .prefetch_related('personaje__etapas__visible_tras')
         )
-        return Response(SuscripcionSerializer(suscripciones, many=True).data)
+        return Response(SuscripcionSerializer(suscripciones, many=True, context=_contexto(request)).data)
 
     def post(self, request):
         entrada = SuscripcionCreateSerializer(data=request.data)
@@ -34,7 +42,8 @@ class SuscripcionListCreateAPIView(APIView):
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            SuscripcionSerializer(suscripcion).data, status=status.HTTP_201_CREATED
+            SuscripcionSerializer(suscripcion, context=_contexto(request)).data,
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -96,4 +105,4 @@ class SuscripcionToggleActivaAPIView(APIView):
             silenciar_suscripcion(suscripcion)
 
         suscripcion.refresh_from_db()
-        return Response(SuscripcionSerializer(suscripcion).data)
+        return Response(SuscripcionSerializer(suscripcion, context=_contexto(request)).data)

@@ -12,6 +12,7 @@ export interface PersonajeDetalle {
   id: number
   nombre: string
   imagen_url: string
+  nota: string | null
   obras: PersonajeObra[]
   suscripcion_id: number | null
   total_suscriptores: number

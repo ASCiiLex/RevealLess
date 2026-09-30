@@ -65,6 +65,7 @@ export default function PersonajeLandingView({ personajeId }: Props) {
         <img className={styles.imagen} src={personaje.imagen_url} alt="" />
         <div className={styles.info}>
           <h1 className={styles.titulo}>{personaje.nombre}</h1>
+          {personaje.nota && <p className={styles.dato}>{personaje.nota}</p>}
           <div className={styles.suscriptores}>
             {personaje.total_suscriptores} suscriptor{personaje.total_suscriptores === 1 ? '' : 'es'}
           </div>

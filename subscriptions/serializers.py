@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from narrative.models import Obra, UnidadNarrativa, TemaTransversal, Personaje
+from narrative.services.personajes import presentacion_personaje
 from .models import Suscripcion
 from .services import posts_no_leidos_count
 
@@ -28,14 +29,27 @@ class TemaMiniSerializer(serializers.ModelSerializer):
 
 
 class PersonajeMiniSerializer(serializers.ModelSerializer):
+    """Nombre e imagen de la etapa ya superada. Sin 'progreso_por_obra' en el
+    contexto, la presentación base (conservadora)."""
+
+    nombre = serializers.SerializerMethodField()
     imagen_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Personaje
         fields = ['id', 'nombre', 'imagen_url']
 
+    def _presentacion(self, obj):
+        cache = self.context.setdefault('_presentacion_personaje', {})
+        if obj.id not in cache:
+            cache[obj.id] = presentacion_personaje(obj, self.context.get('progreso_por_obra', {}))
+        return cache[obj.id]
+
+    def get_nombre(self, obj):
+        return self._presentacion(obj)['nombre']
+
     def get_imagen_url(self, obj):
-        return obj.image_url
+        return self._presentacion(obj)['imagen_url']
 
 
 class SuscripcionSerializer(serializers.ModelSerializer):
