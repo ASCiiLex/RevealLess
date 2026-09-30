@@ -20,6 +20,10 @@
   background: var(--border);
 }
 
+.thumbRedonda {
+  border-radius: 50%;
+}
+
 .titulo {
   font-family: var(--font-display);
   font-size: 16px;

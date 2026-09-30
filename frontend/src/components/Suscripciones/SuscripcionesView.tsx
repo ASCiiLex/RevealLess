@@ -38,7 +38,7 @@ export default function SuscripcionesView() {
   return (
     <div className={styles.wrapper}>
       <h1 className={styles.title}>Suscripciones</h1>
-      <p className={styles.subtitle}>Obras, arcos y temas que sigues</p>
+      <p className={styles.subtitle}>Obras, arcos, temas y personajes que sigues</p>
 
       {formAbierto ? (
         <AddSuscripcionForm
