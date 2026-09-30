@@ -22,15 +22,23 @@ class ImportarPersonajesTests(TestCase):
         self.obra.recalcular_orden()
         ExternalId.objects.create(source=ExternalId.SOURCE_WIKIDATA, external_id='Q1', obra=self.obra)
 
-        self.partes = [{
-            'qid': 'Q10', 'titulo': 'First', 'fecha': datetime.date(2008, 5, 2),
-            'personajes': [{'qid': 'Q100', 'nombre': 'Heroína'}],
-        }]
+        self.partes = [
+            {
+                'qid': 'Q10', 'titulo': 'First', 'fechas': [datetime.date(2008, 4, 30)], 'clase': 'pelicula',
+                'personajes': [{'qid': 'Q100', 'nombre': 'Heroína'}],
+            },
+            {
+                # Episodio de otra serie con la misma fecha: se descarta en una obra de películas.
+                'qid': 'Q11', 'titulo': 'Episodio', 'fechas': [datetime.date(2010, 5, 7)], 'clase': 'tv',
+                'personajes': [{'qid': 'Q300', 'nombre': 'Ajeno'}],
+            },
+        ]
         self.de_obra = [{'qid': 'Q100', 'nombre': 'Heroína'}, {'qid': 'Q200', 'nombre': 'Villano'}]
 
-    def _importar(self, propuestas, **opciones):
+    def _importar(self, propuestas, nuevos=(), **opciones):
         with patch(f'{MODULO}.wikidata.partes_de_obra', return_value=self.partes), \
                 patch(f'{MODULO}.wikidata.personajes_de_obra', return_value=self.de_obra), \
+                patch(f'{MODULO}.proponer_personajes', return_value=list(nuevos)), \
                 patch(f'{MODULO}.proponer_primeras_apariciones', return_value=propuestas) as ia, \
                 patch.dict(os.environ, {'ANTHROPIC_API_KEY': 'test'}):
             call_command('importar_personajes', obra='saga', sin_jikan=True, **opciones)
@@ -42,6 +50,10 @@ class ImportarPersonajesTests(TestCase):
         self.assertEqual(list(heroina.unidades.all()), [self.u1])
         self.assertTrue(ExternalId.objects.filter(source='wikidata', external_id='Q10', unidad=self.u1).exists())
 
+    def test_descarta_partes_de_television_en_una_obra_de_peliculas(self):
+        self._importar({})
+        self.assertFalse(Personaje.objects.filter(wikidata_id='Q300').exists())
+
     def test_haiku_solo_recibe_los_personajes_sin_aparicion_y_queda_pendiente(self):
         ia = self._importar({0: {'unidad_id': self.u2.id, 'confianza': 0.7, 'nombre': 'Villano', 'nota': 'x'}})
 
@@ -50,6 +62,10 @@ class ImportarPersonajesTests(TestCase):
         propuesta = villano.propuestas.get()
         self.assertEqual((propuesta.unidad, propuesta.estado), (self.u2, PropuestaAparicion.ESTADO_PENDIENTE))
         self.assertFalse(villano.unidades.exists())
+
+    def test_completar_ia_anade_candidatos_para_proponer_su_aparicion(self):
+        ia = self._importar({}, nuevos=['Mentor'], completar_ia=5)
+        self.assertIn('Mentor', ia.call_args.args[1].values())
 
     def test_dry_run_no_escribe_nada(self):
         ia = self._importar({}, dry_run=True)
