@@ -55,6 +55,14 @@ class Obra(models.Model):
         (TIPO_LIBRO, 'Libro'),
     ]
 
+    # Portada por defecto según el tipo; especiales, OVAs y cortos comparten la de serie.
+    IMAGEN_POR_DEFECTO = {
+        TIPO_PELICULA: '/static/img/default_pelicula.jpg',
+        TIPO_MANGA: '/static/img/default_manga.jpg',
+        TIPO_LIBRO: '/static/img/default_libro.jpg',
+    }
+    IMAGEN_POR_DEFECTO_GENERICA = '/static/img/default_serie.jpg'
+
     titulo = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_SERIE)
@@ -95,7 +103,7 @@ class Obra(models.Model):
                 return self.imagen.url
         except ValueError:
             pass
-        return '/static/img/default_post.jpg'
+        return self.IMAGEN_POR_DEFECTO.get(self.tipo, self.IMAGEN_POR_DEFECTO_GENERICA)
 
     def obras_relacionadas(self):
         """Continuidades de la misma franquicia: la obra origen y sus

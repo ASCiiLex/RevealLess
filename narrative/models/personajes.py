@@ -46,4 +46,4 @@ class Personaje(models.Model):
                 return self.imagen.url
         except ValueError:
             pass
-        return '/static/img/default_tema.jpg'
+        return '/static/img/default_personaje.jpg'
