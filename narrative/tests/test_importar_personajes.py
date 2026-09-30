@@ -20,6 +20,8 @@ class ImportarPersonajesTests(TestCase):
             obra=self.obra, tipo='pelicula', nombre='Segunda', orden_local=2, fecha=datetime.date(2010, 5, 7),
         )
         self.obra.recalcular_orden()
+        self.u1.refresh_from_db()
+        self.u2.refresh_from_db()
         ExternalId.objects.create(source=ExternalId.SOURCE_WIKIDATA, external_id='Q1', obra=self.obra)
 
         self.partes = [
@@ -54,10 +56,16 @@ class ImportarPersonajesTests(TestCase):
         self._importar({})
         self.assertFalse(Personaje.objects.filter(wikidata_id='Q300').exists())
 
-    def test_haiku_solo_recibe_los_personajes_sin_aparicion_y_queda_pendiente(self):
-        ia = self._importar({0: {'unidad_id': self.u2.id, 'confianza': 0.7, 'nombre': 'Villano', 'nota': 'x'}})
+    def test_haiku_propone_para_todos_y_solo_se_guarda_lo_que_adelanta(self):
+        ia = self._importar({
+            0: {'unidad_id': self.u2.id, 'confianza': 0.9, 'nombre': 'Heroína', 'nota': 'tarde'},
+            1: {'unidad_id': self.u2.id, 'confianza': 0.7, 'nombre': 'Villano', 'nota': 'x'},
+        })
 
-        self.assertEqual(list(ia.call_args.args[1].values()), ['Villano'])
+        self.assertEqual(set(ia.call_args.args[1].values()), {'Heroína', 'Villano'})
+        heroina = Personaje.objects.get(wikidata_id='Q100')
+        self.assertFalse(heroina.propuestas.filter(origen=PropuestaAparicion.ORIGEN_IA).exists())
+
         villano = Personaje.objects.get(wikidata_id='Q200')
         propuesta = villano.propuestas.get()
         self.assertEqual((propuesta.unidad, propuesta.estado), (self.u2, PropuestaAparicion.ESTADO_PENDIENTE))
@@ -66,6 +74,10 @@ class ImportarPersonajesTests(TestCase):
     def test_completar_ia_anade_candidatos_para_proponer_su_aparicion(self):
         ia = self._importar({}, nuevos=['Mentor'], completar_ia=5)
         self.assertIn('Mentor', ia.call_args.args[1].values())
+
+    def test_lista_de_obra_demasiado_larga_se_ignora(self):
+        ia = self._importar({}, max_wikidata=1)
+        self.assertNotIn('Villano', ia.call_args.args[1].values())
 
     def test_dry_run_no_escribe_nada(self):
         ia = self._importar({}, dry_run=True)

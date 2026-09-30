@@ -10,14 +10,19 @@ SPARQL_URL = 'https://query.wikidata.org/sparql'
 # Wikidata exige un User-Agent identificable.
 USER_AGENT = 'RevealLess/1.0 (TFM Master Full Stack; importador de personajes)'
 TIMEOUT = 60
-INTENTOS = 3
+INTENTOS = 4
 REINTENTABLES = {429, 500, 502, 503, 504}
+# Pausa fija entre peticiones: Wikidata limita el ritmo por cliente.
+PAUSA_ENTRE_PETICIONES = 1.0
+ESPERA_MAXIMA = 120
 # 'mul': etiqueta común a todos los idiomas, cada vez más usada en Wikidata.
 IDIOMAS = 'es,mul,en'
 PRECISION_DIA = 11
 
 CLASE_PELICULA = 'pelicula'
 CLASE_TV = 'tv'
+# Temporadas, series y sagas: agrupan partes, nunca equivalen a una unidad concreta.
+CLASE_AGRUPACION = 'agrupacion'
 CLASE_OTRA = 'otra'
 
 
@@ -25,9 +30,19 @@ class WikidataError(Exception):
     pass
 
 
+def _espera(resp, intento):
+    """Respeta Retry-After si el servidor lo indica; si no, espera creciente."""
+    try:
+        segundos = int(resp.headers.get('Retry-After', ''))
+    except (TypeError, ValueError, AttributeError):
+        segundos = 5 * intento
+    return min(max(segundos, 1), ESPERA_MAXIMA)
+
+
 def _get(url, params):
     ultimo_error = 'sin detalle'
     for intento in range(1, INTENTOS + 1):
+        time.sleep(PAUSA_ENTRE_PETICIONES)
         try:
             resp = requests.get(
                 url, params=params, timeout=TIMEOUT,
@@ -35,13 +50,17 @@ def _get(url, params):
             )
         except requests.RequestException as exc:
             ultimo_error = f'error de red: {exc}'
-        else:
-            if resp.status_code == 200:
-                return resp.json()
-            ultimo_error = f'{resp.status_code}: {resp.text[:200]}'
-            if resp.status_code not in REINTENTABLES:
-                break
-        time.sleep(2 * intento)
+            time.sleep(5 * intento)
+            continue
+
+        if resp.status_code == 200:
+            return resp.json()
+        ultimo_error = f'{resp.status_code}: {resp.text[:200]}'
+        if resp.status_code not in REINTENTABLES:
+            break
+        espera = _espera(resp, intento)
+        print(f'  wikidata: {resp.status_code}, esperando {espera}s ({intento}/{INTENTOS})...', flush=True)
+        time.sleep(espera)
     raise WikidataError(f'Fallo en {url} — {ultimo_error}')
 
 
@@ -85,20 +104,24 @@ def _clases_de_partes(qid):
     """{item: clase}. Consulta aparte: combinar las subclases con fechas y personajes
     multiplica las filas y acerca la consulta principal al límite de tiempo."""
     filas = _sparql(f'''
-        SELECT ?item ?esPelicula ?esTv WHERE {{
+        SELECT ?item ?esEpisodio ?esAgrupacion ?esPelicula WHERE {{
           ?item (wdt:P179|wdt:P361)+ wd:{qid} .
-          BIND(EXISTS {{ ?item wdt:P31/wdt:P279* wd:Q11424 }} AS ?esPelicula)
+          BIND(EXISTS {{ ?item wdt:P31/wdt:P279* wd:Q21191270 }} AS ?esEpisodio)
           BIND(EXISTS {{
-            VALUES ?tv {{ wd:Q21191270 wd:Q5398426 wd:Q3464665 }}
-            ?item wdt:P31/wdt:P279* ?tv
-          }} AS ?esTv)
+            VALUES ?grupo {{ wd:Q5398426 wd:Q3464665 wd:Q24856 wd:Q7725310 }}
+            ?item wdt:P31/wdt:P279* ?grupo
+          }} AS ?esAgrupacion)
+          BIND(EXISTS {{ ?item wdt:P31/wdt:P279* wd:Q11424 }} AS ?esPelicula)
         }}''')
     clases = {}
     for f in filas:
-        if f['esTv']['value'] == 'true':
-            clases[_qid(f['item']['value'])] = CLASE_TV
+        item = _qid(f['item']['value'])
+        if f['esEpisodio']['value'] == 'true':
+            clases[item] = CLASE_TV
+        elif f['esAgrupacion']['value'] == 'true':
+            clases[item] = CLASE_AGRUPACION
         elif f['esPelicula']['value'] == 'true':
-            clases[_qid(f['item']['value'])] = CLASE_PELICULA
+            clases[item] = CLASE_PELICULA
     return clases
 
 

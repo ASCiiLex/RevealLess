@@ -10,7 +10,7 @@ def unidad(id_, nombre, fecha):
     return SimpleNamespace(id=id_, nombre=nombre, fecha=fecha)
 
 
-def parte(qid, titulo, *fechas, personajes=0):
+def parte(qid, titulo, *fechas, personajes=1):
     return {
         'qid': qid, 'titulo': titulo, 'fechas': list(fechas),
         'personajes': [{'qid': f'P{i}', 'nombre': str(i)} for i in range(personajes)],
@@ -37,13 +37,19 @@ class EmparejarTests(SimpleTestCase):
         ]
         self.assertEqual(emparejar(partes, [thor]), {'Q10': thor})
 
-    def test_a_igual_distancia_gana_la_parte_con_mas_personajes(self):
+    def test_por_fecha_solo_cuentan_partes_con_personajes(self):
         pelicula = unidad(1, 'Shang-Chi', datetime.date(2021, 9, 3))
         partes = [
-            parte('Q1', 'Episodio', datetime.date(2021, 9, 1)),
-            parte('Q9', 'Shang-Chi and the Legend of the Ten Rings', datetime.date(2021, 9, 1), personajes=3),
+            parte('Q1', 'Episodio', datetime.date(2021, 9, 1), personajes=0),
+            parte('Q9', 'Shang-Chi and the Legend of the Ten Rings', datetime.date(2021, 9, 1)),
         ]
         self.assertEqual(emparejar(partes, [pelicula]), {'Q9': pelicula})
+
+    def test_episodios_estrenados_el_mismo_dia_no_se_emparejan(self):
+        dia = datetime.date(2015, 4, 10)
+        unidades = [unidad(1, 'Condenado', dia), unidad(2, 'Stick', dia)]
+        partes = [parte('Q1', 'Cut Man', dia), parte('Q2', 'Condemned', dia)]
+        self.assertEqual(emparejar(partes, unidades), {})
 
     def test_fuera_de_la_ventana_no_empareja(self):
         u = unidad(1, 'Algo', datetime.date(2020, 1, 1))
