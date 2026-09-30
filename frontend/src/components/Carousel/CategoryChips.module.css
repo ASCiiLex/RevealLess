@@ -1,8 +1,11 @@
+.contenedor {
+  padding: 12px 0;
+}
+
 .wrapper {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 12px 0;
   scrollbar-width: none;
 }
 
@@ -13,6 +16,8 @@
 /* Filtros, no acciones: identidad de acento, nunca dorado. */
 .chip {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
   padding: 6px 14px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--on-dark-soft) 35%, transparent);
@@ -35,9 +40,44 @@
   color: var(--paper);
 }
 
-.chipActive,
-.chipActive:hover {
+/* O: opcional, relleno suave. */
+.chipO,
+.chipO:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+
+/* Y: obligatoria, relleno sólido. También marca "Todo" sin filtro. */
+.chipY,
+.chipY:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--marino);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: var(--accent);
+  color: var(--marino);
+}
+
+.chipY .marca {
+  background: var(--marino);
+  color: var(--accent);
+}
+
+.ayuda {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--on-dark-soft);
 }

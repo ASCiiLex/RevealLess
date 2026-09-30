@@ -1,16 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './Carousel.module.css'
 import Lomo, { type LomoObra } from './Lomo'
-import CategoryChips from './CategoryChips'
+import CategoryChips, { type EstadoChip } from './CategoryChips'
 import { fetchCatalogoObras } from '../../api/obras'
 import { useCatalogView } from '../../context/CatalogViewContext'
 
 const CHIP_TEMAS = 'Temas'
 
-// OR: una obra entra si coincide con cualquiera de los chips activos.
-function coincide(obra: LomoObra, activas: string[]) {
-  if (obra.es_tema) return activas.includes(CHIP_TEMAS)
-  return obra.categorias?.some((c) => activas.includes(c)) ?? false
+type Filtros = Record<string, EstadoChip>
+
+const SIGUIENTE: Record<'-' | EstadoChip, EstadoChip | null> = { '-': 'o', o: 'y', y: null }
+
+function tiene(obra: LomoObra, categoria: string) {
+  if (categoria === CHIP_TEMAS) return Boolean(obra.es_tema)
+  if (obra.es_tema) return false
+  return obra.categorias?.includes(categoria) ?? false
+}
+
+// Todas las Y obligatorias y, si hay alguna O, al menos una de ellas.
+function coincide(obra: LomoObra, filtros: Filtros) {
+  const entradas = Object.entries(filtros)
+  const obligatorias = entradas.filter(([, e]) => e === 'y').map(([c]) => c)
+  const opcionales = entradas.filter(([, e]) => e === 'o').map(([c]) => c)
+  return (
+    obligatorias.every((c) => tiene(obra, c)) &&
+    (opcionales.length === 0 || opcionales.some((c) => tiene(obra, c)))
+  )
 }
 
 export default function Carousel() {
@@ -18,7 +33,7 @@ export default function Carousel() {
   const [obras, setObras] = useState<{ biblioteca: LomoObra[]; descubrir: LomoObra[] } | null>(
     null
   )
-  const [categoriasActivas, setCategoriasActivas] = useState<string[]>([])
+  const [filtros, setFiltros] = useState<Filtros>({})
 
   const trackRef = useRef<HTMLDivElement>(null)
 
@@ -33,7 +48,7 @@ export default function Carousel() {
   }, [])
 
   useEffect(() => {
-    setCategoriasActivas([])
+    setFiltros({})
     setObraFiltro(null)
   }, [view, setObraFiltro])
 
@@ -56,15 +71,17 @@ export default function Carousel() {
     return categorias
   }, [listaCompleta])
 
-  const listaFiltrada =
-    categoriasActivas.length === 0
-      ? listaCompleta
-      : listaCompleta.filter((obra) => coincide(obra, categoriasActivas))
+  const hayFiltro = Object.keys(filtros).length > 0
+  const listaFiltrada = hayFiltro
+    ? listaCompleta.filter((obra) => coincide(obra, filtros))
+    : listaCompleta
 
-  function toggleCategoria(categoria: string) {
-    setCategoriasActivas((actuales) =>
-      actuales.includes(categoria) ? actuales.filter((c) => c !== categoria) : [...actuales, categoria]
-    )
+  function ciclarCategoria(categoria: string) {
+    setFiltros((actuales) => {
+      const siguiente = SIGUIENTE[actuales[categoria] ?? '-']
+      const { [categoria]: _, ...resto } = actuales
+      return siguiente ? { ...resto, [categoria]: siguiente } : resto
+    })
   }
 
   function handleSelectObra(obra: LomoObra) {
@@ -91,9 +108,9 @@ export default function Carousel() {
     <div className={styles.wrapper}>
       <CategoryChips
         categorias={categoriasDisponibles}
-        activas={categoriasActivas}
-        onToggle={toggleCategoria}
-        onLimpiar={() => setCategoriasActivas([])}
+        estados={filtros}
+        onCiclar={ciclarCategoria}
+        onLimpiar={() => setFiltros({})}
       />
 
       <div className={styles.shelf} />
@@ -102,8 +119,8 @@ export default function Carousel() {
         <div className={styles.shelfInterior}>
           <p className={styles.empty}>
             {view === 'biblioteca'
-              ? 'Todavía no sigues ninguna obra en estas categorías.'
-              : 'No hay obras que descubrir en estas categorías por ahora.'}
+              ? 'Todavía no sigues ninguna obra con esta combinación de categorías.'
+              : 'No hay obras que descubrir con esta combinación de categorías.'}
           </p>
         </div>
       ) : (
