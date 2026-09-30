@@ -14,7 +14,7 @@ class SuscripcionListCreateAPIView(APIView):
 
     def get(self, request):
         suscripciones = Suscripcion.objects.filter(usuario=request.user).select_related(
-            'obra', 'unidad', 'tema'
+            'obra', 'unidad', 'tema', 'personaje'
         )
         return Response(SuscripcionSerializer(suscripciones, many=True).data)
 
@@ -25,9 +25,10 @@ class SuscripcionListCreateAPIView(APIView):
         try:
             suscripcion = crear_suscripcion(
                 usuario=request.user,
-                obra=entrada.validated_data['obra'],
+                obra=entrada.validated_data.get('obra'),
                 unidad=entrada.validated_data.get('unidad'),
                 tema=entrada.validated_data.get('tema'),
+                personaje=entrada.validated_data.get('personaje'),
             )
         except (ValueError, DjangoValidationError) as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
@@ -50,6 +51,7 @@ class SuscripcionDeleteAPIView(APIView):
             obra=suscripcion.obra,
             unidad=suscripcion.unidad,
             tema=suscripcion.tema,
+            personaje=suscripcion.personaje,
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
 

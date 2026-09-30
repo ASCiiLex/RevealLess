@@ -4,30 +4,37 @@ from django.utils import timezone
 from .models import Suscripcion
 
 
-def crear_suscripcion(usuario, obra, unidad=None, tema=None):
+def crear_suscripcion(usuario, obra=None, unidad=None, tema=None, personaje=None):
     """Idempotente: si ya existe la misma suscripción exacta, la devuelve
     en vez de duplicarla. unique_together no es fiable aquí porque NULL
     no es comparable a NULL en SQL (varias filas con unidad=NULL y
     tema=NULL no violarían una constraint de unicidad), así que la
     deduplicación se resuelve aquí, en Python."""
-    if unidad is not None and tema is not None:
-        raise ValueError('Una suscripción no puede fijar unidad y tema a la vez.')
+    niveles = [v is not None for v in (unidad, tema, personaje)]
+    if sum(niveles) > 1:
+        raise ValueError('Una suscripción no puede fijar más de uno de unidad/tema/personaje a la vez.')
+    if personaje is not None and obra is not None:
+        raise ValueError('Una suscripción a un personaje no puede fijar obra.')
+    if personaje is None and obra is None:
+        raise ValueError('Obra obligatoria si no es una suscripción a un personaje.')
 
     existente = Suscripcion.objects.filter(
-        usuario=usuario, obra=obra, unidad=unidad, tema=tema,
+        usuario=usuario, obra=obra, unidad=unidad, tema=tema, personaje=personaje,
     ).first()
     if existente:
         return existente
 
-    suscripcion = Suscripcion(usuario=usuario, obra=obra, unidad=unidad, tema=tema)
+    suscripcion = Suscripcion(
+        usuario=usuario, obra=obra, unidad=unidad, tema=tema, personaje=personaje,
+    )
     suscripcion.full_clean()
     suscripcion.save()
     return suscripcion
 
 
-def eliminar_suscripcion(usuario, obra, unidad=None, tema=None):
+def eliminar_suscripcion(usuario, obra=None, unidad=None, tema=None, personaje=None):
     Suscripcion.objects.filter(
-        usuario=usuario, obra=obra, unidad=unidad, tema=tema,
+        usuario=usuario, obra=obra, unidad=unidad, tema=tema, personaje=personaje,
     ).delete()
 
 
@@ -46,6 +53,27 @@ def reactivar_suscripcion(suscripcion):
     suscripcion.save(update_fields=['activa'])
 
 
+def _query_para_suscripcion(suscripcion):
+    """Q() con el alcance de UNA suscripción, sin decidir todavía si el
+    resultado es para incluir (suscripciones activas) o excluir
+    (silenciadas) -- eso lo decide quien la llame. Única fuente de esta
+    lógica: antes vivía triplicada (posts_no_leidos_count,
+    filtro_posts_suscripciones, filtro_posts_silenciados), con el riesgo
+    de que una nueva rama de alcance se añadiera en unas copias y no en
+    otras."""
+    if suscripcion.personaje_id:
+        return Q(personajes=suscripcion.personaje_id)
+    if suscripcion.unidad_id:
+        return Q(
+            obra_id=suscripcion.obra_id,
+            referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
+            referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
+        )
+    if suscripcion.tema_id:
+        return Q(obra_id=suscripcion.obra_id, temas_transversales=suscripcion.tema_id)
+    return Q(obra_id=suscripcion.obra_id)
+
+
 def _posts_de_suscripcion(suscripcion):
     """Resuelve qué posts pertenecen a una suscripción, sin aplicar
     todavía visible_for() — eso lo hace siempre la capa que consuma esto
@@ -54,17 +82,7 @@ def _posts_de_suscripcion(suscripcion):
     anti-spoiler."""
     from posts.models import Post  # import diferido: evita dependencia de carga entre apps
 
-    qs = Post.objects.filter(obra=suscripcion.obra)
-
-    if suscripcion.unidad_id:
-        qs = qs.filter(
-            referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
-            referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
-        )
-    elif suscripcion.tema_id:
-        qs = qs.filter(temas_transversales=suscripcion.tema_id)
-
-    return qs.distinct()
+    return Post.objects.filter(_query_para_suscripcion(suscripcion)).distinct()
 
 
 def posts_no_leidos_count(suscripcion):
@@ -92,21 +110,12 @@ def filtro_posts_suscripciones(usuario):
     en una sola pasada. Las suscripciones silenciadas no aportan aquí —
     su exclusión se resuelve aparte, en filtro_posts_silenciados()."""
     suscripciones = Suscripcion.objects.filter(usuario=usuario, activa=True).select_related(
-        'obra', 'unidad', 'tema'
+        'obra', 'unidad', 'tema', 'personaje'
     )
 
     query = Q(pk__in=[])
     for suscripcion in suscripciones:
-        if suscripcion.unidad_id:
-            query |= Q(
-                obra_id=suscripcion.obra_id,
-                referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
-                referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
-            )
-        elif suscripcion.tema_id:
-            query |= Q(obra_id=suscripcion.obra_id, temas_transversales=suscripcion.tema_id)
-        else:
-            query |= Q(obra_id=suscripcion.obra_id)
+        query |= _query_para_suscripcion(suscripcion)
 
     return query
 
@@ -120,20 +129,11 @@ def filtro_posts_silenciados(usuario):
     lo oculta de tu propio feed, por diseño: 'silenciar' significa dejar
     de verlo, sin excepciones)."""
     suscripciones = Suscripcion.objects.filter(usuario=usuario, activa=False).select_related(
-        'obra', 'unidad', 'tema'
+        'obra', 'unidad', 'tema', 'personaje'
     )
 
     query = Q(pk__in=[])
     for suscripcion in suscripciones:
-        if suscripcion.unidad_id:
-            query |= Q(
-                obra_id=suscripcion.obra_id,
-                referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
-                referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
-            )
-        elif suscripcion.tema_id:
-            query |= Q(obra_id=suscripcion.obra_id, temas_transversales=suscripcion.tema_id)
-        else:
-            query |= Q(obra_id=suscripcion.obra_id)
+        query |= _query_para_suscripcion(suscripcion)
 
     return query
