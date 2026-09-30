@@ -9,7 +9,7 @@ export default function FilterHeader({ titulo, linkHref }: Props) {
   return (
     <div className={styles.wrapper}>
       <div>
-        <a className={styles.backLink} href="/feed/react/">← Volver a Biblioteca</a>
+        <a className={styles.backLink} href="/feed/">← Volver a Biblioteca</a>
         {linkHref ? (
           <a className={styles.title} href={linkHref}>{titulo}</a>
         ) : (

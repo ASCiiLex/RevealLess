@@ -64,7 +64,7 @@ export default function TemaLandingView({ temaId }: Props) {
         >
           {tema.suscrito ? 'Siguiendo' : 'Seguir'}
         </button>
-        <a className={styles.button} href={`/feed/react/?tema=${tema.id}`}>
+        <a className={styles.button} href={`/feed/?tema=${tema.id}`}>
           Ver feed
         </a>
       </div>
