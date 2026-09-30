@@ -1,4 +1,3 @@
-cat > frontend/src/components/ObraLanding/PersonajeLandingView.tsx << 'EOF'
 import { useEffect, useState } from 'react'
 import styles from './PersonajeLandingView.module.css'
 import botones from '../../styles/botones.module.css'
@@ -107,4 +106,3 @@ export default function PersonajeLandingView({ personajeId }: Props) {
     </div>
   )
 }
-EOF
