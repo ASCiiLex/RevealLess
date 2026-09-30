@@ -11,7 +11,7 @@ export default function LinkedText({ text }: Props) {
   const partes = text.split(TOKEN_REGEX)
 
   return (
-    <>
+    <span>
       {partes.map((parte, i) => {
         if (parte.startsWith('@')) {
           return (
@@ -21,8 +21,8 @@ export default function LinkedText({ text }: Props) {
           )
         }
         if (parte.startsWith('#')) {
-          const tag = parte.slice(1)
-          const href = `/feed/react/?hashtag=${encodeURIComponent(tag)}`
+          // Directo a /feed/: la redirección de /feed/react/ descarta el ?hashtag=.
+          const href = `/feed/?hashtag=${encodeURIComponent(parte.slice(1))}`
           return (
             <a key={i} className={styles.link} href={href}>
               {parte}
@@ -31,6 +31,6 @@ export default function LinkedText({ text }: Props) {
         }
         return <Fragment key={i}>{parte}</Fragment>
       })}
-    </>
+    </span>
   )
 }
