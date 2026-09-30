@@ -86,13 +86,16 @@
   margin: 0 6px 6px 20px;
 }
 
+/* Botón sin el borde en relieve del navegador: solo un separador fino entre capítulos. */
 .leaf {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 7px 16px 7px 20px;
   background: none;
+  border: none;
   border-left: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
   width: 100%;
   cursor: pointer;
   font-family: var(--font-body);
@@ -100,6 +103,14 @@
   font-weight: 400;
   color: var(--ink);
   text-align: left;
+}
+
+.leaf:last-child {
+  border-bottom: none;
+}
+
+.leaf:hover {
+  background: color-mix(in srgb, var(--gold) 8%, var(--paper));
 }
 
 .leafIcon {
@@ -117,7 +128,8 @@
   color: var(--gold);
 }
 
-.leafActual {
+.leafActual,
+.leafActual:hover {
   background: var(--gold);
   color: var(--paper);
   font-weight: 700;
