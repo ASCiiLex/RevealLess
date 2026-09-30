@@ -7,12 +7,18 @@ import { useCatalogView } from '../../context/CatalogViewContext'
 
 const CHIP_TEMAS = 'Temas'
 
+// OR: una obra entra si coincide con cualquiera de los chips activos.
+function coincide(obra: LomoObra, activas: string[]) {
+  if (obra.es_tema) return activas.includes(CHIP_TEMAS)
+  return obra.categorias?.some((c) => activas.includes(c)) ?? false
+}
+
 export default function Carousel() {
   const { view, obraFiltro, setObraFiltro } = useCatalogView()
   const [obras, setObras] = useState<{ biblioteca: LomoObra[]; descubrir: LomoObra[] } | null>(
     null
   )
-  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
+  const [categoriasActivas, setCategoriasActivas] = useState<string[]>([])
 
   const trackRef = useRef<HTMLDivElement>(null)
 
@@ -27,7 +33,7 @@ export default function Carousel() {
   }, [])
 
   useEffect(() => {
-    setCategoriaActiva(null)
+    setCategoriasActivas([])
     setObraFiltro(null)
   }, [view, setObraFiltro])
 
@@ -50,11 +56,16 @@ export default function Carousel() {
     return categorias
   }, [listaCompleta])
 
-  const listaFiltrada = !categoriaActiva
-    ? listaCompleta
-    : categoriaActiva === CHIP_TEMAS
-      ? listaCompleta.filter((obra) => obra.es_tema)
-      : listaCompleta.filter((obra) => !obra.es_tema && obra.categorias?.includes(categoriaActiva))
+  const listaFiltrada =
+    categoriasActivas.length === 0
+      ? listaCompleta
+      : listaCompleta.filter((obra) => coincide(obra, categoriasActivas))
+
+  function toggleCategoria(categoria: string) {
+    setCategoriasActivas((actuales) =>
+      actuales.includes(categoria) ? actuales.filter((c) => c !== categoria) : [...actuales, categoria]
+    )
+  }
 
   function handleSelectObra(obra: LomoObra) {
     setObraFiltro(obraFiltro === obra.id ? null : obra.id)
@@ -80,8 +91,9 @@ export default function Carousel() {
     <div className={styles.wrapper}>
       <CategoryChips
         categorias={categoriasDisponibles}
-        activa={categoriaActiva}
-        onSelect={setCategoriaActiva}
+        activas={categoriasActivas}
+        onToggle={toggleCategoria}
+        onLimpiar={() => setCategoriasActivas([])}
       />
 
       <div className={styles.shelf} />
@@ -90,8 +102,8 @@ export default function Carousel() {
         <div className={styles.shelfInterior}>
           <p className={styles.empty}>
             {view === 'biblioteca'
-              ? 'Todavía no sigues ninguna obra en esta categoría.'
-              : 'No hay obras que descubrir en esta categoría por ahora.'}
+              ? 'Todavía no sigues ninguna obra en estas categorías.'
+              : 'No hay obras que descubrir en estas categorías por ahora.'}
           </p>
         </div>
       ) : (
