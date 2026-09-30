@@ -1,0 +1,10 @@
+{% extends "base_react.html" %}
+{% load vite_tags %}
+
+{% block content %}
+<div id="root" data-personaje-id="{{ personaje_id }}"></div>
+{% endblock %}
+
+{% block scripts %}
+{% vite_asset entry="src/personaje_landing.tsx" %}
+{% endblock %}

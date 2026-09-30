@@ -53,6 +53,12 @@ def reactivar_suscripcion(suscripcion):
     suscripcion.save(update_fields=['activa'])
 
 
+def q_posts_de_personaje(personaje_id):
+    """Posts etiquetados con el personaje o anclados a una unidad en la que aparece.
+    Compartido por la suscripción y el filtro ?personaje= del feed."""
+    return Q(personajes=personaje_id) | Q(referencia_narrativa__personajes=personaje_id)
+
+
 def _query_para_suscripcion(suscripcion):
     """Q() con el alcance de UNA suscripción, sin decidir todavía si el
     resultado es para incluir (suscripciones activas) o excluir
@@ -62,7 +68,7 @@ def _query_para_suscripcion(suscripcion):
     de que una nueva rama de alcance se añadiera en unas copias y no en
     otras."""
     if suscripcion.personaje_id:
-        return Q(personajes=suscripcion.personaje_id)
+        return q_posts_de_personaje(suscripcion.personaje_id)
     if suscripcion.unidad_id:
         return Q(
             obra_id=suscripcion.obra_id,

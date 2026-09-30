@@ -1,0 +1,118 @@
+.wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  margin-bottom: 20px;
+}
+
+.imagen {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.titulo {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 4px 0;
+}
+
+.suscriptores {
+  font-size: 12px;
+  color: var(--fog);
+  margin-bottom: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions > * {
+  flex: 1;
+  text-decoration: none;
+}
+
+.bloque {
+  background: var(--paper);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px 14px;
+}
+
+.bloqueTitulo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 10px 0;
+}
+
+.obras {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 12px;
+}
+
+.obra {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.obraImagen {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  transition: transform 0.15s ease;
+}
+
+.obra:hover .obraImagen,
+.obra:focus-visible .obraImagen {
+  transform: translateY(-2px);
+}
+
+.obraTitulo {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.nota {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--fog);
+}
+
+.aviso {
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--on-dark-soft);
+}
+
+.aviso a {
+  color: var(--accent);
+}

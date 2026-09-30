@@ -1,4 +1,5 @@
 from django.db.models import Max, Min, Q
+from django.http import Http404
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -28,6 +29,30 @@ def personajes_visibles(obra, progreso):
     )
 
 
+def obras_visibles_de_personaje(personaje, usuario):
+    """Obras donde el usuario ya alcanzó la primera aparición del personaje.
+    Las demás no se listan: saber que aparece ahí ya es un spoiler."""
+    progreso_por_obra = dict(
+        ProgresoUsuario.objects.filter(usuario=usuario).values_list('obra_id', 'orden_absoluto')
+    )
+    primeras = personaje.unidades.order_by().values('obra_id').annotate(primera=Min('orden_fin'))
+    ids = [
+        fila['obra_id']
+        for fila in primeras
+        if fila['primera'] is not None
+        and fila['obra_id'] in progreso_por_obra
+        and progreso_por_obra[fila['obra_id']] >= fila['primera']
+    ]
+    return Obra.objects.filter(id__in=ids).order_by('titulo')
+
+
+def _suscripcion_id_por_personaje(usuario):
+    return dict(
+        Suscripcion.objects.filter(usuario=usuario, personaje__isnull=False)
+        .values_list('personaje_id', 'id')
+    )
+
+
 class ObraLandingAPIView(APIView):
     """Sinopsis, categorías, progreso, suscriptores, temas, obras relacionadas y personajes ya conocidos."""
 
@@ -47,6 +72,7 @@ class ObraLandingAPIView(APIView):
             'total_suscriptores': _total_suscriptores(obra=obra),
             'suscripcion_id_por_tema': suscripcion_id_por_tema(request.user),
             'personajes_visibles': personajes_visibles(obra, progreso),
+            'suscripcion_id_por_personaje': _suscripcion_id_por_personaje(request.user),
         }
 
         return Response(ObraLandingSerializer(obra, context=contexto).data)
@@ -107,4 +133,31 @@ class CategoriaLandingAPIView(APIView):
             'nombre': categoria.nombre,
             'total_obras': len(datos),
             'obras': datos,
+        })
+
+
+class PersonajeLandingAPIView(APIView):
+    """Landing de personaje filtrada por progreso. Sin ninguna aparición alcanzada
+    responde 404, igual que si no existiera: la URL directa no debe revelarlo."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, personaje_id):
+        personaje = get_object_or_404(Personaje, id=personaje_id)
+        obras = list(obras_visibles_de_personaje(personaje, request.user))
+        if not obras:
+            raise Http404
+
+        suscripcion = Suscripcion.objects.filter(usuario=request.user, personaje=personaje).first()
+
+        return Response({
+            'id': personaje.id,
+            'nombre': personaje.nombre,
+            'imagen_url': personaje.image_url,
+            'obras': [
+                {'id': o.id, 'titulo': o.titulo, 'slug': o.slug, 'imagen_url': o.image_url}
+                for o in obras
+            ],
+            'suscripcion_id': suscripcion.id if suscripcion else None,
+            'total_suscriptores': _total_suscriptores(personaje=personaje),
         })

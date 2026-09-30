@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
-from .models import Categoria, Obra, TemaTransversal
+from .models import Categoria, Obra, Personaje, TemaTransversal
 
 
 @login_required
@@ -35,3 +35,10 @@ def categoria_landing_react_view(request, categoria_id):
     """Monta React para la landing de una categoría."""
     get_object_or_404(Categoria, id=categoria_id)
     return render(request, 'narrative/categoria_landing_react.html', {'categoria_id': categoria_id})
+
+
+@login_required
+def personaje_landing_react_view(request, personaje_id):
+    """Monta React para la landing de un personaje; el filtro por progreso lo aplica la API."""
+    get_object_or_404(Personaje, id=personaje_id)
+    return render(request, 'narrative/personaje_landing_react.html', {'personaje_id': personaje_id})

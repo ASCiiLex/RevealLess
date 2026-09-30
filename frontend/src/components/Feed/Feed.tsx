@@ -4,10 +4,11 @@ import PostCard from './PostCard'
 import FilterHeader from './FilterHeader'
 import { fetchFeed, type FeedPost } from '../../api/feed'
 import { fetchTemaLanding } from '../../api/temaLanding'
+import { fetchFeedPersonaje, fetchPersonajeLanding } from '../../api/personajeLanding'
 import { useCatalogView } from '../../context/CatalogViewContext'
 
 interface FiltroExterno {
-  tipo: 'obra' | 'hashtag' | 'tema'
+  tipo: 'obra' | 'hashtag' | 'tema' | 'personaje'
   valor: string
 }
 
@@ -18,11 +19,12 @@ interface Props {
 export default function Feed({ filtroExterno }: Props) {
   const { obraFiltro } = useCatalogView()
   const [posts, setPosts] = useState<FeedPost[] | null>(null)
-  const [tituloTema, setTituloTema] = useState<string | null>(null)
+  // Título que hay que pedir aparte (tema o personaje).
+  const [tituloRemoto, setTituloRemoto] = useState<string | null>(null)
 
   useEffect(() => {
     setPosts(null)
-    setTituloTema(null)
+    setTituloRemoto(null)
 
     if (filtroExterno?.tipo === 'hashtag') {
       fetchFeed({ hashtag: filtroExterno.valor })
@@ -33,9 +35,20 @@ export default function Feed({ filtroExterno }: Props) {
 
     if (filtroExterno?.tipo === 'tema') {
       const temaId = Number(filtroExterno.valor)
-      fetchTemaLanding(temaId).then((data) => setTituloTema(data.nombre))
+      fetchTemaLanding(temaId).then((data) => setTituloRemoto(data.nombre))
       fetchFeed({ temaId })
         .then((data) => setPosts(data.results))
+        .catch(() => setPosts([]))
+      return
+    }
+
+    if (filtroExterno?.tipo === 'personaje') {
+      const personajeId = Number(filtroExterno.valor)
+      fetchPersonajeLanding(personajeId)
+        .then((data) => setTituloRemoto(data.nombre))
+        .catch(() => setTituloRemoto(''))
+      fetchFeedPersonaje(personajeId)
+        .then(setPosts)
         .catch(() => setPosts([]))
       return
     }
@@ -55,8 +68,8 @@ export default function Feed({ filtroExterno }: Props) {
   const tituloFiltro =
     filtroExterno?.tipo === 'hashtag'
       ? `#${filtroExterno.valor}`
-      : filtroExterno?.tipo === 'tema'
-        ? tituloTema ?? ''
+      : filtroExterno?.tipo === 'tema' || filtroExterno?.tipo === 'personaje'
+        ? tituloRemoto ?? ''
         : filtroExterno?.tipo === 'obra'
           ? posts[0]?.obra_titulo ?? 'Obra'
           : null
@@ -66,7 +79,9 @@ export default function Feed({ filtroExterno }: Props) {
       ? `/narrative/obra/${posts[0].obra_slug}/`
       : filtroExterno?.tipo === 'tema'
         ? `/narrative/tema/${filtroExterno.valor}/`
-        : undefined
+        : filtroExterno?.tipo === 'personaje' && tituloRemoto
+          ? `/narrative/personaje/${filtroExterno.valor}/`
+          : undefined
 
   return (
     <div className={styles.feed}>

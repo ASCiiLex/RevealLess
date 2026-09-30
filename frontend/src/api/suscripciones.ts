@@ -1,6 +1,6 @@
 import { api } from './client'
 
-export type NivelSuscripcion = 'obra' | 'unidad' | 'tema'
+export type NivelSuscripcion = 'obra' | 'unidad' | 'tema' | 'personaje'
 
 export interface SuscripcionObra {
   id: number
@@ -19,11 +19,18 @@ export interface SuscripcionTema {
   nombre: string
 }
 
+export interface SuscripcionPersonaje {
+  id: number
+  nombre: string
+  imagen_url: string
+}
+
 export interface Suscripcion {
   id: number
-  obra: SuscripcionObra
+  obra: SuscripcionObra | null // null en suscripciones a personaje
   unidad: SuscripcionUnidad | null
   tema: SuscripcionTema | null
+  personaje: SuscripcionPersonaje | null
   nivel: NivelSuscripcion
   activa: boolean
   no_leidos: number
@@ -72,6 +79,10 @@ export function crearSuscripcion(
     unidad: opciones.unidadId ?? null,
     tema: opciones.temaId ?? null,
   })
+}
+
+export function crearSuscripcionPersonaje(personajeId: number): Promise<Suscripcion> {
+  return api.post<Suscripcion>('/api/suscripciones/', { personaje: personajeId })
 }
 
 export function eliminarSuscripcion(id: number): Promise<void> {

@@ -12,9 +12,11 @@ export default function App() {
     const obra = params.get('obra')
     const hashtag = params.get('hashtag')
     const tema = params.get('tema')
+    const personaje = params.get('personaje')
     if (obra) return { tipo: 'obra' as const, valor: obra }
     if (hashtag) return { tipo: 'hashtag' as const, valor: hashtag }
     if (tema) return { tipo: 'tema' as const, valor: tema }
+    if (personaje) return { tipo: 'personaje' as const, valor: personaje }
     return null
   }, [])
 
@@ -23,10 +25,10 @@ export default function App() {
       <Header />
       <main className="container">
         {!filtroExterno && (
-          <>
+          <div>
             <Tabs />
             <Carousel />
-          </>
+          </div>
         )}
         <Feed filtroExterno={filtroExterno} />
       </main>

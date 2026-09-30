@@ -92,7 +92,13 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
 
     def get_personajes(self, obj):
         # La vista ya filtra por progreso: aquí solo se da forma.
+        suscripciones = self.context.get('suscripcion_id_por_personaje', {})
         return [
-            {'id': p.id, 'nombre': p.nombre, 'imagen_url': p.image_url}
+            {
+                'id': p.id,
+                'nombre': p.nombre,
+                'imagen_url': p.image_url,
+                'suscripcion_id': suscripciones.get(p.id),
+            }
             for p in self.context.get('personajes_visibles', [])
         ]

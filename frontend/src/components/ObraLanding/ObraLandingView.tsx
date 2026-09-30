@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import styles from './ObraLandingView.module.css'
 import { fetchObraLanding, type ObraLanding } from '../../api/obraLanding'
-import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
+import { crearSuscripcion, crearSuscripcionPersonaje, eliminarSuscripcion } from '../../api/suscripciones'
 import { fetchProgreso, actualizarProgreso, type ProgresoData } from '../../api/progreso'
 import { buildTree } from '../../utils/buildTree'
 import { calcularProgresoPct } from '../../utils/progresoPct'
@@ -37,6 +37,25 @@ export default function ObraLandingView({ obraSlug }: Props) {
       const suscripcion = await crearSuscripcion(obra.slug)
       setObra({ ...obra, suscrito: true, suscripcion_id: suscripcion.id })
     }
+  }
+
+  async function handleTogglePersonaje(personajeId: number, suscripcionId: number | null) {
+    let nuevoId: number | null = null
+    if (suscripcionId !== null) {
+      await eliminarSuscripcion(suscripcionId)
+    } else {
+      nuevoId = (await crearSuscripcionPersonaje(personajeId)).id
+    }
+    setObra((prev) =>
+      prev
+        ? {
+            ...prev,
+            personajes: prev.personajes.map((p) =>
+              p.id === personajeId ? { ...p, suscripcion_id: nuevoId } : p
+            ),
+          }
+        : prev
+    )
   }
 
   async function handleSelectUnidad(unidadId: number, confirmado = false) {
@@ -87,12 +106,12 @@ export default function ObraLandingView({ obraSlug }: Props) {
           </div>
 
           {obra.progreso_pct !== null && (
-            <>
+            <div>
               <div className={styles.progresoTexto}>Tu progreso: {obra.progreso_pct}%</div>
               <div className={styles.progresoTrack}>
                 <div className={styles.progresoFill} style={{ width: `${obra.progreso_pct}%` }} />
               </div>
-            </>
+            </div>
           )}
 
           <div className={styles.actions}>
@@ -143,12 +162,25 @@ export default function ObraLandingView({ obraSlug }: Props) {
         <h2 className={styles.bloqueTitulo}>Personajes</h2>
         {obra.personajes.length > 0 ? (
           <div className={styles.personajes}>
-            {obra.personajes.map((p) => (
-              <div key={p.id} className={styles.personaje}>
-                <img className={styles.personajeImagen} src={p.imagen_url} alt="" />
-                <span className={styles.personajeNombre}>{p.nombre}</span>
-              </div>
-            ))}
+            {obra.personajes.map((p) => {
+              const siguiendo = p.suscripcion_id !== null
+              return (
+                <div key={p.id} className={styles.personaje}>
+                  <a className={styles.personajeEnlace} href={`/narrative/personaje/${p.id}/`}>
+                    <img className={styles.personajeImagen} src={p.imagen_url} alt="" />
+                    <span className={styles.personajeNombre}>{p.nombre}</span>
+                  </a>
+                  <button
+                    className={`${styles.personajeSeguir} ${siguiendo ? styles.personajeSiguiendo : ''}`}
+                    onClick={() => handleTogglePersonaje(p.id, p.suscripcion_id)}
+                    aria-pressed={siguiendo}
+                    aria-label={siguiendo ? `Dejar de seguir a ${p.nombre}` : `Seguir a ${p.nombre}`}
+                  >
+                    {siguiendo ? '✓ Siguiendo' : '+ Seguir'}
+                  </button>
+                </div>
+              )
+            })}
           </div>
         ) : (
           <p className={styles.bloqueVacio}>

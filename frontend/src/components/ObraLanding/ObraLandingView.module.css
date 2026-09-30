@@ -153,7 +153,7 @@
   padding: 0 14px 14px;
 }
 
-/* Bloques de papel: continuidades relacionadas y personajes. */
+/* Bloques de papel: obras relacionadas y personajes. */
 .bloque {
   background: var(--paper);
   border-radius: var(--radius);
@@ -199,8 +199,8 @@
 
 .personajes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 14px 12px;
 }
 
 .personaje {
@@ -211,18 +211,64 @@
   text-align: center;
 }
 
+.personajeEnlace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
 .personajeImagen {
   width: 56px;
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--border);
+  transition: border-color 0.15s ease;
+}
+
+.personajeEnlace:hover .personajeImagen,
+.personajeEnlace:focus-visible .personajeImagen {
+  border-color: var(--ink);
 }
 
 .personajeNombre {
   font-size: 11px;
   line-height: 1.25;
   color: var(--ink);
+}
+
+/* Seguir compacto: mismo código de color que botones.activo. */
+.personajeSeguir {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.personajeSeguir:hover,
+.personajeSeguir:focus-visible {
+  border-color: var(--ink);
+}
+
+.personajeSiguiendo {
+  background: color-mix(in srgb, var(--accent) 22%, var(--paper));
+  border-color: var(--accent);
+  color: var(--marino);
+}
+
+.personajeSiguiendo:hover,
+.personajeSiguiendo:focus-visible {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--paper);
 }
 
 .progresoTitle {

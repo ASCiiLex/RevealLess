@@ -4,7 +4,11 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 from posts.models import Post
-from subscriptions.services import filtro_posts_suscripciones, filtro_posts_silenciados
+from subscriptions.services import (
+    filtro_posts_silenciados,
+    filtro_posts_suscripciones,
+    q_posts_de_personaje,
+)
 from ..models import TemaTransversal
 from ..serializers import PostSerializer
 from .comun import entero_o_none, ids_familia
@@ -59,5 +63,9 @@ class FeedAPIView(generics.ListAPIView):
                 temas_transversales__nombre=tema.nombre,
                 temas_transversales__obra_id__in=ids_familia(tema.obra),
             )
+
+        personaje_id = entero_o_none(params.get('personaje'), 'personaje')
+        if personaje_id is not None:
+            queryset = queryset.filter(q_posts_de_personaje(personaje_id))
 
         return queryset.order_by('-created_at')

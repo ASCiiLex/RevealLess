@@ -29,6 +29,7 @@ export default defineConfig(({ command }) => ({
         obra_temas: 'src/obra_temas.tsx',
         tema_landing: 'src/tema_landing.tsx',
         categoria_landing: 'src/categoria_landing.tsx',
+        personaje_landing: 'src/personaje_landing.tsx',
       },
     },
   },
