@@ -2,11 +2,45 @@ from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin
+
+from core.imagenes_remotas import descargar_imagen
 from .models import (
     Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal,
     Categoria, SolicitudTema, ExternalId, Personaje,
 )
 from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
+
+# Cambios que alteran orden_inicio/orden_fin de la obra.
+CAMPOS_QUE_REORDENAN = {'orden_local', 'padre', 'orden_manual'}
+
+
+class ImagenDesdeUrlForm(forms.ModelForm):
+    """Añade 'Imagen desde URL': descarga la imagen y la guarda en el campo 'imagen'."""
+
+    imagen_desde_url = forms.URLField(
+        required=False,
+        label='Imagen desde URL',
+        help_text='Enlace a una imagen jpg, png o webp (máx. 5 MB). Sustituye a la imagen actual.',
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        url = cleaned.get('imagen_desde_url')
+        if url:
+            try:
+                cleaned['imagen'] = descargar_imagen(url)
+            except forms.ValidationError as e:
+                self.add_error('imagen_desde_url', e)
+        return cleaned
+
+
+def miniatura(obj, lado=40):
+    if obj.imagen:
+        return format_html(
+            '<img src="{}" width="{}" height="{}" style="object-fit:cover;border-radius:6px"/>',
+            obj.imagen.url, lado, lado,
+        )
+    return '-'
 
 
 @admin.register(Categoria)
@@ -15,12 +49,11 @@ class CategoriaAdmin(ModelAdmin):
     search_fields = ('nombre',)
 
 
-class ObraAdminForm(forms.ModelForm):
+class ObraAdminForm(ImagenDesdeUrlForm):
     class Meta:
         model = Obra
         fields = '__all__'
-        # Solo relabeling de UI -- el campo/columna en BD sigue llamándose
-        # adapta_a, esto no toca el modelo ni pide migración.
+        # Solo relabeling de UI: el campo sigue llamándose adapta_a en BD.
         labels = {
             'adapta_a': 'Adaptación de',
         }
@@ -31,18 +64,17 @@ class ObraAdmin(ModelAdmin):
     form = ObraAdminForm
     list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion', 'adapta_a', 'imagen_tag')
     list_filter = ('categorias', 'tipo')
-    # Necesario para que el widget autocomplete de otros admins (Post,
-    # Comment, ExternalId...) pueda buscar Obras por estos campos.
+    # Necesario para el autocomplete de otros admins (Post, Comment, ExternalId...).
     search_fields = ('titulo', 'slug')
     prepopulated_fields = {'slug': ('titulo',)}
     filter_horizontal = ('categorias',)
-    autocomplete_fields = ('adapta_a',)  # el propio catálogo de Obras ya no es pequeño
+    autocomplete_fields = ('adapta_a',)
     date_hierarchy = 'fecha_publicacion'
     actions = ['recalcular_orden_seleccionadas']
 
     fieldsets = (
         ('Identidad', {
-            'fields': ('titulo', 'slug', 'tipo', 'sinopsis', 'imagen')
+            'fields': ('titulo', 'slug', 'tipo', 'sinopsis', 'imagen', 'imagen_desde_url')
         }),
         ('Metadata', {
             'fields': ('autor', 'fecha_publicacion', 'categorias')
@@ -52,11 +84,9 @@ class ObraAdmin(ModelAdmin):
         }),
     )
 
+    @admin.display(description='Portada')
     def imagen_tag(self, obj):
-        if obj.imagen:
-            return format_html('<img src="{}" width="40" height="40" style="object-fit:cover;border-radius:6px"/>', obj.imagen.url)
-        return "-"
-    imagen_tag.short_description = "Portada"
+        return miniatura(obj)
 
     @admin.action(description='Recalcular orden narrativo de las obras seleccionadas')
     def recalcular_orden_seleccionadas(self, request, queryset):
@@ -65,30 +95,34 @@ class ObraAdmin(ModelAdmin):
         self.message_user(request, f'{queryset.count()} obra(s) recalculada(s).')
 
 
+class UnidadNarrativaAdminForm(ImagenDesdeUrlForm):
+    class Meta:
+        model = UnidadNarrativa
+        fields = '__all__'
+
+
 @admin.register(UnidadNarrativa)
 class UnidadNarrativaAdmin(ModelAdmin):
+    form = UnidadNarrativaAdminForm
     list_display = ('obra', 'nombre', 'tipo', 'padre', 'orden_local', 'orden_inicio', 'orden_fin', 'fecha', 'imagen_tag')
+    list_display_links = ('obra',)
     list_filter = ('obra', 'tipo')
     search_fields = ('nombre',)
     readonly_fields = ('orden_inicio', 'orden_fin')
-    # Sin esto, el desplegable de "padre" intenta listar TODAS las unidades
-    # de la obra en el HTML del formulario — con 1160+ episodios de One
-    # Piece, eso hace el formulario prácticamente inutilizable.
+    # Sin autocomplete, el desplegable de "padre" lista todas las unidades de la obra (1160+ en One Piece).
     autocomplete_fields = ('padre',)
-    # Reordenar hermanos sin abrir cada ficha. save_model() de abajo ya
-    # se invoca por fila cuando Django procesa este guardado en bloque
-    # (list_editable no lo salta), así que el recálculo sigue disparándose.
-    list_editable = ('orden_local',)
+    # Edición en bloque desde el listado: títulos, tipo, fecha y orden.
+    list_editable = ('nombre', 'tipo', 'orden_local', 'fecha')
 
+    @admin.display(description='Portada')
     def imagen_tag(self, obj):
-        if obj.imagen:
-            return format_html('<img src="{}" width="32" height="32" style="object-fit:cover;border-radius:4px"/>', obj.imagen.url)
-        return "-"
-    imagen_tag.short_description = "Portada"
+        return miniatura(obj, 32)
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        obj.obra.recalcular_orden()
+        # Recalcular toda la obra solo si cambia el orden: editar títulos en bloque no lo necesita.
+        if not change or CAMPOS_QUE_REORDENAN & set(form.changed_data):
+            obj.obra.recalcular_orden()
 
     def delete_model(self, request, obj):
         obra = obj.obra
@@ -110,19 +144,41 @@ class ProgresoUsuarioAdmin(ModelAdmin):
     autocomplete_fields = ('unidad_actual',)
 
 
+class TemaTransversalAdminForm(ImagenDesdeUrlForm):
+    class Meta:
+        model = TemaTransversal
+        fields = '__all__'
+
+
 @admin.register(TemaTransversal)
 class TemaTransversalAdmin(ModelAdmin):
-    list_display = ('nombre', 'obra', 'tipo', 'imagen')
+    form = TemaTransversalAdminForm
+    list_display = ('nombre', 'obra', 'tipo', 'imagen_tag')
     list_filter = ('obra', 'tipo')
     search_fields = ('nombre',)
     autocomplete_fields = ('unidades',)
 
+    @admin.display(description='Imagen')
+    def imagen_tag(self, obj):
+        return miniatura(obj, 32)
+
+
+class PersonajeAdminForm(ImagenDesdeUrlForm):
+    class Meta:
+        model = Personaje
+        fields = '__all__'
+
 
 @admin.register(Personaje)
 class PersonajeAdmin(ModelAdmin):
-    list_display = ('nombre', 'imagen')
+    form = PersonajeAdminForm
+    list_display = ('nombre', 'imagen_tag')
     search_fields = ('nombre',)
     autocomplete_fields = ('unidades',)
+
+    @admin.display(description='Imagen')
+    def imagen_tag(self, obj):
+        return miniatura(obj, 32)
 
 
 @admin.register(SolicitudTema)
