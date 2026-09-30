@@ -89,6 +89,10 @@ class Obra(models.Model):
         related_name='adaptaciones',
         help_text='Obra origen si esta es una adaptación de otra continuidad (ej. anime → manga).',
     )
+    traducido = models.BooleanField(
+        default=False,
+        help_text='Sinopsis ya traducida al español por traducir_catalogo.',
+    )
 
     class Meta:
         ordering = ['titulo']
@@ -139,6 +143,10 @@ class UnidadNarrativa(models.Model):
     orden_fin = models.PositiveIntegerField(editable=False, default=0)
 
     orden_manual = models.PositiveIntegerField(null=True, blank=True)
+    traducido = models.BooleanField(
+        default=False,
+        help_text='Nombre ya traducido al español por traducir_catalogo.',
+    )
 
     class Meta:
         ordering = ['orden_inicio']
