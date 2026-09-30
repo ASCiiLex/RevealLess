@@ -87,7 +87,7 @@
 
 .pl-sinopsis summary {
   cursor: pointer;
-  color: var(--gold);
+  color: var(--gold-texto);
   font-weight: 600;
 }
 

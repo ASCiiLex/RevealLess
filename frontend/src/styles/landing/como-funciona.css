@@ -174,7 +174,7 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: var(--gold);
+  color: var(--gold-texto);
 }
 
 @media (max-width: 900px) {

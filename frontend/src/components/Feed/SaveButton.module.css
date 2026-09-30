@@ -52,7 +52,7 @@
   .saveActive {
     /* En escritorio se mantiene el estilo sutil (fondo claro, texto dorado) porque ahí ya hay palabra. */
     background: var(--paper);
-    color: var(--gold);
+    color: var(--gold-texto);
   }
 
   .label {

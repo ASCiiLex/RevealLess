@@ -7,6 +7,8 @@
   --gold: #B8902E;
   --gold-hover: #9C7822;
   --gold-light: #E8D9B8;
+  /* Dorado solo para texto sobre papel: 5,1:1 (AA). Nunca como relleno. */
+  --gold-texto: #7E6118;
 
   /* Sobre fondo oscuro: acento de marca (texto, enlaces, selección) y texto secundario. */
   --accent: #6FC4F7;

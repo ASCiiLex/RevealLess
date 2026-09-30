@@ -52,7 +52,7 @@
 }
 
 .temaButtonActive {
-  color: var(--gold);
+  color: var(--gold-texto);
 }
 
 .empty {

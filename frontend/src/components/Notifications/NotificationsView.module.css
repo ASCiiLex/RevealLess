@@ -33,6 +33,6 @@
 }
 
 .loadMore:hover {
-  color: var(--gold);
+  color: var(--gold-texto);
   border-color: var(--gold);
 }
