@@ -140,6 +140,16 @@ def get_relations(mal_id, tipo):
     return _get(f'/{tipo}/{mal_id}/relations')['data']
 
 
+def get_characters(mal_id, tipo):
+    """tipo: 'anime' o 'manga'. [{mal_id, nombre, rol}] con rol 'Main' o 'Supporting'.
+    Nombres en formato MAL: 'Apellido, Nombre'."""
+    datos = _get(f'/{tipo}/{mal_id}/characters')['data']
+    return [
+        {'mal_id': d['character']['mal_id'], 'nombre': d['character']['name'], 'rol': d.get('role', '')}
+        for d in datos
+    ]
+
+
 def search(query, tipo):
     """tipo: 'anime' o 'manga'. Devuelve la lista de resultados de
     búsqueda tal cual los da Jikan (para uso interactivo, no en el
