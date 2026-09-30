@@ -1,3 +1,6 @@
+import os
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
@@ -43,6 +46,8 @@ class PostCreateAPIViewTests(TestCase):
         self.assertEqual(post.frontera_origen, ClasificacionNarrativa.ORIGEN_EXPLICITO)
         self.assertEqual(post.frontera_spoiler, self.ep[1])
 
+    # Sin clave explícita en el test: nunca debe depender del .env ni llamar a la API real.
+    @patch.dict(os.environ, {'ANTHROPIC_API_KEY': ''})
     def test_sin_frontera_explicita_cae_a_fallback_sin_api_key(self):
         self._con_progreso()
         self.assertEqual(self._publicar('fallback').status_code, 201)
