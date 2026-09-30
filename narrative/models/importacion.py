@@ -10,9 +10,11 @@ class ExternalId(models.Model):
 
     SOURCE_JIKAN = 'jikan'
     SOURCE_MANUAL = 'manual'
+    SOURCE_WIKIDATA = 'wikidata'
     SOURCE_CHOICES = [
         (SOURCE_JIKAN, 'Jikan (MyAnimeList)'),
         (SOURCE_MANUAL, 'Curación manual (sin fuente externa)'),
+        (SOURCE_WIKIDATA, 'Wikidata'),
     ]
 
     source = models.CharField(max_length=30, choices=SOURCE_CHOICES)

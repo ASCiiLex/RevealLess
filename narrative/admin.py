@@ -1,14 +1,16 @@
 from django import forms
 from django.contrib import admin
+from django.db.models import Count, Q
 from django.utils.html import format_html
-from unfold.admin import ModelAdmin
+from unfold.admin import ModelAdmin, TabularInline
 
 from core.imagenes_remotas import descargar_imagen
 from .models import (
     Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal,
-    Categoria, SolicitudTema, ExternalId, Personaje,
+    Categoria, SolicitudTema, ExternalId, Personaje, PropuestaAparicion,
 )
 from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
+from .services.personajes import aprobar_propuesta, rechazar_propuesta
 
 # Cambios que alteran orden_inicio/orden_fin de la obra.
 CAMPOS_QUE_REORDENAN = {'orden_local', 'padre', 'orden_manual'}
@@ -62,7 +64,9 @@ class ObraAdminForm(ImagenDesdeUrlForm):
 @admin.register(Obra)
 class ObraAdmin(ModelAdmin):
     form = ObraAdminForm
-    list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion', 'adapta_a', 'imagen_tag')
+    list_display = ('titulo', 'tipo', 'slug', 'autor', 'fecha_publicacion', 'adapta_a', 'imagen_tag', 'imagen')
+    # Portada subible desde el listado; la URL sigue en la ficha (no es campo del modelo).
+    list_editable = ('imagen',)
     list_filter = ('categorias', 'tipo')
     # Necesario para el autocomplete de otros admins (Post, Comment, ExternalId...).
     search_fields = ('titulo', 'slug')
@@ -107,7 +111,7 @@ class UnidadNarrativaAdmin(ModelAdmin):
     list_display = ('obra', 'nombre', 'tipo', 'padre', 'orden_local', 'orden_inicio', 'orden_fin', 'fecha', 'imagen_tag')
     list_display_links = ('obra',)
     list_filter = ('obra', 'tipo')
-    search_fields = ('nombre',)
+    search_fields = ('nombre', 'obra__titulo')
     readonly_fields = ('orden_inicio', 'orden_fin')
     # Sin autocomplete, el desplegable de "padre" lista todas las unidades de la obra (1160+ en One Piece).
     autocomplete_fields = ('padre',)
@@ -169,16 +173,98 @@ class PersonajeAdminForm(ImagenDesdeUrlForm):
         fields = '__all__'
 
 
+class PropuestaAparicionInline(TabularInline):
+    """Solo consulta: las propuestas se revisan desde su propio listado."""
+
+    model = PropuestaAparicion
+    extra = 0
+    fields = ('unidad', 'origen', 'confianza', 'estado', 'nota')
+    readonly_fields = fields
+    can_delete = False
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Personaje)
 class PersonajeAdmin(ModelAdmin):
     form = PersonajeAdminForm
-    list_display = ('nombre', 'imagen_tag')
-    search_fields = ('nombre',)
+    list_display = ('nombre', 'wikidata_id', 'total_apariciones', 'total_pendientes', 'imagen_tag')
+    search_fields = ('nombre', 'wikidata_id')
     autocomplete_fields = ('unidades',)
+    inlines = [PropuestaAparicionInline]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            apariciones=Count('unidades', distinct=True),
+            pendientes=Count(
+                'propuestas',
+                filter=Q(propuestas__estado=PropuestaAparicion.ESTADO_PENDIENTE),
+                distinct=True,
+            ),
+        )
+
+    @admin.display(description='Apariciones', ordering='apariciones')
+    def total_apariciones(self, obj):
+        return obj.apariciones
+
+    @admin.display(description='Pendientes', ordering='pendientes')
+    def total_pendientes(self, obj):
+        return obj.pendientes
 
     @admin.display(description='Imagen')
     def imagen_tag(self, obj):
         return miniatura(obj, 32)
+
+
+class ConfianzaFilter(admin.SimpleListFilter):
+    title = 'confianza'
+    parameter_name = 'confianza'
+
+    def lookups(self, request, model_admin):
+        return (('alta', '≥ 0,8'), ('media', '0,6 – 0,8'), ('baja', '< 0,6'), ('sin', 'Sin dato'))
+
+    def queryset(self, request, queryset):
+        valor = self.value()
+        if valor == 'alta':
+            return queryset.filter(confianza__gte=0.8)
+        if valor == 'media':
+            return queryset.filter(confianza__gte=0.6, confianza__lt=0.8)
+        if valor == 'baja':
+            return queryset.filter(confianza__lt=0.6)
+        if valor == 'sin':
+            return queryset.filter(confianza__isnull=True)
+        return queryset
+
+
+@admin.register(PropuestaAparicion)
+class PropuestaAparicionAdmin(ModelAdmin):
+    list_display = ('personaje', 'obra', 'unidad', 'origen', 'confianza', 'estado', 'nota', 'creado_en')
+    list_filter = ('estado', 'origen', ConfianzaFilter, 'unidad__obra')
+    search_fields = ('personaje__nombre', 'unidad__nombre', 'unidad__obra__titulo')
+    list_select_related = ('personaje', 'unidad__obra')
+    autocomplete_fields = ('personaje', 'unidad')
+    readonly_fields = ('estado', 'resuelto_en', 'creado_en')
+    actions = ['aprobar_propuestas', 'rechazar_propuestas']
+
+    @admin.display(description='Obra', ordering='unidad__obra__titulo')
+    def obra(self, obj):
+        return obj.unidad.obra
+
+    @admin.action(description='Aprobar (el personaje pasa a ser visible desde esa unidad)')
+    def aprobar_propuestas(self, request, queryset):
+        propuestas = list(queryset.select_related('personaje', 'unidad'))
+        for propuesta in propuestas:
+            aprobar_propuesta(propuesta)
+        self.message_user(request, f'{len(propuestas)} propuesta(s) aprobada(s).')
+
+    @admin.action(description='Rechazar (y retirar si estaba aprobada)')
+    def rechazar_propuestas(self, request, queryset):
+        propuestas = list(queryset.select_related('personaje', 'unidad'))
+        for propuesta in propuestas:
+            rechazar_propuesta(propuesta)
+        self.message_user(request, f'{len(propuestas)} propuesta(s) rechazada(s).')
 
 
 @admin.register(SolicitudTema)
