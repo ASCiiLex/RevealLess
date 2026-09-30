@@ -38,10 +38,7 @@ export default function Header() {
     })
   })
 
-  // Mismo patron que useMessagesAlertSocket: cada notificacion entrante
-  // incrementa el contador local en vivo, sin esperar a recargar la
-  // pagina. Antes solo se conectaba dentro de NotificationsView (donde
-  // prepend en la lista); ahora tambien aqui, solo para el contador.
+  // Cada notificación entrante incrementa el contador en vivo, sin recargar.
   useNotificationSocket(() => {
     setMe((prev) => {
       if (!prev) return prev
@@ -86,7 +83,7 @@ export default function Header() {
           <input
             className={styles.search}
             type="search"
-            placeholder="Buscar obras, temas..."
+            placeholder="Buscar obras, categorías, temas..."
             aria-label="Buscar"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

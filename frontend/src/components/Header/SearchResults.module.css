@@ -28,8 +28,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 0 12px 0 0;
   gap: 8px;
+}
+
+/* Parte navegable de las filas con botón Seguir. */
+.rowMainLink {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .rowLink {
@@ -42,15 +54,10 @@
 }
 
 .rowLink:hover,
-.rowLink:focus-visible {
+.rowLink:focus-visible,
+.rowMainLink:hover,
+.rowMainLink:focus-visible {
   background: color-mix(in srgb, var(--gold) 8%, var(--paper));
-}
-
-.rowMain {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
 }
 
 .thumb {
@@ -71,7 +78,21 @@
   flex-shrink: 0;
 }
 
+.categoriaIcono {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--ink);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 .titulo {
+  display: block;
   font-size: 13px;
   color: var(--ink);
   white-space: nowrap;
@@ -80,21 +101,9 @@
 }
 
 .subtitulo {
+  display: block;
   font-size: 11px;
   color: var(--fog);
-}
-
-.postText {
-  font-size: 13px;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  display: box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  box-orient: vertical;
 }
 
 .followButton {

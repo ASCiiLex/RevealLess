@@ -28,7 +28,7 @@ export default function MobileSearchOverlay({ onClose }: Props) {
         <input
           className={styles.input}
           type="search"
-          placeholder="Buscar obras, temas..."
+          placeholder="Buscar obras, categorías, temas..."
           aria-label="Buscar"
           autoFocus
           value={query}

@@ -1,6 +1,12 @@
 import { api } from './client'
 import type { LomoObra } from '../components/Carousel/Lomo'
 
+export interface CategoriaBusqueda {
+  id: number
+  nombre: string
+  total_obras: number
+}
+
 export interface TemaBusqueda {
   id: number
   nombre: string
@@ -20,18 +26,12 @@ export interface HashtagBusqueda {
   name: string
 }
 
-export interface PostBusqueda {
-  id: number
-  text: string
-  image: string
-}
-
 export interface ResultadoBusqueda {
   obras: LomoObra[]
+  categorias: CategoriaBusqueda[]
   temas: TemaBusqueda[]
   usuarios: UsuarioBusqueda[]
   hashtags: HashtagBusqueda[]
-  posts: PostBusqueda[]
 }
 
 export function buscar(q: string): Promise<ResultadoBusqueda> {
