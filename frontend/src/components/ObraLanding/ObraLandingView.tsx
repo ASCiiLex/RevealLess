@@ -128,7 +128,7 @@ export default function ObraLandingView({ obraSlug }: Props) {
 
       {obra.obras_relacionadas.length > 0 && (
         <section className={styles.bloque}>
-          <h2 className={styles.bloqueTitulo}>Otras continuidades</h2>
+          <h2 className={styles.bloqueTitulo}>Obras relacionadas</h2>
           <div className={styles.relacionadas}>
             {obra.obras_relacionadas.map((o) => (
               <a key={o.id} className={styles.relacionada} href={`/narrative/obra/${o.slug}/`}>
