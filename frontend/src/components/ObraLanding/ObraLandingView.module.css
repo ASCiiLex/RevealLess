@@ -44,12 +44,23 @@
   margin-bottom: 8px;
 }
 
+/* Chip navegable a la landing de la categoría. */
 .categoria {
   font-size: 11px;
   color: var(--fog);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 2px 8px;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.categoria:hover,
+.categoria:focus-visible {
+  color: var(--ink);
+  border-color: var(--ink);
 }
 
 .suscriptores {
@@ -75,6 +86,7 @@
 .progresoFill {
   height: 100%;
   background: var(--gold);
+  transition: width 0.3s ease;
 }
 
 .actions {
@@ -139,6 +151,78 @@
   line-height: 1.5;
   margin: 0;
   padding: 0 14px 14px;
+}
+
+/* Bloques de papel: continuidades relacionadas y personajes. */
+.bloque {
+  background: var(--paper);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px 14px;
+  margin-bottom: 20px;
+}
+
+.bloqueTitulo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 10px 0;
+}
+
+.bloqueVacio {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fog);
+}
+
+.relacionadas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.relacionada {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  border-radius: 999px;
+  padding: 4px 12px;
+  text-decoration: none;
+}
+
+.relacionada:hover,
+.relacionada:focus-visible {
+  border-color: var(--ink);
+}
+
+.personajes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 12px;
+}
+
+.personaje {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.personajeImagen {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.personajeNombre {
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--ink);
 }
 
 .progresoTitle {

@@ -46,17 +46,21 @@ class ObraResumenSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
 
 
 class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
-    """Landing de obra: catálogo, progreso, suscriptores y temas en una sola respuesta."""
+    """Landing de obra: catálogo, progreso, suscriptores, temas, relaciones y personajes."""
 
     progreso_pct = serializers.SerializerMethodField()
     total_suscriptores = serializers.SerializerMethodField()
     temas = serializers.SerializerMethodField()
+    categorias_detalle = serializers.SerializerMethodField()
+    obras_relacionadas = serializers.SerializerMethodField()
+    personajes = serializers.SerializerMethodField()
 
     class Meta:
         model = Obra
         fields = [
-            'id', 'titulo', 'slug', 'sinopsis', 'imagen_url', 'categorias',
+            'id', 'titulo', 'slug', 'sinopsis', 'imagen_url', 'categorias', 'categorias_detalle',
             'suscrito', 'suscripcion_id', 'progreso_pct', 'total_suscriptores', 'temas',
+            'obras_relacionadas', 'personajes',
         ]
 
     def get_progreso_pct(self, obj):
@@ -79,3 +83,16 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
             }
             for t in obj.temas_transversales.all().order_by('nombre')
         ], many=True).data
+
+    def get_categorias_detalle(self, obj):
+        return [{'id': c.id, 'nombre': c.nombre} for c in obj.categorias.all()]
+
+    def get_obras_relacionadas(self, obj):
+        return [{'id': o.id, 'titulo': o.titulo, 'slug': o.slug} for o in obj.obras_relacionadas()]
+
+    def get_personajes(self, obj):
+        # La vista ya filtra por progreso: aquí solo se da forma.
+        return [
+            {'id': p.id, 'nombre': p.nombre, 'imagen_url': p.image_url}
+            for p in self.context.get('personajes_visibles', [])
+        ]

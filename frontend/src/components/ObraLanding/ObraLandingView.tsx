@@ -50,12 +50,13 @@ export default function ObraLandingView({ obraSlug }: Props) {
     setPendienteConfirmar(null)
     setProgresoData((prev) => (prev ? { ...prev, progreso: resultado } : prev))
 
-    // Barra de la cabecera al momento, sin recargar la landing.
+    // Barra al instante; después se refresca la landing para los personajes ya desbloqueados.
     if (progresoData) {
       const longitudTotal = Math.max(0, ...progresoData.unidades.map((u) => u.orden_fin))
       const pct = calcularProgresoPct(resultado.orden_absoluto, longitudTotal)
       setObra((prev) => (prev ? { ...prev, progreso_pct: pct } : prev))
     }
+    fetchObraLanding(obraSlug).then(setObra)
   }
 
   if (!obra) {
@@ -72,10 +73,12 @@ export default function ObraLandingView({ obraSlug }: Props) {
         <img className={styles.imagen} src={obra.imagen_url} alt="" />
         <div className={styles.info}>
           <h1 className={styles.titulo}>{obra.titulo}</h1>
-          {obra.categorias.length > 0 && (
+          {obra.categorias_detalle.length > 0 && (
             <div className={styles.categorias}>
-              {obra.categorias.map((c) => (
-                <span key={c} className={styles.categoria}>{c}</span>
+              {obra.categorias_detalle.map((c) => (
+                <a key={c.id} className={styles.categoria} href={`/narrative/categoria/${c.id}/`}>
+                  {c.nombre}
+                </a>
               ))}
             </div>
           )}
@@ -122,6 +125,39 @@ export default function ObraLandingView({ obraSlug }: Props) {
           {sinopsisAbierta && <p className={styles.sinopsisText}>{obra.sinopsis}</p>}
         </div>
       )}
+
+      {obra.obras_relacionadas.length > 0 && (
+        <section className={styles.bloque}>
+          <h2 className={styles.bloqueTitulo}>Otras continuidades</h2>
+          <div className={styles.relacionadas}>
+            {obra.obras_relacionadas.map((o) => (
+              <a key={o.id} className={styles.relacionada} href={`/narrative/obra/${o.slug}/`}>
+                {o.titulo}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className={styles.bloque}>
+        <h2 className={styles.bloqueTitulo}>Personajes</h2>
+        {obra.personajes.length > 0 ? (
+          <div className={styles.personajes}>
+            {obra.personajes.map((p) => (
+              <div key={p.id} className={styles.personaje}>
+                <img className={styles.personajeImagen} src={p.imagen_url} alt="" />
+                <span className={styles.personajeNombre}>{p.nombre}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.bloqueVacio}>
+            {obra.progreso_pct === null
+              ? 'Declara tu progreso para ver los personajes que ya conoces.'
+              : 'Aún no has llegado a la aparición de ningún personaje registrado.'}
+          </p>
+        )}
+      </section>
 
       <h2 className={styles.progresoTitle}>Progreso</h2>
       {progresoData?.progreso && (

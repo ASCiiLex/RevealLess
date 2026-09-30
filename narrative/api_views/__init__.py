@@ -6,7 +6,7 @@ from .catalogo import (
     UnidadesBuscarAPIView,
     ObraContextoPublicarAPIView,
 )
-from .landings import ObraLandingAPIView, TemaLandingAPIView
+from .landings import ObraLandingAPIView, TemaLandingAPIView, CategoriaLandingAPIView
 from .busqueda import BuscarAPIView
 from .solicitudes import SolicitudTemaListCreateAPIView
 
@@ -20,6 +20,7 @@ __all__ = [
     'ObraContextoPublicarAPIView',
     'ObraLandingAPIView',
     'TemaLandingAPIView',
+    'CategoriaLandingAPIView',
     'BuscarAPIView',
     'SolicitudTemaListCreateAPIView',
 ]

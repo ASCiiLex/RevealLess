@@ -9,6 +9,7 @@ from .api_views import (
     ObraDetalleAPIView,
     ObraLandingAPIView,
     TemaLandingAPIView,
+    CategoriaLandingAPIView,
     SolicitudTemaListCreateAPIView,
     BuscarAPIView,
     UnidadesBuscarAPIView,
@@ -20,6 +21,7 @@ urlpatterns = [
     path('obra/<slug:obra_slug>/', views.obra_landing_react_view, name='narrative_obra_landing'),
     path('obra/<slug:obra_slug>/temas/', views.obra_temas_react_view, name='narrative_obra_temas'),
     path('tema/<int:tema_id>/', views.tema_landing_react_view, name='narrative_tema_landing'),
+    path('categoria/<int:categoria_id>/', views.categoria_landing_react_view, name='narrative_categoria_landing'),
 
     path('api/feed/', FeedAPIView.as_view(), name='narrative_api_feed'),
     path('api/progreso/<slug:obra_slug>/', ProgresoAPIView.as_view(), name='narrative_api_progreso'),
@@ -30,6 +32,7 @@ urlpatterns = [
     path('api/obras/<slug:obra_slug>/unidades/', UnidadesBuscarAPIView.as_view(), name='narrative_api_unidades_buscar'),
     path('api/obras/<slug:obra_slug>/contexto-publicar/', ObraContextoPublicarAPIView.as_view(), name='narrative_api_obra_contexto_publicar'),
     path('api/temas/<int:tema_id>/', TemaLandingAPIView.as_view(), name='narrative_api_tema_landing'),
+    path('api/categorias/<int:categoria_id>/', CategoriaLandingAPIView.as_view(), name='narrative_api_categoria_landing'),
     path('api/solicitudes-tema/', SolicitudTemaListCreateAPIView.as_view(), name='narrative_api_solicitudes_tema'),
     path('api/buscar/', BuscarAPIView.as_view(), name='narrative_api_buscar'),
 ]
