@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 from .models import (
     Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal,
-    Categoria, SolicitudTema, ExternalId,
+    Categoria, SolicitudTema, ExternalId, Personaje,
 )
 from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
 
@@ -86,14 +86,6 @@ class UnidadNarrativaAdmin(ModelAdmin):
         return "-"
     imagen_tag.short_description = "Portada"
 
-    # orden_inicio/orden_fin son el valor que consulta frontera_orden — una
-    # edición manual de padre/orden_local sin recalcular deja el motor
-    # anti-spoiler con datos desactualizados, silenciosamente. Los
-    # comandos de importación ya llaman a recalcular_orden() en lote al
-    # final; aquí cada edición es unitaria, así que enganchar la llamada
-    # directamente en save/delete es seguro (no hay riesgo de recalcular
-    # el árbol entero cientos de veces seguidas, como pasaría con un
-    # signal post_save durante una importación masiva).
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         obj.obra.recalcular_orden()
@@ -115,7 +107,7 @@ class ProgresoUsuarioAdmin(ModelAdmin):
     list_display = ('usuario', 'obra', 'unidad_actual', 'orden_absoluto', 'actualizado_en')
     list_filter = ('obra',)
     readonly_fields = ('orden_absoluto',)
-    autocomplete_fields = ('unidad_actual',)  # mismo problema de escala que arriba
+    autocomplete_fields = ('unidad_actual',)
 
 
 @admin.register(TemaTransversal)
@@ -124,8 +116,13 @@ class TemaTransversalAdmin(ModelAdmin):
     list_filter = ('obra', 'tipo')
     search_fields = ('nombre',)
     autocomplete_fields = ('unidades',)
-    # autocomplete en un M2M da un buscador con lookup en vez de cargar
-    # todas las unidades de golpe, mismo problema de escala que padre.
+
+
+@admin.register(Personaje)
+class PersonajeAdmin(ModelAdmin):
+    list_display = ('nombre', 'imagen')
+    search_fields = ('nombre',)
+    autocomplete_fields = ('unidades',)
 
 
 @admin.register(SolicitudTema)

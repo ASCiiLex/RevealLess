@@ -44,6 +44,12 @@ class Post(ClasificacionNarrativa, models.Model):
         related_name='posts',
     )
 
+    personajes = models.ManyToManyField(
+        'narrative.Personaje',
+        blank=True,
+        related_name='posts',
+    )
+
     class Meta:
         ordering = ['-created_at']
         constraints = [

@@ -66,24 +66,39 @@ def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False):
 
 
 def detectar_posibles_referencias_cruzadas(texto, obra):
-    """Detección por palabra exacta (case-insensitive, límite de palabra)
-    de menciones a una continuidad relacionada distinta de `obra`. No es
-    infalible por diseño (falsos positivos posibles con esta técnica) —
-    el usuario siempre puede confirmar la frontera real o descartar la
-    detección como coincidencia antes de publicar. Solo compara contra
-    obras realmente relacionadas (adapta_a en cualquier dirección),
-    nunca contra el catálogo entero."""
-    relacionadas = Obra.objects.filter(
+    """Detección heurística de menciones a una obra relacionada distinta
+    de `obra`. No es infalible por diseño — el usuario siempre puede
+    confirmar la frontera real o descartar la detección antes de
+    publicar. Dos fuentes de relación, cada una con su propio heurístico:
+
+    - adapta_a (pool pequeño, normalmente 1 candidata): coincidencia por
+      palabra clave genérica del tipo de la obra relacionada (comportamiento
+      original, sin cambios).
+    - Categoria compartida (pool potencialmente grande, ej. Marvel): una
+      palabra genérica por tipo generaría ruido indiscriminado, así que se
+      exige coincidencia por el título concreto de la obra candidata."""
+    relacionadas_adapta = Obra.objects.filter(
         Q(adapta_a=obra) | Q(id=obra.adapta_a_id)
     ).exclude(id=obra.id)
 
+    relacionadas_categoria = Obra.objects.filter(
+        categorias__in=obra.categorias.all()
+    ).exclude(id=obra.id).exclude(id__in=relacionadas_adapta.values('id')).distinct()
+
     texto_lower = texto.lower()
     detecciones = []
-    for relacionada in relacionadas:
+
+    for relacionada in relacionadas_adapta:
         for palabra in TIPO_PALABRAS_CLAVE.get(relacionada.tipo, []):
             if re.search(rf'\b{re.escape(palabra)}\b', texto_lower):
                 detecciones.append({'obra': relacionada, 'palabra': palabra})
                 break
+
+    for relacionada in relacionadas_categoria:
+        titulo_lower = relacionada.titulo.lower()
+        if re.search(rf'\b{re.escape(titulo_lower)}\b', texto_lower):
+            detecciones.append({'obra': relacionada, 'palabra': relacionada.titulo})
+
     return detecciones
 
 

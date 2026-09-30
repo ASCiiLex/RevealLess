@@ -11,6 +11,7 @@ from .catalogo import (
 from .importacion import ExternalId
 from .progreso import ProgresoUsuario
 from .temas import TemaTransversal, SolicitudTema
+from .personajes import Personaje
 from .clasificacion import ClasificacionNarrativa
 
 __all__ = [
@@ -23,5 +24,6 @@ __all__ = [
     'ProgresoUsuario',
     'TemaTransversal',
     'SolicitudTema',
+    'Personaje',
     'ClasificacionNarrativa',
 ]
