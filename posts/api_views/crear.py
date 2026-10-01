@@ -16,6 +16,7 @@ from narrative.services import (
     detectar_posibles_referencias_cruzadas,
 )
 from narrative.services.detecciones import serializar_detecciones
+from narrative.services.etiquetado import etiquetar_personajes
 from ..models import Post
 from ..serializers import PostCreateSerializer
 from .comun import ERROR_CRUZADA_INCOMPLETA, ERROR_TEMA_OTRA_OBRA, error_400, tema_de_otra_obra
@@ -111,6 +112,8 @@ class PostCreateAPIView(APIView):
         post.save()
         if tema:
             post.temas_transversales.set([tema])
+        # Tras guardar: necesita frontera_orden ya calculado.
+        etiquetar_personajes(post)
 
         return Response(
             PostSerializer(post, context={'request': request}).data,

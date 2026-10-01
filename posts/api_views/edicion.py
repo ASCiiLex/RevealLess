@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from narrative.models import ClasificacionNarrativa
 from narrative.serializers import PostSerializer
+from narrative.services.etiquetado import etiquetar_personajes
 from ..models import Post
 from ..serializers import PostUpdateSerializer
 from .comun import ERROR_CRUZADA_INCOMPLETA, ERROR_TEMA_OTRA_OBRA, error_400, tema_de_otra_obra
@@ -16,6 +17,8 @@ CAMPOS_EDITABLES = (
     'text', 'image', 'referencia_narrativa', 'nivel_spoiler',
     'emocion_autor', 'obra_cruzada', 'frontera_cruzada',
 )
+# Cambian qué personajes se nombran o hasta dónde se pueden etiquetar.
+CAMPOS_QUE_REETIQUETAN = {'text', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada'}
 
 
 class PostUpdateAPIView(APIView):
@@ -62,5 +65,7 @@ class PostUpdateAPIView(APIView):
         post.save()
         if tema_provisto:
             post.temas_transversales.set([tema] if tema else [])
+        if CAMPOS_QUE_REETIQUETAN & set(datos):
+            etiquetar_personajes(post)
 
         return Response(PostSerializer(post, context={'request': request}).data)

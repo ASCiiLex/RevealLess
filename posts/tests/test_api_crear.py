@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import ProgresoUsuario, ClasificacionNarrativa
+from narrative.models import ClasificacionNarrativa, Personaje, ProgresoUsuario
 from narrative.services import actualizar_progreso
 from ..models import Post
 from .utils import crear_obra
@@ -28,6 +28,11 @@ class PostCreateAPIViewTests(TestCase):
 
     def _progreso_actual(self):
         return ProgresoUsuario.objects.get(usuario=self.usuario, obra=self.obra).unidad_actual
+
+    def _personaje(self, nombre, unidad):
+        p = Personaje.objects.create(nombre=nombre)
+        p.unidades.add(unidad)
+        return p
 
     def test_requiere_autenticacion(self):
         self.assertEqual(self._publicar('hola').status_code, 403)
@@ -102,3 +107,15 @@ class PostCreateAPIViewTests(TestCase):
     def test_rechaza_emocion_autor_invalida(self):
         self._con_progreso()
         self.assertEqual(self._publicar('invalida', emocion_autor='no_existe').status_code, 400)
+
+    def test_etiqueta_personajes_mencionados(self):
+        shanks = self._personaje('Shanks', self.ep[0])
+        self._con_progreso()
+        self._publicar('Shanks pierde el brazo', frontera_spoiler=self.ep[0].id)
+        self.assertEqual(list(Post.objects.get(text='Shanks pierde el brazo').personajes.all()), [shanks])
+
+    def test_no_etiqueta_personajes_posteriores_a_la_frontera(self):
+        self._personaje('Kuro', self.ep[3])
+        self._con_progreso()
+        self._publicar('Kuro tiene un plan', frontera_spoiler=self.ep[0].id)
+        self.assertFalse(Post.objects.get(text='Kuro tiene un plan').personajes.exists())
