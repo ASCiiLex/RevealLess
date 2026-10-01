@@ -1,11 +1,16 @@
-"""Personajes: revisión de apariciones, fusión de duplicados y presentación según el progreso del lector."""
+"""Personajes: revisión de apariciones, fusión de duplicados, orden del carrusel
+y presentación según el progreso del lector."""
 
+from collections import Counter
 from datetime import date
 
 from django.db import transaction
 from django.utils import timezone
 
-from ..models import EtapaPersonaje, Personaje, ProgresoUsuario, PropuestaAparicion
+from ..models import EtapaPersonaje, Personaje, ProgresoUsuario, PropuestaAparicion, RelevanciaPersonaje
+
+# Un post visible pesa como dos apariciones: refleja interés real, no solo presencia.
+PESO_POSTS = 2
 
 
 @transaction.atomic
@@ -37,6 +42,34 @@ def mover_aparicion(propuesta, unidad_anterior_id):
     return propuesta
 
 
+def ordenar_por_relevancia(personajes, obra, usuario):
+    """Orden del carrusel: relevancia editorial en la obra, después
+    PESO_POSTS × posts visibles etiquetados + apariciones vistas, primera aparición y nombre.
+    Solo cuentan posts etiquetados con el personaje (los anclados a una unidad hablan del
+    episodio y sumarían a todos los que salen en él) y que el usuario puede ver: contar
+    todos insinuaría quién gana peso más adelante. Espera las anotaciones de personajes_visibles."""
+    from posts.models import Post  # import diferido: posts depende de narrative
+
+    ids = [p.id for p in personajes]
+    if not ids:
+        return personajes
+
+    visibles = Post.objects.filter(obra=obra).visible_for(usuario).values('pk')
+    posts = Counter(
+        Post.personajes.through.objects.filter(post_id__in=visibles, personaje_id__in=ids)
+        .values_list('personaje_id', flat=True)
+    )
+    niveles = dict(
+        RelevanciaPersonaje.objects.filter(obra=obra, personaje_id__in=ids).values_list('personaje_id', 'nivel')
+    )
+
+    def clave(p):
+        peso = PESO_POSTS * posts[p.id] + p.apariciones_vistas
+        return (-niveles.get(p.id, 0), -peso, p.primera_aparicion, p.nombre.lower())
+
+    return sorted(personajes, key=clave)
+
+
 def _fusionar_propuestas(origen, destino):
     for propuesta in list(origen.propuestas.all()):
         existente = destino.propuestas.filter(unidad_id=propuesta.unidad_id).first()
@@ -62,10 +95,25 @@ def _fusionar_etapas(origen, destino):
             etapa.save(update_fields=['personaje'])
 
 
+def _fusionar_relevancias(origen, destino):
+    # Misma obra en ambos: se conserva la mayor.
+    for relevancia in list(origen.relevancias.all()):
+        existente = destino.relevancias.filter(obra_id=relevancia.obra_id).first()
+        if existente is None:
+            relevancia.personaje = destino
+            relevancia.save(update_fields=['personaje'])
+            continue
+        if relevancia.nivel > existente.nivel:
+            existente.nivel = relevancia.nivel
+            existente.save(update_fields=['nivel'])
+        relevancia.delete()
+
+
 def _fusionar_relaciones_externas(origen, destino):
     """Posts, suscripciones y cualquier otra relación hacia Personaje, sin importar otras apps."""
+    propias = (PropuestaAparicion, EtapaPersonaje, RelevanciaPersonaje)
     for rel in Personaje._meta.related_objects:
-        if rel.related_model in (PropuestaAparicion, EtapaPersonaje):
+        if rel.related_model in propias:
             continue
         if rel.many_to_many:
             accesor = rel.get_accessor_name()
@@ -88,6 +136,7 @@ def fusionar_personajes(origen, destino):
 
     _fusionar_propuestas(origen, destino)
     _fusionar_etapas(origen, destino)
+    _fusionar_relevancias(origen, destino)
     destino.unidades.add(*origen.unidades.all())
     _fusionar_relaciones_externas(origen, destino)
 

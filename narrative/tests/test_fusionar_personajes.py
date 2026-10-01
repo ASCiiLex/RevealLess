@@ -5,7 +5,9 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
 
-from narrative.models import EtapaPersonaje, Obra, Personaje, PropuestaAparicion, UnidadNarrativa
+from narrative.models import (
+    EtapaPersonaje, Obra, Personaje, PropuestaAparicion, RelevanciaPersonaje, UnidadNarrativa,
+)
 from narrative.services.personajes import fusionar_personajes
 
 
@@ -51,6 +53,16 @@ class FusionarPersonajesTests(TestCase):
         EtapaPersonaje.objects.create(personaje=self.duplicado, visible_tras=self.u1, nota='Dato')
         fusionar_personajes(self.duplicado, self.bueno)
         self.assertEqual(self.bueno.etapas.get().nota, 'Dato')
+
+    def test_relevancia_misma_obra_conserva_la_mayor(self):
+        RelevanciaPersonaje.objects.create(
+            personaje=self.duplicado, obra=self.obra, nivel=RelevanciaPersonaje.NIVEL_PROTAGONISTA,
+        )
+        RelevanciaPersonaje.objects.create(
+            personaje=self.bueno, obra=self.obra, nivel=RelevanciaPersonaje.NIVEL_SECUNDARIO,
+        )
+        fusionar_personajes(self.duplicado, self.bueno)
+        self.assertEqual(self.bueno.relevancias.get().nivel, RelevanciaPersonaje.NIVEL_PROTAGONISTA)
 
     def test_suscripciones_sin_duplicar_por_usuario(self):
         Suscripcion = apps.get_model('subscriptions', 'Suscripcion')

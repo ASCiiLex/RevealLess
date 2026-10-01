@@ -3,8 +3,9 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import Obra, Personaje, UnidadNarrativa, TemaTransversal
+from narrative.models import Obra, Personaje, RelevanciaPersonaje, UnidadNarrativa, TemaTransversal
 from narrative.services import actualizar_progreso
+from posts.models import Post
 from subscriptions.services import crear_suscripcion
 
 
@@ -39,6 +40,15 @@ class ObraLandingAPIViewTests(TestCase):
         bruno = Personaje.objects.create(nombre='Bruno')
         ana.unidades.add(self.e1)
         bruno.unidades.add(self.e1, self.e2)
+        return ana, bruno
+
+    def _post_sobre(self, personaje, frontera):
+        post = Post.objects.create(
+            author=self.otro_usuario, obra=self.obra, text='x',
+            referencia_narrativa=self.e1, frontera_spoiler=frontera, frontera_origen='explicito',
+        )
+        post.personajes.add(personaje)
+        return post
 
     def test_requiere_autenticacion(self):
         response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
@@ -124,3 +134,27 @@ class ObraLandingAPIViewTests(TestCase):
         actualizar_progreso(self.usuario, self.obra, self.e1)
         # Empate en apariciones vistas y primera aparición: desempata el nombre.
         self.assertEqual(self._nombres_personajes(), ['Ana', 'Bruno'])
+
+    def test_la_relevancia_manual_prevalece_sobre_las_apariciones(self):
+        ana, _ = self._personajes_ana_y_bruno()
+        RelevanciaPersonaje.objects.create(
+            personaje=ana, obra=self.obra, nivel=RelevanciaPersonaje.NIVEL_PROTAGONISTA,
+        )
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        self.assertEqual(self._nombres_personajes(), ['Ana', 'Bruno'])
+
+    def test_un_post_visible_pesa_mas_que_una_aparicion(self):
+        ana, _ = self._personajes_ana_y_bruno()
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        self._post_sobre(ana, frontera=self.e1)
+        # Ana: 2×1 post + 1 aparición = 3; Bruno: 2 apariciones.
+        self.assertEqual(self._nombres_personajes(), ['Ana', 'Bruno'])
+
+    def test_los_posts_no_visibles_no_cuentan(self):
+        zoe = Personaje.objects.create(nombre='Zoe')
+        bruno = Personaje.objects.create(nombre='Bruno')
+        zoe.unidades.add(self.e1)
+        bruno.unidades.add(self.e1)
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        self._post_sobre(zoe, frontera=self.e2)
+        self.assertEqual(self._nombres_personajes(), ['Bruno', 'Zoe'])

@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 from core.validators import validate_image_size
 
-from .catalogo import UnidadNarrativa
+from .catalogo import Obra, UnidadNarrativa
 
 IMAGEN_VALIDATORS = [
     FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
@@ -93,6 +93,35 @@ class EtapaPersonaje(models.Model):
 
     def __str__(self):
         return f'{self.personaje} · tras {self.visible_tras}'
+
+
+class RelevanciaPersonaje(models.Model):
+    """Peso editorial de un personaje en una obra concreta (Loki: protagonista en su
+    serie, secundario en Thor). Primer criterio del carrusel; sin fila = sin marcar."""
+
+    NIVEL_SECUNDARIO = 1
+    NIVEL_PRINCIPAL = 2
+    NIVEL_PROTAGONISTA = 3
+    NIVEL_CHOICES = [
+        (NIVEL_PROTAGONISTA, 'Protagonista'),
+        (NIVEL_PRINCIPAL, 'Principal'),
+        (NIVEL_SECUNDARIO, 'Secundario'),
+    ]
+
+    personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='relevancias')
+    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='relevancias_personaje')
+    nivel = models.PositiveSmallIntegerField(choices=NIVEL_CHOICES, default=NIVEL_PRINCIPAL)
+
+    class Meta:
+        ordering = ['obra', '-nivel', 'personaje__nombre']
+        verbose_name = 'Relevancia de personaje'
+        verbose_name_plural = 'Relevancias de personaje'
+        constraints = [
+            models.UniqueConstraint(fields=['personaje', 'obra'], name='uniq_relevancia_personaje_obra'),
+        ]
+
+    def __str__(self):
+        return f'{self.personaje} en {self.obra}: {self.get_nivel_display()}'
 
 
 class PropuestaAparicion(models.Model):

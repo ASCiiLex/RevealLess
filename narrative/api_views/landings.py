@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from subscriptions.models import Suscripcion
 from ..models import Categoria, Obra, Personaje, ProgresoUsuario, TemaTransversal
 from ..serializers import ObraLandingSerializer, ObraResumenSerializer
-from ..services.personajes import presentacion_personaje, progreso_por_obra
+from ..services.personajes import ordenar_por_relevancia, presentacion_personaje, progreso_por_obra
 from .comun import contexto_suscripcion_obra, ids_familia, suscripcion_id_por_tema
 
 
@@ -19,8 +19,7 @@ def _total_suscriptores(**filtro):
 def personajes_visibles(obra, progreso):
     """Solo personajes cuya primera aparición en esta obra ya alcanzó el usuario:
     listar uno que aún no ha salido sería en sí mismo un spoiler.
-    Orden: más apariciones ya vistas primero. Solo cuentan las alcanzadas; el total
-    revelaría quién sigue apareciendo más adelante."""
+    apariciones_vistas solo cuenta las alcanzadas (el orden lo decide ordenar_por_relevancia)."""
     if not progreso:
         return []
     return list(
@@ -36,7 +35,6 @@ def personajes_visibles(obra, progreso):
         .filter(primera_aparicion__lte=progreso.orden_absoluto)
         .prefetch_related('etapas__visible_tras')
         .distinct()
-        .order_by('-apariciones_vistas', 'primera_aparicion', 'nombre')
     )
 
 
@@ -80,7 +78,9 @@ class ObraLandingAPIView(APIView):
             'longitud_total': obra.longitud_total,
             'total_suscriptores': _total_suscriptores(obra=obra),
             'suscripcion_id_por_tema': suscripcion_id_por_tema(request.user),
-            'personajes_visibles': personajes_visibles(obra, progreso),
+            'personajes_visibles': ordenar_por_relevancia(
+                personajes_visibles(obra, progreso), obra, request.user,
+            ),
             'suscripcion_id_por_personaje': _suscripcion_id_por_personaje(request.user),
             'progreso_por_obra': progreso_por_obra(request.user),
         }

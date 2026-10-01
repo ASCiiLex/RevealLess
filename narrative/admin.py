@@ -8,7 +8,7 @@ from unfold.admin import ModelAdmin, TabularInline
 from core.imagenes_remotas import descargar_imagen
 from .models import (
     Obra, UnidadNarrativa, ProgresoUsuario, TemaTransversal, Categoria, SolicitudTema,
-    ExternalId, Personaje, EtapaPersonaje, PropuestaAparicion,
+    ExternalId, Personaje, EtapaPersonaje, RelevanciaPersonaje, PropuestaAparicion,
 )
 from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
 from .services.personajes import aprobar_propuesta, fusionar_personajes, mover_aparicion, rechazar_propuesta
@@ -203,6 +203,15 @@ class EtapaPersonajeInline(TabularInline):
     autocomplete_fields = ('visible_tras',)
 
 
+class RelevanciaPersonajeInline(TabularInline):
+    """Peso del personaje en cada obra: primer criterio del carrusel de la landing."""
+
+    model = RelevanciaPersonaje
+    extra = 0
+    fields = ('obra', 'nivel')
+    autocomplete_fields = ('obra',)
+
+
 class PropuestaAparicionInline(TabularInline):
     """Solo consulta: las propuestas se revisan desde su propio listado."""
 
@@ -223,7 +232,7 @@ class PersonajeAdmin(ModelAdmin):
     list_display = ('nombre', 'wikidata_id', 'total_apariciones', 'total_etapas', 'total_pendientes', 'imagen_tag')
     search_fields = ('nombre', 'wikidata_id', 'etapas__alias')
     autocomplete_fields = ('unidades',)
-    inlines = [EtapaPersonajeInline, PropuestaAparicionInline]
+    inlines = [RelevanciaPersonajeInline, EtapaPersonajeInline, PropuestaAparicionInline]
     actions = ['fusionar_seleccionados']
 
     def get_queryset(self, request):
@@ -265,6 +274,18 @@ class PersonajeAdmin(ModelAdmin):
                 if personaje.pk != destino.pk:
                     fusionar_personajes(personaje, destino)
         self.message_user(request, f'{len(personajes) - 1} personaje(s) fusionado(s) en «{destino}».')
+
+
+@admin.register(RelevanciaPersonaje)
+class RelevanciaPersonajeAdmin(ModelAdmin):
+    """Marcar protagonistas y principales obra a obra; el nivel se edita desde la lista."""
+
+    list_display = ('personaje', 'obra', 'nivel')
+    list_editable = ('nivel',)
+    list_filter = ('obra', 'nivel')
+    search_fields = ('personaje__nombre', 'obra__titulo')
+    list_select_related = ('personaje', 'obra')
+    autocomplete_fields = ('personaje', 'obra')
 
 
 class ConfianzaFilter(admin.SimpleListFilter):
