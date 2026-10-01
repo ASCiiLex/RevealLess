@@ -8,7 +8,7 @@ import { buildTree } from '../../utils/buildTree'
 import { calcularProgresoPct } from '../../utils/progresoPct'
 import UnidadNode from '../Progreso/UnidadNode'
 import ConfirmModal from '../Progreso/ConfirmModal'
-import ProgresoSlider from './ProgresoSlider'
+import ProgresoSlider from '../Progreso/ProgresoSlider'
 
 interface Props {
   obraSlug: string
