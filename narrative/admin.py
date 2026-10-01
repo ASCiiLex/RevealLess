@@ -1,5 +1,6 @@
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.db import transaction
 from django.db.models import Count, Q
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
@@ -10,7 +11,7 @@ from .models import (
     ExternalId, Personaje, EtapaPersonaje, PropuestaAparicion,
 )
 from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
-from .services.personajes import aprobar_propuesta, rechazar_propuesta
+from .services.personajes import aprobar_propuesta, fusionar_personajes, mover_aparicion, rechazar_propuesta
 
 # Cambios que alteran orden_inicio/orden_fin de la obra.
 CAMPOS_QUE_REORDENAN = {'orden_local', 'padre', 'orden_manual'}
@@ -210,6 +211,7 @@ class PersonajeAdmin(ModelAdmin):
     search_fields = ('nombre', 'wikidata_id', 'etapas__alias')
     autocomplete_fields = ('unidades',)
     inlines = [EtapaPersonajeInline, PropuestaAparicionInline]
+    actions = ['fusionar_seleccionados']
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
@@ -238,6 +240,19 @@ class PersonajeAdmin(ModelAdmin):
     def imagen_tag(self, obj):
         return miniatura(obj, 32)
 
+    @admin.action(description='Fusionar seleccionados en uno (se conserva el de Wikidata o con más apariciones)')
+    def fusionar_seleccionados(self, request, queryset):
+        personajes = list(queryset)
+        if len(personajes) < 2:
+            self.message_user(request, 'Selecciona al menos dos personajes.', messages.WARNING)
+            return
+        destino = max(personajes, key=lambda p: (p.wikidata_id is not None, p.apariciones, -p.pk))
+        with transaction.atomic():
+            for personaje in personajes:
+                if personaje.pk != destino.pk:
+                    fusionar_personajes(personaje, destino)
+        self.message_user(request, f'{len(personajes) - 1} personaje(s) fusionado(s) en «{destino}».')
+
 
 class ConfianzaFilter(admin.SimpleListFilter):
     title = 'confianza'
@@ -262,6 +277,8 @@ class ConfianzaFilter(admin.SimpleListFilter):
 @admin.register(PropuestaAparicion)
 class PropuestaAparicionAdmin(ModelAdmin):
     list_display = ('personaje', 'obra', 'unidad', 'origen', 'confianza', 'estado', 'nota', 'creado_en')
+    # Corregir la unidad desde el listado; si ya estaba aprobada, la aparición se mueve.
+    list_editable = ('unidad',)
     list_filter = ('estado', 'origen', ConfianzaFilter, 'unidad__obra')
     search_fields = ('personaje__nombre', 'unidad__nombre', 'unidad__obra__titulo')
     list_select_related = ('personaje', 'unidad__obra')
@@ -272,6 +289,12 @@ class PropuestaAparicionAdmin(ModelAdmin):
     @admin.display(description='Obra', ordering='unidad__obra__titulo')
     def obra(self, obj):
         return obj.unidad.obra
+
+    def save_model(self, request, obj, form, change):
+        anterior = form.initial.get('unidad') if change else None
+        super().save_model(request, obj, form, change)
+        if change and 'unidad' in form.changed_data:
+            mover_aparicion(obj, anterior)
 
     @admin.action(description='Aprobar (el personaje pasa a ser visible desde esa unidad)')
     def aprobar_propuestas(self, request, queryset):

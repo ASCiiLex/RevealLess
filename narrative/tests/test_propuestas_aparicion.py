@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from narrative.models import Obra, Personaje, ProgresoUsuario, PropuestaAparicion, UnidadNarrativa
-from narrative.services.personajes import aprobar_propuesta, rechazar_propuesta
+from narrative.services.personajes import aprobar_propuesta, mover_aparicion, rechazar_propuesta
 
 
 class PropuestaAparicionTests(TestCase):
@@ -13,6 +13,7 @@ class PropuestaAparicionTests(TestCase):
         self.client.force_login(self.usuario)
         self.obra = Obra.objects.create(titulo='Obra', slug='obra')
         self.u1 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='Uno', orden_local=1)
+        self.u2 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='Dos', orden_local=2)
         self.obra.recalcular_orden()
         self.u1.refresh_from_db()
         ProgresoUsuario.objects.create(
@@ -48,3 +49,16 @@ class PropuestaAparicionTests(TestCase):
             PropuestaAparicion.objects.create(
                 personaje=self.personaje, unidad=self.u1, origen=PropuestaAparicion.ORIGEN_WIKIDATA,
             )
+
+    def test_mover_una_aprobada_cambia_la_aparicion(self):
+        aprobar_propuesta(self.propuesta)
+        self.propuesta.unidad = self.u2
+        self.propuesta.save()
+        mover_aparicion(self.propuesta, self.u1.id)
+        self.assertEqual(list(self.personaje.unidades.all()), [self.u2])
+
+    def test_mover_una_pendiente_no_toca_apariciones(self):
+        self.propuesta.unidad = self.u2
+        self.propuesta.save()
+        mover_aparicion(self.propuesta, self.u1.id)
+        self.assertFalse(self.personaje.unidades.exists())
