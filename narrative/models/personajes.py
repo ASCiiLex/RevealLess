@@ -64,43 +64,12 @@ class Personaje(models.Model):
         return '/static/img/default_personaje.jpg'
 
 
-class EtapaPersonaje(models.Model):
-    """Cambio de nombre, aspecto o dato de un personaje. Solo se muestra cuando el
-    lector ha terminado 'visible_tras' (criterio conservador: al acabar el arco,
-    no al empezarlo). Los campos vacíos heredan de la etapa anterior."""
-
-    personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='etapas')
-    visible_tras = models.ForeignKey(
-        UnidadNarrativa, on_delete=models.CASCADE, related_name='etapas_personaje',
-        help_text='Unidad tras la que se revela el cambio. Elige el arco completo salvo que quieras precisar el episodio.',
-    )
-    alias = models.CharField(
-        max_length=150, blank=True,
-        help_text='Nombre con el que se le conoce desde esta etapa. En la web se muestra como su nombre, sin indicar que es un alias.',
-    )
-    nota = models.CharField(
-        max_length=120, blank=True,
-        help_text='Dato breve visible desde esta etapa (ej. «Recompensa: 30.000.000 ฿»).',
-    )
-    imagen = models.ImageField(upload_to=etapa_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS)
-
-    class Meta:
-        ordering = ['visible_tras__orden_fin']
-        verbose_name = 'Etapa de personaje'
-        verbose_name_plural = 'Etapas de personaje'
-        constraints = [
-            models.UniqueConstraint(fields=['personaje', 'visible_tras'], name='uniq_etapa_personaje_unidad'),
-        ]
-
-    def __str__(self):
-        return f'{self.personaje} · tras {self.visible_tras}'
-
-
 class RelevanciaPersonaje(models.Model):
     """Peso editorial de un personaje en una obra concreta (Loki: protagonista en su
     serie, secundario en Thor). Primer criterio del carrusel. Sin fila cuenta como
     Secundario: solo se marcan las excepciones hacia arriba o hacia abajo.
-    Valores espaciados para poder intercalar niveles sin renumerar."""
+    Una etapa superada con nivel lo sustituye. Valores espaciados para poder
+    intercalar niveles sin renumerar."""
 
     NIVEL_EPISODICO = 10
     NIVEL_SECUNDARIO = 20
@@ -132,6 +101,42 @@ class RelevanciaPersonaje(models.Model):
 
     def __str__(self):
         return f'{self.personaje} en {self.obra}: {self.get_nivel_display()}'
+
+
+class EtapaPersonaje(models.Model):
+    """Cambio de nombre, aspecto, dato o relevancia de un personaje. Solo se aplica
+    cuando el lector ha terminado 'visible_tras' (criterio conservador: al acabar el
+    arco, no al empezarlo). Los campos vacíos heredan de la etapa anterior."""
+
+    personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='etapas')
+    visible_tras = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.CASCADE, related_name='etapas_personaje',
+        help_text='Unidad tras la que se revela el cambio. Elige el arco completo salvo que quieras precisar el episodio.',
+    )
+    alias = models.CharField(
+        max_length=150, blank=True,
+        help_text='Nombre con el que se le conoce desde esta etapa. En la web se muestra como su nombre, sin indicar que es un alias.',
+    )
+    nota = models.CharField(
+        max_length=120, blank=True,
+        help_text='Dato breve visible desde esta etapa (ej. «Recompensa: 30.000.000 ฿»).',
+    )
+    nivel = models.PositiveSmallIntegerField(
+        choices=RelevanciaPersonaje.NIVEL_CHOICES, null=True, blank=True,
+        help_text='Relevancia en esta obra desde esta etapa (ej. de Secundario a Principal al unirse). Vacío: no cambia.',
+    )
+    imagen = models.ImageField(upload_to=etapa_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS)
+
+    class Meta:
+        ordering = ['visible_tras__orden_fin']
+        verbose_name = 'Etapa de personaje'
+        verbose_name_plural = 'Etapas de personaje'
+        constraints = [
+            models.UniqueConstraint(fields=['personaje', 'visible_tras'], name='uniq_etapa_personaje_unidad'),
+        ]
+
+    def __str__(self):
+        return f'{self.personaje} · tras {self.visible_tras}'
 
 
 class PropuestaAparicion(models.Model):

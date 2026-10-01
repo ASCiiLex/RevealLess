@@ -197,12 +197,12 @@ class EtapaPersonajeForm(ImagenDesdeUrlForm):
 
 
 class EtapaPersonajeInline(TabularInline):
-    """Etapas: alias, nota e imagen que se revelan al terminar 'visible_tras'."""
+    """Etapas: alias, nota, nivel e imagen que se aplican al terminar 'visible_tras'."""
 
     model = EtapaPersonaje
     form = EtapaPersonajeForm
     extra = 0
-    fields = ('visible_tras', 'alias', 'nota', 'imagen', 'imagen_desde_url')
+    fields = ('visible_tras', 'alias', 'nota', 'nivel', 'imagen', 'imagen_desde_url')
     autocomplete_fields = ('visible_tras',)
 
 

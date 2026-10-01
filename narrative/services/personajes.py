@@ -11,6 +11,9 @@ from ..models import EtapaPersonaje, Personaje, ProgresoUsuario, PropuestaAparic
 
 # Un post visible pesa como dos apariciones: refleja interés real, no solo presencia.
 PESO_POSTS = 2
+# Desde este nivel el carrusel sigue el orden de presentación: el reparto principal
+# no debe bailar por lo desigual que sea el registro de apariciones.
+NIVEL_ORDEN_DE_PRESENTACION = RelevanciaPersonaje.NIVEL_PRINCIPAL
 
 
 @transaction.atomic
@@ -58,13 +61,24 @@ def eliminar_propuesta(propuesta):
     propuesta.delete()
 
 
+def _nivel_con_etapas(personaje, obra_id, nivel_base, progreso):
+    """Nivel de la última etapa superada de esta obra que lo fije; si ninguna, el base."""
+    etapas = [
+        e for e in personaje.etapas.all()
+        if e.nivel and e.visible_tras.obra_id == obra_id and _superada(e, progreso)
+    ]
+    if not etapas:
+        return nivel_base
+    return max(etapas, key=lambda e: e.visible_tras.orden_fin).nivel
+
+
 def ordenar_por_relevancia(personajes, obra, usuario):
-    """Orden del carrusel: relevancia editorial en la obra (sin marcar = Secundario), después
-    PESO_POSTS × posts visibles etiquetados + apariciones vistas, primera aparición y nombre.
-    Solo cuentan posts etiquetados con el personaje (los anclados a una unidad hablan del
-    episodio y sumarían a todos los que salen en él) y que el usuario puede ver: contar
-    todos insinuaría quién gana peso más adelante. Espera las anotaciones de personajes_visibles.
-    Deja el nivel en p.nivel_relevancia para el filtro por chips."""
+    """Orden del carrusel. Primero el nivel en la obra según el progreso (etapa superada con
+    nivel > relevancia de la obra > Secundario). Protagonistas y principales van por orden de
+    presentación; el resto, por PESO_POSTS × posts visibles etiquetados + apariciones vistas.
+    Solo cuentan posts etiquetados con el personaje y visibles para el usuario: contar todos
+    insinuaría quién gana peso más adelante. Espera las anotaciones y el prefetch de
+    personajes_visibles. Deja el nivel en p.nivel_relevancia para los chips."""
     from posts.models import Post  # import diferido: posts depende de narrative
 
     ids = [p.id for p in personajes]
@@ -79,10 +93,14 @@ def ordenar_por_relevancia(personajes, obra, usuario):
     niveles = dict(
         RelevanciaPersonaje.objects.filter(obra=obra, personaje_id__in=ids).values_list('personaje_id', 'nivel')
     )
+    progreso = progreso_por_obra(usuario)
     for p in personajes:
-        p.nivel_relevancia = niveles.get(p.id, RelevanciaPersonaje.NIVEL_SIN_MARCAR)
+        base = niveles.get(p.id, RelevanciaPersonaje.NIVEL_SIN_MARCAR)
+        p.nivel_relevancia = _nivel_con_etapas(p, obra.id, base, progreso)
 
     def clave(p):
+        if p.nivel_relevancia >= NIVEL_ORDEN_DE_PRESENTACION:
+            return (-p.nivel_relevancia, 0, p.primera_aparicion, p.nombre.lower())
         peso = PESO_POSTS * posts[p.id] + p.apariciones_vistas
         return (-p.nivel_relevancia, -peso, p.primera_aparicion, p.nombre.lower())
 

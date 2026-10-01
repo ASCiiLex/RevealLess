@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import Obra, Personaje, RelevanciaPersonaje, UnidadNarrativa, TemaTransversal
+from narrative.models import EtapaPersonaje, Obra, Personaje, RelevanciaPersonaje, UnidadNarrativa, TemaTransversal
 from narrative.services import actualizar_progreso
 from posts.models import Post
 from subscriptions.services import crear_suscripcion
@@ -143,6 +143,33 @@ class ObraLandingAPIViewTests(TestCase):
         actualizar_progreso(self.usuario, self.obra, self.e2)
         # Mismo nivel: decide el peso (Bruno tiene dos apariciones vistas).
         self.assertEqual(self._nombres_personajes(), ['Bruno', 'Ana'])
+
+    def test_principales_en_orden_de_presentacion(self):
+        zoro = Personaje.objects.create(nombre='Zoro')
+        robin = Personaje.objects.create(nombre='Robin')
+        zoro.unidades.add(self.e1)
+        robin.unidades.add(self.e2)
+        self._relevancia(zoro, RelevanciaPersonaje.NIVEL_PRINCIPAL)
+        self._relevancia(robin, RelevanciaPersonaje.NIVEL_PRINCIPAL)
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        self._post_sobre(robin, frontera=self.e1)
+        # Robin pesa más (post + aparición), pero Zoro se presentó antes.
+        self.assertEqual(self._nombres_personajes(), ['Zoro', 'Robin'])
+
+    def test_una_etapa_superada_cambia_el_nivel(self):
+        ana, bruno = Personaje.objects.create(nombre='Ana'), Personaje.objects.create(nombre='Bruno')
+        ana.unidades.add(self.e1)
+        bruno.unidades.add(self.e1)
+        self._relevancia(ana, RelevanciaPersonaje.NIVEL_EPISODICO)
+        EtapaPersonaje.objects.create(personaje=ana, visible_tras=self.e2, nivel=RelevanciaPersonaje.NIVEL_PROTAGONISTA)
+
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        self.assertEqual(self._nombres_personajes(), ['Bruno', 'Ana'])
+
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        datos = {p['nombre']: p['nivel'] for p in self._landing()['personajes']}
+        self.assertEqual(self._nombres_personajes(), ['Ana', 'Bruno'])
+        self.assertEqual(datos['Ana'], RelevanciaPersonaje.NIVEL_PROTAGONISTA)
 
     def test_cada_personaje_incluye_su_nivel(self):
         ana, _ = self._personajes_ana_y_bruno()
