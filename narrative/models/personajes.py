@@ -97,15 +97,22 @@ class EtapaPersonaje(models.Model):
 
 class RelevanciaPersonaje(models.Model):
     """Peso editorial de un personaje en una obra concreta (Loki: protagonista en su
-    serie, secundario en Thor). Primer criterio del carrusel; sin fila = sin marcar."""
+    serie, secundario en Thor). Primer criterio del carrusel. Sin fila cuenta como
+    Secundario: solo se marcan las excepciones hacia arriba o hacia abajo.
+    Valores espaciados para poder intercalar niveles sin renumerar."""
 
-    NIVEL_SECUNDARIO = 1
-    NIVEL_PRINCIPAL = 2
-    NIVEL_PROTAGONISTA = 3
+    NIVEL_EPISODICO = 10
+    NIVEL_SECUNDARIO = 20
+    NIVEL_DESTACADO = 30
+    NIVEL_PRINCIPAL = 40
+    NIVEL_PROTAGONISTA = 50
+    NIVEL_SIN_MARCAR = NIVEL_SECUNDARIO
     NIVEL_CHOICES = [
         (NIVEL_PROTAGONISTA, 'Protagonista'),
         (NIVEL_PRINCIPAL, 'Principal'),
+        (NIVEL_DESTACADO, 'Destacado'),
         (NIVEL_SECUNDARIO, 'Secundario'),
+        (NIVEL_EPISODICO, 'Episódico'),
     ]
 
     personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='relevancias')

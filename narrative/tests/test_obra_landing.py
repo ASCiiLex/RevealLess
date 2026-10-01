@@ -50,6 +50,9 @@ class ObraLandingAPIViewTests(TestCase):
         post.personajes.add(personaje)
         return post
 
+    def _relevancia(self, personaje, nivel):
+        RelevanciaPersonaje.objects.create(personaje=personaje, obra=self.obra, nivel=nivel)
+
     def test_requiere_autenticacion(self):
         response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
         self.assertEqual(response.status_code, 403)
@@ -137,11 +140,23 @@ class ObraLandingAPIViewTests(TestCase):
 
     def test_la_relevancia_manual_prevalece_sobre_las_apariciones(self):
         ana, _ = self._personajes_ana_y_bruno()
-        RelevanciaPersonaje.objects.create(
-            personaje=ana, obra=self.obra, nivel=RelevanciaPersonaje.NIVEL_PROTAGONISTA,
-        )
+        self._relevancia(ana, RelevanciaPersonaje.NIVEL_PROTAGONISTA)
         actualizar_progreso(self.usuario, self.obra, self.e2)
         self.assertEqual(self._nombres_personajes(), ['Ana', 'Bruno'])
+
+    def test_episodico_queda_por_detras_de_los_sin_marcar(self):
+        ana, _ = self._personajes_ana_y_bruno()
+        self._relevancia(ana, RelevanciaPersonaje.NIVEL_EPISODICO)
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        # Sin relevancia, Ana iría primero por nombre.
+        self.assertEqual(self._nombres_personajes(), ['Bruno', 'Ana'])
+
+    def test_sin_marcar_equivale_a_secundario(self):
+        ana, _ = self._personajes_ana_y_bruno()
+        self._relevancia(ana, RelevanciaPersonaje.NIVEL_SECUNDARIO)
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        # Mismo nivel: decide el peso (Bruno tiene dos apariciones vistas).
+        self.assertEqual(self._nombres_personajes(), ['Bruno', 'Ana'])
 
     def test_un_post_visible_pesa_mas_que_una_aparicion(self):
         ana, _ = self._personajes_ana_y_bruno()

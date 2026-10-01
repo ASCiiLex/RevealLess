@@ -43,7 +43,7 @@ def mover_aparicion(propuesta, unidad_anterior_id):
 
 
 def ordenar_por_relevancia(personajes, obra, usuario):
-    """Orden del carrusel: relevancia editorial en la obra, después
+    """Orden del carrusel: relevancia editorial en la obra (sin marcar = Secundario), después
     PESO_POSTS × posts visibles etiquetados + apariciones vistas, primera aparición y nombre.
     Solo cuentan posts etiquetados con el personaje (los anclados a una unidad hablan del
     episodio y sumarían a todos los que salen en él) y que el usuario puede ver: contar
@@ -64,8 +64,9 @@ def ordenar_por_relevancia(personajes, obra, usuario):
     )
 
     def clave(p):
+        nivel = niveles.get(p.id, RelevanciaPersonaje.NIVEL_SIN_MARCAR)
         peso = PESO_POSTS * posts[p.id] + p.apariciones_vistas
-        return (-niveles.get(p.id, 0), -peso, p.primera_aparicion, p.nombre.lower())
+        return (-nivel, -peso, p.primera_aparicion, p.nombre.lower())
 
     return sorted(personajes, key=clave)
 

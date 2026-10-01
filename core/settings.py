@@ -3,6 +3,7 @@ import os
 import sys
 from dotenv import load_dotenv
 import dj_database_url
+from django.templatetags.static import static
 
 load_dotenv()
 
@@ -250,6 +251,10 @@ UNFOLD = {
         "show_search": True,
     },
     "DASHBOARD_CALLBACK": "core.dashboard.dashboard_callback",
+    # Lambda: static() se resuelve por petición, cuando el storage ya está listo.
+    "SCRIPTS": [
+        lambda request: static("js/admin_busqueda_vivo.js"),
+    ],
 }
 
 # ==========================================================
