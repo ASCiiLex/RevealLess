@@ -9,13 +9,16 @@ interface Props {
   obraSlug: string
 }
 
+interface Pendiente {
+  unidadId: number
+  mensaje: string
+  retroceso: boolean
+}
+
 export default function ProgresoView({ obraSlug }: Props) {
   const [data, setData] = useState<ProgresoData | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [pendienteConfirmar, setPendienteConfirmar] = useState<{
-    unidadId: number
-    mensaje: string
-  } | null>(null)
+  const [pendienteConfirmar, setPendienteConfirmar] = useState<Pendiente | null>(null)
 
   useEffect(() => {
     fetchProgreso(obraSlug)
@@ -28,14 +31,12 @@ export default function ProgresoView({ obraSlug }: Props) {
     const resultado = await actualizarProgreso(obraSlug, unidadId, confirmado)
 
     if ('requiereConfirmacion' in resultado) {
-      setPendienteConfirmar({ unidadId, mensaje: resultado.detail })
+      setPendienteConfirmar({ unidadId, mensaje: resultado.detail, retroceso: resultado.salto < 0 })
       return
     }
 
     setPendienteConfirmar(null)
-    setData((prev) =>
-      prev ? { ...prev, progreso: resultado } : prev
-    )
+    setData((prev) => (prev ? { ...prev, progreso: resultado } : prev))
   }
 
   if (error) {
@@ -81,6 +82,7 @@ export default function ProgresoView({ obraSlug }: Props) {
       {pendienteConfirmar && (
         <ConfirmModal
           mensaje={pendienteConfirmar.mensaje}
+          textoConfirmar={pendienteConfirmar.retroceso ? 'Retroceder' : 'Confirmar salto'}
           onConfirm={() => handleSelect(pendienteConfirmar.unidadId, true)}
           onCancel={() => setPendienteConfirmar(null)}
         />

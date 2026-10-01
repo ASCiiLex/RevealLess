@@ -69,26 +69,6 @@
   margin-bottom: 10px;
 }
 
-.progresoTexto {
-  font-size: 11px;
-  color: var(--fog);
-  margin-bottom: 3px;
-}
-
-.progresoTrack {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--border);
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.progresoFill {
-  height: 100%;
-  background: var(--gold);
-  transition: width 0.3s ease;
-}
-
 /* Botones del sistema común; aquí solo su disposición. */
 .actions {
   display: flex;

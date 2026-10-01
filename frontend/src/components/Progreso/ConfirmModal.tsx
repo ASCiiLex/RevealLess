@@ -3,11 +3,12 @@ import botones from '../../styles/botones.module.css'
 
 interface Props {
   mensaje: string
+  textoConfirmar?: string
   onConfirm: () => void
   onCancel: () => void
 }
 
-export default function ConfirmModal({ mensaje, onConfirm, onCancel }: Props) {
+export default function ConfirmModal({ mensaje, textoConfirmar = 'Confirmar', onConfirm, onCancel }: Props) {
   return (
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -17,7 +18,7 @@ export default function ConfirmModal({ mensaje, onConfirm, onCancel }: Props) {
             Cancelar
           </button>
           <button className={botones.primario} onClick={onConfirm}>
-            Confirmar salto
+            {textoConfirmar}
           </button>
         </div>
       </div>

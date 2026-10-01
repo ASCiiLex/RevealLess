@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import Obra, UnidadNarrativa, TemaTransversal
+from narrative.models import Obra, Personaje, UnidadNarrativa, TemaTransversal
 from narrative.services import actualizar_progreso
 from subscriptions.services import crear_suscripcion
 
@@ -28,6 +28,17 @@ class ObraLandingAPIViewTests(TestCase):
         self.e2.refresh_from_db()
 
         self.tema = TemaTransversal.objects.create(obra=self.obra, nombre='Tema Landing')
+
+    def _nombres_personajes(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
+        return [p['nombre'] for p in response.data['personajes']]
+
+    def _personajes_ana_y_bruno(self):
+        ana = Personaje.objects.create(nombre='Ana')
+        bruno = Personaje.objects.create(nombre='Bruno')
+        ana.unidades.add(self.e1)
+        bruno.unidades.add(self.e1, self.e2)
 
     def test_requiere_autenticacion(self):
         response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
@@ -102,3 +113,14 @@ class ObraLandingAPIViewTests(TestCase):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
         self.assertEqual(response.data['progreso_pct'], 100)
+
+    def test_personajes_ordenados_por_apariciones_ya_vistas(self):
+        self._personajes_ana_y_bruno()
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        self.assertEqual(self._nombres_personajes(), ['Bruno', 'Ana'])
+
+    def test_apariciones_futuras_no_cuentan_para_el_orden(self):
+        self._personajes_ana_y_bruno()
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        # Empate en apariciones vistas y primera aparición: desempata el nombre.
+        self.assertEqual(self._nombres_personajes(), ['Ana', 'Bruno'])

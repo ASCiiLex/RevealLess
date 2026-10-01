@@ -42,9 +42,11 @@ class ProgresoAPIView(APIView):
         )
 
         try:
+            # Gestión explícita de progreso: se puede retroceder para corregir, siempre confirmando.
             progreso = actualizar_progreso(
                 request.user, obra, unidad,
                 confirmado=es_verdadero(request.data.get('confirmado', False)),
+                permitir_retroceso=True,
             )
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)

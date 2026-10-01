@@ -19,16 +19,21 @@ TIPO_PALABRAS_CLAVE = {
 
 
 class SaltoGrandeRequiereConfirmacion(Exception):
-    """Se lanza cuando un avance de progreso supera el umbral de salto
-    grande y no ha sido confirmado explícitamente por el usuario."""
+    """Cambio de progreso que exige confirmación explícita: un avance mayor que el
+    umbral o un retroceso permitido (salto negativo)."""
 
     def __init__(self, orden_actual, orden_nuevo):
         self.orden_actual = orden_actual
         self.orden_nuevo = orden_nuevo
         self.salto = orden_nuevo - orden_actual
-        super().__init__(
-            f'El salto de progreso ({self.salto} posiciones) requiere confirmación explícita.'
-        )
+        if self.salto < 0:
+            mensaje = (
+                f'Vas a retroceder {-self.salto} posiciones: '
+                'lo que viene después volverá a ocultarse.'
+            )
+        else:
+            mensaje = f'El salto de progreso ({self.salto} posiciones) requiere confirmación explícita.'
+        super().__init__(mensaje)
 
 
 def calcular_orden_absoluto(unidad):
@@ -39,7 +44,9 @@ def calcular_orden_absoluto(unidad):
     return max(unidad.orden_inicio - 1, 0)
 
 
-def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False):
+def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False, permitir_retroceso=False):
+    """permitir_retroceso: solo desde la gestión explícita de progreso (corregir un error).
+    Publicar nunca retrocede: ocultaría contenido como efecto secundario."""
     from ..models import ProgresoUsuario
 
     nuevo_orden = calcular_orden_absoluto(nueva_unidad)
@@ -52,11 +59,10 @@ def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False):
     if creado:
         return progreso
 
-    if nuevo_orden < progreso.orden_absoluto:
-        raise ValueError('El progreso no puede retroceder.')
-
     salto = nuevo_orden - progreso.orden_absoluto
-    if salto > UMBRAL_SALTO_GRANDE and not confirmado:
+    if salto < 0 and not permitir_retroceso:
+        raise ValueError('El progreso no puede retroceder.')
+    if not confirmado and (salto < 0 or salto > UMBRAL_SALTO_GRANDE):
         raise SaltoGrandeRequiereConfirmacion(progreso.orden_absoluto, nuevo_orden)
 
     progreso.unidad_actual = nueva_unidad

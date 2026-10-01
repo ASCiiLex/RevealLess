@@ -9,6 +9,7 @@ export interface UnidadNarrativa {
   orden_fin: number
   imagen: string
   padre: number | null
+  padre_etiqueta: string | null
 }
 
 export interface Progreso {
@@ -27,6 +28,7 @@ interface ActualizarProgresoOk {
   orden_absoluto: number
 }
 
+// salto < 0: retroceso.
 export interface RequiereConfirmacion {
   requiereConfirmacion: true
   detail: string

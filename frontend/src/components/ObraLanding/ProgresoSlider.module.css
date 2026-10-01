@@ -1,0 +1,67 @@
+.contenedor {
+  margin-bottom: 12px;
+}
+
+.texto {
+  font-size: 11px;
+  color: var(--fog);
+  margin-bottom: 3px;
+}
+
+.pista {
+  position: relative;
+}
+
+.rango {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+/* Etiqueta flotante sobre el pulgar mientras se arrastra. */
+.popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 220px;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 5;
+  text-align: center;
+}
+
+.popover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+}
+
+.popoverPadre {
+  font-size: 10px;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.popoverUnidad {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}

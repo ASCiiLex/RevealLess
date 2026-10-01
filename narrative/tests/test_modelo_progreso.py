@@ -37,10 +37,25 @@ class ProgresoUsuarioTests(TestCase):
             self.temporada.orden_inicio - 1,
         )
 
-    def test_no_se_permite_retroceder(self):
+    def test_por_defecto_no_se_permite_retroceder(self):
         actualizar_progreso(self.user, self.obra, self.e2)
         with self.assertRaises(ValueError):
             actualizar_progreso(self.user, self.obra, self.e1)
+
+    def test_retroceso_permitido_requiere_confirmacion(self):
+        actualizar_progreso(self.user, self.obra, self.e2)
+        with self.assertRaises(SaltoGrandeRequiereConfirmacion) as ctx:
+            actualizar_progreso(self.user, self.obra, self.e1, permitir_retroceso=True)
+        self.assertLess(ctx.exception.salto, 0)
+        self.assertIn('retroceder', str(ctx.exception))
+
+    def test_retroceso_permitido_y_confirmado_se_aplica(self):
+        actualizar_progreso(self.user, self.obra, self.e2)
+        progreso = actualizar_progreso(
+            self.user, self.obra, self.e1, confirmado=True, permitir_retroceso=True,
+        )
+        self.assertEqual(progreso.unidad_actual, self.e1)
+        self.assertEqual(progreso.orden_absoluto, self.e1.orden_inicio)
 
     def test_se_permite_avanzar(self):
         actualizar_progreso(self.user, self.obra, self.e1)

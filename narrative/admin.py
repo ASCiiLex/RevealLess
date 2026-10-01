@@ -62,6 +62,15 @@ class ObraAdminForm(ImagenDesdeUrlForm):
         }
 
 
+class ObraListadoForm(forms.ModelForm):
+    """Portada en el listado: input nativo (ruta + limpiar); la miniatura ya va en su columna."""
+
+    class Meta:
+        model = Obra
+        fields = ('imagen',)
+        widgets = {'imagen': forms.ClearableFileInput}
+
+
 @admin.register(Obra)
 class ObraAdmin(ModelAdmin):
     form = ObraAdminForm
@@ -88,6 +97,10 @@ class ObraAdmin(ModelAdmin):
             'fields': ('adapta_a',)
         }),
     )
+
+    def get_changelist_form(self, request, **kwargs):
+        kwargs['form'] = ObraListadoForm
+        return super().get_changelist_form(request, **kwargs)
 
     @admin.display(description='Portada')
     def imagen_tag(self, obj):

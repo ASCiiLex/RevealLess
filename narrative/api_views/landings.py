@@ -1,4 +1,4 @@
-from django.db.models import Max, Min, Q
+from django.db.models import Count, Max, Min, Q
 from django.http import Http404
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -18,16 +18,25 @@ def _total_suscriptores(**filtro):
 
 def personajes_visibles(obra, progreso):
     """Solo personajes cuya primera aparición en esta obra ya alcanzó el usuario:
-    listar uno que aún no ha salido sería en sí mismo un spoiler."""
+    listar uno que aún no ha salido sería en sí mismo un spoiler.
+    Orden: más apariciones ya vistas primero. Solo cuentan las alcanzadas; el total
+    revelaría quién sigue apareciendo más adelante."""
     if not progreso:
         return []
     return list(
         Personaje.objects.filter(unidades__obra=obra)
-        .annotate(primera_aparicion=Min('unidades__orden_fin', filter=Q(unidades__obra=obra)))
+        .annotate(
+            primera_aparicion=Min('unidades__orden_fin', filter=Q(unidades__obra=obra)),
+            apariciones_vistas=Count(
+                'unidades',
+                filter=Q(unidades__obra=obra, unidades__orden_fin__lte=progreso.orden_absoluto),
+                distinct=True,
+            ),
+        )
         .filter(primera_aparicion__lte=progreso.orden_absoluto)
         .prefetch_related('etapas__visible_tras')
         .distinct()
-        .order_by('nombre')
+        .order_by('-apariciones_vistas', 'primera_aparicion', 'nombre')
     )
 
 

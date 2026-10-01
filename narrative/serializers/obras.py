@@ -92,10 +92,10 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         return [{'id': o.id, 'titulo': o.titulo, 'slug': o.slug} for o in obj.obras_relacionadas()]
 
     def get_personajes(self, obj):
-        # La vista ya filtra por progreso; aquí se resuelve la etapa visible dentro de esta obra.
+        # La vista ya filtra por progreso y ordena por apariciones vistas; aquí solo la etapa visible.
         suscripciones = self.context.get('suscripcion_id_por_personaje', {})
         progreso = self.context.get('progreso_por_obra', {})
-        datos = [
+        return [
             {
                 'id': p.id,
                 **presentacion_personaje(p, progreso, obra_id=obj.id),
@@ -103,4 +103,3 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
             }
             for p in self.context.get('personajes_visibles', [])
         ]
-        return sorted(datos, key=lambda d: d['nombre'].lower())

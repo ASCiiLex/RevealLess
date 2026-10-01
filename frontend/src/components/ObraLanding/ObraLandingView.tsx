@@ -8,19 +8,25 @@ import { buildTree } from '../../utils/buildTree'
 import { calcularProgresoPct } from '../../utils/progresoPct'
 import UnidadNode from '../Progreso/UnidadNode'
 import ConfirmModal from '../Progreso/ConfirmModal'
+import ProgresoSlider from './ProgresoSlider'
 
 interface Props {
   obraSlug: string
+}
+
+interface Pendiente {
+  unidadId: number
+  mensaje: string
+  retroceso: boolean
 }
 
 export default function ObraLandingView({ obraSlug }: Props) {
   const [obra, setObra] = useState<ObraLanding | null>(null)
   const [progresoData, setProgresoData] = useState<ProgresoData | null>(null)
   const [sinopsisAbierta, setSinopsisAbierta] = useState(false)
-  const [pendienteConfirmar, setPendienteConfirmar] = useState<{
-    unidadId: number
-    mensaje: string
-  } | null>(null)
+  const [pendienteConfirmar, setPendienteConfirmar] = useState<Pendiente | null>(null)
+  // Remonta el deslizador al resolver (aplicado o cancelado) para volver al progreso real.
+  const [sliderKey, setSliderKey] = useState(0)
 
   useEffect(() => {
     fetchObraLanding(obraSlug).then(setObra)
@@ -63,12 +69,13 @@ export default function ObraLandingView({ obraSlug }: Props) {
     const resultado = await actualizarProgreso(obraSlug, unidadId, confirmado)
 
     if ('requiereConfirmacion' in resultado) {
-      setPendienteConfirmar({ unidadId, mensaje: resultado.detail })
+      setPendienteConfirmar({ unidadId, mensaje: resultado.detail, retroceso: resultado.salto < 0 })
       return
     }
 
     setPendienteConfirmar(null)
     setProgresoData((prev) => (prev ? { ...prev, progreso: resultado } : prev))
+    setSliderKey((k) => k + 1)
 
     // Barra al instante; después se refresca la landing para los personajes ya desbloqueados.
     if (progresoData) {
@@ -77,6 +84,11 @@ export default function ObraLandingView({ obraSlug }: Props) {
       setObra((prev) => (prev ? { ...prev, progreso_pct: pct } : prev))
     }
     fetchObraLanding(obraSlug).then(setObra)
+  }
+
+  function cancelarConfirmacion() {
+    setPendienteConfirmar(null)
+    setSliderKey((k) => k + 1)
   }
 
   if (!obra) {
@@ -106,13 +118,14 @@ export default function ObraLandingView({ obraSlug }: Props) {
             {obra.total_suscriptores} suscriptor{obra.total_suscriptores === 1 ? '' : 'es'}
           </div>
 
-          {obra.progreso_pct !== null && (
-            <div>
-              <div className={styles.progresoTexto}>Tu progreso: {obra.progreso_pct}%</div>
-              <div className={styles.progresoTrack}>
-                <div className={styles.progresoFill} style={{ width: `${obra.progreso_pct}%` }} />
-              </div>
-            </div>
+          {progresoData && (
+            <ProgresoSlider
+              key={sliderKey}
+              unidades={progresoData.unidades}
+              ordenActual={progresoData.progreso?.orden_absoluto ?? null}
+              pct={obra.progreso_pct}
+              onCommit={(id) => handleSelectUnidad(id)}
+            />
           )}
 
           <div className={styles.actions}>
@@ -225,8 +238,9 @@ export default function ObraLandingView({ obraSlug }: Props) {
       {pendienteConfirmar && (
         <ConfirmModal
           mensaje={pendienteConfirmar.mensaje}
+          textoConfirmar={pendienteConfirmar.retroceso ? 'Retroceder' : 'Confirmar salto'}
           onConfirm={() => handleSelectUnidad(pendienteConfirmar.unidadId, true)}
-          onCancel={() => setPendienteConfirmar(null)}
+          onCancel={cancelarConfirmacion}
         />
       )}
     </div>
