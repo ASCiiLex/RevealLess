@@ -2,7 +2,7 @@ import math
 
 from rest_framework import serializers
 
-from ..models import Obra
+from ..models import Obra, RelevanciaPersonaje
 from ..services.personajes import presentacion_personaje
 from .temas import CarruselMixin, TemaConSuscripcionSerializer
 
@@ -55,13 +55,14 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
     categorias_detalle = serializers.SerializerMethodField()
     obras_relacionadas = serializers.SerializerMethodField()
     personajes = serializers.SerializerMethodField()
+    niveles_relevancia = serializers.SerializerMethodField()
 
     class Meta:
         model = Obra
         fields = [
             'id', 'titulo', 'slug', 'sinopsis', 'imagen_url', 'categorias', 'categorias_detalle',
             'suscrito', 'suscripcion_id', 'progreso_pct', 'total_suscriptores', 'temas',
-            'obras_relacionadas', 'personajes',
+            'obras_relacionadas', 'personajes', 'niveles_relevancia',
         ]
 
     def get_progreso_pct(self, obj):
@@ -92,14 +93,21 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         return [{'id': o.id, 'titulo': o.titulo, 'slug': o.slug} for o in obj.obras_relacionadas()]
 
     def get_personajes(self, obj):
-        # La vista ya filtra por progreso y ordena por apariciones vistas; aquí solo la etapa visible.
+        # La vista ya filtra por progreso y ordena; aquí solo la etapa visible y el nivel para los chips.
         suscripciones = self.context.get('suscripcion_id_por_personaje', {})
         progreso = self.context.get('progreso_por_obra', {})
         return [
             {
                 'id': p.id,
                 **presentacion_personaje(p, progreso, obra_id=obj.id),
+                'nivel': getattr(p, 'nivel_relevancia', RelevanciaPersonaje.NIVEL_SIN_MARCAR),
                 'suscripcion_id': suscripciones.get(p.id),
             }
             for p in self.context.get('personajes_visibles', [])
+        ]
+
+    def get_niveles_relevancia(self, obj):
+        return [
+            {'valor': valor, 'nombre': nombre, 'por_defecto': valor >= RelevanciaPersonaje.NIVEL_MINIMO_POR_DEFECTO}
+            for valor, nombre in RelevanciaPersonaje.NIVEL_CHOICES
         ]

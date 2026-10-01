@@ -27,6 +27,8 @@ export default function ObraLandingView({ obraSlug }: Props) {
   const [pendienteConfirmar, setPendienteConfirmar] = useState<Pendiente | null>(null)
   // Remonta el deslizador al resolver (aplicado o cancelado) para volver al progreso real.
   const [sliderKey, setSliderKey] = useState(0)
+  // null = selección por defecto (protagonistas y principales).
+  const [nivelesElegidos, setNivelesElegidos] = useState<number[] | null>(null)
 
   useEffect(() => {
     fetchObraLanding(obraSlug).then(setObra)
@@ -91,6 +93,12 @@ export default function ObraLandingView({ obraSlug }: Props) {
     setSliderKey((k) => k + 1)
   }
 
+  function toggleNivel(valor: number, activos: number[]) {
+    const siguiente = activos.includes(valor) ? activos.filter((v) => v !== valor) : [...activos, valor]
+    // Siempre queda al menos un nivel marcado.
+    if (siguiente.length > 0) setNivelesElegidos(siguiente)
+  }
+
   if (!obra) {
     return null
   }
@@ -98,6 +106,16 @@ export default function ObraLandingView({ obraSlug }: Props) {
   const arbol = progresoData ? buildTree(progresoData.unidades) : []
   const actualId = progresoData?.progreso?.unidad_actual.id ?? -1
   const actualOrden = progresoData?.progreso?.unidad_actual.orden_inicio ?? -1
+
+  // Chips solo para niveles con algún personaje ya visible.
+  const nivelesPresentes = obra.niveles_relevancia
+    .map((n) => ({ ...n, total: obra.personajes.filter((p) => p.nivel === n.valor).length }))
+    .filter((n) => n.total > 0)
+  const presentes = nivelesPresentes.map((n) => n.valor)
+  const porDefecto = nivelesPresentes.filter((n) => n.por_defecto).map((n) => n.valor)
+  const elegidos = (nivelesElegidos ?? []).filter((v) => presentes.includes(v))
+  const activos = elegidos.length ? elegidos : porDefecto.length ? porDefecto : presentes
+  const personajesMostrados = obra.personajes.filter((p) => activos.includes(p.nivel))
 
   return (
     <div className={styles.wrapper}>
@@ -182,9 +200,28 @@ export default function ObraLandingView({ obraSlug }: Props) {
 
       <section className={styles.bloque}>
         <h2 className={styles.bloqueTitulo}>Personajes</h2>
-        {obra.personajes.length > 0 ? (
+        {nivelesPresentes.length > 1 && (
+          <div className={styles.niveles} role="group" aria-label="Filtrar personajes por relevancia">
+            {nivelesPresentes.map((n) => {
+              const activo = activos.includes(n.valor)
+              return (
+                <button
+                  key={n.valor}
+                  type="button"
+                  className={`${styles.nivel} ${activo ? styles.nivelActivo : ''}`}
+                  aria-pressed={activo}
+                  onClick={() => toggleNivel(n.valor, activos)}
+                >
+                  {n.nombre}
+                  <span className={styles.nivelTotal}>{n.total}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+        {personajesMostrados.length > 0 ? (
           <div className={styles.personajes}>
-            {obra.personajes.map((p) => {
+            {personajesMostrados.map((p) => {
               const siguiendo = p.suscripcion_id !== null
               return (
                 <div key={p.id} className={styles.personaje}>

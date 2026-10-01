@@ -23,7 +23,14 @@ export interface PersonajeLanding {
   nombre: string
   imagen_url: string
   nota: string | null
+  nivel: number
   suscripcion_id: number | null
+}
+
+export interface NivelRelevancia {
+  valor: number
+  nombre: string
+  por_defecto: boolean
 }
 
 export interface ObraLanding {
@@ -41,6 +48,7 @@ export interface ObraLanding {
   temas: TemaLanding[]
   obras_relacionadas: ObraRelacionada[]
   personajes: PersonajeLanding[]
+  niveles_relevancia: NivelRelevancia[]
 }
 
 export function fetchObraLanding(obraSlug: string): Promise<ObraLanding> {

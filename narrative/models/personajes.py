@@ -28,8 +28,9 @@ class Personaje(models.Model):
     obra, y obra_cruzada si la declara). A diferencia de TemaTransversal,
     no pertenece a una única Obra.
 
-    unidades: solo apariciones confirmadas. Es lo único que leen las landings;
-    las propuestas pendientes viven en PropuestaAparicion."""
+    unidades: solo apariciones confirmadas. Es lo único que leen las landings.
+    Se escribe siempre a través de PropuestaAparicion (aprobar, rechazar, mover),
+    para que cada aparición tenga origen y estado."""
 
     nombre = models.CharField(
         max_length=150, unique=True,
@@ -107,6 +108,8 @@ class RelevanciaPersonaje(models.Model):
     NIVEL_PRINCIPAL = 40
     NIVEL_PROTAGONISTA = 50
     NIVEL_SIN_MARCAR = NIVEL_SECUNDARIO
+    # Niveles que el carrusel muestra de entrada.
+    NIVEL_MINIMO_POR_DEFECTO = NIVEL_PRINCIPAL
     NIVEL_CHOICES = [
         (NIVEL_PROTAGONISTA, 'Protagonista'),
         (NIVEL_PRINCIPAL, 'Principal'),
@@ -132,15 +135,17 @@ class RelevanciaPersonaje(models.Model):
 
 
 class PropuestaAparicion(models.Model):
-    """Aparición de un personaje en una unidad, pendiente de revisión.
-    Nunca es visible por sí misma: solo al aprobarse pasa a Personaje.unidades
-    (asistente, no oráculo; mismo patrón que SolicitudTema)."""
+    """Aparición de un personaje en una unidad. Solo la aprobada pasa a Personaje.unidades
+    y es visible (asistente, no oráculo; mismo patrón que SolicitudTema).
+    Las añadidas a mano desde el admin entran con origen Manual."""
 
     ORIGEN_WIKIDATA = 'wikidata'
     ORIGEN_IA = 'ia'
+    ORIGEN_MANUAL = 'manual'
     ORIGEN_CHOICES = [
         (ORIGEN_WIKIDATA, 'Wikidata'),
         (ORIGEN_IA, 'IA (Haiku)'),
+        (ORIGEN_MANUAL, 'Manual'),
     ]
 
     ESTADO_PENDIENTE = 'pendiente'
@@ -154,7 +159,7 @@ class PropuestaAparicion(models.Model):
 
     personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='propuestas')
     unidad = models.ForeignKey(UnidadNarrativa, on_delete=models.CASCADE, related_name='propuestas_personaje')
-    origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES)
+    origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES, default=ORIGEN_MANUAL)
     confianza = models.FloatField(null=True, blank=True)
     nota = models.CharField(max_length=300, blank=True, help_text='Justificación breve de la IA, si la hay.')
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)

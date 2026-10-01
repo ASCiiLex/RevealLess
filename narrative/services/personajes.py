@@ -33,13 +33,29 @@ def rechazar_propuesta(propuesta):
 
 
 @transaction.atomic
-def mover_aparicion(propuesta, unidad_anterior_id):
-    """Si se corrige la unidad de una propuesta aprobada, la aparición se mueve con ella."""
-    if propuesta.estado != PropuestaAparicion.ESTADO_APROBADA or unidad_anterior_id == propuesta.unidad_id:
+def aplicar_cambio_propuesta(propuesta, estado_anterior=None, unidad_anterior_id=None):
+    """Sincroniza Personaje.unidades tras editar estado o unidad a mano (ya guardada).
+    estado_anterior/unidad_anterior_id: valores en BD antes de guardar; None si es nueva."""
+    if propuesta.estado == estado_anterior and propuesta.unidad_id == unidad_anterior_id:
         return propuesta
-    propuesta.personaje.unidades.remove(unidad_anterior_id)
-    propuesta.personaje.unidades.add(propuesta.unidad)
+    if estado_anterior == PropuestaAparicion.ESTADO_APROBADA and unidad_anterior_id is not None:
+        propuesta.personaje.unidades.remove(unidad_anterior_id)
+    if propuesta.estado == PropuestaAparicion.ESTADO_APROBADA:
+        return aprobar_propuesta(propuesta)
+    if propuesta.estado == PropuestaAparicion.ESTADO_RECHAZADA:
+        return rechazar_propuesta(propuesta)
+    # Vuelta a pendiente.
+    if propuesta.resuelto_en is not None:
+        propuesta.resuelto_en = None
+        propuesta.save(update_fields=['resuelto_en'])
     return propuesta
+
+
+@transaction.atomic
+def eliminar_propuesta(propuesta):
+    if propuesta.estado == PropuestaAparicion.ESTADO_APROBADA:
+        propuesta.personaje.unidades.remove(propuesta.unidad_id)
+    propuesta.delete()
 
 
 def ordenar_por_relevancia(personajes, obra, usuario):
@@ -47,7 +63,8 @@ def ordenar_por_relevancia(personajes, obra, usuario):
     PESO_POSTS × posts visibles etiquetados + apariciones vistas, primera aparición y nombre.
     Solo cuentan posts etiquetados con el personaje (los anclados a una unidad hablan del
     episodio y sumarían a todos los que salen en él) y que el usuario puede ver: contar
-    todos insinuaría quién gana peso más adelante. Espera las anotaciones de personajes_visibles."""
+    todos insinuaría quién gana peso más adelante. Espera las anotaciones de personajes_visibles.
+    Deja el nivel en p.nivel_relevancia para el filtro por chips."""
     from posts.models import Post  # import diferido: posts depende de narrative
 
     ids = [p.id for p in personajes]
@@ -62,11 +79,12 @@ def ordenar_por_relevancia(personajes, obra, usuario):
     niveles = dict(
         RelevanciaPersonaje.objects.filter(obra=obra, personaje_id__in=ids).values_list('personaje_id', 'nivel')
     )
+    for p in personajes:
+        p.nivel_relevancia = niveles.get(p.id, RelevanciaPersonaje.NIVEL_SIN_MARCAR)
 
     def clave(p):
-        nivel = niveles.get(p.id, RelevanciaPersonaje.NIVEL_SIN_MARCAR)
         peso = PESO_POSTS * posts[p.id] + p.apariciones_vistas
-        return (-nivel, -peso, p.primera_aparicion, p.nombre.lower())
+        return (-p.nivel_relevancia, -peso, p.primera_aparicion, p.nombre.lower())
 
     return sorted(personajes, key=clave)
 

@@ -157,6 +157,50 @@
   border-color: var(--ink);
 }
 
+/* Filtro por relevancia: chips acumulativos (O). */
+.niveles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.nivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fog);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.nivel:hover,
+.nivel:focus-visible {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.nivelActivo {
+  color: var(--marino);
+  background: color-mix(in srgb, var(--accent) 22%, var(--paper));
+  border-color: var(--accent);
+}
+
+.nivelTotal {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
 /* Carrusel horizontal: desliza con el dedo o la rueda, se ajusta a cada ficha. */
 .personajes {
   display: flex;

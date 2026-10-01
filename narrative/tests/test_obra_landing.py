@@ -30,10 +30,12 @@ class ObraLandingAPIViewTests(TestCase):
 
         self.tema = TemaTransversal.objects.create(obra=self.obra, nombre='Tema Landing')
 
-    def _nombres_personajes(self):
+    def _landing(self):
         self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        return [p['nombre'] for p in response.data['personajes']]
+        return self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug])).data
+
+    def _nombres_personajes(self):
+        return [p['nombre'] for p in self._landing()['personajes']]
 
     def _personajes_ana_y_bruno(self):
         ana = Personaje.objects.create(nombre='Ana')
@@ -63,43 +65,29 @@ class ObraLandingAPIViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_incluye_sinopsis(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        self.assertEqual(response.data['sinopsis'], 'Una sinopsis de prueba')
+        self.assertEqual(self._landing()['sinopsis'], 'Una sinopsis de prueba')
 
     def test_progreso_pct_none_sin_progreso(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        self.assertIsNone(response.data['progreso_pct'])
+        self.assertIsNone(self._landing()['progreso_pct'])
 
     def test_progreso_pct_calculado_con_progreso(self):
         actualizar_progreso(self.usuario, self.obra, self.e2)
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        self.assertEqual(response.data['progreso_pct'], 100)
+        self.assertEqual(self._landing()['progreso_pct'], 100)
 
     def test_total_suscriptores_cuenta_usuarios_distintos(self):
         crear_suscripcion(self.usuario, self.obra)
         crear_suscripcion(self.otro_usuario, self.obra, tema=self.tema)
-
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        self.assertEqual(response.data['total_suscriptores'], 2)
+        self.assertEqual(self._landing()['total_suscriptores'], 2)
 
     def test_incluye_temas_con_estado_de_suscripcion(self):
         crear_suscripcion(self.usuario, self.obra, tema=self.tema)
-
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        tema_data = response.data['temas'][0]
+        tema_data = self._landing()['temas'][0]
         self.assertEqual(tema_data['nombre'], 'Tema Landing')
         self.assertTrue(tema_data['suscrito'])
         self.assertIsNotNone(tema_data['suscripcion_id'])
 
     def test_suscrito_false_sin_suscripcion_de_obra(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        self.assertFalse(response.data['suscrito'])
+        self.assertFalse(self._landing()['suscrito'])
 
     def test_progreso_pct_no_redondea_hacia_arriba_al_100_si_falta_algo(self):
         """Caso real detectado: 1160 de 1163 (99.74%) no debe mostrarse
@@ -123,9 +111,7 @@ class ObraLandingAPIViewTests(TestCase):
 
     def test_progreso_pct_muestra_100_si_es_exactamente_completo(self):
         actualizar_progreso(self.usuario, self.obra, self.e2)
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug]))
-        self.assertEqual(response.data['progreso_pct'], 100)
+        self.assertEqual(self._landing()['progreso_pct'], 100)
 
     def test_personajes_ordenados_por_apariciones_ya_vistas(self):
         self._personajes_ana_y_bruno()
@@ -157,6 +143,20 @@ class ObraLandingAPIViewTests(TestCase):
         actualizar_progreso(self.usuario, self.obra, self.e2)
         # Mismo nivel: decide el peso (Bruno tiene dos apariciones vistas).
         self.assertEqual(self._nombres_personajes(), ['Bruno', 'Ana'])
+
+    def test_cada_personaje_incluye_su_nivel(self):
+        ana, _ = self._personajes_ana_y_bruno()
+        self._relevancia(ana, RelevanciaPersonaje.NIVEL_PRINCIPAL)
+        actualizar_progreso(self.usuario, self.obra, self.e1)
+        niveles = {p['nombre']: p['nivel'] for p in self._landing()['personajes']}
+        self.assertEqual(niveles, {
+            'Ana': RelevanciaPersonaje.NIVEL_PRINCIPAL,
+            'Bruno': RelevanciaPersonaje.NIVEL_SIN_MARCAR,
+        })
+
+    def test_niveles_por_defecto_son_protagonista_y_principal(self):
+        por_defecto = [n['nombre'] for n in self._landing()['niveles_relevancia'] if n['por_defecto']]
+        self.assertEqual(por_defecto, ['Protagonista', 'Principal'])
 
     def test_un_post_visible_pesa_mas_que_una_aparicion(self):
         ana, _ = self._personajes_ana_y_bruno()

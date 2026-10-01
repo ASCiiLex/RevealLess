@@ -11,7 +11,9 @@ from .models import (
     ExternalId, Personaje, EtapaPersonaje, RelevanciaPersonaje, PropuestaAparicion,
 )
 from .services import aprobar_solicitud_tema, rechazar_solicitud_tema
-from .services.personajes import aprobar_propuesta, fusionar_personajes, mover_aparicion, rechazar_propuesta
+from .services.personajes import (
+    aplicar_cambio_propuesta, aprobar_propuesta, eliminar_propuesta, fusionar_personajes, rechazar_propuesta,
+)
 
 # Cambios que alteran orden_inicio/orden_fin de la obra.
 CAMPOS_QUE_REORDENAN = {'orden_local', 'padre', 'orden_manual'}
@@ -184,7 +186,8 @@ class TemaTransversalAdmin(ModelAdmin):
 class PersonajeAdminForm(ImagenDesdeUrlForm):
     class Meta:
         model = Personaje
-        fields = '__all__'
+        # Las apariciones se gestionan solo con propuestas (inline), para conservar origen y estado.
+        exclude = ('unidades',)
 
 
 class EtapaPersonajeForm(ImagenDesdeUrlForm):
@@ -213,17 +216,21 @@ class RelevanciaPersonajeInline(TabularInline):
 
 
 class PropuestaAparicionInline(TabularInline):
-    """Solo consulta: las propuestas se revisan desde su propio listado."""
+    """Apariciones del personaje. Solo las aprobadas se ven en las landings;
+    una fila nueva es una aparición manual."""
 
     model = PropuestaAparicion
     extra = 0
-    fields = ('unidad', 'origen', 'confianza', 'estado', 'nota')
-    readonly_fields = fields
-    can_delete = False
+    fields = ('unidad', 'estado', 'origen', 'confianza', 'nota')
+    readonly_fields = ('origen', 'confianza')
+    autocomplete_fields = ('unidad',)
+    ordering = ('unidad__obra__titulo', 'unidad__orden_inicio')
     show_change_link = True
+    verbose_name = 'Aparición'
+    verbose_name_plural = 'Apariciones (propuestas y manuales)'
 
-    def has_add_permission(self, request, obj=None):
-        return False
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('unidad__obra')
 
 
 @admin.register(Personaje)
@@ -231,7 +238,6 @@ class PersonajeAdmin(ModelAdmin):
     form = PersonajeAdminForm
     list_display = ('nombre', 'wikidata_id', 'total_apariciones', 'total_etapas', 'total_pendientes', 'imagen_tag')
     search_fields = ('nombre', 'wikidata_id', 'etapas__alias')
-    autocomplete_fields = ('unidades',)
     inlines = [RelevanciaPersonajeInline, EtapaPersonajeInline, PropuestaAparicionInline]
     actions = ['fusionar_seleccionados']
 
@@ -245,6 +251,30 @@ class PersonajeAdmin(ModelAdmin):
                 distinct=True,
             ),
         )
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model is not PropuestaAparicion:
+            return super().save_formset(request, form, formset, change)
+
+        # Estado y unidad en BD antes de guardar: decide qué apariciones añadir o retirar.
+        ids = [f.instance.pk for f in formset.initial_forms if f.instance.pk]
+        previos = {
+            pk: (estado, unidad_id)
+            for pk, estado, unidad_id in PropuestaAparicion.objects.filter(pk__in=ids)
+            .values_list('pk', 'estado', 'unidad_id')
+        }
+        borradas = [f.instance.pk for f in formset.deleted_forms if f.instance.pk]
+
+        formset.save()
+
+        for pk in borradas:
+            estado, unidad_id = previos[pk]
+            if estado == PropuestaAparicion.ESTADO_APROBADA:
+                form.instance.unidades.remove(unidad_id)
+        for propuesta in formset.new_objects:
+            aplicar_cambio_propuesta(propuesta)
+        for propuesta, _campos in formset.changed_objects:
+            aplicar_cambio_propuesta(propuesta, *previos[propuesta.pk])
 
     @admin.display(description='Apariciones', ordering='apariciones')
     def total_apariciones(self, obj):
@@ -317,7 +347,7 @@ class PropuestaAparicionAdmin(ModelAdmin):
     search_fields = ('personaje__nombre', 'unidad__nombre', 'unidad__obra__titulo')
     list_select_related = ('personaje', 'unidad__obra')
     autocomplete_fields = ('personaje', 'unidad')
-    readonly_fields = ('estado', 'resuelto_en', 'creado_en')
+    readonly_fields = ('resuelto_en', 'creado_en')
     actions = ['aprobar_propuestas', 'rechazar_propuestas']
 
     @admin.display(description='Obra', ordering='unidad__obra__titulo')
@@ -325,10 +355,20 @@ class PropuestaAparicionAdmin(ModelAdmin):
         return obj.unidad.obra
 
     def save_model(self, request, obj, form, change):
-        anterior = form.initial.get('unidad') if change else None
+        # Leído de BD: el formulario del listado no trae el estado.
+        previo = None
+        if change:
+            previo = PropuestaAparicion.objects.filter(pk=obj.pk).values_list('estado', 'unidad_id').first()
         super().save_model(request, obj, form, change)
-        if change and 'unidad' in form.changed_data:
-            mover_aparicion(obj, anterior)
+        aplicar_cambio_propuesta(obj, *(previo or (None, None)))
+
+    def delete_model(self, request, obj):
+        eliminar_propuesta(obj)
+
+    def delete_queryset(self, request, queryset):
+        with transaction.atomic():
+            for propuesta in queryset.select_related('personaje'):
+                eliminar_propuesta(propuesta)
 
     @admin.action(description='Aprobar (el personaje pasa a ser visible desde esa unidad)')
     def aprobar_propuestas(self, request, queryset):
