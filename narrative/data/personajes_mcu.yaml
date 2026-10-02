@@ -1,0 +1,127 @@
+# MCU (Películas): relevancia, apariciones de los personajes clave y etapas.
+# Cada etapa se aplica al terminar la película indicada; los títulos deben coincidir exactamente.
+obras: [mcu-peliculas]
+tipo_unidad: pelicula
+coincidencia: exacta
+
+nuevos: ["Clint Barton", "Shuri"]
+
+relevancias:
+  # Principales: Vengadores originales y cabezas de cada saga
+  - {personaje: 14, nivel: principal}            # Tony Stark
+  - {personaje: 22, nivel: principal}            # Steve Rogers
+  - {personaje: 48, nivel: principal}            # Thor
+  - {personaje: 20, nivel: principal}            # Natasha Romanoff
+  - {personaje: 24, nivel: principal}            # Bruce Banner
+  - {personaje: "Clint Barton", nivel: principal}
+  - {personaje: 3, nivel: principal}             # Peter Parker
+  - {personaje: 62, nivel: principal}            # Doctor Strange
+  - {personaje: 139, nivel: principal}           # T'Challa
+  - {personaje: 26, nivel: principal}            # Carol Danvers
+  - {personaje: 98, nivel: principal}            # Peter Quill
+  - {personaje: 1068, nivel: principal}          # Wanda Maximoff
+  - {personaje: 122, nivel: principal}           # Scott Lang
+  # Destacados
+  - {personaje: 5, nivel: destacado}             # Halcón (Sam Wilson)
+  - {personaje: 10, nivel: destacado}            # Bucky Barnes
+  - {personaje: 89, nivel: destacado}            # Loki
+  - {personaje: 21, nivel: destacado}            # Nick Fury
+  - {personaje: 19, nivel: destacado}            # James Rhodes
+  - {personaje: 54, nivel: destacado}            # Pepper Potts
+  - {personaje: 17, nivel: destacado}            # Phil Coulson
+  - {personaje: 99, nivel: destacado}            # Gamora
+  - {personaje: 100, nivel: destacado}           # Drax
+  - {personaje: 102, nivel: destacado}           # Rocket
+  - {personaje: 101, nivel: destacado}           # Groot
+  - {personaje: 664, nivel: destacado}           # Nebula
+  - {personaje: 107, nivel: destacado}           # Visión
+  - {personaje: 123, nivel: destacado}           # Hope van Dyne
+  - {personaje: 132, nivel: destacado}           # Wong
+  - {personaje: 657, nivel: destacado}           # Valquiria
+  - {personaje: 493, nivel: destacado}           # Yelena Belova
+  - {personaje: "Shuri", nivel: destacado}
+  # Thanos sube a Principal con su etapa de Infinity War
+  - {personaje: 15, nivel: secundario}           # Thanos
+  - {personaje: 16, nivel: episodico}            # Stan Lee (cameos)
+
+apariciones:
+  - personaje: 14   # Tony Stark
+    unidades: ["Iron Man", "Iron Man 2", "Los Vengadores", "Iron Man 3", "Vengadores: La era de Ultrón", "Capitán América: Civil War", "Spider-Man: Homecoming", "Vengadores: Infinity War", "Vengadores: Endgame"]
+  - personaje: 22   # Steve Rogers
+    unidades: ["Capitán América: El primer vengador", "Los Vengadores", "Capitán América: El soldado de invierno", "Vengadores: La era de Ultrón", "Capitán América: Civil War", "Vengadores: Infinity War", "Vengadores: Endgame"]
+  - personaje: 48   # Thor
+    unidades: ["Thor", "Los Vengadores", "Thor: Un mundo oscuro", "Vengadores: La era de Ultrón", "Thor: Ragnarok", "Vengadores: Infinity War", "Vengadores: Endgame", "Thor: Amor y trueno"]
+  - personaje: 20   # Natasha Romanoff
+    unidades: ["Iron Man 2", "Los Vengadores", "Capitán América: El soldado de invierno", "Vengadores: La era de Ultrón", "Capitán América: Civil War", "Vengadores: Infinity War", "Vengadores: Endgame", "Black Widow"]
+  - personaje: 24   # Bruce Banner
+    unidades: ["El increíble Hulk", "Los Vengadores", "Vengadores: La era de Ultrón", "Thor: Ragnarok", "Vengadores: Infinity War", "Vengadores: Endgame"]
+  - personaje: "Clint Barton"
+    unidades: ["Thor", "Los Vengadores", "Vengadores: La era de Ultrón", "Capitán América: Civil War", "Vengadores: Endgame"]
+  - personaje: 3    # Peter Parker
+    unidades: ["Capitán América: Civil War", "Spider-Man: Homecoming", "Vengadores: Infinity War", "Vengadores: Endgame", "Spider-Man: Lejos de casa", "Spider-Man: No Way Home"]
+  - personaje: 62   # Doctor Strange
+    unidades: ["Doctor Strange", "Thor: Ragnarok", "Vengadores: Infinity War", "Vengadores: Endgame", "Spider-Man: No Way Home", "Doctor Strange en el multiverso de la locura"]
+  - personaje: 139  # T'Challa
+    unidades: ["Capitán América: Civil War", "Black Panther", "Vengadores: Infinity War", "Vengadores: Endgame"]
+  - personaje: "Shuri"
+    unidades: ["Black Panther", "Vengadores: Infinity War", "Vengadores: Endgame", "Black Panther: Wakanda por siempre"]
+  - personaje: 26   # Carol Danvers
+    unidades: ["Capitana Marvel", "Vengadores: Endgame", "The Marvels"]
+  - personaje: 98   # Peter Quill
+    unidades: ["Guardianes de la Galaxia", "Guardianes de la Galaxia Vol. 2", "Vengadores: Infinity War", "Vengadores: Endgame", "Guardianes de la Galaxia Vol. 3"]
+  - personaje: 99   # Gamora
+    unidades: ["Guardianes de la Galaxia", "Guardianes de la Galaxia Vol. 2", "Vengadores: Infinity War", "Vengadores: Endgame", "Guardianes de la Galaxia Vol. 3"]
+  - personaje: 1068 # Wanda Maximoff
+    unidades: ["Vengadores: La era de Ultrón", "Capitán América: Civil War", "Vengadores: Infinity War", "Vengadores: Endgame", "Doctor Strange en el multiverso de la locura"]
+  - personaje: 107  # Visión
+    unidades: ["Vengadores: La era de Ultrón", "Capitán América: Civil War", "Vengadores: Infinity War"]
+  - personaje: 5    # Halcón
+    unidades: ["Capitán América: El soldado de invierno", "Vengadores: La era de Ultrón", "Ant-Man", "Capitán América: Civil War", "Vengadores: Infinity War", "Vengadores: Endgame", "Capitán América: Un nuevo mundo"]
+  - personaje: 10   # Bucky Barnes
+    unidades: ["Capitán América: El primer vengador", "Capitán América: El soldado de invierno", "Capitán América: Civil War", "Vengadores: Infinity War", "Vengadores: Endgame", "Thunderbolts*"]
+  - personaje: 89   # Loki
+    unidades: ["Thor", "Los Vengadores", "Thor: Un mundo oscuro", "Thor: Ragnarok", "Vengadores: Infinity War", "Vengadores: Endgame"]
+  - personaje: 15   # Thanos
+    unidades: ["Los Vengadores", "Guardianes de la Galaxia", "Vengadores: La era de Ultrón", "Vengadores: Infinity War", "Vengadores: Endgame"]
+  - personaje: 122  # Scott Lang
+    unidades: ["Ant-Man", "Capitán América: Civil War", "Ant-Man y la Avispa", "Vengadores: Endgame", "Ant-Man y la Avispa: Quantumania"]
+  - personaje: 123  # Hope van Dyne
+    unidades: ["Ant-Man", "Ant-Man y la Avispa", "Vengadores: Endgame", "Ant-Man y la Avispa: Quantumania"]
+  - personaje: 21   # Nick Fury
+    unidades: ["Iron Man", "Iron Man 2", "Capitán América: El primer vengador", "Los Vengadores", "Capitán América: El soldado de invierno", "Vengadores: La era de Ultrón", "Capitana Marvel", "Vengadores: Endgame", "Spider-Man: Lejos de casa", "The Marvels"]
+  - personaje: 19   # James Rhodes
+    unidades: ["Iron Man", "Iron Man 2", "Iron Man 3", "Vengadores: La era de Ultrón", "Capitán América: Civil War", "Vengadores: Infinity War", "Vengadores: Endgame"]
+  - personaje: 657  # Valquiria
+    unidades: ["Thor: Ragnarok", "Vengadores: Endgame", "Thor: Amor y trueno"]
+  - personaje: 132  # Wong
+    unidades: ["Doctor Strange", "Vengadores: Infinity War", "Vengadores: Endgame", "Spider-Man: No Way Home", "Doctor Strange en el multiverso de la locura"]
+  - personaje: 493  # Yelena Belova
+    unidades: ["Black Widow", "Thunderbolts*"]
+
+etapas:
+  - {personaje: 14, tras: "Iron Man", nota: "«Yo soy Iron Man»"}
+  - {personaje: 14, tras: "Vengadores: Endgame", nota: "Cayó en la batalla final"}
+  - {personaje: 22, tras: "Capitán América: El primer vengador", nota: "Capitán América"}
+  - {personaje: 22, tras: "Vengadores: Endgame", nota: "Retirado: legó el escudo a Sam"}
+  - {personaje: 5, tras: "Vengadores: Endgame", nota: "Nuevo Capitán América", nivel: principal}
+  - {personaje: 20, tras: "Iron Man 2", nota: "Viuda Negra"}
+  - {personaje: 20, tras: "Vengadores: Endgame", nota: "Cayó en Vormir"}
+  - {personaje: "Clint Barton", tras: "Los Vengadores", nota: "Ojo de Halcón"}
+  - {personaje: 24, tras: "Vengadores: Endgame", nota: "Profesor Hulk"}
+  - {personaje: 48, tras: "Thor: Ragnarok", nota: "Rey de Asgard"}
+  - {personaje: 48, tras: "Vengadores: Endgame", nota: "Cedió el trono a Valquiria"}
+  - {personaje: 657, tras: "Vengadores: Endgame", nota: "Reina de Nuevo Asgard"}
+  - {personaje: 10, tras: "Capitán América: El soldado de invierno", nota: "El Soldado de Invierno"}
+  - {personaje: 98, tras: "Guardianes de la Galaxia", nota: "Star-Lord"}
+  - {personaje: 26, tras: "Capitana Marvel", nota: "Capitana Marvel"}
+  - {personaje: 122, tras: "Ant-Man", nota: "Ant-Man"}
+  - {personaje: 123, tras: "Ant-Man y la Avispa", nota: "La Avispa"}
+  - {personaje: 139, tras: "Capitán América: Civil War", nota: "Pantera Negra"}
+  - {personaje: 139, tras: "Black Panther", nota: "Rey de Wakanda"}
+  - {personaje: 139, tras: "Black Panther: Wakanda por siempre", nota: "Su legado sigue en Wakanda"}
+  - {personaje: "Shuri", tras: "Black Panther: Wakanda por siempre", nota: "Nueva Pantera Negra", nivel: principal}
+  - {personaje: 15, tras: "Vengadores: Infinity War", nota: "Completó el chasquido", nivel: principal}
+  - {personaje: 15, tras: "Vengadores: Endgame", nota: "Derrotado"}
+  - {personaje: 89, tras: "Vengadores: Infinity War", nota: "Cayó ante Thanos"}
+  - {personaje: 99, tras: "Vengadores: Infinity War", nota: "Sacrificada en Vormir"}
+  - {personaje: 107, tras: "Vengadores: Infinity War", nota: "Destruido por Thanos"}
