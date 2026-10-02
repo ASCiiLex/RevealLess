@@ -1,0 +1,60 @@
+# Recompensas de los Sombrero de Paja: cada etapa se aplica al terminar el último arco que coincide con «tras».
+# Personaje por id o por nombre; también vale un alias ya existente («Nico Robin» → ficha «Miss All Sunday»).
+obras: [one-piece-anime, one-piece-manga]
+tipo_unidad: arco
+
+etapas:
+  # Luffy
+  - {personaje: 1, tras: "arlong", nota: "Recompensa: 30.000.000 ฿"}
+  - {personaje: 1, tras: "alabasta|arabasta", nota: "Recompensa: 100.000.000 ฿"}
+  - {personaje: 1, tras: "enies", nota: "Recompensa: 300.000.000 ฿"}
+  - {personaje: 1, tras: "marineford", nota: "Recompensa: 400.000.000 ฿"}
+  - {personaje: 1, tras: "dressrosa", nota: "Recompensa: 500.000.000 ฿"}
+  - {personaje: 1, tras: "whole cake|totto", nota: "Recompensa: 1.500.000.000 ฿"}
+  - {personaje: 1, tras: "wano", nota: "Recompensa: 3.000.000.000 ฿"}
+
+  # Zoro
+  - {personaje: "Roronoa Zoro", tras: "alabasta|arabasta", nota: "Recompensa: 60.000.000 ฿"}
+  - {personaje: "Roronoa Zoro", tras: "enies", nota: "Recompensa: 120.000.000 ฿"}
+  - {personaje: "Roronoa Zoro", tras: "dressrosa", nota: "Recompensa: 320.000.000 ฿"}
+  - {personaje: "Roronoa Zoro", tras: "wano", nota: "Recompensa: 1.111.000.000 ฿"}
+
+  # Nami
+  - {personaje: "Nami", tras: "enies", nota: "Recompensa: 16.000.000 ฿"}
+  - {personaje: "Nami", tras: "dressrosa", nota: "Recompensa: 66.000.000 ฿"}
+  - {personaje: "Nami", tras: "wano", nota: "Recompensa: 366.000.000 ฿"}
+
+  # Usopp
+  - {personaje: "Usopp", tras: "enies", nota: "Recompensa: 30.000.000 ฿"}
+  - {personaje: "Usopp", tras: "dressrosa", nota: "Recompensa: 200.000.000 ฿"}
+  - {personaje: "Usopp", tras: "wano", nota: "Recompensa: 500.000.000 ฿"}
+
+  # Sanji
+  - {personaje: "Sanji", tras: "enies", nota: "Recompensa: 77.000.000 ฿"}
+  - {personaje: "Sanji", tras: "dressrosa", nota: "Recompensa: 177.000.000 ฿"}
+  - {personaje: "Sanji", tras: "whole cake|totto", nota: "Recompensa: 330.000.000 ฿"}
+  - {personaje: "Sanji", tras: "wano", nota: "Recompensa: 1.032.000.000 ฿"}
+
+  # Chopper
+  - {personaje: "Tony Tony Chopper", tras: "enies", nota: "Recompensa: 50 ฿"}
+  - {personaje: "Tony Tony Chopper", tras: "dressrosa", nota: "Recompensa: 100 ฿"}
+  - {personaje: "Tony Tony Chopper", tras: "wano", nota: "Recompensa: 1.000 ฿"}
+
+  # Robin: en Arabasta se revela su nombre y pasa a Principal
+  - {personaje: "Nico Robin", tras: "alabasta|arabasta", alias: "Nico Robin", nivel: 40, nota: "Recompensa: 79.000.000 ฿"}
+  - {personaje: "Nico Robin", tras: "enies", nota: "Recompensa: 80.000.000 ฿"}
+  - {personaje: "Nico Robin", tras: "dressrosa", nota: "Recompensa: 130.000.000 ฿"}
+  - {personaje: "Nico Robin", tras: "wano", nota: "Recompensa: 930.000.000 ฿"}
+
+  # Franky
+  - {personaje: "Franky", tras: "enies", nota: "Recompensa: 44.000.000 ฿"}
+  - {personaje: "Franky", tras: "dressrosa", nota: "Recompensa: 94.000.000 ฿"}
+  - {personaje: "Franky", tras: "wano", nota: "Recompensa: 394.000.000 ฿"}
+
+  # Brook
+  - {personaje: "Brook", tras: "thriller", nota: "Recompensa: 33.000.000 ฿"}
+  - {personaje: "Brook", tras: "dressrosa", nota: "Recompensa: 83.000.000 ฿"}
+  - {personaje: "Brook", tras: "wano", nota: "Recompensa: 383.000.000 ฿"}
+
+  # Jimbei
+  - {personaje: "Jimbei", tras: "wano", nota: "Recompensa: 1.100.000.000 ฿"}
