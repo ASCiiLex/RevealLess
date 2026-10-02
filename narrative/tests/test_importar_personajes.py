@@ -43,7 +43,7 @@ class ImportarPersonajesTests(TestCase):
                 patch(f'{MODULO}.proponer_personajes', return_value=list(nuevos)), \
                 patch(f'{MODULO}.proponer_primeras_apariciones', return_value=propuestas) as ia, \
                 patch.dict(os.environ, {'ANTHROPIC_API_KEY': 'test'}):
-            call_command('importar_personajes', obra='saga', sin_jikan=True, **opciones)
+            call_command('importar_personajes', obra='saga', **opciones)
         return ia
 
     def test_wikidata_por_pelicula_entra_aprobado_y_ancla_la_unidad(self):
@@ -83,3 +83,8 @@ class ImportarPersonajesTests(TestCase):
         ia = self._importar({}, dry_run=True)
         ia.assert_not_called()
         self.assertFalse(Personaje.objects.exists())
+
+    def test_ya_no_acepta_opciones_de_jikan(self):
+        from django.core.management.base import CommandError
+        with self.assertRaises((TypeError, CommandError)):
+            call_command('importar_personajes', obra='saga', sin_jikan=True)

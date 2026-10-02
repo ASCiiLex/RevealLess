@@ -6,7 +6,6 @@ from django.db.models import Min
 from django.utils.text import slugify
 
 from narrative.models import ExternalId, Obra, Personaje, PropuestaAparicion
-from narrative.services import jikan_client as jikan
 from narrative.services import wikidata_client as wikidata
 from narrative.services.apariciones_ia import (
     ErrorApariciones,
@@ -78,9 +77,10 @@ def emparejar(partes, unidades, ventana=VENTANA_DIAS):
 
 class Command(BaseCommand):
     help = (
-        'Importa personajes de Wikidata, Jikan y, opcionalmente, Haiku. Las apariciones por '
+        'Importa personajes de Wikidata y, opcionalmente, Haiku. Las apariciones por '
         'película/episodio de Wikidata entran aprobadas; Haiku propone la primera aparición '
-        'cuando adelanta la conocida, siempre pendiente de revisión.'
+        'cuando adelanta la conocida, siempre pendiente de revisión. '
+        '(Jikan se descartó como fuente de personajes: su API respondía 504 de forma sostenida.)'
     )
 
     def add_arguments(self, parser):
@@ -88,9 +88,7 @@ class Command(BaseCommand):
         parser.add_argument('--qid', help='Fija el identificador Q de Wikidata de la obra (requiere --obra).')
         parser.add_argument('--buscar-qid', action='store_true', help='Lista candidatos de Wikidata y sale.')
         parser.add_argument('--texto', help='Con --buscar-qid: texto a buscar en lugar del título.')
-        parser.add_argument('--solo-wikidata', action='store_true', help='Sin Jikan ni Haiku.')
-        parser.add_argument('--sin-jikan', action='store_true', help='No consulta personajes de Jikan.')
-        parser.add_argument('--max-personajes', type=int, default=30, help='Máximo de personajes de Jikan por obra.')
+        parser.add_argument('--solo-wikidata', action='store_true', help='Sin Haiku.')
         parser.add_argument(
             '--max-wikidata', type=int, default=100,
             help='Si la lista de personajes de la obra en Wikidata es mayor, se ignora (reparto completo).',
@@ -156,10 +154,8 @@ class Command(BaseCommand):
         dry = options['dry_run']
         con_ia = not options['solo_wikidata']
         qid = self._external_id(obra, ExternalId.SOURCE_WIKIDATA)
-        mal_id = self._external_id(obra, ExternalId.SOURCE_JIKAN)
-        usa_jikan = bool(mal_id) and con_ia and not options['sin_jikan']
         completar = options['completar_ia'] if con_ia else 0
-        if not qid and not usa_jikan and not completar:
+        if not qid and not completar:
             if options['obra']:
                 self.stdout.write(self.style.WARNING(f'{obra.titulo}: sin QID de Wikidata; usa --buscar-qid.'))
             return
@@ -173,17 +169,6 @@ class Command(BaseCommand):
                 aprobadas = self._desde_wikidata(obra, qid, unidades, candidatos, options)
             except wikidata.WikidataError as e:
                 self.stderr.write(self.style.WARNING(f'  Wikidata: {e}'))
-
-        if usa_jikan:
-            tipo = 'manga' if obra.tipo == Obra.TIPO_MANGA else 'anime'
-            try:
-                personajes = jikan.get_characters(mal_id, tipo)
-                personajes.sort(key=lambda c: c['rol'] != 'Main')
-                for c in personajes[:options['max_personajes']]:
-                    nombre = c['nombre'].replace(', ', ' ').strip()
-                    candidatos.setdefault(slugify(nombre), {'qid': None, 'nombre': nombre})
-            except jikan.JikanError as e:
-                self.stderr.write(self.style.WARNING(f'  Jikan: {e}'))
 
         if completar:
             if dry:
@@ -267,7 +252,7 @@ class Command(BaseCommand):
                 continue
             for i, datos in resultado.items():
                 c = lote[i]
-                # Sin QID (Jikan o Haiku): se adopta el nombre en español que propone Haiku.
+                # Sin QID (propuesto por Haiku): se adopta el nombre en español que devuelve.
                 nombre = c['nombre'] if c['qid'] else (datos['nombre'] or c['nombre'])
                 personaje = self._personaje(nombre, c['qid'])
                 unidad = por_id[datos['unidad_id']]
