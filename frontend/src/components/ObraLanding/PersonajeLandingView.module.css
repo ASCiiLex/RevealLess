@@ -15,11 +15,13 @@
   margin-bottom: 20px;
 }
 
+/* Retrato 3:4, mismo formato que el carrusel: el cartel de recompensa se ve entero. */
 .imagen {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
+  width: 105px;
+  height: 140px;
+  border-radius: var(--radius);
   object-fit: cover;
+  object-position: top;
   border: 1px solid var(--border);
   flex-shrink: 0;
 }

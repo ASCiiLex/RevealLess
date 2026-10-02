@@ -237,18 +237,23 @@
   text-decoration: none;
 }
 
+/* Retrato 3:4: sirve para retratos y para carteles de recompensa sin recortar la cabecera. */
 .personajeImagen {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  width: 66px;
+  height: 88px;
+  border-radius: 8px;
   object-fit: cover;
+  object-position: top;
   border: 1px solid var(--border);
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .personajeEnlace:hover .personajeImagen,
 .personajeEnlace:focus-visible .personajeImagen {
   border-color: var(--ink);
+  transform: translateY(-2px);
 }
 
 .personajeNombre {

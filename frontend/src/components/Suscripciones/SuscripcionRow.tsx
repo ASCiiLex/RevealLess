@@ -14,18 +14,18 @@ function etiquetaNivel(s: Suscripcion): string {
   return 'Obra completa'
 }
 
-// Un personaje no tiene obra: se muestra el propio personaje.
+// Un personaje no tiene obra: se muestra el propio personaje, en formato retrato.
 function objetivo(s: Suscripcion) {
   if (s.personaje) {
-    return { titulo: s.personaje.nombre, imagen: s.personaje.imagen_url, redonda: true }
+    return { titulo: s.personaje.nombre, imagen: s.personaje.imagen_url, retrato: true }
   }
-  return { titulo: s.obra?.titulo ?? '', imagen: s.obra?.imagen_url ?? '', redonda: false }
+  return { titulo: s.obra?.titulo ?? '', imagen: s.obra?.imagen_url ?? '', retrato: false }
 }
 
 export default function SuscripcionRow({ suscripcion, onRemove }: Props) {
   const [activa, setActiva] = useState(suscripcion.activa)
   const [cargando, setCargando] = useState(false)
-  const { titulo, imagen, redonda } = objetivo(suscripcion)
+  const { titulo, imagen, retrato } = objetivo(suscripcion)
 
   const noLeidosTexto = activa
     ? suscripcion.no_leidos > 0
@@ -47,7 +47,7 @@ export default function SuscripcionRow({ suscripcion, onRemove }: Props) {
   return (
     <div className={styles.row}>
       <div className={styles.left}>
-        <img className={`${styles.thumb} ${redonda ? styles.thumbRedonda : ''}`} src={imagen} alt="" />
+        <img className={`${styles.thumb} ${retrato ? styles.thumbRetrato : ''}`} src={imagen} alt="" />
         <div>
           <div className={styles.titulo}>{titulo}</div>
           <div className={styles.detalle}>

@@ -18,10 +18,13 @@
   border-radius: 6px;
   object-fit: cover;
   background: var(--border);
+  flex-shrink: 0;
 }
 
-.thumbRedonda {
-  border-radius: 50%;
+/* Personajes: retrato 3:4 con la misma altura que las obras. */
+.thumbRetrato {
+  width: 30px;
+  object-position: top;
 }
 
 .titulo {
