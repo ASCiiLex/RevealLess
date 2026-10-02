@@ -48,6 +48,16 @@ def miniatura(obj, lado=40):
     return '-'
 
 
+def limitar_unidades_a_obra(campo, obra_id):
+    """Selector de unidad restringido a una obra: el queryset valida en servidor y la URL
+    del autocomplete lleva ?obra= (lo aplica UnidadNarrativaAdmin.get_search_results)."""
+    campo.queryset = campo.queryset.filter(obra_id=obra_id)
+    widget = getattr(campo.widget, 'widget', campo.widget)
+    if hasattr(widget, 'get_url'):
+        url = widget.get_url()
+        widget.get_url = lambda: f'{url}?obra={obra_id}'
+
+
 @admin.register(Categoria)
 class CategoriaAdmin(ModelAdmin):
     list_display = ('nombre',)
@@ -134,6 +144,13 @@ class UnidadNarrativaAdmin(ModelAdmin):
     # Edición en bloque desde el listado: títulos, tipo, fecha y orden.
     list_editable = ('nombre', 'tipo', 'orden_local', 'fecha')
 
+    def get_search_results(self, request, queryset, search_term):
+        # Autocompletes limitados a una obra (limitar_unidades_a_obra añade ?obra=).
+        obra_id = request.GET.get('obra', '')
+        if obra_id.isdigit():
+            queryset = queryset.filter(obra_id=obra_id)
+        return super().get_search_results(request, queryset, search_term)
+
     @admin.display(description='Portada')
     def imagen_tag(self, obj):
         return miniatura(obj, 32)
@@ -196,6 +213,19 @@ class EtapaPersonajeForm(ImagenDesdeUrlForm):
         fields = '__all__'
 
 
+class PropuestaAparicionForm(forms.ModelForm):
+    """Con la propuesta ya creada, la unidad solo puede cambiarse dentro de su obra."""
+
+    class Meta:
+        model = PropuestaAparicion
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and 'unidad' in self.fields:
+            limitar_unidades_a_obra(self.fields['unidad'], self.instance.unidad.obra_id)
+
+
 class EtapaPersonajeInline(TabularInline):
     """Etapas: alias, nota, nivel e imagen que se aplican al terminar 'visible_tras'."""
 
@@ -220,6 +250,7 @@ class PropuestaAparicionInline(TabularInline):
     una fila nueva es una aparición manual."""
 
     model = PropuestaAparicion
+    form = PropuestaAparicionForm
     extra = 0
     fields = ('unidad', 'estado', 'origen', 'confianza', 'nota')
     readonly_fields = ('origen', 'confianza')
@@ -233,10 +264,33 @@ class PropuestaAparicionInline(TabularInline):
         return super().get_queryset(request).select_related('unidad__obra')
 
 
+class PendientesFilter(admin.SimpleListFilter):
+    title = 'propuestas pendientes'
+    parameter_name = 'pendientes'
+
+    def lookups(self, request, model_admin):
+        return (('si', 'Con pendientes'), ('no', 'Sin pendientes'))
+
+    def queryset(self, request, queryset):
+        # Usa la anotación 'pendientes' de PersonajeAdmin.get_queryset.
+        if self.value() == 'si':
+            return queryset.filter(pendientes__gt=0)
+        if self.value() == 'no':
+            return queryset.filter(pendientes=0)
+        return queryset
+
+
 @admin.register(Personaje)
 class PersonajeAdmin(ModelAdmin):
     form = PersonajeAdminForm
     list_display = ('nombre', 'wikidata_id', 'total_apariciones', 'total_etapas', 'total_pendientes', 'imagen_tag')
+    list_filter = (
+        ('unidades__obra', admin.RelatedOnlyFieldListFilter),
+        'relevancias__nivel',
+        PendientesFilter,
+        ('imagen', admin.EmptyFieldListFilter),
+        ('wikidata_id', admin.EmptyFieldListFilter),
+    )
     search_fields = ('nombre', 'wikidata_id', 'etapas__alias')
     inlines = [RelevanciaPersonajeInline, EtapaPersonajeInline, PropuestaAparicionInline]
     actions = ['fusionar_seleccionados']
@@ -340,8 +394,9 @@ class ConfianzaFilter(admin.SimpleListFilter):
 
 @admin.register(PropuestaAparicion)
 class PropuestaAparicionAdmin(ModelAdmin):
+    form = PropuestaAparicionForm
     list_display = ('personaje', 'obra', 'unidad', 'origen', 'confianza', 'estado', 'nota', 'creado_en')
-    # Corregir la unidad desde el listado; si ya estaba aprobada, la aparición se mueve.
+    # Corregir la unidad desde el listado (solo dentro de su obra); si estaba aprobada, la aparición se mueve.
     list_editable = ('unidad',)
     list_filter = ('estado', 'origen', ConfianzaFilter, 'unidad__obra')
     search_fields = ('personaje__nombre', 'unidad__nombre', 'unidad__obra__titulo')
@@ -353,6 +408,10 @@ class PropuestaAparicionAdmin(ModelAdmin):
     @admin.display(description='Obra', ordering='unidad__obra__titulo')
     def obra(self, obj):
         return obj.unidad.obra
+
+    def get_changelist_form(self, request, **kwargs):
+        kwargs['form'] = PropuestaAparicionForm
+        return super().get_changelist_form(request, **kwargs)
 
     def save_model(self, request, obj, form, change):
         # Leído de BD: el formulario del listado no trae el estado.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import styles from './ProfileView.module.css'
 import botones from '../../styles/botones.module.css'
+import PostMiniatura from '../Feed/PostMiniatura'
 import { fetchProfile, type ProfileDetail } from '../../api/profile'
 import { seguirUsuario, dejarDeSeguirUsuario } from '../../api/follow'
 
@@ -58,7 +59,7 @@ export default function ProfileView({ username }: Props) {
         <div className={styles.grid}>
           {profile.posts.map((post) => (
             <a key={post.id} className={styles.gridItem} href={`/posts/${post.id}/`}>
-              <img className={styles.gridImage} src={post.image_url} alt="" />
+              <PostMiniatura imagen={post.image_url} texto={post.text} />
             </a>
           ))}
         </div>

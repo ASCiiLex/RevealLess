@@ -2,7 +2,8 @@ import { api } from './client'
 
 export interface ProfilePost {
   id: number
-  image_url: string
+  image_url: string | null
+  text: string
 }
 
 export interface ProfileDetail {

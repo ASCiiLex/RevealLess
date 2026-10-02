@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 
 from narrative.models import Obra, Personaje
+from posts.models import Post
 
 
 class ImagenPorDefectoTests(SimpleTestCase):
@@ -18,3 +19,6 @@ class ImagenPorDefectoTests(SimpleTestCase):
 
     def test_personaje_sin_imagen_usa_su_portada_propia(self):
         self.assertEqual(Personaje(nombre='X').image_url, '/static/img/default_personaje.jpg')
+
+    def test_post_sin_foto_no_tiene_imagen(self):
+        self.assertIsNone(Post(text='x').image_url)

@@ -104,12 +104,13 @@ class Post(ClasificacionNarrativa, models.Model):
 
     @property
     def image_url(self):
+        """None si el post no tiene foto: es opcional y no se sustituye por una genérica."""
         try:
             if self.image and hasattr(self.image, "url"):
                 return self.image.url
         except ValueError:
             pass
-        return "/static/img/default_post.jpg"
+        return None
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

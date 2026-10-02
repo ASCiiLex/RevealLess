@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './SavedPostsView.module.css'
+import PostMiniatura from '../Feed/PostMiniatura'
 import { fetchSavedPosts, type SavedPost } from '../../api/savedPosts'
 
 export default function SavedPostsView() {
@@ -25,7 +26,7 @@ export default function SavedPostsView() {
         <div className={styles.grid}>
           {guardados.map((item) => (
             <a key={item.id} className={styles.gridItem} href={`/posts/${item.post_id}/`}>
-              <img className={styles.gridImage} src={item.image_url} alt="" />
+              <PostMiniatura imagen={item.image_url} texto={item.text} />
             </a>
           ))}
         </div>

@@ -3,7 +3,8 @@ import { api } from './client'
 export interface SavedPost {
   id: number
   post_id: number
-  image_url: string
+  image_url: string | null
+  text: string
   created_at: string
 }
 
