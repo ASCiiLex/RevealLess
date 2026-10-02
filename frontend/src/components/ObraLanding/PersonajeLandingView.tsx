@@ -14,7 +14,9 @@ export default function PersonajeLandingView({ personajeId }: Props) {
   const [cargando, setCargando] = useState(false)
 
   useEffect(() => {
-    fetchPersonajeLanding(personajeId)
+    // ?obra= llega desde el carrusel de la landing de obra.
+    const obraSlug = new URLSearchParams(window.location.search).get('obra')
+    fetchPersonajeLanding(personajeId, obraSlug)
       .then(setPersonaje)
       .catch(() => setNoDisponible(true))
   }, [personajeId])
@@ -65,6 +67,12 @@ export default function PersonajeLandingView({ personajeId }: Props) {
         <img className={styles.imagen} src={personaje.imagen_url} alt="" />
         <div className={styles.info}>
           <h1 className={styles.titulo}>{personaje.nombre}</h1>
+          {personaje.contexto && (
+            <p className={styles.contexto}>
+              Según tu progreso en{' '}
+              <a href={`/narrative/obra/${personaje.contexto.slug}/`}>{personaje.contexto.titulo}</a>
+            </p>
+          )}
           {personaje.nota && <p className={styles.dato}>{personaje.nota}</p>}
           <div className={styles.suscriptores}>
             {personaje.total_suscriptores} suscriptor{personaje.total_suscriptores === 1 ? '' : 'es'}

@@ -39,6 +39,24 @@
   margin: 0 0 4px 0;
 }
 
+/* Obra de la que salen nombre, imagen y nota (llegada desde el carrusel). */
+.contexto {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--fog);
+}
+
+.contexto a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.contexto a:hover,
+.contexto a:focus-visible {
+  color: var(--ink);
+}
+
 /* Dato de la etapa ya superada (ej. recompensa). */
 .dato {
   margin: 0 0 6px;

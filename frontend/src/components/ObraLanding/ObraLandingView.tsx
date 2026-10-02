@@ -226,7 +226,11 @@ export default function ObraLandingView({ obraSlug }: Props) {
               const siguiendo = p.suscripcion_id !== null
               return (
                 <div key={p.id} className={styles.personaje}>
-                  <a className={styles.personajeEnlace} href={`/narrative/personaje/${p.id}/`}>
+                  {/* ?obra=: la landing del personaje muestra su estado en esta obra, igual que el carrusel. */}
+                  <a
+                    className={styles.personajeEnlace}
+                    href={`/narrative/personaje/${p.id}/?obra=${encodeURIComponent(obra.slug)}`}
+                  >
                     <img className={styles.personajeImagen} src={p.imagen_url} alt="" />
                     <span className={styles.personajeNombre}>{p.nombre}</span>
                     {p.nota && <span className={styles.personajeNota}>{p.nota}</span>}

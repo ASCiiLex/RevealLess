@@ -147,7 +147,9 @@ class CategoriaLandingAPIView(APIView):
 class PersonajeLandingAPIView(APIView):
     """Landing de personaje filtrada por progreso. Sin ninguna aparición alcanzada
     responde 404, igual que si no existiera: la URL directa no debe revelarlo.
-    Nombre, imagen y nota salen de la etapa más reciente ya superada."""
+    Nombre, imagen y nota salen de la etapa más reciente ya superada. Con ?obra=<slug>
+    (desde el carrusel) solo cuentan las etapas de esa obra, si ya se alcanzó en ella;
+    si no, se ignora y se usan todas las obras alcanzadas."""
 
     permission_classes = [IsAuthenticated]
 
@@ -157,12 +159,18 @@ class PersonajeLandingAPIView(APIView):
         if not obras:
             raise Http404
 
-        presentacion = presentacion_personaje(personaje, progreso_por_obra(request.user))
+        slug = request.query_params.get('obra')
+        obra_contexto = next((o for o in obras if o.slug == slug), None)
+        presentacion = presentacion_personaje(
+            personaje, progreso_por_obra(request.user),
+            obra_id=obra_contexto.id if obra_contexto else None,
+        )
         suscripcion = Suscripcion.objects.filter(usuario=request.user, personaje=personaje).first()
 
         return Response({
             'id': personaje.id,
             **presentacion,
+            'contexto': {'titulo': obra_contexto.titulo, 'slug': obra_contexto.slug} if obra_contexto else None,
             'obras': [
                 {'id': o.id, 'titulo': o.titulo, 'slug': o.slug, 'imagen_url': o.image_url}
                 for o in obras
