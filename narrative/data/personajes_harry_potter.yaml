@@ -1,0 +1,85 @@
+# Harry Potter (Películas). 5714 Piedra filosofal · 5715 Cámara secreta · 5716 Prisionero de Azkaban
+# 5717 Cáliz de fuego · 5718 Orden del Fénix · 5719 Misterio del príncipe · 5720 Reliquias I · 5721 Reliquias II
+obras: [harry-potter-peliculas]
+tipo_unidad: pelicula
+coincidencia: exacta
+
+relevancias:
+  - {personaje: 394, nivel: protagonista}  # Harry Potter
+  - {personaje: 373, nivel: principal}     # Ron Weasley
+  - {personaje: 374, nivel: principal}     # Hermione Granger
+  - {personaje: 382, nivel: principal}     # Albus Dumbledore
+  - {personaje: 375, nivel: principal}     # Lord Voldemort
+  - {personaje: 376, nivel: principal}     # Severus Snape
+  - {personaje: 377, nivel: destacado}     # Rubeus Hagrid
+  - {personaje: 378, nivel: destacado}     # Draco Malfoy
+  - {personaje: 379, nivel: destacado}     # Ginny Weasley
+  - {personaje: 380, nivel: destacado}     # Neville Longbottom
+  - {personaje: 381, nivel: destacado}     # Minerva McGonagall
+  - {personaje: 383, nivel: destacado}     # Sirius Black
+  - {personaje: 450, nivel: destacado}     # Remus Lupin
+  - {personaje: 449, nivel: destacado}     # Luna Lovegood
+  - {personaje: 453, nivel: destacado}     # Bellatrix Lestrange
+  - {personaje: 417, nivel: destacado}     # Dobby
+  - {personaje: 407, nivel: destacado}     # Fred Weasley
+  - {personaje: 408, nivel: destacado}     # George Weasley
+  - {personaje: 395, nivel: destacado}     # Molly Weasley
+  - {personaje: 404, nivel: destacado}     # Arthur Weasley
+  - {personaje: 385, nivel: destacado}     # Lucius Malfoy
+  - {personaje: 411, nivel: destacado}     # Cedric Diggory
+  - {personaje: 452, nivel: destacado}     # Dolores Umbridge
+  - {personaje: 428, nivel: destacado}     # Alastor Moody
+  - {personaje: 451, nivel: destacado}     # Nymphadora Tonks
+  - {personaje: 412, nivel: destacado}     # Peter Pettigrew
+  - {personaje: 476, nivel: destacado}     # Horace Slughorn
+  - {personaje: 465, nivel: destacado}     # Quirinus Quirrell
+
+apariciones:
+  - {personaje: 394, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 373, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 374, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 376, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 377, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 378, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 380, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 379, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 381, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 407, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 408, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 382, unidades: [5714, 5715, 5716, 5717, 5718, 5719, 5721]}
+  - {personaje: 375, unidades: [5714, 5715, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 383, unidades: [5716, 5717, 5718, 5721]}
+  - {personaje: 450, unidades: [5716, 5718, 5720, 5721]}
+  - {personaje: 449, unidades: [5718, 5719, 5720, 5721]}
+  - {personaje: 453, unidades: [5718, 5719, 5720, 5721]}
+  - {personaje: 417, unidades: [5715, 5720]}
+  - {personaje: 412, unidades: [5716, 5717, 5720]}
+  - {personaje: 395, unidades: [5714, 5715, 5718, 5719, 5720, 5721]}
+  - {personaje: 404, unidades: [5715, 5717, 5718, 5719, 5720, 5721]}
+  - {personaje: 385, unidades: [5715, 5717, 5718, 5720, 5721]}
+  - {personaje: 452, unidades: [5718, 5720]}
+  - {personaje: 428, unidades: [5717, 5718, 5720]}
+  - {personaje: 451, unidades: [5718, 5719, 5720, 5721]}
+  - {personaje: 476, unidades: [5719, 5721]}
+  - {personaje: 411, unidades: [5717]}
+  - {personaje: 465, unidades: [5714]}
+
+etapas:
+  - {personaje: 465, tras: 5714, nota: "Servía a Voldemort"}
+  - {personaje: 375, tras: 5715, nota: "Fue Tom Ryddle"}
+  - {personaje: 375, tras: 5717, nota: "Recuperó su cuerpo"}
+  - {personaje: 375, tras: 5721, nota: "Derrotado"}
+  - {personaje: 383, tras: 5716, nota: "Padrino de Harry, inocente"}
+  - {personaje: 383, tras: 5718, nota: "Cayó en el Departamento de Misterios"}
+  - {personaje: 412, tras: 5716, nota: "Traicionó a los Potter"}
+  - {personaje: 428, tras: 5717, nota: "Suplantado por Barty Crouch Jr."}
+  - {personaje: 411, tras: 5717, nota: "Asesinado por Colagusano"}
+  - {personaje: 382, tras: 5719, nota: "Cayó en la torre de Astronomía"}
+  - {personaje: 376, tras: 5719, nota: "Mató a Dumbledore"}
+  - {personaje: 376, tras: 5721, nota: "«Siempre»: protegió a Harry"}
+  - {personaje: 417, tras: 5720, nota: "Un elfo libre"}
+  - {personaje: 407, tras: 5721, nota: "Cayó en la batalla de Hogwarts"}
+  - {personaje: 450, tras: 5721, nota: "Cayó en la batalla de Hogwarts"}
+  - {personaje: 451, tras: 5721, nota: "Cayó en la batalla de Hogwarts"}
+  - {personaje: 380, tras: 5721, nota: "Destruyó a Nagini"}
+  - {personaje: 394, tras: 5721, nota: "Venció a Voldemort"}

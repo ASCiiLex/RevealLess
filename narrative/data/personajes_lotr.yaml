@@ -1,0 +1,49 @@
+# El Señor de los Anillos (Películas). 2467 La Comunidad del Anillo · 2468 Las Dos Torres · 2469 El Retorno del Rey
+obras: [senor-de-los-anillos-pelicula]
+tipo_unidad: pelicula
+coincidencia: exacta
+
+relevancias:
+  - {personaje: 326, nivel: protagonista}  # Frodo Bolsón
+  - {personaje: 327, nivel: principal}     # Samsagaz Gamyi
+  - {personaje: 299, nivel: principal}     # Gandalf
+  - {personaje: 347, nivel: principal}     # Aragorn
+  - {personaje: 304, nivel: principal}     # Legolas
+  - {personaje: 332, nivel: principal}     # Gimli
+  - {personaje: 329, nivel: principal}     # Meriadoc Brandigamo
+  - {personaje: 328, nivel: principal}     # Peregrin Tuk
+  - {personaje: 333, nivel: principal}     # Boromir
+  - {personaje: 323, nivel: destacado}     # Gollum
+  - {personaje: 335, nivel: destacado}     # Saruman
+  - {personaje: 336, nivel: destacado}     # Sauron
+  - {personaje: 348, nivel: destacado}     # Arwen
+  - {personaje: 302, nivel: destacado}     # Elrond
+  - {personaje: 334, nivel: destacado}     # Galadriel
+  - {personaje: 338, nivel: destacado}     # Théoden
+  - {personaje: 339, nivel: destacado}     # Éowyn
+  - {personaje: 354, nivel: destacado}     # Éomer
+  - {personaje: 355, nivel: destacado}     # Faramir
+  - {personaje: 337, nivel: destacado}     # Denethor
+  - {personaje: 298, nivel: destacado}     # Bilbo Bolsón
+  - {personaje: 357, nivel: destacado}     # Gríma
+  - {personaje: 341, nivel: destacado}     # Bárbol
+  - {personaje: 356, nivel: destacado}     # Señor de los Nazgûl
+
+apariciones:
+  - {personaje: 336, unidades: [2467, 2469]}
+  - {personaje: 298, unidades: [2467, 2469]}
+
+etapas:
+  - {personaje: 326, tras: 2467, nota: "Portador del Anillo"}
+  - {personaje: 326, tras: 2469, nota: "Partió a los Puertos Grises"}
+  - {personaje: 299, tras: 2467, nota: "Cayó en Moria"}
+  - {personaje: 299, tras: 2468, alias: "Gandalf el Blanco", nota: "Regresó"}
+  - {personaje: 333, tras: 2467, nota: "Cayó defendiendo a los hobbits"}
+  - {personaje: 357, tras: 2468, nota: "«Lengua de Serpiente»"}
+  - {personaje: 347, tras: 2469, nota: "Rey de Gondor"}
+  - {personaje: 323, tras: 2469, nota: "Cayó con el Anillo en el Monte del Destino"}
+  - {personaje: 338, tras: 2469, nota: "Cayó en los Campos del Pelennor"}
+  - {personaje: 339, tras: 2469, nota: "Derrotó al Rey Brujo"}
+  - {personaje: 356, tras: 2469, nota: "Derrotado por Éowyn y Merry"}
+  - {personaje: 337, tras: 2469, nota: "Cayó en la pira"}
+  - {personaje: 336, tras: 2469, nota: "Derrotado"}

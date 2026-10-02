@@ -1,0 +1,59 @@
+# Naruto (Anime): solo hay temporadas, por id (las dos partes repiten «Temporada 1»):
+# Naruto: 4258 T1 · 4294 T2 · 4343 T3 · 4392 T4
+# Shippūden: 4484 T1 · 4601 T6 · 4642 T8 (Pain) · 4689 T10 (Cumbre Kage) · 4818 T15 · 4861 T17 · 4984 T22 (final)
+obras: [naruto-anime]
+tipo_unidad: temporada
+
+nuevos: ["Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake", "Jiraiya", "Tsunade",
+         "Gaara", "Itachi Uchiha", "Orochimaru", "Hinata Hyūga", "Shikamaru Nara", "Rock Lee",
+         "Neji Hyūga", "Tobi", "Zabuza Momochi", "Haku"]
+
+relevancias:
+  - {personaje: "Naruto Uzumaki", nivel: protagonista}
+  - {personaje: "Sasuke Uchiha", nivel: principal}
+  - {personaje: "Sakura Haruno", nivel: principal}
+  - {personaje: "Kakashi Hatake", nivel: principal}
+  - {personaje: "Jiraiya", nivel: destacado}
+  - {personaje: "Tsunade", nivel: destacado}
+  - {personaje: "Gaara", nivel: destacado}
+  - {personaje: "Itachi Uchiha", nivel: destacado}
+  - {personaje: "Orochimaru", nivel: destacado}
+  - {personaje: "Hinata Hyūga", nivel: destacado}
+  - {personaje: "Shikamaru Nara", nivel: destacado}
+  - {personaje: "Rock Lee", nivel: destacado}
+  - {personaje: "Neji Hyūga", nivel: destacado}
+  - {personaje: 783, nivel: destacado}         # Pain
+  - {personaje: "Tobi", nivel: destacado}
+
+apariciones:
+  - {personaje: "Naruto Uzumaki", unidades: [4258, 4294, 4343, 4392, 4484, 4642, 4689, 4818, 4984]}
+  - {personaje: "Sakura Haruno", unidades: [4258, 4294, 4343, 4392, 4484, 4642, 4689, 4818, 4984]}
+  - {personaje: "Kakashi Hatake", unidades: [4258, 4294, 4343, 4392, 4484, 4642, 4689, 4818, 4984]}
+  - {personaje: "Sasuke Uchiha", unidades: [4258, 4294, 4343, 4392, 4601, 4689, 4818, 4984]}
+  - {personaje: "Jiraiya", unidades: [4294, 4343, 4601]}
+  - {personaje: "Tsunade", unidades: [4343, 4392, 4642, 4689, 4984]}
+  - {personaje: "Gaara", unidades: [4258, 4294, 4392, 4484, 4689, 4818, 4984]}
+  - {personaje: "Itachi Uchiha", unidades: [4294, 4601]}
+  - {personaje: "Orochimaru", unidades: [4258, 4294, 4343]}
+  - {personaje: "Hinata Hyūga", unidades: [4258, 4294, 4642, 4818, 4984]}
+  - {personaje: "Shikamaru Nara", unidades: [4258, 4294, 4392, 4818]}
+  - {personaje: "Rock Lee", unidades: [4258, 4294, 4392, 4484]}
+  - {personaje: "Neji Hyūga", unidades: [4258, 4294, 4392, 4484, 4861]}
+  - {personaje: 783, unidades: [4601, 4642]}
+  - {personaje: "Tobi", unidades: [4484, 4689, 4818]}
+  - {personaje: "Zabuza Momochi", unidades: [4258]}
+  - {personaje: "Haku", unidades: [4258]}
+
+etapas:
+  - {personaje: "Tsunade", tras: 4343, nota: "Quinta Hokage", nivel: principal}
+  - {personaje: "Sasuke Uchiha", tras: 4392, nota: "Desertor de la Hoja"}
+  - {personaje: "Gaara", tras: 4484, nota: "Quinto Kazekage"}
+  - {personaje: "Jiraiya", tras: 4601, nota: "Cayó en Amegakure"}
+  - {personaje: "Itachi Uchiha", tras: 4601, nota: "Protegió a Sasuke hasta el final"}
+  - {personaje: 783, tras: 4642, alias: "Nagato"}
+  - {personaje: "Naruto Uzumaki", tras: 4642, nota: "Héroe de la Hoja"}
+  - {personaje: "Tobi", tras: 4689, nota: "Dice ser Madara Uchiha"}
+  - {personaje: "Tobi", tras: 4818, alias: "Obito Uchiha"}
+  - {personaje: "Neji Hyūga", tras: 4861, nota: "Cayó protegiendo a Naruto y Hinata"}
+  - {personaje: "Naruto Uzumaki", tras: 4984, nota: "Séptimo Hokage"}
+  - {personaje: "Kakashi Hatake", tras: 4984, nota: "Sexto Hokage"}

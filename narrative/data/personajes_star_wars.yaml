@@ -1,0 +1,69 @@
+# Star Wars: Películas (orden de estreno). Unidades por id:
+# 5006 IV · 5007 V · 5008 VI · 5009 I · 5010 II · 5011 III · 5012 Clone Wars (2008)
+# 5013 VII · 5014 Rogue One · 5015 VIII · 5016 Han Solo · 5017 IX
+obras: [star-wars-peliculas]
+tipo_unidad: pelicula
+coincidencia: exacta
+
+relevancias:
+  - {personaje: 973, nivel: principal}    # Luke Skywalker
+  - {personaje: 901, nivel: principal}    # Leia Organa
+  - {personaje: 974, nivel: principal}    # Han Solo
+  - {personaje: 864, nivel: principal}    # Darth Vader / Anakin
+  - {personaje: 852, nivel: principal}    # Obi-Wan Kenobi
+  - {personaje: 925, nivel: principal}    # Padmé Amidala
+  - {personaje: 977, nivel: principal}    # Rey
+  - {personaje: 978, nivel: principal}    # Finn
+  - {personaje: 902, nivel: principal}    # Kylo Ren
+  - {personaje: 851, nivel: destacado}    # Yoda
+  - {personaje: 856, nivel: destacado}    # C-3PO
+  - {personaje: 926, nivel: destacado}    # R2-D2
+  - {personaje: 965, nivel: destacado}    # Chewbacca
+  - {personaje: 964, nivel: destacado}    # Palpatine
+  - {personaje: 857, nivel: destacado}    # Lando Calrissian
+  - {personaje: 912, nivel: destacado}    # Mace Windu
+  - {personaje: 966, nivel: destacado}    # Qui-Gon Jinn
+  - {personaje: 854, nivel: destacado}    # Darth Maul
+  - {personaje: 921, nivel: destacado}    # Conde Dooku
+  - {personaje: 920, nivel: destacado}    # Boba Fett
+  - {personaje: 895, nivel: destacado}    # BB-8
+
+apariciones:
+  - {personaje: 973, unidades: [5006, 5007, 5008, 5013, 5015, 5017]}
+  - {personaje: 901, unidades: [5006, 5007, 5008, 5014, 5013, 5015, 5017]}
+  - {personaje: 974, unidades: [5006, 5007, 5008, 5013, 5016, 5017]}
+  - {personaje: 864, unidades: [5006, 5007, 5008, 5009, 5010, 5011, 5012, 5014]}
+  - {personaje: 852, unidades: [5006, 5007, 5008, 5009, 5010, 5011, 5012]}
+  - {personaje: 851, unidades: [5007, 5008, 5009, 5010, 5011, 5012, 5015]}
+  - {personaje: 856, unidades: [5006, 5007, 5008, 5009, 5010, 5011, 5014, 5013, 5015, 5017]}
+  - {personaje: 926, unidades: [5006, 5007, 5008, 5009, 5010, 5011, 5012, 5014, 5013, 5015, 5017]}
+  - {personaje: 965, unidades: [5006, 5007, 5008, 5011, 5013, 5015, 5016, 5017]}
+  - {personaje: 964, unidades: [5007, 5008, 5009, 5010, 5011, 5012, 5017]}
+  - {personaje: 925, unidades: [5009, 5010, 5011, 5012]}
+  - {personaje: 857, unidades: [5007, 5008, 5016, 5017]}
+  - {personaje: 977, unidades: [5013, 5015, 5017]}
+  - {personaje: 978, unidades: [5013, 5015, 5017]}
+  - {personaje: 902, unidades: [5013, 5015, 5017]}
+  - {personaje: 895, unidades: [5013, 5015, 5017]}
+  - {personaje: 920, unidades: [5007, 5008, 5010]}
+  - {personaje: 921, unidades: [5010, 5011, 5012]}
+  - {personaje: 912, unidades: [5009, 5010, 5011]}
+  - {personaje: 854, unidades: [5009, 5016]}
+  - {personaje: 967, unidades: [5009, 5010, 5011]}
+
+etapas:
+  - {personaje: 864, tras: 5007, nota: "Padre de Luke"}
+  - {personaje: 864, tras: 5008, alias: "Anakin Skywalker", nota: "Redimido"}
+  - {personaje: 973, tras: 5008, nota: "Caballero Jedi"}
+  - {personaje: 973, tras: 5015, nota: "Se unió a la Fuerza"}
+  - {personaje: 901, tras: 5008, nota: "Hermana gemela de Luke"}
+  - {personaje: 852, tras: 5006, nota: "Cayó ante Darth Vader"}
+  - {personaje: 851, tras: 5008, nota: "Se unió a la Fuerza"}
+  - {personaje: 966, tras: 5009, nota: "Cayó ante Darth Maul"}
+  - {personaje: 925, tras: 5011, nota: "Madre de Luke y Leia"}
+  - {personaje: 912, tras: 5011, nota: "Cayó ante Palpatine"}
+  - {personaje: 974, tras: 5013, nota: "Cayó ante Kylo Ren"}
+  - {personaje: 902, tras: 5013, nota: "Hijo de Han y Leia"}
+  - {personaje: 902, tras: 5017, alias: "Ben Solo"}
+  - {personaje: 977, tras: 5017, alias: "Rey Skywalker", nota: "Nieta de Palpatine"}
+  - {personaje: 964, tras: 5017, nota: "Derrotado por Rey"}

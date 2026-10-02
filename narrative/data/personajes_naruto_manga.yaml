@@ -1,0 +1,63 @@
+# Naruto (Manga). Arcos por id:
+# 2478 País de las Olas · 2512 Exámenes Chūnin · 2595 Invasión de Konoha · 2619 Búsqueda de Tsunade
+# 2653 Recuperación de Sasuke · 2721 Kakashi Gaiden · 2729 Rescate del Kazekage · 2767 Puente Tenchi
+# 2797 Supresión de Akatsuki · 2830 Persecución de Itachi · 2856 Relato de Jiraiya · 2873 Combate entre Hermanos
+# 2903 Asalto de Pain · 2945 Cumbre de los Cinco Kage · 2976 Guerra: Cuenta Atrás · 3009 Guerra: Confrontación
+# 3054 Guerra: Clímax · 3135 Jinchūriki del Diez Colas · 3174 Kaguya · 3197 Capítulo final
+obras: [naruto-manga]
+tipo_unidad: arco
+
+# Se crean solo si no existe ya una ficha con ese nombre (sin tildes ni macrones).
+nuevos: ["Naruto Uzumaki", "Sasuke Uchiha", "Sakura Haruno", "Kakashi Hatake", "Jiraiya", "Tsunade",
+         "Gaara", "Itachi Uchiha", "Orochimaru", "Hinata Hyūga", "Shikamaru Nara", "Rock Lee",
+         "Neji Hyūga", "Tobi", "Zabuza Momochi", "Haku"]
+
+relevancias:
+  - {personaje: "Naruto Uzumaki", nivel: protagonista}
+  - {personaje: "Sasuke Uchiha", nivel: principal}
+  - {personaje: "Sakura Haruno", nivel: principal}
+  - {personaje: "Kakashi Hatake", nivel: principal}
+  - {personaje: "Jiraiya", nivel: destacado}
+  - {personaje: "Tsunade", nivel: destacado}
+  - {personaje: "Gaara", nivel: destacado}
+  - {personaje: "Itachi Uchiha", nivel: destacado}
+  - {personaje: "Orochimaru", nivel: destacado}
+  - {personaje: "Hinata Hyūga", nivel: destacado}
+  - {personaje: "Shikamaru Nara", nivel: destacado}
+  - {personaje: "Rock Lee", nivel: destacado}
+  - {personaje: "Neji Hyūga", nivel: destacado}
+  - {personaje: 783, nivel: destacado}         # Pain
+  - {personaje: "Tobi", nivel: destacado}
+
+apariciones:
+  - {personaje: "Naruto Uzumaki", unidades: [2478, 2512, 2595, 2619, 2653, 2729, 2767, 2797, 2830, 2856, 2903, 2945, 2976, 3009, 3054, 3135, 3174, 3197]}
+  - {personaje: "Sasuke Uchiha", unidades: [2478, 2512, 2595, 2619, 2653, 2767, 2830, 2873, 2945, 3054, 3135, 3174, 3197]}
+  - {personaje: "Sakura Haruno", unidades: [2478, 2512, 2595, 2619, 2653, 2729, 2767, 2797, 2830, 2903, 2945, 2976, 3009, 3054, 3135, 3174, 3197]}
+  - {personaje: "Kakashi Hatake", unidades: [2478, 2512, 2595, 2619, 2653, 2721, 2729, 2767, 2797, 2830, 2903, 2945, 2976, 3009, 3054, 3135, 3174, 3197]}
+  - {personaje: "Jiraiya", unidades: [2512, 2595, 2619, 2653, 2856]}
+  - {personaje: "Tsunade", unidades: [2619, 2653, 2729, 2903, 2945, 2976, 3009, 3054, 3135, 3197]}
+  - {personaje: "Gaara", unidades: [2512, 2595, 2653, 2729, 2945, 2976, 3009, 3054, 3135, 3197]}
+  - {personaje: "Itachi Uchiha", unidades: [2619, 2729, 2830, 2873, 3009]}
+  - {personaje: "Orochimaru", unidades: [2512, 2595, 2619, 2653, 2767, 3054]}
+  - {personaje: "Hinata Hyūga", unidades: [2512, 2903, 2976, 3009, 3054, 3135, 3174, 3197]}
+  - {personaje: "Shikamaru Nara", unidades: [2512, 2595, 2653, 2797, 2976, 3009, 3054, 3197]}
+  - {personaje: "Rock Lee", unidades: [2512, 2653, 2729, 3009, 3054, 3197]}
+  - {personaje: "Neji Hyūga", unidades: [2512, 2653, 2729, 3009, 3054]}
+  - {personaje: 783, unidades: [2830, 2856, 2903]}
+  - {personaje: "Tobi", unidades: [2729, 2797, 2830, 2873, 2945, 2976, 3009, 3054, 3135]}
+  - {personaje: "Zabuza Momochi", unidades: [2478, 3009]}
+  - {personaje: "Haku", unidades: [2478, 3009]}
+
+etapas:
+  - {personaje: "Tsunade", tras: 2619, nota: "Quinta Hokage", nivel: principal}
+  - {personaje: "Sasuke Uchiha", tras: 2653, nota: "Desertor de la Hoja"}
+  - {personaje: "Gaara", tras: 2729, nota: "Quinto Kazekage"}
+  - {personaje: "Jiraiya", tras: 2856, nota: "Cayó en Amegakure"}
+  - {personaje: "Itachi Uchiha", tras: 2873, nota: "Protegió a Sasuke hasta el final"}
+  - {personaje: 783, tras: 2903, alias: "Nagato"}
+  - {personaje: "Naruto Uzumaki", tras: 2903, nota: "Héroe de la Hoja"}
+  - {personaje: "Tobi", tras: 2945, nota: "Dice ser Madara Uchiha"}
+  - {personaje: "Tobi", tras: 3054, alias: "Obito Uchiha"}
+  - {personaje: "Neji Hyūga", tras: 3054, nota: "Cayó protegiendo a Naruto y Hinata"}
+  - {personaje: "Naruto Uzumaki", tras: 3197, nota: "Séptimo Hokage"}
+  - {personaje: "Kakashi Hatake", tras: 3197, nota: "Sexto Hokage"}

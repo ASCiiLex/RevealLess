@@ -28,10 +28,10 @@ class CargarPersonajesTests(TestCase):
         self.obra, self.u = crear_obra('saga', 3, tipo_unidad='pelicula')
         self.tony = Personaje.objects.create(nombre='Tony Stark')
 
-    def _cargar(self, *args):
+    def _cargar(self, contenido=YAML, *args):
         with tempfile.TemporaryDirectory() as tmp:
             ruta = Path(tmp) / 'datos.yaml'
-            ruta.write_text(textwrap.dedent(YAML), encoding='utf-8')
+            ruta.write_text(textwrap.dedent(contenido), encoding='utf-8')
             call_command('cargar_personajes', str(ruta), *args, stdout=StringIO())
 
     def test_carga_nuevos_relevancias_apariciones_y_etapas(self):
@@ -50,7 +50,7 @@ class CargarPersonajesTests(TestCase):
         self.assertEqual((etapa.nota, etapa.nivel), ('Yo soy Iron Man', RelevanciaPersonaje.NIVEL_PROTAGONISTA))
 
     def test_dry_run_no_guarda_nada(self):
-        self._cargar('--dry-run')
+        self._cargar(YAML, '--dry-run')
         self.assertFalse(Personaje.objects.filter(nombre='Shuri').exists())
         self.assertFalse(RelevanciaPersonaje.objects.exists())
         self.assertFalse(self.tony.unidades.exists())
@@ -61,3 +61,19 @@ class CargarPersonajesTests(TestCase):
         EtapaPersonaje.objects.filter(personaje=self.tony).update(imagen='cartel.jpg')
         self._cargar()
         self.assertEqual(EtapaPersonaje.objects.get(personaje=self.tony).imagen.name, 'cartel.jpg')
+
+    def test_nombres_sin_tildes_ni_aclaraciones_y_unidades_por_id(self):
+        hinata = Personaje.objects.create(nombre='Hinata Hyūga (personaje)')
+        self._cargar(f'''
+        obras: [saga]
+        nuevos: ["Hinata Hyuga"]
+        relevancias:
+          - {{personaje: "hinata hyuga", nivel: destacado}}
+        apariciones:
+          - {{personaje: "Hinata Hyuga", unidades: [{self.u[1].id}]}}
+        ''')
+        self.assertEqual(Personaje.objects.filter(nombre__icontains='hinata').count(), 1)
+        self.assertEqual(
+            RelevanciaPersonaje.objects.get(personaje=hinata).nivel, RelevanciaPersonaje.NIVEL_DESTACADO,
+        )
+        self.assertEqual(list(hinata.unidades.all()), [self.u[1]])

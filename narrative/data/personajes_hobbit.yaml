@@ -1,0 +1,61 @@
+# El Hobbit (Películas). 2470 Un viaje inesperado · 2471 La desolación de Smaug · 2472 La batalla de los cinco ejércitos
+obras: [el-hobbit-peliculas]
+tipo_unidad: pelicula
+coincidencia: exacta
+
+relevancias:
+  - {personaje: 298, nivel: protagonista}  # Bilbo Bolsón
+  - {personaje: 300, nivel: principal}     # Thorin Escudo de Roble
+  - {personaje: 299, nivel: principal}     # Gandalf
+  - {personaje: 301, nivel: destacado}     # Smaug
+  - {personaje: 304, nivel: destacado}     # Legolas
+  - {personaje: 303, nivel: destacado}     # Tauriel
+  - {personaje: 321, nivel: destacado}     # Bardo el Navegante
+  - {personaje: 320, nivel: destacado}     # Thranduil
+  - {personaje: 305, nivel: destacado}     # Azog
+  - {personaje: 315, nivel: destacado}     # Balin
+  - {personaje: 316, nivel: destacado}     # Dwalin
+  - {personaje: 317, nivel: destacado}     # Fili
+  - {personaje: 318, nivel: destacado}     # Kili
+  - {personaje: 302, nivel: destacado}     # Elrond
+  - {personaje: 323, nivel: destacado}     # Gollum
+  - {personaje: 324, nivel: destacado}     # Radagast
+  - {personaje: 319, nivel: destacado}     # Beorn
+  - {personaje: 336, nivel: destacado}     # Sauron
+
+apariciones:
+  - {personaje: 298, unidades: [2470, 2471, 2472]}
+  - {personaje: 299, unidades: [2470, 2471, 2472]}
+  - {personaje: 300, unidades: [2470, 2471, 2472]}
+  - {personaje: 315, unidades: [2470, 2471, 2472]}
+  - {personaje: 314, unidades: [2470, 2471, 2472]}
+  - {personaje: 313, unidades: [2470, 2471, 2472]}
+  - {personaje: 312, unidades: [2470, 2471, 2472]}
+  - {personaje: 307, unidades: [2470, 2471, 2472]}
+  - {personaje: 316, unidades: [2470, 2471, 2472]}
+  - {personaje: 317, unidades: [2470, 2471, 2472]}
+  - {personaje: 311, unidades: [2470, 2471, 2472]}
+  - {personaje: 318, unidades: [2470, 2471, 2472]}
+  - {personaje: 308, unidades: [2470, 2471, 2472]}
+  - {personaje: 310, unidades: [2470, 2471, 2472]}
+  - {personaje: 309, unidades: [2470, 2471, 2472]}
+  - {personaje: 305, unidades: [2470, 2471, 2472]}
+  - {personaje: 301, unidades: [2470, 2471, 2472]}
+  - {personaje: 304, unidades: [2471, 2472]}
+  - {personaje: 303, unidades: [2471, 2472]}
+  - {personaje: 321, unidades: [2471, 2472]}
+  - {personaje: 320, unidades: [2471, 2472]}
+  - {personaje: 306, unidades: [2471, 2472]}
+  - {personaje: 336, unidades: [2471, 2472]}
+  - {personaje: 319, unidades: [2471, 2472]}
+  - {personaje: 302, unidades: [2470, 2472]}
+  - {personaje: 324, unidades: [2470, 2472]}
+
+etapas:
+  - {personaje: 298, tras: 2470, nota: "Encontró un anillo mágico"}
+  - {personaje: 300, tras: 2472, nota: "Rey bajo la Montaña; cayó en la batalla"}
+  - {personaje: 317, tras: 2472, nota: "Cayó defendiendo a Thorin"}
+  - {personaje: 318, tras: 2472, nota: "Cayó defendiendo a Thorin"}
+  - {personaje: 301, tras: 2472, nota: "Abatido por Bardo"}
+  - {personaje: 321, tras: 2472, nota: "Mató al dragón"}
+  - {personaje: 305, tras: 2472, nota: "Derrotado por Thorin"}

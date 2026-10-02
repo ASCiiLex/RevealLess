@@ -1,3 +1,5 @@
+import re
+import unicodedata
 from pathlib import Path
 
 import yaml
@@ -25,6 +27,14 @@ def _nivel(valor):
     return NIVELES[str(valor).lower().replace('ó', 'o')]
 
 
+def normalizar(texto):
+    """Clave para comparar nombres: sin aclaraciones entre paréntesis, tildes ni macrones (Hyūga = Hyuga)."""
+    texto = re.sub(r'\([^)]*\)', ' ', texto)
+    texto = unicodedata.normalize('NFKD', texto)
+    texto = ''.join(c for c in texto if not unicodedata.combining(c)).lower()
+    return ' '.join(re.findall(r'\w+', texto))
+
+
 class Command(BaseCommand):
     help = ('Carga datos editoriales de personajes desde un YAML: personajes nuevos, relevancia por obra, '
             'apariciones manuales aprobadas y etapas (alias, nota, nivel). Solo escribe lo que trae el '
@@ -44,6 +54,7 @@ class Command(BaseCommand):
         # exacta: títulos completos (películas); regex: patrones (arcos con nombres variables).
         self.exacta = datos.get('coincidencia', 'regex') == 'exacta'
         self.avisos = 0
+        self._cache = None
         self.obras = list(Obra.objects.filter(slug__in=datos['obras']))
         for slug in set(datos['obras']) - {o.slug for o in self.obras}:
             self._aviso(f'Obra no encontrada: {slug}')
@@ -64,33 +75,47 @@ class Command(BaseCommand):
         self.avisos += 1
         self.stdout.write(self.style.WARNING(texto))
 
+    def _indice(self):
+        """Nombre normalizado → id; primero nombres, después alias de etapas."""
+        if self._cache is None:
+            self._cache = {}
+            for pid, nombre in Personaje.objects.order_by('id').values_list('id', 'nombre'):
+                self._cache.setdefault(normalizar(nombre), pid)
+            for pid, alias in EtapaPersonaje.objects.exclude(alias='').values_list('personaje_id', 'alias'):
+                self._cache.setdefault(normalizar(alias), pid)
+        return self._cache
+
     def _personaje(self, referencia):
         if isinstance(referencia, int):
             personaje = Personaje.objects.filter(id=referencia).first()
         else:
-            personaje = (
-                Personaje.objects.filter(nombre__iexact=referencia).first()
-                or Personaje.objects.filter(etapas__alias__iexact=referencia).distinct().first()
-            )
+            pid = self._indice().get(normalizar(referencia))
+            personaje = Personaje.objects.filter(id=pid).first() if pid else None
         if personaje is None:
             self._aviso(f'Personaje no encontrado: {referencia}')
         return personaje
 
-    def _unidad(self, obra, texto):
-        filtro = {'nombre__iexact': texto} if self.exacta else {'nombre__iregex': texto}
-        unidad = (
-            UnidadNarrativa.objects.filter(obra=obra, tipo=self.tipo, **filtro)
-            .order_by('orden_fin').last()
-        )
+    def _unidad(self, obra, referencia):
+        if isinstance(referencia, int):
+            unidad = UnidadNarrativa.objects.filter(obra=obra, id=referencia).first()
+        else:
+            filtro = {'nombre__iexact': referencia} if self.exacta else {'nombre__iregex': referencia}
+            unidad = (
+                UnidadNarrativa.objects.filter(obra=obra, tipo=self.tipo, **filtro)
+                .order_by('orden_fin').last()
+            )
         if unidad is None:
-            self._aviso(f'  [{obra.slug}] sin {self.tipo} «{texto}»')
+            self._aviso(f'  [{obra.slug}] sin unidad «{referencia}»')
         return unidad
 
     def _nuevos(self, nombres):
         for nombre in nombres:
-            _, creado = Personaje.objects.get_or_create(nombre=nombre)
-            if creado:
-                self.stdout.write(f'Nuevo personaje: {nombre}')
+            clave = normalizar(nombre)
+            if clave in self._indice():
+                continue
+            personaje = Personaje.objects.create(nombre=nombre)
+            self._indice()[clave] = personaje.id
+            self.stdout.write(f'Nuevo personaje: {nombre}')
 
     def _relevancias(self, entradas):
         for entrada in entradas:
@@ -109,8 +134,8 @@ class Command(BaseCommand):
                 continue
             for obra in self.obras:
                 nuevas = 0
-                for texto in entrada['unidades']:
-                    unidad = self._unidad(obra, texto)
+                for referencia in entrada['unidades']:
+                    unidad = self._unidad(obra, referencia)
                     if unidad is None:
                         continue
                     propuesta, _ = PropuestaAparicion.objects.get_or_create(
