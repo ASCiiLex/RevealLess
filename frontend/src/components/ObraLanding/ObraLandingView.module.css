@@ -158,18 +158,26 @@
   border-color: var(--ink);
 }
 
-/* Filtro por relevancia: chips acumulativos (O). */
+/* Filtro por relevancia: chips acumulativos (O). Siempre en una fila; si no cabe, se desliza. */
 .niveles {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 4px;
   margin-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.niveles::-webkit-scrollbar {
+  display: none;
 }
 
 .nivel {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  white-space: nowrap;
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 600;
@@ -177,7 +185,7 @@
   background: none;
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: 3px 8px;
   cursor: pointer;
   transition:
     color 0.15s ease,
