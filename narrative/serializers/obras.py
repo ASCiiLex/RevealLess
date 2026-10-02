@@ -6,6 +6,14 @@ from ..models import Obra, RelevanciaPersonaje
 from ..services.personajes import presentacion_personaje
 from .temas import CarruselMixin, TemaConSuscripcionSerializer
 
+R = RelevanciaPersonaje
+# Chips del carrusel: tres grupos que caben en una fila en móvil; el orden interno sigue usando los cinco niveles.
+GRUPOS_RELEVANCIA = [
+    ('principales', 'Principales', [R.NIVEL_PROTAGONISTA, R.NIVEL_PRINCIPAL]),
+    ('destacados', 'Destacados', [R.NIVEL_DESTACADO]),
+    ('secundarios', 'Secundarios', [R.NIVEL_SECUNDARIO, R.NIVEL_EPISODICO]),
+]
+
 
 def calcular_progreso_pct(orden_absoluto, longitud_total):
     """floor, no round: mostrar 100% con episodios pendientes daría una falsa sensación
@@ -55,14 +63,14 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
     categorias_detalle = serializers.SerializerMethodField()
     obras_relacionadas = serializers.SerializerMethodField()
     personajes = serializers.SerializerMethodField()
-    niveles_relevancia = serializers.SerializerMethodField()
+    grupos_relevancia = serializers.SerializerMethodField()
 
     class Meta:
         model = Obra
         fields = [
             'id', 'titulo', 'slug', 'sinopsis', 'imagen_url', 'categorias', 'categorias_detalle',
             'suscrito', 'suscripcion_id', 'progreso_pct', 'total_suscriptores', 'temas',
-            'obras_relacionadas', 'personajes', 'niveles_relevancia',
+            'obras_relacionadas', 'personajes', 'grupos_relevancia',
         ]
 
     def get_progreso_pct(self, obj):
@@ -100,14 +108,19 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
             {
                 'id': p.id,
                 **presentacion_personaje(p, progreso, obra_id=obj.id),
-                'nivel': getattr(p, 'nivel_relevancia', RelevanciaPersonaje.NIVEL_SIN_MARCAR),
+                'nivel': getattr(p, 'nivel_relevancia', R.NIVEL_SIN_MARCAR),
                 'suscripcion_id': suscripciones.get(p.id),
             }
             for p in self.context.get('personajes_visibles', [])
         ]
 
-    def get_niveles_relevancia(self, obj):
+    def get_grupos_relevancia(self, obj):
         return [
-            {'valor': valor, 'nombre': nombre, 'por_defecto': valor >= RelevanciaPersonaje.NIVEL_MINIMO_POR_DEFECTO}
-            for valor, nombre in RelevanciaPersonaje.NIVEL_CHOICES
+            {
+                'clave': clave,
+                'nombre': nombre,
+                'niveles': niveles,
+                'por_defecto': max(niveles) >= R.NIVEL_MINIMO_POR_DEFECTO,
+            }
+            for clave, nombre, niveles in GRUPOS_RELEVANCIA
         ]

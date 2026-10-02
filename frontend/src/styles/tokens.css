@@ -48,6 +48,8 @@
   --max-line: 72ch;
   --max-width: 1100px;
   --feed-width: 600px;
+  /* Landings de obra y personaje: mismo ancho útil que la estantería (contenedor menos su padding). */
+  --landing-width: calc(var(--max-width) - 2 * var(--gutter));
   --gutter: 24px;
 }
 

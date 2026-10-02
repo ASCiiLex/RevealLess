@@ -27,8 +27,8 @@ export default function ObraLandingView({ obraSlug }: Props) {
   const [pendienteConfirmar, setPendienteConfirmar] = useState<Pendiente | null>(null)
   // Remonta el deslizador al resolver (aplicado o cancelado) para volver al progreso real.
   const [sliderKey, setSliderKey] = useState(0)
-  // null = selección por defecto (protagonistas y principales).
-  const [nivelesElegidos, setNivelesElegidos] = useState<number[] | null>(null)
+  // null = selección por defecto (grupo Principales).
+  const [gruposElegidos, setGruposElegidos] = useState<string[] | null>(null)
 
   useEffect(() => {
     fetchObraLanding(obraSlug).then(setObra)
@@ -93,10 +93,10 @@ export default function ObraLandingView({ obraSlug }: Props) {
     setSliderKey((k) => k + 1)
   }
 
-  function toggleNivel(valor: number, activos: number[]) {
-    const siguiente = activos.includes(valor) ? activos.filter((v) => v !== valor) : [...activos, valor]
-    // Siempre queda al menos un nivel marcado.
-    if (siguiente.length > 0) setNivelesElegidos(siguiente)
+  function toggleGrupo(clave: string, activos: string[]) {
+    const siguiente = activos.includes(clave) ? activos.filter((c) => c !== clave) : [...activos, clave]
+    // Siempre queda al menos un grupo marcado.
+    if (siguiente.length > 0) setGruposElegidos(siguiente)
   }
 
   if (!obra) {
@@ -107,15 +107,16 @@ export default function ObraLandingView({ obraSlug }: Props) {
   const actualId = progresoData?.progreso?.unidad_actual.id ?? -1
   const actualOrden = progresoData?.progreso?.unidad_actual.orden_inicio ?? -1
 
-  // Chips solo para niveles con algún personaje ya visible.
-  const nivelesPresentes = obra.niveles_relevancia
-    .map((n) => ({ ...n, total: obra.personajes.filter((p) => p.nivel === n.valor).length }))
-    .filter((n) => n.total > 0)
-  const presentes = nivelesPresentes.map((n) => n.valor)
-  const porDefecto = nivelesPresentes.filter((n) => n.por_defecto).map((n) => n.valor)
-  const elegidos = (nivelesElegidos ?? []).filter((v) => presentes.includes(v))
+  // Chips solo para grupos con algún personaje ya visible.
+  const gruposPresentes = obra.grupos_relevancia
+    .map((g) => ({ ...g, total: obra.personajes.filter((p) => g.niveles.includes(p.nivel)).length }))
+    .filter((g) => g.total > 0)
+  const presentes = gruposPresentes.map((g) => g.clave)
+  const porDefecto = gruposPresentes.filter((g) => g.por_defecto).map((g) => g.clave)
+  const elegidos = (gruposElegidos ?? []).filter((c) => presentes.includes(c))
   const activos = elegidos.length ? elegidos : porDefecto.length ? porDefecto : presentes
-  const personajesMostrados = obra.personajes.filter((p) => activos.includes(p.nivel))
+  const nivelesActivos = gruposPresentes.filter((g) => activos.includes(g.clave)).flatMap((g) => g.niveles)
+  const personajesMostrados = obra.personajes.filter((p) => nivelesActivos.includes(p.nivel))
 
   return (
     <div className={styles.wrapper}>
@@ -200,20 +201,20 @@ export default function ObraLandingView({ obraSlug }: Props) {
 
       <section className={styles.bloque}>
         <h2 className={styles.bloqueTitulo}>Personajes</h2>
-        {nivelesPresentes.length > 1 && (
+        {gruposPresentes.length > 1 && (
           <div className={styles.niveles} role="group" aria-label="Filtrar personajes por relevancia">
-            {nivelesPresentes.map((n) => {
-              const activo = activos.includes(n.valor)
+            {gruposPresentes.map((g) => {
+              const activo = activos.includes(g.clave)
               return (
                 <button
-                  key={n.valor}
+                  key={g.clave}
                   type="button"
                   className={`${styles.nivel} ${activo ? styles.nivelActivo : ''}`}
                   aria-pressed={activo}
-                  onClick={() => toggleNivel(n.valor, activos)}
+                  onClick={() => toggleGrupo(g.clave, activos)}
                 >
-                  {n.nombre}
-                  <span className={styles.nivelTotal}>{n.total}</span>
+                  {g.nombre}
+                  <span className={styles.nivelTotal}>{g.total}</span>
                 </button>
               )
             })}

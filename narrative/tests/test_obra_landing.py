@@ -181,9 +181,12 @@ class ObraLandingAPIViewTests(TestCase):
             'Bruno': RelevanciaPersonaje.NIVEL_SIN_MARCAR,
         })
 
-    def test_niveles_por_defecto_son_protagonista_y_principal(self):
-        por_defecto = [n['nombre'] for n in self._landing()['niveles_relevancia'] if n['por_defecto']]
-        self.assertEqual(por_defecto, ['Protagonista', 'Principal'])
+    def test_grupos_de_relevancia_cubren_los_cinco_niveles(self):
+        grupos = self._landing()['grupos_relevancia']
+        self.assertEqual([g['clave'] for g in grupos], ['principales', 'destacados', 'secundarios'])
+        self.assertEqual([g['clave'] for g in grupos if g['por_defecto']], ['principales'])
+        niveles = sorted(n for g in grupos for n in g['niveles'])
+        self.assertEqual(niveles, sorted(valor for valor, _ in RelevanciaPersonaje.NIVEL_CHOICES))
 
     def test_un_post_visible_pesa_mas_que_una_aparicion(self):
         ana, _ = self._personajes_ana_y_bruno()

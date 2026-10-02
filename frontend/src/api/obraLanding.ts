@@ -27,9 +27,11 @@ export interface PersonajeLanding {
   suscripcion_id: number | null
 }
 
-export interface NivelRelevancia {
-  valor: number
+// Chip del carrusel: agrupa varios niveles de relevancia.
+export interface GrupoRelevancia {
+  clave: string
   nombre: string
+  niveles: number[]
   por_defecto: boolean
 }
 
@@ -48,7 +50,7 @@ export interface ObraLanding {
   temas: TemaLanding[]
   obras_relacionadas: ObraRelacionada[]
   personajes: PersonajeLanding[]
-  niveles_relevancia: NivelRelevancia[]
+  grupos_relevancia: GrupoRelevancia[]
 }
 
 export function fetchObraLanding(obraSlug: string): Promise<ObraLanding> {

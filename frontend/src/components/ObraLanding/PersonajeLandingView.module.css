@@ -1,5 +1,5 @@
 .wrapper {
-  max-width: 480px;
+  max-width: var(--landing-width);
   margin: 0 auto;
   padding: 24px 0 40px;
 }
@@ -53,9 +53,11 @@
   margin-bottom: 12px;
 }
 
+/* Con el ancho de estantería, los botones no se estiran de lado a lado. */
 .actions {
   display: flex;
   gap: 8px;
+  max-width: 420px;
 }
 
 .actions > * {
@@ -90,6 +92,7 @@
   gap: 6px;
   color: var(--ink);
   text-decoration: none;
+  max-width: 120px;
 }
 
 .obraImagen {
