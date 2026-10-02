@@ -109,7 +109,6 @@
   font-size: 14px;
   color: var(--ink);
   line-height: 1.5;
-  max-width: var(--max-line);
   margin: 0;
   padding: 0 14px 14px;
 }
