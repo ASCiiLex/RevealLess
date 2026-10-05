@@ -21,11 +21,23 @@
   margin-bottom: 8px;
 }
 
+.avatarLink {
+  display: flex;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
 .avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease;
+}
+
+.avatarLink:hover .avatar {
+  border-color: var(--ink);
 }
 
 .authorRow {
@@ -39,6 +51,18 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
+}
+
+/* Enlace al perfil del autor (propio o ajeno). */
+.authorLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.authorLink:hover,
+.authorLink:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .obra {

@@ -18,9 +18,17 @@
   margin-bottom: 8px;
 }
 
+/* Enlace al perfil del autor (propio o ajeno). */
 .author {
   font-weight: 600;
   color: var(--ink);
+  text-decoration: none;
+}
+
+.author:hover,
+.author:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .obra {

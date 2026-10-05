@@ -50,6 +50,7 @@ export default function PostDetailView({ postId }: Props) {
   }
 
   const { post, comments } = detalle
+  const perfilUrl = `/perfil/${encodeURIComponent(post.autor)}/`
 
   return (
     <div className={styles.wrapper}>
@@ -62,12 +63,16 @@ export default function PostDetailView({ postId }: Props) {
         )}
 
         <div className={styles.meta}>
-          <img className={styles.avatar} src={post.autor_avatar} alt="" />
+          {/* Fuera del tabulador: el @usuario ya enlaza al mismo perfil. */}
+          <a className={styles.avatarLink} href={perfilUrl} tabIndex={-1} aria-hidden="true">
+            <img className={styles.avatar} src={post.autor_avatar} alt="" />
+          </a>
 
           <div className={styles.authorRow}>
             <div>
               <div className={styles.author}>
-                @{post.autor} <EmocionBadge emocionAutor={post.emocion_autor} />
+                <a className={styles.authorLink} href={perfilUrl}>@{post.autor}</a>{' '}
+                <EmocionBadge emocionAutor={post.emocion_autor} />
               </div>
 
               <div className={styles.obra}>

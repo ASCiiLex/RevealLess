@@ -16,7 +16,9 @@ export default function PostCard({ post }: Props) {
       {!post.is_own_post && <SaveButton postId={post.id} guardadoInicial={post.is_saved} />}
 
       <div className={styles.meta}>
-        <span className={styles.author}>@{post.autor}</span>
+        <a className={styles.author} href={`/perfil/${encodeURIComponent(post.autor)}/`}>
+          @{post.autor}
+        </a>
         <EmocionBadge emocionAutor={post.emocion_autor} />
         <span>·</span>
         <span className={styles.narrative}>
