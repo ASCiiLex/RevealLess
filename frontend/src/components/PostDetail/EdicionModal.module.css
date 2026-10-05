@@ -65,6 +65,26 @@
   min-height: 80px;
 }
 
+/* Imagen del post en la edición: vista previa entera y acciones debajo. */
+.preview {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--ink) 4%, var(--paper));
+}
+
+.imagenAcciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inputOculto {
+  display: none;
+}
+
 .error {
   background: color-mix(in srgb, var(--gold) 12%, var(--paper));
   color: var(--ink);

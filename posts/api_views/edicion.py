@@ -49,6 +49,8 @@ class PostUpdateAPIView(APIView):
         for campo in CAMPOS_EDITABLES:
             if campo in datos:
                 setattr(post, campo, datos[campo])
+        if datos.get('quitar_imagen') and not datos.get('image'):
+            post.image = None
         if 'frontera_spoiler' in datos:
             post.frontera_spoiler = datos['frontera_spoiler']
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO

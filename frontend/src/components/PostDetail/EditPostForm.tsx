@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './EdicionModal.module.css'
+import botones from '../../styles/botones.module.css'
 import EdicionModal from './EdicionModal'
 import CampoTextoEdicion from './CampoTextoEdicion'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
@@ -29,13 +30,42 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const [fronteraId, setFronteraId] = useState<number | null>(null)
   const [nivelSpoiler, setNivelSpoiler] = useState(post.nivel_spoiler)
   const [emocionAutor, setEmocionAutor] = useState<string | null>(post.emocion_autor)
+  const [imagenNueva, setImagenNueva] = useState<File | null>(null)
+  const [quitarImagen, setQuitarImagen] = useState(false)
+  const [preview, setPreview] = useState<string | null>(post.imagen)
   const [error, setError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
+  const inputImagen = useRef<HTMLInputElement>(null)
   const aviso = useAvisoConfirmable()
 
   useEffect(() => {
     fetchObraDetalle(post.obra_slug).then(setDetalle)
   }, [post.obra_slug])
+
+  // Vista previa: la nueva si se ha elegido; si no, la actual salvo que se vaya a quitar.
+  useEffect(() => {
+    if (!imagenNueva) {
+      setPreview(quitarImagen ? null : post.imagen)
+      return
+    }
+    const url = URL.createObjectURL(imagenNueva)
+    setPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [imagenNueva, quitarImagen, post.imagen])
+
+  function handleElegirImagen(e: React.ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0] ?? null
+    if (archivo) {
+      setImagenNueva(archivo)
+      setQuitarImagen(false)
+    }
+    e.target.value = ''
+  }
+
+  function handleQuitarImagen() {
+    setImagenNueva(null)
+    setQuitarImagen(true)
+  }
 
   async function handleGuardar() {
     if (!detalle) return
@@ -54,6 +84,8 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
     try {
       const actualizado = await updatePost(post.id, {
         text,
+        image: imagenNueva ?? undefined,
+        quitarImagen: quitarImagen && !imagenNueva,
         referenciaNarrativaId: referenciaId ?? undefined,
         fronteraSpoilerId: fronteraId ?? undefined,
         nivelSpoiler,
@@ -90,6 +122,28 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
         emocion={emocionAutor}
         onEmocionChange={setEmocionAutor}
       />
+
+      <div className={styles.field}>
+        <span className={styles.label}>Imagen (opcional)</span>
+        {preview && <img className={styles.preview} src={preview} alt="" />}
+        <div className={styles.imagenAcciones}>
+          <button type="button" className={botones.secundario} onClick={() => inputImagen.current?.click()}>
+            {preview ? 'Cambiar imagen' : 'Añadir imagen'}
+          </button>
+          {preview && (
+            <button type="button" className={styles.confirmLink} onClick={handleQuitarImagen}>
+              Quitar imagen
+            </button>
+          )}
+          <input
+            ref={inputImagen}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className={styles.inputOculto}
+            onChange={handleElegirImagen}
+          />
+        </div>
+      </div>
 
       <div className={styles.field}>
         <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>

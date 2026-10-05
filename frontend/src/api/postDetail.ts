@@ -22,6 +22,7 @@ export async function updatePost(
   datos: {
     text?: string
     image?: File | null
+    quitarImagen?: boolean
     referenciaNarrativaId?: number
     fronteraSpoilerId?: number | null
     nivelSpoiler?: string
@@ -31,6 +32,8 @@ export async function updatePost(
   const response = await enviarFormData(`/posts/api/${postId}/editar/`, 'PATCH', construirFormData({
     text: datos.text,
     image: datos.image,
+    // Solo se envía cuando hay que retirar la imagen actual.
+    quitar_imagen: datos.quitarImagen ? 'true' : undefined,
     referencia_narrativa: datos.referenciaNarrativaId,
     frontera_spoiler: datos.fronteraSpoilerId,
     nivel_spoiler: datos.nivelSpoiler,

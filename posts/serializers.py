@@ -48,6 +48,8 @@ class PostUpdateSerializer(serializers.Serializer):
 
     text = serializers.CharField(max_length=500, required=False)
     image = serializers.ImageField(required=False, allow_null=True)
+    # La imagen es opcional: el autor puede retirarla. Una imagen nueva tiene prioridad.
+    quitar_imagen = serializers.BooleanField(required=False, default=False)
     referencia_narrativa = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False
     )

@@ -1,14 +1,32 @@
+import io
+import tempfile
+
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from PIL import Image
 from rest_framework.test import APIClient
 
 from narrative.models import ClasificacionNarrativa, Obra, Personaje, UnidadNarrativa
 from ..models import Post
 
 
+def _imagen(nombre='foto.png'):
+    buffer = io.BytesIO()
+    Image.new('RGB', (2, 2), 'red').save(buffer, 'PNG')
+    return SimpleUploadedFile(nombre, buffer.getvalue(), content_type='image/png')
+
+
 class PostUpdateAPIViewTests(TestCase):
     def setUp(self):
+        # Las imágenes de prueba no tocan la carpeta media real.
+        media = tempfile.TemporaryDirectory()
+        self.addCleanup(media.cleanup)
+        ajuste = override_settings(MEDIA_ROOT=media.name)
+        ajuste.enable()
+        self.addCleanup(ajuste.disable)
+
         self.client = APIClient()
         self.autor = User.objects.create_user('editor_post', password='x')
         self.otro_usuario = User.objects.create_user('otro_editor_post', password='x')
@@ -97,3 +115,22 @@ class PostUpdateAPIViewTests(TestCase):
         self.assertEqual(list(self.post.personajes.all()), [kuro])
         self._editar({'frontera_spoiler': self.e1.id})
         self.assertFalse(self.post.personajes.exists())
+
+    def test_anade_imagen_a_un_post_sin_foto(self):
+        respuesta = self._editar({'image': _imagen()})
+        self.assertEqual(respuesta.status_code, 200)
+        self.post.refresh_from_db()
+        self.assertTrue(self.post.image)
+        self.assertIsNotNone(respuesta.data['imagen'])
+
+    def test_quitar_imagen_deja_el_post_sin_foto(self):
+        self._editar({'image': _imagen()})
+        respuesta = self._editar({'quitar_imagen': 'true'})
+        self.post.refresh_from_db()
+        self.assertFalse(self.post.image)
+        self.assertIsNone(respuesta.data['imagen'])
+
+    def test_una_imagen_nueva_prevalece_sobre_quitar(self):
+        self._editar({'image': _imagen('nueva.png'), 'quitar_imagen': 'true'})
+        self.post.refresh_from_db()
+        self.assertTrue(self.post.image)
