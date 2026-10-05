@@ -11,6 +11,11 @@ type Filtros = Record<string, EstadoChip>
 
 const SIGUIENTE: Record<'-' | EstadoChip, EstadoChip | null> = { '-': 'o', o: 'y', y: null }
 
+interface Props {
+  // Seguir o dejar de seguir cambia qué posts entran en el feed.
+  onCambioSuscripcion?: () => void
+}
+
 function tiene(obra: LomoObra, categoria: string) {
   if (categoria === CHIP_TEMAS) return Boolean(obra.es_tema)
   if (obra.es_tema) return false
@@ -28,7 +33,7 @@ function coincide(obra: LomoObra, filtros: Filtros) {
   )
 }
 
-export default function Carousel() {
+export default function Carousel({ onCambioSuscripcion }: Props) {
   const { view, obraFiltro, setObraFiltro } = useCatalogView()
   const [obras, setObras] = useState<{ biblioteca: LomoObra[]; descubrir: LomoObra[] } | null>(
     null
@@ -41,6 +46,11 @@ export default function Carousel() {
     fetchCatalogoObras()
       .then(setObras)
       .catch(() => setObras({ biblioteca: [], descubrir: [] }))
+  }
+
+  function handleCambioSuscripcion() {
+    recargarCatalogo()
+    onCambioSuscripcion?.()
   }
 
   useEffect(() => {
@@ -143,7 +153,7 @@ export default function Carousel() {
                   activa={obraFiltro === obra.id}
                   onSelect={handleSelectObra}
                   mostrarProgreso={view === 'biblioteca'}
-                  onCambioSuscripcion={recargarCatalogo}
+                  onCambioSuscripcion={handleCambioSuscripcion}
                 />
               ))}
             </div>

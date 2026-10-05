@@ -14,9 +14,11 @@ interface FiltroExterno {
 
 interface Props {
   filtroExterno?: FiltroExterno | null
+  // Cambia cuando el usuario sigue o deja de seguir algo: obliga a pedir el feed de nuevo.
+  version?: number
 }
 
-export default function Feed({ filtroExterno }: Props) {
+export default function Feed({ filtroExterno, version = 0 }: Props) {
   const { obraFiltro } = useCatalogView()
   const [posts, setPosts] = useState<FeedPost[] | null>(null)
   // Título que hay que pedir aparte (tema o personaje).
@@ -57,7 +59,7 @@ export default function Feed({ filtroExterno }: Props) {
     fetchFeed({ obraId })
       .then((data) => setPosts(data.results))
       .catch(() => setPosts([]))
-  }, [obraFiltro, filtroExterno])
+  }, [obraFiltro, filtroExterno, version])
 
   if (!posts) {
     return null

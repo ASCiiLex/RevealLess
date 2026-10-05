@@ -148,6 +148,14 @@
   transform: translateY(-1px);
 }
 
+/* «+» / «✓»: mismo código que los botones de seguir de las landings. */
+.followIcon {
+  display: inline-block;
+  line-height: 1;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .followButton {
   display: inline-flex;
   align-items: center;
@@ -169,7 +177,12 @@
 }
 
 .followButtonActive {
-  color: var(--fog);
+  color: var(--accent);
+}
+
+.followButtonActive:hover,
+.followButtonActive:focus-visible {
+  color: var(--paper);
 }
 
 .followButton:disabled {
@@ -198,6 +211,10 @@
 
   .progressIcon {
     font-size: 14px;
+  }
+
+  .followIcon {
+    font-size: 16px;
   }
 
   .actionText {

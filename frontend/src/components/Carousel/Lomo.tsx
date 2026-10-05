@@ -94,13 +94,17 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
         </a>
       )}
 
+      {/* Sin campanas: la campana queda reservada para silenciar desde Suscripciones. */}
       <button
         type="button"
         className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
         onClick={handleToggleSeguir}
         disabled={cargando}
+        aria-pressed={siguiendo}
+        aria-label={siguiendo ? `Dejar de seguir ${obra.titulo}` : `Seguir ${obra.titulo}`}
+        title={siguiendo ? 'Dejar de seguir' : 'Seguir'}
       >
-        <span className={styles.progressIcon} aria-hidden="true">{siguiendo ? '🔕' : '🔔'}</span>
+        <span className={styles.followIcon} aria-hidden="true">{siguiendo ? '✓' : '+'}</span>
         <span className={styles.actionText}>{siguiendo ? 'Siguiendo' : 'Seguir'}</span>
       </button>
     </div>

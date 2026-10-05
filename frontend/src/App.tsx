@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Header from './components/Header/Header'
 import Tabs from './components/Carousel/Tabs'
 import Carousel from './components/Carousel/Carousel'
@@ -19,6 +19,8 @@ export default function App() {
     if (personaje) return { tipo: 'personaje' as const, valor: personaje }
     return null
   }, [])
+  // Sube al seguir/dejar de seguir desde la estantería: el feed se vuelve a pedir.
+  const [versionFeed, setVersionFeed] = useState(0)
 
   return (
     <CatalogViewProvider>
@@ -27,10 +29,10 @@ export default function App() {
         {!filtroExterno && (
           <div>
             <Tabs />
-            <Carousel />
+            <Carousel onCambioSuscripcion={() => setVersionFeed((v) => v + 1)} />
           </div>
         )}
-        <Feed filtroExterno={filtroExterno} />
+        <Feed filtroExterno={filtroExterno} version={versionFeed} />
       </main>
       <BottomNav />
     </CatalogViewProvider>
