@@ -51,9 +51,13 @@ interface CampoSeleccionProps {
   emptyLabel?: string
   buscar: (q: string) => Promise<BuscadorItem[]>
   hint?: string
+  onProponer?: (texto: string) => void
+  textoProponer?: (texto: string) => string
 }
 
-function CampoSeleccion({ id, etiqueta, seleccion, onChange, placeholder, emptyLabel, buscar, hint }: CampoSeleccionProps) {
+function CampoSeleccion({
+  id, etiqueta, seleccion, onChange, placeholder, emptyLabel, buscar, hint, onProponer, textoProponer,
+}: CampoSeleccionProps) {
   return (
     <div className={styles.field}>
       <label className={styles.label} htmlFor={id}>{etiqueta}</label>
@@ -65,6 +69,8 @@ function CampoSeleccion({ id, etiqueta, seleccion, onChange, placeholder, emptyL
         placeholder={placeholder}
         emptyLabel={emptyLabel}
         buscar={buscar}
+        onProponer={onProponer}
+        textoProponer={textoProponer}
       />
       {hint && <span className={styles.hint}>{hint}</span>}
     </div>
@@ -80,7 +86,8 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
   const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
   const [tema, setTema] = useState<Seleccion>({ id: temaIdInicial ?? null, label: null })
-  const [temaPropuesto, setTemaPropuesto] = useState('')
+  // Tema escrito que no existe: se envía como propuesta (solicitud de tema).
+  const [temaPropuesto, setTemaPropuesto] = useState<string | null>(null)
   const [ajustes, setAjustes] = useState<Ajustes>({})
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
@@ -115,6 +122,16 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
 
   const activo = Boolean(obraSlug && contexto)
 
+  function handleTema(seleccion: Seleccion) {
+    setTema(seleccion)
+    setTemaPropuesto(null)
+  }
+
+  function handleProponerTema(nombre: string) {
+    setTema(SIN_SELECCION)
+    setTemaPropuesto(nombre)
+  }
+
   async function enviar(ajustesEnvio: Ajustes) {
     if (!obraSlug || !referencia.id || enviando) return
     setError(null)
@@ -129,8 +146,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
         fronteraSpoilerId: frontera.id,
         emocionAutor: emocion,
         temaId: tema.id,
-        // Solo cuenta si no se eligió un tema existente.
-        temaPropuesto: tema.id ? undefined : temaPropuesto.trim() || undefined,
+        temaPropuesto: tema.id ? undefined : temaPropuesto ?? undefined,
         nuevoProgresoId: nuevoProgreso.id,
         ...ajustesEnvio,
       })
@@ -163,6 +179,9 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     enviar(ajustes)
   }
 
+  // La propuesta se muestra en el propio campo de tema, marcada como tal.
+  const seleccionTema: Seleccion = temaPropuesto ? { id: null, label: `${temaPropuesto} (propuesta)` } : tema
+
   return (
     <>
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -190,30 +209,15 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
           <CampoSeleccion
             id="tema"
             etiqueta="Tema transversal (opcional)"
-            seleccion={tema}
-            onChange={setTema}
-            placeholder="Buscar tema..."
+            seleccion={seleccionTema}
+            onChange={handleTema}
+            placeholder="Buscar o proponer tema..."
             emptyLabel="Ninguno"
             buscar={buscarTemas}
+            onProponer={handleProponerTema}
+            textoProponer={(t) => `Proponer «${t}» como tema nuevo`}
+            hint={temaPropuesto ? 'Si ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.' : undefined}
           />
-
-          {!tema.id && (
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="tema-propuesto">¿No está? Propón un tema nuevo (opcional)</label>
-              <input
-                id="tema-propuesto"
-                className={styles.input}
-                type="text"
-                maxLength={150}
-                value={temaPropuesto}
-                onChange={(e) => setTemaPropuesto(e.target.value)}
-                placeholder="Ej.: Frutas del diablo"
-              />
-              <span className={styles.hint}>
-                Si ya existe en esta obra se asigna al momento; si no, se revisará antes de crearlo.
-              </span>
-            </div>
-          )}
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>

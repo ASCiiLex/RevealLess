@@ -14,13 +14,19 @@ interface Props {
   emptyLabel?: string
   id?: string
   buscar: (q: string) => Promise<BuscadorItem[]>
+  // Si se indica, el texto sin coincidencia exacta puede proponerse como valor nuevo.
+  onProponer?: (texto: string) => void
+  textoProponer?: (texto: string) => string
 }
 
 /** Combobox con busqueda en servidor (con debounce), no en memoria:
  * pensado para listas que pueden ser enormes (una obra con miles de
  * unidades narrativas importadas) -- cargarlas todas de golpe en el
  * frontend tardaba varios segundos solo en montar el componente. */
-export default function BuscadorLocal({ value, valueLabel, onChange, placeholder, emptyLabel, id, buscar }: Props) {
+export default function BuscadorLocal({
+  value, valueLabel, onChange, placeholder, emptyLabel, id, buscar, onProponer,
+  textoProponer = (texto) => `Proponer «${texto}»`,
+}: Props) {
   const [abierto, setAbierto] = useState(false)
   const [query, setQuery] = useState('')
   const [resultados, setResultados] = useState<BuscadorItem[]>([])
@@ -58,8 +64,19 @@ export default function BuscadorLocal({ value, valueLabel, onChange, placeholder
     setActiveIndex(0)
   }, [resultados])
 
+  const textoPropuesta = query.trim()
+  const hayExacta = resultados.some((r) => r.label.toLowerCase() === textoPropuesta.toLowerCase())
+  const puedeProponer = Boolean(onProponer && textoPropuesta && !hayExacta && !buscando)
+  const total = resultados.length + (puedeProponer ? 1 : 0)
+
   function seleccionar(item: BuscadorItem) {
     onChange(item.id, item.label)
+    setAbierto(false)
+    setQuery('')
+  }
+
+  function proponer() {
+    onProponer?.(textoPropuesta)
     setAbierto(false)
     setQuery('')
   }
@@ -80,7 +97,7 @@ export default function BuscadorLocal({ value, valueLabel, onChange, placeholder
     }
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setActiveIndex((i) => Math.min(i + 1, resultados.length - 1))
+      setActiveIndex((i) => Math.min(i + 1, total - 1))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setActiveIndex((i) => Math.max(i - 1, 0))
@@ -88,6 +105,7 @@ export default function BuscadorLocal({ value, valueLabel, onChange, placeholder
       e.preventDefault()
       const item = resultados[activeIndex]
       if (item) seleccionar(item)
+      else if (puedeProponer) proponer()
     } else if (e.key === 'Escape') {
       setAbierto(false)
       setQuery('')
@@ -110,7 +128,7 @@ export default function BuscadorLocal({ value, valueLabel, onChange, placeholder
           onKeyDown={handleKeyDown}
           autoComplete="off"
         />
-        {value !== null && !abierto && (
+        {(value !== null || valueLabel) && !abierto && (
           <button type="button" className={styles.clear} onClick={limpiar} aria-label="Quitar selección">×</button>
         )}
       </div>
@@ -119,20 +137,33 @@ export default function BuscadorLocal({ value, valueLabel, onChange, placeholder
         <div className={styles.dropdown}>
           {buscando ? (
             <p className={styles.empty}>Buscando...</p>
-          ) : resultados.length === 0 ? (
-            <p className={styles.empty}>Sin resultados.</p>
           ) : (
-            resultados.map((item, i) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`${styles.option} ${i === activeIndex ? styles.optionActive : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => seleccionar(item)}
-              >
-                {item.label}
-              </button>
-            ))
+            <>
+              {resultados.map((item, i) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`${styles.option} ${i === activeIndex ? styles.optionActive : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => seleccionar(item)}
+                >
+                  {item.label}
+                </button>
+              ))}
+              {puedeProponer && (
+                <button
+                  type="button"
+                  className={`${styles.option} ${styles.optionProponer} ${
+                    activeIndex === resultados.length ? styles.optionActive : ''
+                  }`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={proponer}
+                >
+                  {textoProponer(textoPropuesta)}
+                </button>
+              )}
+              {total === 0 && <p className={styles.empty}>Sin resultados.</p>}
+            </>
           )}
         </div>
       )}

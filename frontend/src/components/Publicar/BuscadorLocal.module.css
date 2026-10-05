@@ -68,6 +68,13 @@
   background: color-mix(in srgb, var(--gold) 10%, var(--paper));
 }
 
+/* Valor nuevo propuesto por el usuario: se distingue de los existentes. */
+.optionProponer {
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--gold-texto);
+}
+
 .empty {
   padding: 8px 12px;
   font-size: 12px;
