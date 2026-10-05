@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import ClasificacionNarrativa, Personaje, ProgresoUsuario
+from narrative.models import ClasificacionNarrativa, Personaje, ProgresoUsuario, SolicitudTema, TemaTransversal
 from narrative.services import actualizar_progreso
 from ..models import Post
 from .utils import crear_obra
@@ -119,3 +119,29 @@ class PostCreateAPIViewTests(TestCase):
         self._con_progreso()
         self._publicar('Kuro tiene un plan', frontera_spoiler=self.ep[0].id)
         self.assertFalse(Post.objects.get(text='Kuro tiene un plan').personajes.exists())
+
+    def test_tema_propuesto_nuevo_crea_solicitud_pendiente(self):
+        self._con_progreso()
+        self.assertEqual(
+            self._publicar('sobre frutas', frontera_spoiler=self.ep[0].id, tema_propuesto='Frutas del diablo').status_code,
+            201,
+        )
+        solicitud = SolicitudTema.objects.get()
+        self.assertEqual(
+            (solicitud.nombre, solicitud.estado, solicitud.usuario),
+            ('Frutas del diablo', SolicitudTema.ESTADO_PENDIENTE, self.usuario),
+        )
+        self.assertFalse(Post.objects.get(text='sobre frutas').temas_transversales.exists())
+
+    def test_tema_propuesto_existente_se_asigna_sin_solicitud(self):
+        tema = TemaTransversal.objects.create(obra=self.obra, nombre='Frutas del diablo')
+        self._con_progreso()
+        self._publicar('otra fruta', frontera_spoiler=self.ep[0].id, tema_propuesto='frutas DEL diablo')
+        self.assertEqual(list(Post.objects.get(text='otra fruta').temas_transversales.all()), [tema])
+        self.assertFalse(SolicitudTema.objects.exists())
+
+    def test_tema_propuesto_no_duplica_solicitudes_pendientes(self):
+        self._con_progreso()
+        self._publicar('uno', frontera_spoiler=self.ep[0].id, tema_propuesto='Haki')
+        self._publicar('dos', frontera_spoiler=self.ep[0].id, tema_propuesto='haki')
+        self.assertEqual(SolicitudTema.objects.count(), 1)

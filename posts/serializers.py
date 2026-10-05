@@ -24,6 +24,8 @@ class PostCreateSerializer(serializers.Serializer):
     tema = serializers.PrimaryKeyRelatedField(
         queryset=TemaTransversal.objects.all(), required=False, allow_null=True
     )
+    # Tema escrito a mano: se usa si ya existe en la obra; si no, queda como solicitud pendiente.
+    tema_propuesto = serializers.CharField(max_length=150, required=False, allow_blank=True)
     nuevo_progreso = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
     )

@@ -44,6 +44,8 @@ export interface DatosPost {
   nivelSpoiler?: string
   emocionAutor?: string | null
   temaId?: number | null
+  // Tema escrito a mano: se asigna si existe; si no, queda como solicitud pendiente.
+  temaPropuesto?: string
   nuevoProgresoId?: number | null
   confirmarSaltoProgreso?: boolean
   obraCruzadaId?: number | null
@@ -92,6 +94,7 @@ export async function crearPost(obraSlug: string, datos: DatosPost): Promise<Pos
     nivel_spoiler: datos.nivelSpoiler,
     emocion_autor: datos.emocionAutor,
     tema: datos.temaId,
+    tema_propuesto: datos.temaPropuesto,
     nuevo_progreso: datos.nuevoProgresoId,
     confirmar_salto_progreso: datos.confirmarSaltoProgreso,
     obra_cruzada: datos.obraCruzadaId,

@@ -80,6 +80,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
   const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
   const [tema, setTema] = useState<Seleccion>({ id: temaIdInicial ?? null, label: null })
+  const [temaPropuesto, setTemaPropuesto] = useState('')
   const [ajustes, setAjustes] = useState<Ajustes>({})
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
@@ -128,6 +129,8 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
         fronteraSpoilerId: frontera.id,
         emocionAutor: emocion,
         temaId: tema.id,
+        // Solo cuenta si no se eligió un tema existente.
+        temaPropuesto: tema.id ? undefined : temaPropuesto.trim() || undefined,
         nuevoProgresoId: nuevoProgreso.id,
         ...ajustesEnvio,
       })
@@ -193,6 +196,24 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
             emptyLabel="Ninguno"
             buscar={buscarTemas}
           />
+
+          {!tema.id && (
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="tema-propuesto">¿No está? Propón un tema nuevo (opcional)</label>
+              <input
+                id="tema-propuesto"
+                className={styles.input}
+                type="text"
+                maxLength={150}
+                value={temaPropuesto}
+                onChange={(e) => setTemaPropuesto(e.target.value)}
+                placeholder="Ej.: Frutas del diablo"
+              />
+              <span className={styles.hint}>
+                Si ya existe en esta obra se asigna al momento; si no, se revisará antes de crearlo.
+              </span>
+            </div>
+          )}
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>

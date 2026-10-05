@@ -108,6 +108,24 @@ def detectar_posibles_referencias_cruzadas(texto, obra):
     return detecciones
 
 
+def proponer_tema(obra, usuario, nombre):
+    """Tema escrito a mano al publicar. Si la obra ya lo tiene (sin distinguir mayúsculas)
+    lo devuelve para asignarlo; si no, deja una solicitud pendiente (una por nombre) y
+    devuelve None: el tema solo existe tras aprobarlo desde admin."""
+    nombre = ' '.join(nombre.split())[:150]
+    if not nombre:
+        return None
+    existente = TemaTransversal.objects.filter(obra=obra, nombre__iexact=nombre).first()
+    if existente:
+        return existente
+    pendiente = SolicitudTema.objects.filter(
+        obra=obra, nombre__iexact=nombre, estado=SolicitudTema.ESTADO_PENDIENTE,
+    ).exists()
+    if not pendiente:
+        SolicitudTema.objects.create(obra=obra, usuario=usuario, nombre=nombre)
+    return None
+
+
 def aprobar_solicitud_tema(solicitud):
     """Lógica pura de aprobación, sin dependencias de Django admin o
     HttpRequest: crea (o reutiliza, vía get_or_create) el TemaTransversal

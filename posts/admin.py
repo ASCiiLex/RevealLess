@@ -1,7 +1,7 @@
 from unfold.admin import ModelAdmin, TabularInline
 from django.contrib import admin
 from django.db.models import Count
-from .models import Post
+from .models import Hashtag, Post
 from comments.models import Comment
 
 
@@ -19,7 +19,7 @@ class CommentInline(TabularInline):
 @admin.register(Post)
 class PostAdmin(ModelAdmin):
     list_display = (
-        'id', 'author', 'obra', 'short_text', 'frontera_origen',
+        'id', 'author', 'obra', 'short_text', 'frontera', 'frontera_origen',
         'created_at', 'likes_count', 'comments_count'
     )
     search_fields = ('author__username', 'text')
@@ -31,7 +31,7 @@ class PostAdmin(ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return (
-            qs.select_related("author", "obra")
+            qs.select_related("author", "obra", "frontera_spoiler")
             .prefetch_related("comments")
             .annotate(
                 likes_total=Count("reactions", distinct=True),
@@ -39,6 +39,25 @@ class PostAdmin(ModelAdmin):
             )
         )
 
+    @admin.display(description='Texto')
     def short_text(self, obj):
         return obj.text[:40] + "..." if len(obj.text) > 40 else obj.text
-    short_text.short_description = "Texto"
+
+    @admin.display(description='Frontera', ordering='frontera_orden')
+    def frontera(self, obj):
+        return obj.frontera_spoiler.nombre if obj.frontera_spoiler_id else '-'
+
+
+@admin.register(Hashtag)
+class HashtagAdmin(ModelAdmin):
+    """Borrar un hashtag elimina sus vínculos con los posts; el texto de los posts no cambia."""
+
+    list_display = ('name', 'total_posts')
+    search_fields = ('name',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(num_posts=Count('posts', distinct=True))
+
+    @admin.display(description='Posts', ordering='num_posts')
+    def total_posts(self, obj):
+        return obj.num_posts

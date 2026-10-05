@@ -14,6 +14,7 @@ from narrative.services import (
     actualizar_progreso,
     SaltoGrandeRequiereConfirmacion,
     detectar_posibles_referencias_cruzadas,
+    proponer_tema,
 )
 from narrative.services.detecciones import serializar_detecciones
 from narrative.services.etiquetado import etiquetar_personajes
@@ -110,6 +111,9 @@ class PostCreateAPIView(APIView):
             return error_400(exc.message_dict)
 
         post.save()
+        # Solo tras publicar: un post rechazado no deja solicitudes de tema sueltas.
+        if not tema and datos.get('tema_propuesto'):
+            tema = proponer_tema(obra, request.user, datos['tema_propuesto'])
         if tema:
             post.temas_transversales.set([tema])
         # Tras guardar: necesita frontera_orden ya calculado.
