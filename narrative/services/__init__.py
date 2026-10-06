@@ -1,11 +1,15 @@
 import re
 
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from ..models import Obra, SolicitudTema, TemaTransversal
+from ..models import Obra, SolicitudTema, TemaTransversal, UnidadNarrativa
 
 UMBRAL_SALTO_GRANDE = 3
+
+UNIDAD_PREVIA_TIPO = 'previo'
+UNIDAD_PREVIA_NOMBRE = 'Previo al estreno'
 
 TIPO_PALABRAS_CLAVE = {
     Obra.TIPO_MANGA: ['manga'],
@@ -42,6 +46,29 @@ def calcular_orden_absoluto(unidad):
     if unidad.es_hoja:
         return unidad.orden_inicio
     return max(unidad.orden_inicio - 1, 0)
+
+
+def asegurar_unidad_previa(obra):
+    """Obra sin estructura (por estrenar): crea la unidad 'Previo al estreno' para poder
+    declarar progreso y publicar. Idempotente; con orden_local=0 queda siempre la primera.
+    Devuelve la unidad creada o None si la obra ya tenía unidades."""
+    if obra.unidades.exists():
+        return None
+    with transaction.atomic():
+        # Bloquea la obra: dos peticiones simultáneas no crean dos unidades previas.
+        Obra.objects.select_for_update().get(pk=obra.pk)
+        if obra.unidades.exists():
+            return None
+        unidad = UnidadNarrativa.objects.create(
+            obra=obra,
+            tipo=UNIDAD_PREVIA_TIPO,
+            nombre=UNIDAD_PREVIA_NOMBRE,
+            orden_local=0,
+            traducido=True,
+        )
+        obra.recalcular_orden()
+    unidad.refresh_from_db()
+    return unidad
 
 
 def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False, permitir_retroceso=False):

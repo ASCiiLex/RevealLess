@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from ..models import Obra, ProgresoUsuario, UnidadNarrativa
 from ..serializers import ProgresoUsuarioSerializer, UnidadNarrativaSerializer
-from ..services import actualizar_progreso, SaltoGrandeRequiereConfirmacion
+from ..services import actualizar_progreso, asegurar_unidad_previa, SaltoGrandeRequiereConfirmacion
 from .comun import entero_o_none, es_verdadero, obra_basica
 
 
@@ -15,6 +15,8 @@ class ProgresoAPIView(APIView):
 
     def get(self, request, obra_slug):
         obra = get_object_or_404(Obra, slug=obra_slug)
+        # Obra por estrenar: sin esta unidad no habría dónde declarar progreso.
+        asegurar_unidad_previa(obra)
         unidades = (
             UnidadNarrativa.objects.filter(obra=obra)
             .select_related('padre', 'obra')
