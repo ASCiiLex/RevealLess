@@ -19,8 +19,8 @@ def es_verdadero(valor):
 
 
 def ids_familia(obra):
-    """La obra y sus continuidades relacionadas (adapta_a / adaptaciones)."""
-    return [obra.id] + [o.id for o in obra.obras_relacionadas()]
+    """La obra y sus relacionadas (adaptaciones, hermanas y mismo universo)."""
+    return [obra.id] + list(obra.obras_relacionadas().values_list('id', flat=True))
 
 
 def obra_basica(obra):

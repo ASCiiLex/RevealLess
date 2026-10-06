@@ -48,8 +48,11 @@ class ObraLandingRelacionesTests(TestCase):
         self.por_llegar = Personaje.objects.create(nombre='Por llegar')
         self.por_llegar.unidades.add(self.u2)
 
-    def _landing(self):
-        return self.client.get(reverse('narrative_api_obra_landing', args=[self.obra.slug])).json()
+    def _landing(self, slug=None):
+        return self.client.get(reverse('narrative_api_obra_landing', args=[slug or self.obra.slug])).json()
+
+    def _slugs_relacionadas(self, slug=None):
+        return sorted(o['slug'] for o in self._landing(slug)['obras_relacionadas'])
 
     def test_categorias_incluyen_id_para_navegar(self):
         self.assertEqual(self._landing()['categorias_detalle'], [{'id': self.categoria.id, 'nombre': 'Series'}])
@@ -65,4 +68,29 @@ class ObraLandingRelacionesTests(TestCase):
 
     def test_obras_relacionadas_por_adaptacion(self):
         adaptacion = Obra.objects.create(titulo='Adaptación', slug='adaptacion', adapta_a=self.obra)
-        self.assertEqual([o['slug'] for o in self._landing()['obras_relacionadas']], [adaptacion.slug])
+        self.assertEqual(self._slugs_relacionadas(), [adaptacion.slug])
+
+    def test_adaptaciones_hermanas_se_relacionan(self):
+        Obra.objects.create(titulo='Peli', slug='peli', adapta_a=self.obra)
+        Obra.objects.create(titulo='Anime', slug='anime', adapta_a=self.obra)
+        self.assertEqual(self._slugs_relacionadas('peli'), ['anime', 'obra'])
+
+    def test_obras_del_mismo_universo_se_relacionan(self):
+        universo = Categoria.objects.create(nombre='Tierra Media', es_universo=True)
+        hobbit = Obra.objects.create(titulo='El Hobbit', slug='hobbit')
+        hobbit.categorias.add(universo)
+        self.obra.categorias.add(universo)
+        self.assertEqual(self._slugs_relacionadas(), ['hobbit'])
+        self.assertEqual(self._slugs_relacionadas('hobbit'), ['obra'])
+
+    def test_categoria_normal_no_relaciona(self):
+        otra = Obra.objects.create(titulo='Otra serie', slug='otra-serie')
+        otra.categorias.add(self.categoria)
+        self.assertEqual(self._slugs_relacionadas(), [])
+
+    def test_adaptacion_y_universo_no_duplican(self):
+        universo = Categoria.objects.create(nombre='Franquicia', es_universo=True)
+        adaptacion = Obra.objects.create(titulo='Adaptación', slug='adaptacion', adapta_a=self.obra)
+        adaptacion.categorias.add(universo)
+        self.obra.categorias.add(universo)
+        self.assertEqual(self._slugs_relacionadas(), ['adaptacion'])

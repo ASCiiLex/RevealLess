@@ -60,7 +60,9 @@ def limitar_unidades_a_obra(campo, obra_id):
 
 @admin.register(Categoria)
 class CategoriaAdmin(ModelAdmin):
-    list_display = ('nombre',)
+    list_display = ('nombre', 'es_universo')
+    list_editable = ('es_universo',)
+    list_filter = ('es_universo',)
     search_fields = ('nombre',)
 
 

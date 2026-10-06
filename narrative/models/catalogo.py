@@ -1,5 +1,6 @@
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.db.models import Q
 
 from core.validators import validate_image_size
 
@@ -21,12 +22,16 @@ IMAGEN_VALIDATORS = [
 
 
 class Categoria(models.Model):
-    """Etiqueta cosmética compartida entre obras (ej. 'anime', 'series',
-    'películas', 'novelas'). Puramente de búsqueda/filtro — no participa
-    en frontera_orden ni en ninguna regla de visibilidad, igual criterio
-    que FamiliaNarrativa en posts/comments."""
+    """Etiqueta compartida entre obras (ej. 'anime', 'películas'). No participa
+    en frontera_orden ni en visibilidad. Si es_universo, agrupa una franquicia
+    (ej. 'Tierra Media', 'Star Wars') y sus obras se muestran como relacionadas."""
 
     nombre = models.CharField(max_length=50, unique=True)
+    es_universo = models.BooleanField(
+        default=False,
+        verbose_name='Es un universo',
+        help_text='Las obras de esta categoría se muestran como relacionadas entre sí.',
+    )
 
     class Meta:
         ordering = ['nombre']
@@ -110,13 +115,14 @@ class Obra(models.Model):
         return self.IMAGEN_POR_DEFECTO.get(self.tipo, self.IMAGEN_POR_DEFECTO_GENERICA)
 
     def obras_relacionadas(self):
-        """Continuidades de la misma franquicia: la obra origen y sus
-        adaptaciones. Sin mapeo de equivalencia entre escalas de orden."""
-        relacionadas = []
+        """Origen, adaptaciones, hermanas (otras adaptaciones del mismo origen)
+        y obras que comparten una categoría universo. Solo informativo."""
+        filtro = Q(adapta_a=self) | Q(
+            categorias__in=self.categorias.filter(es_universo=True)
+        )
         if self.adapta_a_id:
-            relacionadas.append(self.adapta_a)
-        relacionadas.extend(self.adaptaciones.all())
-        return relacionadas
+            filtro |= Q(id=self.adapta_a_id) | Q(adapta_a_id=self.adapta_a_id)
+        return Obra.objects.filter(filtro).exclude(id=self.id).distinct()
 
     def recalcular_orden(self):
         recalcular_orden(self)
