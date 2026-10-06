@@ -10,6 +10,8 @@ interface Props {
 }
 
 const TECLAS_DESPLAZAMIENTO = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']
+// Mismo valor que UNIDAD_PREVIA_TIPO en narrative/services.
+const TIPO_PREVIO = 'previo'
 
 // Vacío o inválido cuenta como 1.
 function cantidad(texto: string) {
@@ -44,6 +46,9 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
   if (hojas.length === 0) return null
 
   const ultimo = hojas.length - 1
+  // «Previo al estreno» es la posición 0: los episodios conservan su número real.
+  const desfase = hojas[0].tipo === TIPO_PREVIO ? 1 : 0
+  const total = hojas.length - desfase
   const indice = valor ?? Math.max(indiceActual, 0)
   const hoja = hojas[indice]
   const posicion = hojas.length > 1 ? (indice / ultimo) * 100 : 0
@@ -82,7 +87,8 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
     const numero = parseInt(texto, 10)
     setTexto('')
     if (Number.isNaN(numero)) return
-    aplicar(Math.min(Math.max(numero, 1), hojas.length) - 1)
+    const acotado = Math.min(Math.max(numero, 1 - desfase), total)
+    aplicar(acotado - 1 + desfase)
   }
 
   function alPulsarEnter(accion: () => void) {
@@ -157,11 +163,15 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
             type="number"
             inputMode="numeric"
             className={`${styles.campo} ${styles.numero}`}
-            min={1}
-            max={hojas.length}
+            min={1 - desfase}
+            max={total}
             value={texto}
-            placeholder={indiceActual >= 0 ? String(indiceActual + 1) : '—'}
-            aria-label={`Ir a la unidad número (1 a ${hojas.length})`}
+            placeholder={indiceActual >= 0 ? String(indiceActual + 1 - desfase) : '—'}
+            aria-label={
+              desfase
+                ? `Ir a la unidad número (0 = previo al estreno, 1 a ${total})`
+                : `Ir a la unidad número (1 a ${total})`
+            }
             onChange={(e) => setTexto(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Escape') setTexto('')
@@ -169,7 +179,7 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
             }}
             onBlur={saltarAlNumero}
           />
-          <span className={styles.total}>/ {hojas.length}</span>
+          <span className={styles.total}>/ {total}</span>
         </div>
 
         <div className={styles.grupo}>
