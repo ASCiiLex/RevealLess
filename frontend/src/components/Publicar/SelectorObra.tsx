@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import styles from './SelectorObra.module.css'
-import { buscar } from '../../api/buscar'
-import type { TemaBusqueda } from '../../api/buscar'
-import type { LomoObra } from '../Carousel/Lomo'
+import { fetchObrasPublicar, type ObraPublicable, type TemaPublicable } from '../../api/publicar'
 
 export interface ObraSeleccionada {
   slug: string
@@ -12,61 +10,57 @@ export interface ObraSeleccionada {
 interface Props {
   seleccion: ObraSeleccionada | null
   onElegirObra: (obra: ObraSeleccionada) => void
-  onElegirTema: (tema: TemaBusqueda) => void
+  onElegirTema: (tema: TemaPublicable) => void
   onCambiar: () => void
 }
 
 type ResultadoCombinado =
-  | { tipo: 'obra'; item: LomoObra }
-  | { tipo: 'tema'; item: TemaBusqueda }
+  | { tipo: 'obra'; item: ObraPublicable }
+  | { tipo: 'tema'; item: TemaPublicable }
 
-// Primer campo del formulario de publicar: buscador de obra/tema o, ya elegida, su ficha.
+const MAX_TEMAS = 8
+
+function normalizar(texto: string) {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
+
+// Primer campo del formulario de publicar: solo obras/temas de la biblioteca del usuario.
 export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, onCambiar }: Props) {
+  const [obras, setObras] = useState<ObraPublicable[] | null>(null)
+  const [temas, setTemas] = useState<TemaPublicable[]>([])
+  const [errorCarga, setErrorCarga] = useState(false)
   const [query, setQuery] = useState('')
-  const [obras, setObras] = useState<LomoObra[]>([])
-  const [temas, setTemas] = useState<TemaBusqueda[]>([])
-  const [buscando, setBuscando] = useState(false)
+  const [abierto, setAbierto] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    fetchObrasPublicar()
+      .then((datos) => {
+        setObras(datos.obras)
+        setTemas(datos.temas)
+      })
+      .catch(() => setErrorCarga(true))
+  }, [])
 
-    if (query.trim().length < 2) {
-      setObras([])
-      setTemas([])
-      return
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setBuscando(true)
-      buscar(query.trim())
-        .then((resultado) => {
-          setObras(resultado.obras)
-          setTemas(resultado.temas)
-        })
-        .finally(() => setBuscando(false))
-    }, 300)
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [query])
-
-  const combinados: ResultadoCombinado[] = useMemo(
-    () => [
-      ...obras.map((item) => ({ tipo: 'obra' as const, item })),
-      ...temas.map((item) => ({ tipo: 'tema' as const, item })),
-    ],
-    [obras, temas]
-  )
+  const combinados: ResultadoCombinado[] = useMemo(() => {
+    if (!obras) return []
+    const q = normalizar(query.trim())
+    const obrasFiltradas = q ? obras.filter((o) => normalizar(o.titulo).includes(q)) : obras
+    // Sin texto solo se listan obras: los temas pueden ser muchos.
+    const temasFiltrados = q ? temas.filter((t) => normalizar(t.nombre).includes(q)).slice(0, MAX_TEMAS) : []
+    return [
+      ...obrasFiltradas.map((item) => ({ tipo: 'obra' as const, item })),
+      ...temasFiltrados.map((item) => ({ tipo: 'tema' as const, item })),
+    ]
+  }, [obras, temas, query])
 
   useEffect(() => {
     setActiveIndex(0)
-  }, [combinados.length])
+  }, [query])
 
   function seleccionarResultado(resultado: ResultadoCombinado) {
     setQuery('')
+    setAbierto(false)
     if (resultado.tipo === 'obra') {
       onElegirObra({ slug: resultado.item.slug, titulo: resultado.item.titulo })
     } else {
@@ -76,9 +70,11 @@ export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, on
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Escape') {
-      setQuery('')
+      if (query) setQuery('')
+      else setAbierto(false)
       return
     }
+    if (!abierto) setAbierto(true)
     if (combinados.length === 0) return
     if (e.key === 'ArrowDown') {
       e.preventDefault()
@@ -107,36 +103,48 @@ export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, on
     )
   }
 
-  const sinResultados = query.trim().length >= 2 && !buscando && combinados.length === 0
+  const bibliotecaVacia = obras !== null && obras.length === 0
+  const sinResultados = obras !== null && !bibliotecaVacia && query.trim() !== '' && combinados.length === 0
 
   return (
     <div className={styles.field}>
-      <label className={styles.label} htmlFor="publicar-obra">¿Sobre qué obra o tema quieres publicar?</label>
+      <label className={styles.label} htmlFor="publicar-obra">
+        ¿Sobre qué obra o tema de tu biblioteca quieres publicar?
+      </label>
 
       <div className={styles.buscador}>
         <input
           id="publicar-obra"
           className={styles.searchInput}
           type="text"
-          placeholder="Buscar obra o tema..."
+          placeholder={obras === null && !errorCarga ? 'Cargando tu biblioteca...' : 'Filtrar tus obras o temas...'}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setAbierto(true)
+          }}
+          onFocus={() => setAbierto(true)}
+          onBlur={() => setAbierto(false)}
           onKeyDown={handleKeyDown}
+          disabled={bibliotecaVacia || errorCarga}
           autoComplete="off"
           autoFocus
         />
 
-        {combinados.length > 0 && (
+        {abierto && combinados.length > 0 && (
           <div className={styles.results}>
             {combinados.map((resultado, i) => {
               const activa = i === activeIndex
+              const clase = `${styles.resultRow} ${activa ? styles.resultRowActive : ''}`
+              // preventDefault en mousedown: el input no pierde el foco antes del click.
               if (resultado.tipo === 'obra') {
                 const obra = resultado.item
                 return (
                   <button
                     key={`obra-${obra.id}`}
                     type="button"
-                    className={`${styles.resultRow} ${activa ? styles.resultRowActive : ''}`}
+                    className={clase}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => seleccionarResultado(resultado)}
                   >
                     <img className={styles.resultThumb} src={obra.imagen_url} alt="" />
@@ -149,7 +157,8 @@ export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, on
                 <button
                   key={`tema-${tema.id}`}
                   type="button"
-                  className={`${styles.resultRow} ${activa ? styles.resultRowActive : ''}`}
+                  className={clase}
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => seleccionarResultado(resultado)}
                 >
                   <span className={styles.resultTag} aria-hidden="true">#</span>
@@ -164,7 +173,13 @@ export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, on
         )}
       </div>
 
-      {sinResultados && <p className={styles.hint}>Sin resultados para "{query}".</p>}
+      {bibliotecaVacia && (
+        <p className={styles.hint}>
+          Aún no sigues ninguna obra. Síguela desde Descubrir o declara tu progreso para poder publicar.
+        </p>
+      )}
+      {errorCarga && <p className={styles.hint}>No se pudo cargar tu biblioteca. Recarga la página.</p>}
+      {sinResultados && <p className={styles.hint}>Ninguna obra de tu biblioteca coincide con "{query}".</p>}
     </div>
   )
 }

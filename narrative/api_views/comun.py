@@ -1,7 +1,7 @@
 from rest_framework.exceptions import ValidationError
 
 from subscriptions.models import Suscripcion
-from ..models import TemaTransversal
+from ..models import ProgresoUsuario, TemaTransversal
 
 
 def entero_o_none(valor, campo):
@@ -21,6 +21,13 @@ def es_verdadero(valor):
 def ids_familia(obra):
     """La obra y sus relacionadas (adaptaciones, hermanas y mismo universo)."""
     return [obra.id] + list(obra.obras_relacionadas().values_list('id', flat=True))
+
+
+def ids_biblioteca(user):
+    """Obras con progreso declarado o alguna suscripción (silenciadas incluidas)."""
+    con_progreso = ProgresoUsuario.objects.filter(usuario=user).values_list('obra_id', flat=True)
+    suscritas = Suscripcion.objects.filter(usuario=user, obra__isnull=False).values_list('obra_id', flat=True)
+    return set(con_progreso) | set(suscritas)
 
 
 def obra_basica(obra):

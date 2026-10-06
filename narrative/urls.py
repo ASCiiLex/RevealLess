@@ -16,6 +16,7 @@ from .api_views import (
     UnidadesBuscarAPIView,
     ObraContextoPublicarAPIView,
 )
+from .api_views.catalogo import ObrasPublicarAPIView
 
 urlpatterns = [
     path('progreso/<slug:obra_slug>/', views.progreso_react_view, name='narrative_progreso'),
@@ -29,6 +30,7 @@ urlpatterns = [
     path('api/progreso/<slug:obra_slug>/', ProgresoAPIView.as_view(), name='narrative_api_progreso'),
     path('api/progreso/<slug:obra_slug>/existe/', ProgresoExisteAPIView.as_view(), name='narrative_api_progreso_existe'),
     path('api/obras/', CatalogoObrasAPIView.as_view(), name='narrative_api_obras'),
+    path('api/obras/publicar/', ObrasPublicarAPIView.as_view(), name='narrative_api_obras_publicar'),
     path('api/obras/<slug:obra_slug>/detalle/', ObraDetalleAPIView.as_view(), name='narrative_api_obra_detalle'),
     path('api/obras/<slug:obra_slug>/landing/', ObraLandingAPIView.as_view(), name='narrative_api_obra_landing'),
     path('api/obras/<slug:obra_slug>/unidades/', UnidadesBuscarAPIView.as_view(), name='narrative_api_unidades_buscar'),

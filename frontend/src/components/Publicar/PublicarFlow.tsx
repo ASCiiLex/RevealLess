@@ -4,7 +4,7 @@ import SelectorObra, { type ObraSeleccionada } from './SelectorObra'
 import PasoProgreso from './PasoProgreso'
 import PasoPost from './PasoPost'
 import { existeProgreso } from '../../api/progreso'
-import type { TemaBusqueda } from '../../api/buscar'
+import type { TemaPublicable } from '../../api/publicar'
 
 type Estado = 'sin-obra' | 'cargando' | 'progreso' | 'post'
 
@@ -28,7 +28,7 @@ export default function PublicarFlow() {
     }
   }
 
-  function handleElegirTema(tema: TemaBusqueda) {
+  function handleElegirTema(tema: TemaPublicable) {
     seleccionar({ slug: tema.obra_slug, titulo: tema.obra_titulo }, tema.id)
   }
 

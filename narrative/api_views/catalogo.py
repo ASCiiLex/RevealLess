@@ -4,9 +4,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models import Obra, ProgresoUsuario, UnidadNarrativa
+from ..models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa
 from ..serializers import ObraResumenSerializer, UnidadNarrativaSerializer
-from .comun import contexto_suscripcion_obra, obra_basica, temas_planos, temas_suscritos_serializados
+from .comun import (
+    contexto_suscripcion_obra,
+    ids_biblioteca,
+    obra_basica,
+    temas_planos,
+    temas_suscritos_serializados,
+)
 
 
 class CatalogoObrasAPIView(APIView):
@@ -17,7 +23,7 @@ class CatalogoObrasAPIView(APIView):
             ProgresoUsuario.objects.filter(usuario=request.user).values_list('obra_id', 'orden_absoluto')
         )
         contexto_suscripcion = contexto_suscripcion_obra(request.user)
-        ids_biblioteca = set(progreso_por_obra) | contexto_suscripcion['ids_obras_suscritas']
+        ids = set(progreso_por_obra) | contexto_suscripcion['ids_obras_suscritas']
 
         todas = Obra.objects.prefetch_related('categorias').annotate(
             longitud_total=Max('unidades__orden_fin')
@@ -25,14 +31,33 @@ class CatalogoObrasAPIView(APIView):
         contexto = {'progreso_por_obra': progreso_por_obra, **contexto_suscripcion}
 
         biblioteca = ObraResumenSerializer(
-            todas.filter(id__in=ids_biblioteca), many=True, context=contexto,
+            todas.filter(id__in=ids), many=True, context=contexto,
         ).data
 
         return Response({
             'biblioteca': biblioteca + temas_suscritos_serializados(request.user),
             'descubrir': ObraResumenSerializer(
-                todas.exclude(id__in=ids_biblioteca), many=True, context=contexto,
+                todas.exclude(id__in=ids), many=True, context=contexto,
             ).data,
+        })
+
+
+class ObrasPublicarAPIView(APIView):
+    """Selector de publicar: solo obras de la biblioteca del usuario y sus temas."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        ids = ids_biblioteca(request.user)
+        obras = Obra.objects.filter(id__in=ids).order_by('titulo')
+        temas = TemaTransversal.objects.filter(obra_id__in=ids).select_related('obra').order_by('nombre')
+
+        return Response({
+            'obras': [{**obra_basica(o), 'imagen_url': o.image_url} for o in obras],
+            'temas': [
+                {'id': t.id, 'nombre': t.nombre, 'obra_slug': t.obra.slug, 'obra_titulo': t.obra.titulo}
+                for t in temas
+            ],
         })
 
 

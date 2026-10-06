@@ -36,6 +36,25 @@ export interface DeteccionApi {
   palabra: string
 }
 
+export interface ObraPublicable {
+  id: number
+  slug: string
+  titulo: string
+  imagen_url: string
+}
+
+export interface TemaPublicable {
+  id: number
+  nombre: string
+  obra_slug: string
+  obra_titulo: string
+}
+
+export interface BibliotecaPublicar {
+  obras: ObraPublicable[]
+  temas: TemaPublicable[]
+}
+
 export interface DatosPost {
   text: string
   image?: File | null
@@ -61,6 +80,17 @@ interface CuerpoConflicto {
   obra_slug?: string
   salto?: number
   detecciones?: DeteccionApi[]
+}
+
+// Solo la biblioteca del usuario: se carga una vez y se filtra en cliente.
+export async function fetchObrasPublicar(): Promise<BibliotecaPublicar> {
+  const response = await fetch('/narrative/api/obras/publicar/', {
+    credentials: 'same-origin',
+    headers: { Accept: 'application/json' },
+  })
+  const body = await response.json().catch(() => null)
+  if (!response.ok) throw new ApiError(response.status, body)
+  return body as BibliotecaPublicar
 }
 
 export function mapearDetecciones(detecciones: DeteccionApi[] = []): DeteccionCruzada[] {
