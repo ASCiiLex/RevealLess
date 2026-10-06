@@ -1,5 +1,7 @@
+/* Contenedor de consulta: el stepper se adapta al ancho real de la tarjeta, no al viewport. */
 .contenedor {
   margin-bottom: 12px;
+  container-type: inline-size;
 }
 
 .texto {
@@ -64,4 +66,122 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+/* Ajuste fino: [− n]  [nº / total]  [n +], centrado bajo el slider. */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 8px;
+}
+
+.grupo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paso {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid var(--fog);
+  border-radius: var(--radius);
+  background: transparent;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.paso:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.paso:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Base común de los inputs numéricos, sin flechas nativas. */
+.campo {
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--fog);
+  border-radius: var(--radius);
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.campo::-webkit-outer-spin-button,
+.campo::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.campo:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.cantidad {
+  width: 42px;
+}
+
+.numero {
+  width: 64px;
+}
+
+.total {
+  font-size: 11px;
+  color: var(--fog);
+}
+
+/* Columna estrecha (móvil): controles compactos y sin el total visible. */
+@container (max-width: 280px) {
+  .stepper {
+    gap: 6px 5px;
+  }
+
+  .grupo {
+    gap: 3px;
+  }
+
+  .paso {
+    width: 26px;
+    height: 28px;
+    font-size: 15px;
+  }
+
+  .campo {
+    height: 28px;
+    padding: 0 3px;
+    font-size: 12px;
+  }
+
+  .cantidad {
+    width: 32px;
+  }
+
+  .numero {
+    width: 50px;
+  }
+
+  .total {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }

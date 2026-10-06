@@ -11,6 +11,12 @@ interface Props {
 
 const TECLAS_DESPLAZAMIENTO = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']
 
+// Vacío o inválido cuenta como 1.
+function cantidad(texto: string) {
+  const n = parseInt(texto, 10)
+  return Number.isNaN(n) || n < 1 ? 1 : n
+}
+
 export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }: Props) {
   // Solo hojas: se avanza episodio a episodio (o capítulo), nunca por bloque.
   const hojas = useMemo(() => {
@@ -30,13 +36,17 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
 
   const [valor, setValor] = useState<number | null>(null)
   const [arrastrando, setArrastrando] = useState(false)
+  const [texto, setTexto] = useState('')
+  const [restar, setRestar] = useState('')
+  const [sumar, setSumar] = useState('')
   const valorRef = useRef<number | null>(null)
 
   if (hojas.length === 0) return null
 
+  const ultimo = hojas.length - 1
   const indice = valor ?? Math.max(indiceActual, 0)
   const hoja = hojas[indice]
-  const posicion = hojas.length > 1 ? (indice / (hojas.length - 1)) * 100 : 0
+  const posicion = hojas.length > 1 ? (indice / ultimo) * 100 : 0
 
   function cambiar(nuevo: number) {
     valorRef.current = nuevo
@@ -44,18 +54,48 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
     setArrastrando(true)
   }
 
-  function confirmar() {
-    setArrastrando(false)
-    const elegido = valorRef.current
-    if (elegido === null) return
+  // Punto único de confirmación para slider, botones y campos numéricos.
+  function aplicar(elegido: number) {
     if (elegido === indiceActual) {
       valorRef.current = null
       setValor(null)
       return
     }
+    valorRef.current = elegido
+    setValor(elegido)
     // El valor se mantiene hasta que el padre resuelve (aplica o cancela y remonta).
     onCommit(hojas[elegido].id)
   }
+
+  function confirmar() {
+    setArrastrando(false)
+    if (valorRef.current !== null) aplicar(valorRef.current)
+  }
+
+  function desplazar(paso: number) {
+    // Sin progreso, «+N» parte de antes de la primera hoja.
+    const base = indiceActual < 0 ? (paso > 0 ? -1 : 0) : indiceActual
+    aplicar(Math.min(Math.max(base + paso, 0), ultimo))
+  }
+
+  function saltarAlNumero() {
+    const numero = parseInt(texto, 10)
+    setTexto('')
+    if (Number.isNaN(numero)) return
+    aplicar(Math.min(Math.max(numero, 1), hojas.length) - 1)
+  }
+
+  function alPulsarEnter(accion: () => void) {
+    return (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        accion()
+      }
+    }
+  }
+
+  const nRestar = cantidad(restar)
+  const nSumar = cantidad(sumar)
 
   return (
     <div className={styles.contenedor}>
@@ -73,7 +113,7 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
           type="range"
           className={styles.rango}
           min={0}
-          max={hojas.length - 1}
+          max={ultimo}
           step={1}
           value={indice}
           aria-label="Progreso en la obra"
@@ -86,6 +126,74 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
           }}
           onBlur={() => setArrastrando(false)}
         />
+      </div>
+
+      <div className={styles.stepper}>
+        <div className={styles.grupo}>
+          <button
+            type="button"
+            className={styles.paso}
+            onClick={() => desplazar(-nRestar)}
+            disabled={indiceActual <= 0}
+            aria-label={`Retroceder ${nRestar}`}
+          >
+            −
+          </button>
+          <input
+            type="number"
+            inputMode="numeric"
+            className={`${styles.campo} ${styles.cantidad}`}
+            min={1}
+            value={restar}
+            placeholder="1"
+            aria-label="Cantidad a retroceder"
+            onChange={(e) => setRestar(e.target.value)}
+            onKeyDown={alPulsarEnter(() => indiceActual > 0 && desplazar(-nRestar))}
+          />
+        </div>
+
+        <div className={styles.grupo}>
+          <input
+            type="number"
+            inputMode="numeric"
+            className={`${styles.campo} ${styles.numero}`}
+            min={1}
+            max={hojas.length}
+            value={texto}
+            placeholder={indiceActual >= 0 ? String(indiceActual + 1) : '—'}
+            aria-label={`Ir a la unidad número (1 a ${hojas.length})`}
+            onChange={(e) => setTexto(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setTexto('')
+              else alPulsarEnter(saltarAlNumero)(e)
+            }}
+            onBlur={saltarAlNumero}
+          />
+          <span className={styles.total}>/ {hojas.length}</span>
+        </div>
+
+        <div className={styles.grupo}>
+          <input
+            type="number"
+            inputMode="numeric"
+            className={`${styles.campo} ${styles.cantidad}`}
+            min={1}
+            value={sumar}
+            placeholder="1"
+            aria-label="Cantidad a avanzar"
+            onChange={(e) => setSumar(e.target.value)}
+            onKeyDown={alPulsarEnter(() => indiceActual < ultimo && desplazar(nSumar))}
+          />
+          <button
+            type="button"
+            className={styles.paso}
+            onClick={() => desplazar(nSumar)}
+            disabled={indiceActual >= ultimo}
+            aria-label={`Avanzar ${nSumar}`}
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   )
