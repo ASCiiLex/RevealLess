@@ -5,6 +5,7 @@ from .models import Post
 
 EMOCION_CHOICES = [c[0] for c in ClasificacionNarrativa.EMOCION_CHOICES]
 DISPOSICIONES = [c[0] for c in Post.DISPOSICION_CHOICES]
+MODOS_CRUCE = [c[0] for c in Post.MODO_CRUCE_CHOICES]
 
 
 class PostCreateSerializer(serializers.Serializer):
@@ -23,8 +24,13 @@ class PostCreateSerializer(serializers.Serializer):
         required=False,
         max_length=Post.MAX_COMPARADOS,
     )
+    # Nombres que aún no existen (o el autor no encuentra): quedan como solicitud.
+    personajes_propuestos = serializers.ListField(
+        child=serializers.CharField(max_length=150), required=False, max_length=Post.MAX_COMPARADOS,
+    )
+    # Opcional si el post habla de un tema.
     referencia_narrativa = serializers.PrimaryKeyRelatedField(
-        queryset=UnidadNarrativa.objects.all()
+        queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True,
     )
     frontera_spoiler = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
@@ -50,6 +56,7 @@ class PostCreateSerializer(serializers.Serializer):
     frontera_cruzada = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False, allow_null=True
     )
+    modo_cruce = serializers.ChoiceField(choices=MODOS_CRUCE, required=False)
     descartar_referencia_cruzada = serializers.BooleanField(required=False, default=False)
 
 

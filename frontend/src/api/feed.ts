@@ -17,9 +17,16 @@ export interface ImagenPost {
 }
 
 export interface PersonajeComparado {
+  // null mientras es una propuesta pendiente de revisión.
+  id: number | null
+  nombre: string
+  imagen_url: string | null
+  pendiente?: boolean
+}
+
+export interface TemaPost {
   id: number
   nombre: string
-  imagen_url: string
 }
 
 export interface FeedPost {
@@ -30,6 +37,8 @@ export interface FeedPost {
   obra_slug: string
   // Opcionales: otras vistas pueden serializar posts sin estos campos.
   obra_cruzada?: { titulo: string; slug: string } | null
+  modo_cruce?: 'comparativa' | 'misma_escena'
+  temas?: TemaPost[]
   text: string
   imagen: string | null
   imagenes?: ImagenPost[]

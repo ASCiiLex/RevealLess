@@ -1,10 +1,11 @@
-from django.db.models import Max
+from django.db.models import Max, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models import Obra, Personaje, ProgresoUsuario, TemaTransversal, UnidadNarrativa
+from ..models import Obra, Personaje, ProgresoUsuario, RelevanciaPersonaje, TemaTransversal, UnidadNarrativa
 from ..serializers import ObraResumenSerializer, UnidadNarrativaSerializer
 from .comun import (
     contexto_suscripcion_obra,
@@ -43,7 +44,8 @@ class CatalogoObrasAPIView(APIView):
 
 
 class ObrasPublicarAPIView(APIView):
-    """Selector de publicar: solo obras de la biblioteca del usuario y sus temas."""
+    """Selector de publicar: solo obras de la biblioteca del usuario y sus temas.
+    adapta_a_id permite saber en cliente si dos obras cuentan la misma historia."""
 
     permission_classes = [IsAuthenticated]
 
@@ -53,7 +55,10 @@ class ObrasPublicarAPIView(APIView):
         temas = TemaTransversal.objects.filter(obra_id__in=ids).select_related('obra').order_by('nombre')
 
         return Response({
-            'obras': [{**obra_basica(o), 'imagen_url': o.image_url} for o in obras],
+            'obras': [
+                {**obra_basica(o), 'imagen_url': o.image_url, 'adapta_a_id': o.adapta_a_id}
+                for o in obras
+            ],
             'temas': [
                 {'id': t.id, 'nombre': t.nombre, 'obra_slug': t.obra.slug, 'obra_titulo': t.obra.titulo}
                 for t in temas
@@ -62,7 +67,8 @@ class ObrasPublicarAPIView(APIView):
 
 
 class PersonajesPublicarAPIView(APIView):
-    """Candidatos para una comparativa: personajes ya aparecidos según el progreso del usuario."""
+    """Candidatos para una comparativa: personajes ya aparecidos según el progreso del
+    usuario, primero los más relevantes en la obra."""
 
     permission_classes = [IsAuthenticated]
     LIMITE = 30
@@ -73,13 +79,17 @@ class PersonajesPublicarAPIView(APIView):
         if not progreso:
             return Response({'personajes': []})
 
-        personajes = Personaje.objects.filter(
-            unidades__obra=obra, unidades__orden_fin__lte=progreso.orden_absoluto,
-        ).distinct()
+        nivel = RelevanciaPersonaje.objects.filter(personaje=OuterRef('pk'), obra=obra).values('nivel')[:1]
+        personajes = (
+            Personaje.objects
+            .filter(unidades__obra=obra, unidades__orden_fin__lte=progreso.orden_absoluto)
+            .distinct()
+            .annotate(nivel_obra=Coalesce(Subquery(nivel), Value(RelevanciaPersonaje.NIVEL_SIN_MARCAR)))
+        )
         q = request.query_params.get('q', '').strip()
         if q:
             personajes = personajes.filter(nombre__icontains=q)
-        personajes = personajes.order_by('nombre')[:self.LIMITE]
+        personajes = personajes.order_by('-nivel_obra', 'nombre')[:self.LIMITE]
 
         return Response({
             'personajes': [{'id': p.id, 'nombre': p.nombre, 'imagen_url': p.image_url} for p in personajes],

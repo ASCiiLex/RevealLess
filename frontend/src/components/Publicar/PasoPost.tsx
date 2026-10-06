@@ -3,7 +3,9 @@ import styles from './PasoPost.module.css'
 import BuscadorLocal, { type BuscadorItem } from './BuscadorLocal'
 import EditorTexto from './EditorTexto'
 import GaleriaEditor, { type ImagenBorrador } from './GaleriaEditor'
-import Comparativa, { COMPARATIVA_VACIA, comparativaIncompleta, type EstadoComparativa } from './Comparativa'
+import SelectorParteTema, { type Seleccion } from './SelectorParteTema'
+import PersonajesEnfrentados, { type PersonajeElegido } from './PersonajesEnfrentados'
+import type { EstadoComparativa } from './Comparativa'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 import { MAX_IMAGENES, disposicionEfectiva } from '../Galeria/GaleriaPost'
 import { ApiError } from '../../api/client'
@@ -14,13 +16,9 @@ interface Props {
   // null = aún no hay obra elegida: el formulario se muestra desactivado.
   obraSlug: string | null
   temaIdInicial?: number | null
+  comparativa: EstadoComparativa
   onPublicado: (postId: number) => void
   onProgresoRequerido: () => void
-}
-
-interface Seleccion {
-  id: number | null
-  label: string | null
 }
 
 // Decisiones del usuario ante los 409: se acumulan para que un reenvío no pierda las anteriores.
@@ -54,13 +52,9 @@ interface CampoSeleccionProps {
   emptyLabel?: string
   buscar: (q: string) => Promise<BuscadorItem[]>
   hint?: string
-  onProponer?: (texto: string) => void
-  textoProponer?: (texto: string) => string
 }
 
-function CampoSeleccion({
-  id, etiqueta, seleccion, onChange, placeholder, emptyLabel, buscar, hint, onProponer, textoProponer,
-}: CampoSeleccionProps) {
+function CampoSeleccion({ id, etiqueta, seleccion, onChange, placeholder, emptyLabel, buscar, hint }: CampoSeleccionProps) {
   return (
     <div className={styles.field}>
       <label className={styles.label} htmlFor={id}>{etiqueta}</label>
@@ -72,16 +66,20 @@ function CampoSeleccion({
         placeholder={placeholder}
         emptyLabel={emptyLabel}
         buscar={buscar}
-        onProponer={onProponer}
-        textoProponer={textoProponer}
       />
       {hint && <span className={styles.hint}>{hint}</span>}
     </div>
   )
 }
 
-// Campos de galería y comparativa que se añaden a la petición.
-function datosExtra(imagenes: ImagenBorrador[], disposicion: string, comparativa: EstadoComparativa): Partial<DatosPost> {
+// Galería, segunda obra y personajes: se añaden a la petición solo si se usan.
+function datosExtra(
+  imagenes: ImagenBorrador[],
+  disposicion: string,
+  comparativa: EstadoComparativa,
+  parteOtra: Seleccion,
+  personajes: PersonajeElegido[],
+): Partial<DatosPost> {
   const extra: Partial<DatosPost> = {}
   if (imagenes.length === 1) {
     extra.image = imagenes[0].archivo
@@ -91,30 +89,33 @@ function datosExtra(imagenes: ImagenBorrador[], disposicion: string, comparativa
     extra.disposicion = disposicionEfectiva(imagenes.length, disposicion)
   }
   if (comparativa.activa) {
-    if (comparativa.obra && comparativa.frontera.id) {
+    if (comparativa.obra && parteOtra.id) {
       extra.obraCruzadaId = comparativa.obra.id
-      extra.fronteraCruzadaId = comparativa.frontera.id
+      extra.fronteraCruzadaId = parteOtra.id
+      extra.modoCruce = comparativa.modo
     }
-    if (comparativa.personajes.length >= 2) {
-      extra.personajesComparadosIds = comparativa.personajes.map((p) => p.id)
+    if (personajes.length >= 2) {
+      extra.personajesComparadosIds = personajes.filter((p) => p.id !== null).map((p) => p.id as number)
+      extra.personajesPropuestos = personajes.filter((p) => p.id === null).map((p) => p.nombre)
     }
   }
   return extra
 }
 
-export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgresoRequerido }: Props) {
+export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPublicado, onProgresoRequerido }: Props) {
   const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
   const [texto, setTexto] = useState('')
   const [imagenes, setImagenes] = useState<ImagenBorrador[]>([])
   const [disposicion, setDisposicion] = useState('')
-  const [comparativa, setComparativa] = useState<EstadoComparativa>(COMPARATIVA_VACIA)
   const [emocion, setEmocion] = useState<string | null>(null)
-  const [referencia, setReferencia] = useState<Seleccion>(SIN_SELECCION)
-  const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
-  const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
+  const [parte, setParte] = useState<Seleccion>(SIN_SELECCION)
   const [tema, setTema] = useState<Seleccion>({ id: temaIdInicial ?? null, label: null })
   // Tema escrito que no existe: se envía como propuesta (solicitud de tema).
   const [temaPropuesto, setTemaPropuesto] = useState<string | null>(null)
+  const [parteOtra, setParteOtra] = useState<Seleccion>(SIN_SELECCION)
+  const [personajes, setPersonajes] = useState<PersonajeElegido[]>([])
+  const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
+  const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
   const [ajustes, setAjustes] = useState<Ajustes>({})
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
@@ -132,19 +133,21 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     }
   }, [temaIdInicial, contexto])
 
+  // Al cambiar la segunda obra se descarta lo elegido en ella.
+  const otraSlug = comparativa.obra?.slug ?? null
+  useEffect(() => {
+    setParteOtra(SIN_SELECCION)
+    setPersonajes((prev) => prev.filter((p) => !p.deOtraObra))
+  }, [otraSlug])
+
   // Referencias estables: BuscadorLocal relanza la búsqueda si cambia su prop buscar.
   const buscarUnidadesObra = useCallback(
     (q: string) => (obraSlug ? buscarUnidades(obraSlug, q) : Promise.resolve([])),
     [obraSlug]
   )
-
-  const buscarTemas = useCallback(
-    (q: string) => Promise.resolve(
-      (contexto?.temas ?? [])
-        .filter((t) => t.nombre.toLowerCase().includes(q.toLowerCase()))
-        .map((t) => ({ id: t.id, label: t.nombre }))
-    ),
-    [contexto]
+  const buscarUnidadesOtra = useCallback(
+    (q: string) => (otraSlug ? buscarUnidades(otraSlug, q) : Promise.resolve([])),
+    [otraSlug]
   )
 
   const activo = Boolean(obraSlug && contexto)
@@ -154,7 +157,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     setTemaPropuesto(null)
   }
 
-  function handleProponerTema(nombre: string) {
+  function handleProponerTema(nombre: string | null) {
     setTema(SIN_SELECCION)
     setTemaPropuesto(nombre)
   }
@@ -178,8 +181,12 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     setImagenes((prev) => prev.map((img, i) => (i === indice ? { ...img, etiqueta } : img)))
   }
 
+  const hayParteOTema = Boolean(parte.id || tema.id || temaPropuesto)
+  const comparativaIncompleta =
+    comparativa.activa && ((comparativa.obra !== null && !parteOtra.id) || personajes.length === 1)
+
   async function enviar(ajustesEnvio: Ajustes) {
-    if (!obraSlug || !referencia.id || enviando) return
+    if (!obraSlug || !hayParteOTema || enviando) return
     setError(null)
     setAvisoSalto(null)
     setEnviando(true)
@@ -187,7 +194,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     try {
       const resultado = await crearPost(obraSlug, {
         text: texto,
-        referenciaNarrativaId: referencia.id,
+        referenciaNarrativaId: parte.id,
         fronteraSpoilerId: frontera.id,
         emocionAutor: emocion,
         temaId: tema.id,
@@ -195,7 +202,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
         nuevoProgresoId: nuevoProgreso.id,
         ...ajustesEnvio,
         // La comparativa explícita prevalece sobre lo elegido en el aviso de detección.
-        ...datosExtra(imagenes, disposicion, comparativa),
+        ...datosExtra(imagenes, disposicion, comparativa, parteOtra, personajes),
       })
 
       if ('progresoRequerido' in resultado) {
@@ -226,9 +233,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     enviar(ajustes)
   }
 
-  // La propuesta se muestra en el propio campo de tema, marcada como tal.
-  const seleccionTema: Seleccion = temaPropuesto ? { id: null, label: `${temaPropuesto} (propuesta)` } : tema
-  const incompleta = comparativaIncompleta(comparativa)
+  const otra = comparativa.activa ? comparativa.obra : null
 
   return (
     <>
@@ -245,29 +250,50 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
 
         {/* fieldset disabled desactiva de golpe todos los controles hasta que haya obra. */}
         <fieldset className={styles.campos} disabled={!activo}>
-          <CampoSeleccion
-            id="referencia"
-            etiqueta="¿De qué parte habla?"
-            seleccion={referencia}
-            onChange={setReferencia}
-            placeholder="Elige una unidad"
-            buscar={buscarUnidadesObra}
-          />
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="parte-tema">¿De qué parte o tema habla?</label>
+            <SelectorParteTema
+              id="parte-tema"
+              obraSlug={obraSlug}
+              temas={contexto?.temas ?? []}
+              parte={parte}
+              tema={tema}
+              temaPropuesto={temaPropuesto}
+              onParte={setParte}
+              onTema={handleTema}
+              onProponerTema={handleProponerTema}
+            />
+            <span className={styles.hint}>
+              {temaPropuesto
+                ? 'Si el tema ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.'
+                : 'Elige una parte, un tema o ambos.'}
+            </span>
+          </div>
 
-          <CampoSeleccion
-            id="tema"
-            etiqueta="Tema transversal (opcional)"
-            seleccion={seleccionTema}
-            onChange={handleTema}
-            placeholder="Buscar o proponer tema..."
-            emptyLabel="Ninguno"
-            buscar={buscarTemas}
-            onProponer={handleProponerTema}
-            textoProponer={(t) => `Proponer «${t}» como tema nuevo`}
-            hint={temaPropuesto ? 'Si ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.' : undefined}
-          />
+          {otra && (
+            <CampoSeleccion
+              id="parte-otra"
+              etiqueta={`¿De qué parte de ${otra.titulo}?`}
+              seleccion={parteOtra}
+              onChange={setParteOtra}
+              placeholder="Buscar unidad..."
+              buscar={buscarUnidadesOtra}
+              hint={
+                comparativa.modo === 'misma_escena'
+                  ? `La misma escena en ${otra.titulo}. Basta con haber llegado aquí o a la parte de la obra principal.`
+                  : `Solo lo verá quien haya llegado aquí y a la frontera de la obra principal.`
+              }
+            />
+          )}
 
-          <Comparativa obraSlug={obraSlug} valor={comparativa} onChange={setComparativa} />
+          {comparativa.activa && (
+            <PersonajesEnfrentados
+              obraSlug={obraSlug}
+              otraObra={otra}
+              valor={personajes}
+              onChange={setPersonajes}
+            />
+          )}
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>
@@ -310,7 +336,11 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
             hint="Si no se indica, se intenta clasificar automáticamente; si no es posible, se usa tu progreso actual."
           />
 
-          <button className={styles.submit} type="submit" disabled={enviando || !referencia.id || incompleta}>
+          <button
+            className={styles.submit}
+            type="submit"
+            disabled={enviando || !hayParteOTema || comparativaIncompleta}
+          >
             {enviando ? 'Publicando...' : 'Publicar'}
           </button>
         </fieldset>

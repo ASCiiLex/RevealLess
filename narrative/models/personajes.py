@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
@@ -181,3 +183,46 @@ class PropuestaAparicion(models.Model):
 
     def __str__(self):
         return f'{self.personaje} → {self.unidad} ({self.get_estado_display()})'
+
+
+class SolicitudPersonaje(models.Model):
+    """Personaje propuesto por un usuario al publicar una comparativa. Al aprobarla se crea
+    (o reutiliza) el personaje, se aprueba su aparición en 'unidad' y se vincula a los posts
+    que lo propusieron. Mismo patrón que SolicitudTema."""
+
+    ESTADO_PENDIENTE = 'pendiente'
+    ESTADO_APROBADA = 'aprobada'
+    ESTADO_RECHAZADA = 'rechazada'
+    ESTADO_CHOICES = [
+        (ESTADO_PENDIENTE, 'Pendiente'),
+        (ESTADO_APROBADA, 'Aprobada'),
+        (ESTADO_RECHAZADA, 'Rechazada'),
+    ]
+
+    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='solicitudes_personaje')
+    unidad = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.CASCADE, related_name='solicitudes_personaje',
+        help_text='Primera aparición. Se propone la frontera del post: corrígela antes de aprobar si hace falta.',
+    )
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='solicitudes_personaje')
+    nombre = models.CharField(max_length=150)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)
+    personaje = models.ForeignKey(
+        Personaje, on_delete=models.SET_NULL, null=True, blank=True, related_name='solicitudes',
+        help_text='Vacío: se crea al aprobar (o se reutiliza uno con el mismo nombre). Elige uno si es el mismo con otro nombre.',
+    )
+    creado_en = models.DateTimeField(auto_now_add=True)
+    resuelto_en = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-creado_en']
+        verbose_name = 'Solicitud de personaje'
+        verbose_name_plural = 'Solicitudes de personaje'
+
+    def __str__(self):
+        return f'{self.usuario.username} propone «{self.nombre}» en {self.obra.titulo} ({self.estado})'
+
+    def clean(self):
+        super().clean()
+        if self.unidad_id and self.obra_id and self.unidad.obra_id != self.obra_id:
+            raise ValidationError({'unidad': 'Debe pertenecer a la obra de la solicitud.'})

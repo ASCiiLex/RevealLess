@@ -19,14 +19,17 @@ from narrative.services import (
 )
 from narrative.services.detecciones import serializar_detecciones
 from narrative.services.etiquetado import etiquetar_personajes
-from ..models import PersonajeComparado, Post, PostImagen
+from narrative.services.personajes import proponer_personaje
+from ..models import PersonajeComparado, Post, PostImagen, misma_historia
 from ..serializers import PostCreateSerializer
 from .comun import (
     ERROR_COMPARADO_AJENO,
     ERROR_CRUZADA_INCOMPLETA,
     ERROR_DISPOSICION,
     ERROR_IMAGEN_Y_GALERIA,
+    ERROR_MODO_CRUCE,
     ERROR_NUMERO_COMPARADOS,
+    ERROR_SIN_PARTE_NI_TEMA,
     ERROR_TEMA_OTRA_OBRA,
     error_400,
     tema_de_otra_obra,
@@ -67,6 +70,16 @@ def _cubrir_personajes_comparados(post, comparados):
             break
 
 
+def _nombres_limpios(nombres):
+    vistos, limpios = set(), []
+    for nombre in nombres:
+        nombre = ' '.join(nombre.split())[:150]
+        if nombre and nombre.lower() not in vistos:
+            vistos.add(nombre.lower())
+            limpios.append(nombre)
+    return limpios
+
+
 class PostCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -88,10 +101,19 @@ class PostCreateAPIView(APIView):
         frontera_cruzada = datos.get('frontera_cruzada')
         if bool(obra_cruzada) != bool(frontera_cruzada):
             return error_400(ERROR_CRUZADA_INCOMPLETA)
+        modo_cruce = datos.get('modo_cruce') or Post.MODO_COMPARATIVA
+        if not obra_cruzada:
+            modo_cruce = Post.MODO_COMPARATIVA
+        elif modo_cruce == Post.MODO_MISMA_ESCENA and not misma_historia(obra, obra_cruzada):
+            return error_400(ERROR_MODO_CRUCE)
 
         tema = datos.get('tema')
         if tema_de_otra_obra(tema, obra.id):
             return error_400(ERROR_TEMA_OTRA_OBRA)
+        tema_propuesto = (datos.get('tema_propuesto') or '').strip()
+        referencia = datos.get('referencia_narrativa')
+        if not (referencia or tema or tema_propuesto):
+            return error_400(ERROR_SIN_PARTE_NI_TEMA)
 
         imagen_unica = datos.get('image')
         imagenes = list(datos.get('imagenes') or [])
@@ -107,9 +129,11 @@ class PostCreateAPIView(APIView):
         etiquetas = list(datos.get('etiquetas') or [])
 
         comparados = list(dict.fromkeys(datos.get('personajes_comparados') or []))
+        propuestos = _nombres_limpios(datos.get('personajes_propuestos') or [])
+        total_comparados = len(comparados) + len(propuestos)
+        if total_comparados and not Post.MIN_COMPARADOS <= total_comparados <= Post.MAX_COMPARADOS:
+            return error_400(ERROR_NUMERO_COMPARADOS)
         if comparados:
-            if not Post.MIN_COMPARADOS <= len(comparados) <= Post.MAX_COMPARADOS:
-                return error_400(ERROR_NUMERO_COMPARADOS)
             obras_validas = [obra.id] + ([obra_cruzada.id] if obra_cruzada else [])
             if any(not p.unidades.filter(obra_id__in=obras_validas).exists() for p in comparados):
                 return error_400(ERROR_COMPARADO_AJENO)
@@ -145,11 +169,12 @@ class PostCreateAPIView(APIView):
             text=datos['text'],
             image=imagen_unica,
             disposicion=disposicion,
-            referencia_narrativa=datos['referencia_narrativa'],
+            referencia_narrativa=referencia,
             nivel_spoiler=datos.get('nivel_spoiler', ClasificacionNarrativa.NIVEL_MENOR),
             emocion_autor=datos.get('emocion_autor'),
             obra_cruzada=obra_cruzada,
             frontera_cruzada=frontera_cruzada,
+            modo_cruce=modo_cruce,
         )
         _asignar_frontera(post, obra, progreso, datos.get('frontera_spoiler'))
         _cubrir_personajes_comparados(post, comparados)
@@ -170,13 +195,16 @@ class PostCreateAPIView(APIView):
             for imagen in galeria:
                 imagen.post = post
                 imagen.save()
-            PersonajeComparado.objects.bulk_create(
-                PersonajeComparado(post=post, personaje=p, orden=i) for i, p in enumerate(comparados)
-            )
+            filas = [PersonajeComparado(post=post, personaje=p, orden=i) for i, p in enumerate(comparados)]
+            # Propuestos: aparición provisional en la frontera del post; el admin la ajusta al aprobar.
+            for i, nombre in enumerate(propuestos, start=len(comparados)):
+                solicitud = proponer_personaje(obra, post.frontera_spoiler, request.user, nombre)
+                filas.append(PersonajeComparado(post=post, solicitud=solicitud, orden=i))
+            PersonajeComparado.objects.bulk_create(filas)
 
         # Solo tras publicar: un post rechazado no deja solicitudes de tema sueltas.
-        if not tema and datos.get('tema_propuesto'):
-            tema = proponer_tema(obra, request.user, datos['tema_propuesto'])
+        if not tema and tema_propuesto:
+            tema = proponer_tema(obra, request.user, tema_propuesto)
         if tema:
             post.temas_transversales.set([tema])
         # Tras guardar: necesita frontera_orden ya calculado.

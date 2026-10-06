@@ -22,6 +22,13 @@
   text-underline-offset: 3px;
 }
 
+/* Propuesto por el autor y aún sin revisar. */
+.pendiente {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--fog);
+}
+
 .vs {
   font-family: var(--font-body);
   font-size: 11px;

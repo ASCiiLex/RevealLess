@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import Obra, Personaje, UnidadNarrativa
+from narrative.models import Obra, Personaje, RelevanciaPersonaje, UnidadNarrativa
 from narrative.services import actualizar_progreso
 
 
@@ -35,3 +35,12 @@ class PersonajesPublicarAPIViewTests(TestCase):
     def test_filtra_por_texto(self):
         actualizar_progreso(self.usuario, self.obra, self.e2)
         self.assertEqual(self._nombres(q='ku'), ['Kuro'])
+
+    def test_primero_los_mas_relevantes_en_la_obra(self):
+        zoro = Personaje.objects.create(nombre='Zoro')
+        zoro.unidades.add(self.e1)
+        RelevanciaPersonaje.objects.create(
+            personaje=zoro, obra=self.obra, nivel=RelevanciaPersonaje.NIVEL_PROTAGONISTA,
+        )
+        actualizar_progreso(self.usuario, self.obra, self.e2)
+        self.assertEqual(self._nombres(), ['Zoro', 'Kuro', 'Luffy'])

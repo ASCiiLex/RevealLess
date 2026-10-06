@@ -40,6 +40,8 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
 
   // Las galerías (2+ imágenes) aún no se editan desde aquí.
   const numGaleria = (post.imagenes ?? []).length > 1 ? (post.imagenes ?? []).length : 0
+  // Post de tema sin parte: se puede seguir sin parte o anclarlo a una.
+  const sinParteOriginal = post.referencia_narrativa === null
 
   useEffect(() => {
     fetchObraDetalle(post.obra_slug).then(setDetalle)
@@ -168,6 +170,7 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
             aviso.reiniciar()
           }}
         >
+          {sinParteOriginal && <option value="">Sin parte concreta (habla de un tema)</option>}
           {detalle.unidades.map((u) => (
             <option key={u.id} value={u.id}>{u.etiqueta}</option>
           ))}

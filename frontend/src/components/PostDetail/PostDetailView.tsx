@@ -92,6 +92,9 @@ export default function PostDetailView({ postId }: Props) {
                     <NarrativeLabel unidad={post.referencia_narrativa} />
                   </>
                 )}
+                {(post.temas ?? []).map((t) => (
+                  <a key={t.id} className={styles.tema} href={`/narrative/tema/${t.id}/`}>#{t.nombre}</a>
+                ))}
               </div>
             </div>
           </div>

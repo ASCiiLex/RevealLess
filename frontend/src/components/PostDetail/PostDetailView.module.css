@@ -84,6 +84,18 @@
   font-weight: 700;
 }
 
+.tema {
+  color: var(--gold-texto);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tema:hover,
+.tema:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .editButton {
   position: absolute;
   top: 12px;

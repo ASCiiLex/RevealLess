@@ -12,6 +12,7 @@ class PostSerializer(serializers.ModelSerializer):
     obra_titulo = serializers.CharField(source='obra.titulo', read_only=True)
     obra_slug = serializers.CharField(source='obra.slug', read_only=True)
     obra_cruzada = serializers.SerializerMethodField()
+    temas = serializers.SerializerMethodField()
     imagen = serializers.SerializerMethodField()
     imagenes = serializers.SerializerMethodField()
     personajes_comparados = serializers.SerializerMethodField()
@@ -27,8 +28,8 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'obra_cruzada', 'text',
-            'imagen', 'imagenes', 'disposicion', 'personajes_comparados',
+            'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'obra_cruzada', 'modo_cruce',
+            'temas', 'text', 'imagen', 'imagenes', 'disposicion', 'personajes_comparados',
             'referencia_narrativa', 'frontera_spoiler', 'frontera_cruzada', 'nivel_spoiler',
             'emocion_autor', 'created_at',
             'likes_count', 'comments_count', 'user_reaction', 'is_own_post', 'is_saved',
@@ -49,6 +50,9 @@ class PostSerializer(serializers.ModelSerializer):
             return None
         return {'titulo': obj.obra_cruzada.titulo, 'slug': obj.obra_cruzada.slug}
 
+    def get_temas(self, obj):
+        return [{'id': t.id, 'nombre': t.nombre} for t in obj.temas_transversales.all()]
+
     def get_imagen(self, obj):
         return obj.image_url
 
@@ -60,10 +64,17 @@ class PostSerializer(serializers.ModelSerializer):
         return [{'url': obj.image_url, 'etiqueta': ''}] if obj.image_url else []
 
     def get_personajes_comparados(self, obj):
-        return [
-            {'id': c.personaje_id, 'nombre': c.personaje.nombre, 'imagen_url': c.personaje.image_url}
-            for c in obj.comparaciones.all()
-        ]
+        resultado = []
+        for c in obj.comparaciones.all():
+            if c.personaje_id:
+                resultado.append({
+                    'id': c.personaje_id, 'nombre': c.personaje.nombre,
+                    'imagen_url': c.personaje.image_url, 'pendiente': False,
+                })
+            elif c.solicitud_id:
+                # Propuesto por el autor: visible con su nombre mientras se revisa.
+                resultado.append({'id': None, 'nombre': c.solicitud.nombre, 'imagen_url': None, 'pendiente': True})
+        return resultado
 
     def get_autor_avatar(self, obj):
         return obj.author.profile.image_url if hasattr(obj.author, 'profile') else AVATAR_POR_DEFECTO

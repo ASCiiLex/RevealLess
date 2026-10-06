@@ -26,7 +26,7 @@ class FeedAPIView(generics.ListAPIView):
         user = self.request.user
         params = self.request.query_params
 
-        # Comparativas: también llegan a quien sigue la obra cruzada (visible_for exige ambas fronteras).
+        # Comparativas: también llegan a quien sigue la obra cruzada (visible_for decide las fronteras).
         obras_seguidas = Suscripcion.objects.filter(
             usuario=user, activa=True, obra__isnull=False, unidad__isnull=True, tema__isnull=True,
         ).values('obra_id')
@@ -54,7 +54,9 @@ class FeedAPIView(generics.ListAPIView):
                 'frontera_cruzada__padre',
                 'frontera_cruzada__obra',
             )
-            .prefetch_related('imagenes', 'comparaciones__personaje')
+            .prefetch_related(
+                'imagenes', 'temas_transversales', 'comparaciones__personaje', 'comparaciones__solicitud',
+            )
             .visible_for(user)
             .with_feed_stats()
         )

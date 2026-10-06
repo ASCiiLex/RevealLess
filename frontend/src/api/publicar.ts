@@ -41,6 +41,7 @@ export interface ObraPublicable {
   slug: string
   titulo: string
   imagen_url: string
+  adapta_a_id: number | null
 }
 
 export interface TemaPublicable {
@@ -61,6 +62,8 @@ export interface PersonajePublicable {
   imagen_url: string
 }
 
+export type ModoCruce = 'comparativa' | 'misma_escena'
+
 export interface DatosPost {
   text: string
   image?: File | null
@@ -68,7 +71,8 @@ export interface DatosPost {
   imagenes?: File[]
   etiquetas?: string[]
   disposicion?: string
-  referenciaNarrativaId: number
+  // Parte o tema: al menos uno de los dos.
+  referenciaNarrativaId?: number | null
   fronteraSpoilerId?: number | null
   nivelSpoiler?: string
   emocionAutor?: string | null
@@ -79,8 +83,10 @@ export interface DatosPost {
   confirmarSaltoProgreso?: boolean
   obraCruzadaId?: number | null
   fronteraCruzadaId?: number | null
+  modoCruce?: ModoCruce
   descartarReferenciaCruzada?: boolean
   personajesComparadosIds?: number[]
+  personajesPropuestos?: string[]
 }
 
 type ResultadoConflicto = ProgresoRequerido | RequiereConfirmacionProgreso | ReferenciaCruzadaDetectada
@@ -91,6 +97,15 @@ interface CuerpoConflicto {
   obra_slug?: string
   salto?: number
   detecciones?: DeteccionApi[]
+}
+
+// Adaptaciones directas o hermanas: mismo criterio que posts.models.misma_historia.
+export function mismaHistoria(a: ObraPublicable, b: ObraPublicable): boolean {
+  return (
+    a.adapta_a_id === b.id
+    || b.adapta_a_id === a.id
+    || (a.adapta_a_id !== null && a.adapta_a_id === b.adapta_a_id)
+  )
 }
 
 // Solo la biblioteca del usuario: se carga una vez y se filtra en cliente.
@@ -145,8 +160,10 @@ export async function crearPost(obraSlug: string, datos: DatosPost): Promise<Pos
     confirmar_salto_progreso: datos.confirmarSaltoProgreso,
     obra_cruzada: datos.obraCruzadaId,
     frontera_cruzada: datos.fronteraCruzadaId,
+    modo_cruce: datos.modoCruce,
     descartar_referencia_cruzada: datos.descartarReferenciaCruzada,
     personajes_comparados: datos.personajesComparadosIds,
+    personajes_propuestos: datos.personajesPropuestos,
   }))
 
   const body = await response.json().catch(() => null)

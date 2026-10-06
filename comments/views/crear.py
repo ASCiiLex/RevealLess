@@ -62,7 +62,10 @@ def add_comment(request):
 
     comment = Comment(
         user=request.user, post=post, parent=parent, text=text,
-        referencia_narrativa=datos.get('referencia_narrativa') or post.referencia_narrativa,
+        # Un post solo de tema no tiene parte: se usa su frontera, que siempre existe.
+        referencia_narrativa=(
+            datos.get('referencia_narrativa') or post.referencia_narrativa or post.frontera_spoiler
+        ),
         emocion_autor=datos.get('emocion_autor'),
         obra_cruzada=obra_cruzada,
         frontera_cruzada=frontera_cruzada,

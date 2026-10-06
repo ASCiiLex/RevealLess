@@ -3,6 +3,10 @@ from django.db.models import F, IntegerField, OuterRef, Q, Subquery, Value, Coun
 from django.db.models.functions import Coalesce
 from narrative.models import ProgresoUsuario
 
+# Valores de Post.modo_cruce (aquí para no importar el modelo desde el manager).
+MODO_CRUCE_COMPARATIVA = 'comparativa'
+MODO_CRUCE_MISMA_ESCENA = 'misma_escena'
+
 
 class PostQuerySet(models.QuerySet):
     def visible_for(self, user):
@@ -17,6 +21,12 @@ class PostQuerySet(models.QuerySet):
             usuario=user, obra=OuterRef('obra_cruzada')
         ).values('orden_absoluto')[:1]
 
+        principal = Q(progreso_lector__gte=F('frontera_orden'))
+        sin_cruce = Q(frontera_cruzada_orden__isnull=True)
+        cruzada = Q(progreso_cruzado__gte=F('frontera_cruzada_orden'))
+        # Misma escena en otro formato: basta con haberla alcanzado en una de las dos obras.
+        misma_escena = Q(modo_cruce=MODO_CRUCE_MISMA_ESCENA) & ~sin_cruce & (principal | cruzada)
+
         return self.annotate(
             progreso_lector=Coalesce(
                 Subquery(progreso_lector, output_field=models.IntegerField()),
@@ -28,13 +38,8 @@ class PostQuerySet(models.QuerySet):
             ),
         ).filter(
             Q(author=user)
-            | (
-                Q(progreso_lector__gte=F('frontera_orden'))
-                & (
-                    Q(frontera_cruzada_orden__isnull=True)
-                    | Q(progreso_cruzado__gte=F('frontera_cruzada_orden'))
-                )
-            )
+            | (principal & (sin_cruce | cruzada))
+            | misma_escena
         )
 
     def with_feed_stats(self):

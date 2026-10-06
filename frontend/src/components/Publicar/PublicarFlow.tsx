@@ -3,16 +3,18 @@ import styles from './PublicarFlow.module.css'
 import SelectorObra, { type ObraSeleccionada } from './SelectorObra'
 import PasoProgreso from './PasoProgreso'
 import PasoPost from './PasoPost'
+import Comparativa, { COMPARATIVA_VACIA, InterruptorComparativa, type EstadoComparativa } from './Comparativa'
 import { existeProgreso } from '../../api/progreso'
 import type { TemaPublicable } from '../../api/publicar'
 
 type Estado = 'sin-obra' | 'cargando' | 'progreso' | 'post'
 
-// Formulario único: visible desde el inicio, se activa al elegir la obra en el primer campo.
+// Orden: ¿comparativo? → obra → segunda obra → resto del formulario.
 export default function PublicarFlow() {
   const [obra, setObra] = useState<ObraSeleccionada | null>(null)
   const [temaId, setTemaId] = useState<number | null>(null)
   const [estado, setEstado] = useState<Estado>('sin-obra')
+  const [comparativa, setComparativa] = useState<EstadoComparativa>(COMPARATIVA_VACIA)
   const obraActual = useRef<string | null>(null)
 
   async function seleccionar(o: ObraSeleccionada, tema: number | null) {
@@ -43,12 +45,18 @@ export default function PublicarFlow() {
     <div className={styles.wrapper}>
       <h1 className={styles.title}>Publicar</h1>
 
+      <InterruptorComparativa valor={comparativa} onChange={setComparativa} />
+
       <SelectorObra
         seleccion={obra}
         onElegirObra={(o) => seleccionar(o, null)}
         onElegirTema={handleElegirTema}
         onCambiar={handleCambiar}
       />
+
+      {comparativa.activa && (
+        <Comparativa obraPrincipalSlug={obra?.slug ?? null} valor={comparativa} onChange={setComparativa} />
+      )}
 
       {estado === 'progreso' && obra ? (
         <PasoProgreso
@@ -62,6 +70,7 @@ export default function PublicarFlow() {
           key={`${obra?.slug ?? 'sin-obra'}-${temaId ?? ''}`}
           obraSlug={estado === 'post' && obra ? obra.slug : null}
           temaIdInicial={temaId}
+          comparativa={comparativa}
           onPublicado={() => {
             window.location.href = '/feed/'
           }}

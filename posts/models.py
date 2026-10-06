@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from narrative.models import ClasificacionNarrativa
 from core.validators import validate_image_size
-from .managers import PostQuerySet
+from .managers import MODO_CRUCE_COMPARATIVA, MODO_CRUCE_MISMA_ESCENA, PostQuerySet
 
 
 def post_image_path(instance, filename):
@@ -13,6 +13,15 @@ def post_image_path(instance, filename):
 
 def post_galeria_path(instance, filename):
     return f'posts/{instance.post.author.username}/galeria/{filename}'
+
+
+def misma_historia(a, b):
+    """Adaptaciones directas o hermanas (mismo origen): cuentan las mismas escenas."""
+    return (
+        a.adapta_a_id == b.id
+        or b.adapta_a_id == a.id
+        or (a.adapta_a_id is not None and a.adapta_a_id == b.adapta_a_id)
+    )
 
 
 class Post(ClasificacionNarrativa, models.Model):
@@ -44,6 +53,13 @@ class Post(ClasificacionNarrativa, models.Model):
     MIN_COMPARADOS = 2
     MAX_COMPARADOS = 4
 
+    MODO_COMPARATIVA = MODO_CRUCE_COMPARATIVA
+    MODO_MISMA_ESCENA = MODO_CRUCE_MISMA_ESCENA
+    MODO_CRUCE_CHOICES = [
+        (MODO_COMPARATIVA, 'Comparativa: ambas fronteras'),
+        (MODO_MISMA_ESCENA, 'Misma escena: basta una frontera'),
+    ]
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -53,6 +69,14 @@ class Post(ClasificacionNarrativa, models.Model):
         'narrative.Obra',
         on_delete=models.PROTECT,
         related_name='posts'
+    )
+    # Opcional solo en posts: uno puede hablar de un tema sin anclarse a una parte.
+    referencia_narrativa = models.ForeignKey(
+        'narrative.UnidadNarrativa', on_delete=models.PROTECT, null=True, blank=True,
+        related_name='%(class)s_referenciados',
+    )
+    modo_cruce = models.CharField(
+        max_length=20, choices=MODO_CRUCE_CHOICES, default=MODO_COMPARATIVA,
     )
     text = models.TextField(max_length=500)
     # Imagen única. Con 2 o más se usa la galería (PostImagen).
@@ -126,6 +150,8 @@ class Post(ClasificacionNarrativa, models.Model):
                 raise ValidationError({'obra_cruzada': 'Debe ser una obra distinta a la del post.'})
             if self.frontera_cruzada_id and self.frontera_cruzada.obra_id != self.obra_cruzada_id:
                 raise ValidationError({'frontera_cruzada': 'Debe pertenecer a obra_cruzada.'})
+            if self.modo_cruce == self.MODO_MISMA_ESCENA and not misma_historia(self.obra, self.obra_cruzada):
+                raise ValidationError({'modo_cruce': 'La misma escena solo vale entre adaptaciones de una historia.'})
 
     @property
     def likes_count(self):
@@ -206,8 +232,16 @@ class PostImagen(models.Model):
 
 
 class PersonajeComparado(models.Model):
+    """Personaje de un «X vs Z». Sin personaje aún si está propuesto (solicitud pendiente)."""
+
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comparaciones')
-    personaje = models.ForeignKey('narrative.Personaje', on_delete=models.CASCADE, related_name='comparaciones')
+    personaje = models.ForeignKey(
+        'narrative.Personaje', on_delete=models.CASCADE, null=True, blank=True, related_name='comparaciones',
+    )
+    solicitud = models.ForeignKey(
+        'narrative.SolicitudPersonaje', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='comparaciones',
+    )
     orden = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -219,7 +253,7 @@ class PersonajeComparado(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.post_id} · {self.personaje}'
+        return f'{self.post_id} · {self.personaje or self.solicitud}'
 
 
 class Hashtag(models.Model):
