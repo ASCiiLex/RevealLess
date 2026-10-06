@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import styles from './ProgresoSlider.module.css'
 import type { UnidadNarrativa } from '../../api/progreso'
 
@@ -12,6 +12,7 @@ interface Props {
 const TECLAS_DESPLAZAMIENTO = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']
 // Mismo valor que UNIDAD_PREVIA_TIPO en narrative/services.
 const TIPO_PREVIO = 'previo'
+const MAX_COINCIDENCIAS = 5
 
 // Vacío o inválido cuenta como 1.
 function cantidad(texto: string) {
@@ -39,9 +40,12 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
   const [valor, setValor] = useState<number | null>(null)
   const [arrastrando, setArrastrando] = useState(false)
   const [texto, setTexto] = useState('')
+  const [enfocado, setEnfocado] = useState(false)
+  const [activa, setActiva] = useState(0)
   const [restar, setRestar] = useState('')
   const [sumar, setSumar] = useState('')
   const valorRef = useRef<number | null>(null)
+  const idLista = useId()
 
   if (hojas.length === 0) return null
 
@@ -52,6 +56,19 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
   const indice = valor ?? Math.max(indiceActual, 0)
   const hoja = hojas[indice]
   const posicion = hojas.length > 1 ? (indice / ultimo) * 100 : 0
+
+  // Opciones del campo numérico: primero el destino por posición (Enter),
+  // después unidades cuyo nombre lleva ese número como palabra completa.
+  const numero = parseInt(texto, 10)
+  const opciones: number[] = []
+  if (!Number.isNaN(numero)) {
+    const destino = Math.min(Math.max(numero, 1 - desfase), total) - 1 + desfase
+    opciones.push(destino)
+    const patron = new RegExp(`\\b${numero}\\b`)
+    for (let i = 0; i < hojas.length && opciones.length <= MAX_COINCIDENCIAS; i++) {
+      if (i !== destino && patron.test(hojas[i].etiqueta)) opciones.push(i)
+    }
+  }
 
   function cambiar(nuevo: number) {
     valorRef.current = nuevo
@@ -83,12 +100,10 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
     aplicar(Math.min(Math.max(base + paso, 0), ultimo))
   }
 
-  function saltarAlNumero() {
-    const numero = parseInt(texto, 10)
+  function elegirOpcion(i: number) {
     setTexto('')
-    if (Number.isNaN(numero)) return
-    const acotado = Math.min(Math.max(numero, 1 - desfase), total)
-    aplicar(acotado - 1 + desfase)
+    setActiva(0)
+    aplicar(i)
   }
 
   function alPulsarEnter(accion: () => void) {
@@ -98,6 +113,44 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
         accion()
       }
     }
+  }
+
+  function teclaNumero(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Escape') {
+      setTexto('')
+      setActiva(0)
+    } else if (e.key === 'ArrowDown' && opciones.length > 1) {
+      e.preventDefault()
+      setActiva((a) => Math.min(a + 1, opciones.length - 1))
+    } else if (e.key === 'ArrowUp' && opciones.length > 1) {
+      e.preventDefault()
+      setActiva((a) => Math.max(a - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const elegida = opciones[activa] ?? opciones[0]
+      if (elegida !== undefined) elegirOpcion(elegida)
+    }
+  }
+
+  function renderOpcion(i: number, k: number) {
+    const unidad = hojas[i]
+    return (
+      <button
+        key={i}
+        type="button"
+        role="option"
+        aria-selected={k === activa}
+        className={`${styles.sugerencia} ${k === activa ? styles.sugerenciaActiva : ''}`}
+        // mousedown sin foco: el input no se cierra antes del click.
+        onMouseDown={(e) => e.preventDefault()}
+        onMouseEnter={() => setActiva(k)}
+        onClick={() => elegirOpcion(i)}
+      >
+        {k === 0 && <span className={styles.sugerenciaPosicion}>Posición {i + 1 - desfase}</span>}
+        {unidad.padre_etiqueta && <span className={styles.sugerenciaPadre}>{unidad.padre_etiqueta}</span>}
+        <span className={styles.sugerenciaUnidad}>{unidad.etiqueta}</span>
+      </button>
+    )
   }
 
   const nRestar = cantidad(restar)
@@ -158,7 +211,7 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
           />
         </div>
 
-        <div className={styles.grupo}>
+        <div className={`${styles.grupo} ${styles.grupoNumero}`}>
           <input
             type="number"
             inputMode="numeric"
@@ -172,14 +225,29 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
                 ? `Ir a la unidad número (0 = previo al estreno, 1 a ${total})`
                 : `Ir a la unidad número (1 a ${total})`
             }
-            onChange={(e) => setTexto(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setTexto('')
-              else alPulsarEnter(saltarAlNumero)(e)
+            aria-controls={idLista}
+            aria-expanded={enfocado && opciones.length > 0}
+            onChange={(e) => {
+              setTexto(e.target.value)
+              setActiva(0)
             }}
-            onBlur={saltarAlNumero}
+            onFocus={() => setEnfocado(true)}
+            onBlur={() => setEnfocado(false)}
+            onKeyDown={teclaNumero}
           />
           <span className={styles.total}>/ {total}</span>
+
+          {enfocado && opciones.length > 0 && (
+            <div id={idLista} className={styles.sugerencias} role="listbox">
+              {renderOpcion(opciones[0], 0)}
+              {opciones.length > 1 && (
+                <>
+                  <div className={styles.sugerenciasTitulo}>También con «{numero}» en el nombre</div>
+                  {opciones.slice(1).map((i, k) => renderOpcion(i, k + 1))}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className={styles.grupo}>
