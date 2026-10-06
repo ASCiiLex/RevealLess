@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
@@ -18,9 +19,18 @@ from narrative.services import (
 )
 from narrative.services.detecciones import serializar_detecciones
 from narrative.services.etiquetado import etiquetar_personajes
-from ..models import Post
+from ..models import PersonajeComparado, Post, PostImagen
 from ..serializers import PostCreateSerializer
-from .comun import ERROR_CRUZADA_INCOMPLETA, ERROR_TEMA_OTRA_OBRA, error_400, tema_de_otra_obra
+from .comun import (
+    ERROR_COMPARADO_AJENO,
+    ERROR_CRUZADA_INCOMPLETA,
+    ERROR_DISPOSICION,
+    ERROR_IMAGEN_Y_GALERIA,
+    ERROR_NUMERO_COMPARADOS,
+    ERROR_TEMA_OTRA_OBRA,
+    error_400,
+    tema_de_otra_obra,
+)
 
 
 def _asignar_frontera(post, obra, progreso, frontera_explicita):
@@ -39,6 +49,22 @@ def _asignar_frontera(post, obra, progreso, frontera_explicita):
     else:
         post.frontera_spoiler = progreso.unidad_actual
         post.frontera_origen = ClasificacionNarrativa.ORIGEN_FALLBACK
+
+
+def _cubrir_personajes_comparados(post, comparados):
+    """Eleva la frontera (o la cruzada) hasta la primera aparición de cada personaje
+    comparado: quien pueda leer el post ya los conoce a todos."""
+    for personaje in comparados:
+        for obra_id, campo in ((post.obra_id, 'frontera_spoiler'), (post.obra_cruzada_id, 'frontera_cruzada')):
+            if not obra_id:
+                continue
+            primera = personaje.unidades.filter(obra_id=obra_id).order_by('orden_fin').first()
+            if primera is None:
+                continue
+            actual = getattr(post, campo)
+            if actual is None or primera.orden_fin > actual.orden_fin:
+                setattr(post, campo, primera)
+            break
 
 
 class PostCreateAPIView(APIView):
@@ -66,6 +92,27 @@ class PostCreateAPIView(APIView):
         tema = datos.get('tema')
         if tema_de_otra_obra(tema, obra.id):
             return error_400(ERROR_TEMA_OTRA_OBRA)
+
+        imagen_unica = datos.get('image')
+        imagenes = list(datos.get('imagenes') or [])
+        if imagen_unica and imagenes:
+            return error_400(ERROR_IMAGEN_Y_GALERIA)
+        if len(imagenes) == 1:
+            imagen_unica, imagenes = imagenes[0], []
+        disposicion = datos.get('disposicion') or Post.DISPOSICION_AUTO
+        if not imagenes:
+            disposicion = Post.DISPOSICION_AUTO
+        elif disposicion and disposicion not in Post.DISPOSICIONES_POR_NUMERO[len(imagenes)]:
+            return error_400(ERROR_DISPOSICION)
+        etiquetas = list(datos.get('etiquetas') or [])
+
+        comparados = list(dict.fromkeys(datos.get('personajes_comparados') or []))
+        if comparados:
+            if not Post.MIN_COMPARADOS <= len(comparados) <= Post.MAX_COMPARADOS:
+                return error_400(ERROR_NUMERO_COMPARADOS)
+            obras_validas = [obra.id] + ([obra_cruzada.id] if obra_cruzada else [])
+            if any(not p.unidades.filter(obra_id__in=obras_validas).exists() for p in comparados):
+                return error_400(ERROR_COMPARADO_AJENO)
 
         if not obra_cruzada and not datos.get('descartar_referencia_cruzada'):
             detecciones = detectar_posibles_referencias_cruzadas(datos['text'], obra)
@@ -96,7 +143,8 @@ class PostCreateAPIView(APIView):
             author=request.user,
             obra=obra,
             text=datos['text'],
-            image=datos.get('image'),
+            image=imagen_unica,
+            disposicion=disposicion,
             referencia_narrativa=datos['referencia_narrativa'],
             nivel_spoiler=datos.get('nivel_spoiler', ClasificacionNarrativa.NIVEL_MENOR),
             emocion_autor=datos.get('emocion_autor'),
@@ -104,13 +152,28 @@ class PostCreateAPIView(APIView):
             frontera_cruzada=frontera_cruzada,
         )
         _asignar_frontera(post, obra, progreso, datos.get('frontera_spoiler'))
+        _cubrir_personajes_comparados(post, comparados)
 
+        galeria = [
+            PostImagen(imagen=archivo, etiqueta=(etiquetas[i] if i < len(etiquetas) else '').strip(), orden=i)
+            for i, archivo in enumerate(imagenes)
+        ]
         try:
             post.full_clean()
+            for imagen in galeria:
+                imagen.full_clean(exclude=['post'])
         except ValidationError as exc:
             return error_400(exc.message_dict)
 
-        post.save()
+        with transaction.atomic():
+            post.save()
+            for imagen in galeria:
+                imagen.post = post
+                imagen.save()
+            PersonajeComparado.objects.bulk_create(
+                PersonajeComparado(post=post, personaje=p, orden=i) for i, p in enumerate(comparados)
+            )
+
         # Solo tras publicar: un post rechazado no deja solicitudes de tema sueltas.
         if not tema and datos.get('tema_propuesto'):
             tema = proponer_tema(obra, request.user, datos['tema_propuesto'])

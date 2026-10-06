@@ -8,6 +8,8 @@ import SaveButton from '../Feed/SaveButton'
 import LinkedText from '../Text/LinkedText'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
+import GaleriaPost from '../Galeria/GaleriaPost'
+import VersusPersonajes from '../Comparativa/VersusPersonajes'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
 import { fetchPostDetail, type PostDetail } from '../../api/postDetail'
 import type { CommentItem as CommentItemType } from '../../api/comentarios'
@@ -51,6 +53,7 @@ export default function PostDetailView({ postId }: Props) {
 
   const { post, comments } = detalle
   const perfilUrl = `/perfil/${encodeURIComponent(post.autor)}/`
+  const imagenes = post.imagenes ?? (post.imagen ? [{ url: post.imagen, etiqueta: '' }] : [])
 
   return (
     <div className={styles.wrapper}>
@@ -77,6 +80,12 @@ export default function PostDetailView({ postId }: Props) {
 
               <div className={styles.obra}>
                 <span>{post.obra_titulo}</span>
+                {post.obra_cruzada && (
+                  <>
+                    <span className={styles.cruce} aria-label="comparado con">⇄</span>
+                    <span>{post.obra_cruzada.titulo}</span>
+                  </>
+                )}
                 {post.referencia_narrativa && (
                   <>
                     <span className={styles.narrativeSeparator}>|</span>
@@ -88,9 +97,11 @@ export default function PostDetailView({ postId }: Props) {
           </div>
         </div>
 
+        <VersusPersonajes personajes={post.personajes_comparados ?? []} obraSlug={post.obra_slug} />
+
         <p className={styles.text}><LinkedText text={post.text} /></p>
 
-        {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
+        <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />
 
         <PostActions postId={post.id} reaccionInicial={detalle.post_reaction} />
       </div>

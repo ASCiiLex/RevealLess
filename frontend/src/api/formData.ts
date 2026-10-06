@@ -5,12 +5,18 @@ export function getCsrfToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-/** Omite null, undefined y false. '' se envía: permite vaciar campos como emocion_autor. */
-export function construirFormData(campos: Record<string, ValorCampo>): FormData {
+function anadir(formData: FormData, clave: string, valor: ValorCampo) {
+  if (valor === null || valor === undefined || valor === false) return
+  formData.append(clave, valor instanceof File ? valor : String(valor))
+}
+
+/** Omite null, undefined y false. '' se envía: permite vaciar campos como emocion_autor.
+ * Las listas se envían como claves repetidas (galería, etiquetas, personajes). */
+export function construirFormData(campos: Record<string, ValorCampo | ValorCampo[]>): FormData {
   const formData = new FormData()
   for (const [clave, valor] of Object.entries(campos)) {
-    if (valor === null || valor === undefined || valor === false) continue
-    formData.append(clave, valor instanceof File ? valor : String(valor))
+    if (Array.isArray(valor)) valor.forEach((v) => anadir(formData, clave, v))
+    else anadir(formData, clave, valor)
   }
   return formData
 }

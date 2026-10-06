@@ -38,6 +38,9 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const inputImagen = useRef<HTMLInputElement>(null)
   const aviso = useAvisoConfirmable()
 
+  // Las galerías (2+ imágenes) aún no se editan desde aquí.
+  const numGaleria = (post.imagenes ?? []).length > 1 ? (post.imagenes ?? []).length : 0
+
   useEffect(() => {
     fetchObraDetalle(post.obra_slug).then(setDetalle)
   }, [post.obra_slug])
@@ -123,27 +126,36 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
         onEmocionChange={setEmocionAutor}
       />
 
-      <div className={styles.field}>
-        <span className={styles.label}>Imagen (opcional)</span>
-        {preview && <img className={styles.preview} src={preview} alt="" />}
-        <div className={styles.imagenAcciones}>
-          <button type="button" className={botones.secundario} onClick={() => inputImagen.current?.click()}>
-            {preview ? 'Cambiar imagen' : 'Añadir imagen'}
-          </button>
-          {preview && (
-            <button type="button" className={styles.confirmLink} onClick={handleQuitarImagen}>
-              Quitar imagen
-            </button>
-          )}
-          <input
-            ref={inputImagen}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className={styles.inputOculto}
-            onChange={handleElegirImagen}
-          />
+      {numGaleria > 0 ? (
+        <div className={styles.field}>
+          <span className={styles.label}>Imágenes</span>
+          <p className={styles.warningBox}>
+            Esta publicación tiene una galería de {numGaleria} imágenes. Por ahora no se puede editar desde aquí.
+          </p>
         </div>
-      </div>
+      ) : (
+        <div className={styles.field}>
+          <span className={styles.label}>Imagen (opcional)</span>
+          {preview && <img className={styles.preview} src={preview} alt="" />}
+          <div className={styles.imagenAcciones}>
+            <button type="button" className={botones.secundario} onClick={() => inputImagen.current?.click()}>
+              {preview ? 'Cambiar imagen' : 'Añadir imagen'}
+            </button>
+            {preview && (
+              <button type="button" className={styles.confirmLink} onClick={handleQuitarImagen}>
+                Quitar imagen
+              </button>
+            )}
+            <input
+              ref={inputImagen}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className={styles.inputOculto}
+              onChange={handleElegirImagen}
+            />
+          </div>
+        </div>
+      )}
 
       <div className={styles.field}>
         <label className={styles.label} htmlFor="edit-referencia">¿De qué parte habla?</label>

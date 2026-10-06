@@ -1,14 +1,28 @@
 from rest_framework import serializers
-from narrative.models import ClasificacionNarrativa, Obra, TemaTransversal, UnidadNarrativa
+from narrative.models import ClasificacionNarrativa, Obra, Personaje, TemaTransversal, UnidadNarrativa
 from .models import Post
 
 
 EMOCION_CHOICES = [c[0] for c in ClasificacionNarrativa.EMOCION_CHOICES]
+DISPOSICIONES = [c[0] for c in Post.DISPOSICION_CHOICES]
 
 
 class PostCreateSerializer(serializers.Serializer):
     text = serializers.CharField(max_length=500)
     image = serializers.ImageField(required=False, allow_null=True)
+    # Galería (2 a 4). Con una sola se guarda como `image`.
+    imagenes = serializers.ListField(
+        child=serializers.ImageField(), required=False, max_length=Post.MAX_IMAGENES,
+    )
+    etiquetas = serializers.ListField(
+        child=serializers.CharField(max_length=40, allow_blank=True), required=False,
+    )
+    disposicion = serializers.ChoiceField(choices=DISPOSICIONES, required=False, allow_blank=True)
+    personajes_comparados = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=Personaje.objects.all()),
+        required=False,
+        max_length=Post.MAX_COMPARADOS,
+    )
     referencia_narrativa = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all()
     )

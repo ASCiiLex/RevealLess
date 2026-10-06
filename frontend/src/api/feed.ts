@@ -1,31 +1,43 @@
 import { api } from './client'
 
+interface UnidadPost {
+  id: number
+  nombre: string
+  tipo: string
+  etiqueta: string
+  orden_inicio: number
+  orden_fin: number
+  padre?: number | null
+  padre_etiqueta?: string | null
+}
+
+export interface ImagenPost {
+  url: string
+  etiqueta: string
+}
+
+export interface PersonajeComparado {
+  id: number
+  nombre: string
+  imagen_url: string
+}
+
 export interface FeedPost {
   id: number
   autor: string
   autor_avatar: string
   obra_titulo: string
   obra_slug: string
+  // Opcionales: otras vistas pueden serializar posts sin estos campos.
+  obra_cruzada?: { titulo: string; slug: string } | null
   text: string
   imagen: string | null
-  referencia_narrativa: {
-    id: number
-    nombre: string
-    tipo: string
-    etiqueta: string
-    orden_inicio: number
-    orden_fin: number
-    padre: number | null
-    padre_etiqueta: string | null
-  } | null
-  frontera_spoiler: {
-    id: number
-    nombre: string
-    tipo: string
-    etiqueta: string
-    orden_inicio: number
-    orden_fin: number
-  } | null
+  imagenes?: ImagenPost[]
+  disposicion?: string
+  personajes_comparados?: PersonajeComparado[]
+  referencia_narrativa: (UnidadPost & { padre: number | null; padre_etiqueta: string | null }) | null
+  frontera_spoiler: UnidadPost | null
+  frontera_cruzada?: UnidadPost | null
   nivel_spoiler: string
   emocion_autor: string | null
   created_at: string

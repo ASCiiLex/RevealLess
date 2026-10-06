@@ -69,6 +69,8 @@ def personajes_en_post(post):
     ids = personajes_mencionados(post.text, post.obra_id, post.frontera_orden)
     if post.obra_cruzada_id:
         ids |= personajes_mencionados(post.text, post.obra_cruzada_id, post.frontera_cruzada_orden)
+    # Los de una comparativa cuentan siempre: la frontera ya se elevó para cubrirlos.
+    ids |= set(post.comparaciones.values_list('personaje_id', flat=True))
     return ids
 
 

@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models import Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa
+from ..models import Obra, Personaje, ProgresoUsuario, TemaTransversal, UnidadNarrativa
 from ..serializers import ObraResumenSerializer, UnidadNarrativaSerializer
 from .comun import (
     contexto_suscripcion_obra,
@@ -58,6 +58,31 @@ class ObrasPublicarAPIView(APIView):
                 {'id': t.id, 'nombre': t.nombre, 'obra_slug': t.obra.slug, 'obra_titulo': t.obra.titulo}
                 for t in temas
             ],
+        })
+
+
+class PersonajesPublicarAPIView(APIView):
+    """Candidatos para una comparativa: personajes ya aparecidos según el progreso del usuario."""
+
+    permission_classes = [IsAuthenticated]
+    LIMITE = 30
+
+    def get(self, request, obra_slug):
+        obra = get_object_or_404(Obra, slug=obra_slug)
+        progreso = ProgresoUsuario.objects.filter(usuario=request.user, obra=obra).first()
+        if not progreso:
+            return Response({'personajes': []})
+
+        personajes = Personaje.objects.filter(
+            unidades__obra=obra, unidades__orden_fin__lte=progreso.orden_absoluto,
+        ).distinct()
+        q = request.query_params.get('q', '').strip()
+        if q:
+            personajes = personajes.filter(nombre__icontains=q)
+        personajes = personajes.order_by('nombre')[:self.LIMITE]
+
+        return Response({
+            'personajes': [{'id': p.id, 'nombre': p.nombre, 'imagen_url': p.image_url} for p in personajes],
         })
 
 

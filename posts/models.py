@@ -11,8 +11,38 @@ def post_image_path(instance, filename):
     return f'posts/{instance.author.username}/{filename}'
 
 
+def post_galeria_path(instance, filename):
+    return f'posts/{instance.post.author.username}/galeria/{filename}'
+
+
 class Post(ClasificacionNarrativa, models.Model):
     objects = PostQuerySet.as_manager()
+
+    DISPOSICION_AUTO = ''
+    DISPOSICION_LADO = 'lado'
+    DISPOSICION_APILADAS = 'apiladas'
+    DISPOSICION_DESLIZADOR = 'deslizador'
+    DISPOSICION_DESTACADA = 'destacada'
+    DISPOSICION_FILA = 'fila'
+    DISPOSICION_CUADRICULA = 'cuadricula'
+    DISPOSICION_CHOICES = [
+        (DISPOSICION_AUTO, 'Automática'),
+        (DISPOSICION_LADO, 'Lado a lado'),
+        (DISPOSICION_APILADAS, 'Apiladas'),
+        (DISPOSICION_DESLIZADOR, 'Antes / después'),
+        (DISPOSICION_DESTACADA, 'Una destacada'),
+        (DISPOSICION_FILA, 'En fila'),
+        (DISPOSICION_CUADRICULA, 'Cuadrícula'),
+    ]
+    # Disposiciones válidas según el número de imágenes de la galería.
+    DISPOSICIONES_POR_NUMERO = {
+        2: {DISPOSICION_LADO, DISPOSICION_APILADAS, DISPOSICION_DESLIZADOR},
+        3: {DISPOSICION_DESTACADA, DISPOSICION_FILA},
+        4: {DISPOSICION_CUADRICULA, DISPOSICION_DESTACADA},
+    }
+    MAX_IMAGENES = 4
+    MIN_COMPARADOS = 2
+    MAX_COMPARADOS = 4
 
     author = models.ForeignKey(
         User,
@@ -25,6 +55,7 @@ class Post(ClasificacionNarrativa, models.Model):
         related_name='posts'
     )
     text = models.TextField(max_length=500)
+    # Imagen única. Con 2 o más se usa la galería (PostImagen).
     image = models.ImageField(
         upload_to=post_image_path,
         blank=True,
@@ -33,6 +64,9 @@ class Post(ClasificacionNarrativa, models.Model):
             FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size,
         ],
+    )
+    disposicion = models.CharField(
+        max_length=20, choices=DISPOSICION_CHOICES, blank=True, default=DISPOSICION_AUTO,
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -48,6 +82,14 @@ class Post(ClasificacionNarrativa, models.Model):
         'narrative.Personaje',
         blank=True,
         related_name='posts',
+    )
+
+    # «X vs Z»: elegidos por el autor, con orden. También se vuelcan en `personajes`.
+    personajes_comparados = models.ManyToManyField(
+        'narrative.Personaje',
+        through='PersonajeComparado',
+        blank=True,
+        related_name='posts_comparados',
     )
 
     class Meta:
@@ -129,6 +171,55 @@ class Post(ClasificacionNarrativa, models.Model):
 
             self.is_processed = True
             super().save(update_fields=['is_processed'])
+
+
+class PostImagen(models.Model):
+    """Imagen de una galería (2 a 4 por post). La etiqueta se muestra sobre ella (ej. «Anime»)."""
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='imagenes')
+    imagen = models.ImageField(
+        upload_to=post_galeria_path,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+            validate_image_size,
+        ],
+    )
+    etiqueta = models.CharField(max_length=40, blank=True)
+    orden = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden']
+        verbose_name = 'Imagen de post'
+        verbose_name_plural = 'Imágenes de post'
+
+    def __str__(self):
+        return f'{self.post_id} · imagen {self.orden + 1}'
+
+    @property
+    def image_url(self):
+        try:
+            if self.imagen and hasattr(self.imagen, 'url'):
+                return self.imagen.url
+        except ValueError:
+            pass
+        return None
+
+
+class PersonajeComparado(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comparaciones')
+    personaje = models.ForeignKey('narrative.Personaje', on_delete=models.CASCADE, related_name='comparaciones')
+    orden = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden']
+        verbose_name = 'Personaje comparado'
+        verbose_name_plural = 'Personajes comparados'
+        constraints = [
+            models.UniqueConstraint(fields=['post', 'personaje'], name='uniq_personaje_comparado_post'),
+        ]
+
+    def __str__(self):
+        return f'{self.post_id} · {self.personaje}'
 
 
 class Hashtag(models.Model):

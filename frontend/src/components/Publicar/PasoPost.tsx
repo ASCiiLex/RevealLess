@@ -2,10 +2,13 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
 import BuscadorLocal, { type BuscadorItem } from './BuscadorLocal'
 import EditorTexto from './EditorTexto'
+import GaleriaEditor, { type ImagenBorrador } from './GaleriaEditor'
+import Comparativa, { COMPARATIVA_VACIA, comparativaIncompleta, type EstadoComparativa } from './Comparativa'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
+import { MAX_IMAGENES, disposicionEfectiva } from '../Galeria/GaleriaPost'
 import { ApiError } from '../../api/client'
 import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
-import { crearPost, type DeteccionCruzada } from '../../api/publicar'
+import { crearPost, type DatosPost, type DeteccionCruzada } from '../../api/publicar'
 
 interface Props {
   // null = aún no hay obra elegida: el formulario se muestra desactivado.
@@ -77,10 +80,34 @@ function CampoSeleccion({
   )
 }
 
+// Campos de galería y comparativa que se añaden a la petición.
+function datosExtra(imagenes: ImagenBorrador[], disposicion: string, comparativa: EstadoComparativa): Partial<DatosPost> {
+  const extra: Partial<DatosPost> = {}
+  if (imagenes.length === 1) {
+    extra.image = imagenes[0].archivo
+  } else if (imagenes.length > 1) {
+    extra.imagenes = imagenes.map((i) => i.archivo)
+    extra.etiquetas = imagenes.map((i) => i.etiqueta.trim())
+    extra.disposicion = disposicionEfectiva(imagenes.length, disposicion)
+  }
+  if (comparativa.activa) {
+    if (comparativa.obra && comparativa.frontera.id) {
+      extra.obraCruzadaId = comparativa.obra.id
+      extra.fronteraCruzadaId = comparativa.frontera.id
+    }
+    if (comparativa.personajes.length >= 2) {
+      extra.personajesComparadosIds = comparativa.personajes.map((p) => p.id)
+    }
+  }
+  return extra
+}
+
 export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgresoRequerido }: Props) {
   const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
   const [texto, setTexto] = useState('')
-  const [imagen, setImagen] = useState<File | null>(null)
+  const [imagenes, setImagenes] = useState<ImagenBorrador[]>([])
+  const [disposicion, setDisposicion] = useState('')
+  const [comparativa, setComparativa] = useState<EstadoComparativa>(COMPARATIVA_VACIA)
   const [emocion, setEmocion] = useState<string | null>(null)
   const [referencia, setReferencia] = useState<Seleccion>(SIN_SELECCION)
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
@@ -132,6 +159,25 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     setTemaPropuesto(nombre)
   }
 
+  function anadirImagenes(archivos: File[]) {
+    const libres = MAX_IMAGENES - imagenes.length
+    const nuevas = archivos.slice(0, libres).map((archivo) => ({
+      archivo,
+      etiqueta: '',
+      url: URL.createObjectURL(archivo),
+    }))
+    setImagenes([...imagenes, ...nuevas])
+  }
+
+  function quitarImagen(indice: number) {
+    URL.revokeObjectURL(imagenes[indice].url)
+    setImagenes(imagenes.filter((_, i) => i !== indice))
+  }
+
+  function cambiarEtiqueta(indice: number, etiqueta: string) {
+    setImagenes((prev) => prev.map((img, i) => (i === indice ? { ...img, etiqueta } : img)))
+  }
+
   async function enviar(ajustesEnvio: Ajustes) {
     if (!obraSlug || !referencia.id || enviando) return
     setError(null)
@@ -141,7 +187,6 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
     try {
       const resultado = await crearPost(obraSlug, {
         text: texto,
-        image: imagen,
         referenciaNarrativaId: referencia.id,
         fronteraSpoilerId: frontera.id,
         emocionAutor: emocion,
@@ -149,6 +194,8 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
         temaPropuesto: tema.id ? undefined : temaPropuesto ?? undefined,
         nuevoProgresoId: nuevoProgreso.id,
         ...ajustesEnvio,
+        // La comparativa explícita prevalece sobre lo elegido en el aviso de detección.
+        ...datosExtra(imagenes, disposicion, comparativa),
       })
 
       if ('progresoRequerido' in resultado) {
@@ -181,6 +228,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
 
   // La propuesta se muestra en el propio campo de tema, marcada como tal.
   const seleccionTema: Seleccion = temaPropuesto ? { id: null, label: `${temaPropuesto} (propuesta)` } : tema
+  const incompleta = comparativaIncompleta(comparativa)
 
   return (
     <>
@@ -219,6 +267,8 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
             hint={temaPropuesto ? 'Si ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.' : undefined}
           />
 
+          <Comparativa obraSlug={obraSlug} valor={comparativa} onChange={setComparativa} />
+
           <div className={styles.field}>
             <label className={styles.label} htmlFor="text">¿Qué quieres contar?</label>
             <EditorTexto
@@ -227,8 +277,15 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
               onTextoChange={setTexto}
               emocion={emocion}
               onEmocionChange={setEmocion}
-              imagen={imagen}
-              onImagenChange={setImagen}
+              numImagenes={imagenes.length}
+              onAnadirImagenes={anadirImagenes}
+            />
+            <GaleriaEditor
+              imagenes={imagenes}
+              disposicion={disposicion}
+              onDisposicion={setDisposicion}
+              onEtiqueta={cambiarEtiqueta}
+              onQuitar={quitarImagen}
             />
           </div>
 
@@ -253,7 +310,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, onPublicado, onProgr
             hint="Si no se indica, se intenta clasificar automáticamente; si no es posible, se usa tu progreso actual."
           />
 
-          <button className={styles.submit} type="submit" disabled={enviando || !referencia.id}>
+          <button className={styles.submit} type="submit" disabled={enviando || !referencia.id || incompleta}>
             {enviando ? 'Publicando...' : 'Publicar'}
           </button>
         </fieldset>

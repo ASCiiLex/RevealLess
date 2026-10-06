@@ -1,0 +1,98 @@
+.galeria {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.miniaturas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.miniatura {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.marco {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.marco img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.quitar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(21, 19, 15, 0.72);
+  color: var(--paper);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.etiqueta {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.etiqueta:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.disposiciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.opcion {
+  border: 1px solid var(--border);
+  background: none;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.opcionActiva {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, var(--paper));
+  color: var(--gold-texto);
+  font-weight: 600;
+}
+
+.titulo {
+  font-size: 11px;
+  color: var(--fog);
+}

@@ -36,6 +36,23 @@
   color: var(--ink);
 }
 
+.narrative {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.narrativeSeparator {
+  color: var(--border);
+}
+
+/* Post comparativo entre dos obras. */
+.cruce {
+  color: var(--gold-texto);
+  font-weight: 700;
+}
+
 .textLink {
   text-decoration: none;
   color: inherit;

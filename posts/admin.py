@@ -1,7 +1,7 @@
 from unfold.admin import ModelAdmin, TabularInline
 from django.contrib import admin
 from django.db.models import Count
-from .models import Hashtag, Post
+from .models import Hashtag, PersonajeComparado, Post, PostImagen
 from comments.models import Comment
 
 
@@ -16,6 +16,18 @@ class CommentInline(TabularInline):
     autocomplete_fields = ('referencia_narrativa', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada')
 
 
+class PostImagenInline(TabularInline):
+    model = PostImagen
+    extra = 0
+    fields = ('imagen', 'etiqueta', 'orden')
+
+
+class PersonajeComparadoInline(TabularInline):
+    model = PersonajeComparado
+    extra = 0
+    raw_id_fields = ('personaje',)
+
+
 @admin.register(Post)
 class PostAdmin(ModelAdmin):
     list_display = (
@@ -25,7 +37,7 @@ class PostAdmin(ModelAdmin):
     search_fields = ('author__username', 'text')
     list_filter = ('created_at', 'obra', 'frontera_origen')
     readonly_fields = ('frontera_orden',)
-    inlines = [CommentInline]
+    inlines = [PostImagenInline, PersonajeComparadoInline, CommentInline]
     autocomplete_fields = ('referencia_narrativa', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada')
 
     def get_queryset(self, request):

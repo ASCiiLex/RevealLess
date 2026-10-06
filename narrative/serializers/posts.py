@@ -11,9 +11,13 @@ class PostSerializer(serializers.ModelSerializer):
     autor_avatar = serializers.SerializerMethodField()
     obra_titulo = serializers.CharField(source='obra.titulo', read_only=True)
     obra_slug = serializers.CharField(source='obra.slug', read_only=True)
+    obra_cruzada = serializers.SerializerMethodField()
     imagen = serializers.SerializerMethodField()
+    imagenes = serializers.SerializerMethodField()
+    personajes_comparados = serializers.SerializerMethodField()
     referencia_narrativa = UnidadNarrativaSerializer(read_only=True)
     frontera_spoiler = UnidadNarrativaSerializer(read_only=True)
+    frontera_cruzada = UnidadNarrativaSerializer(read_only=True)
     likes_count = serializers.IntegerField(read_only=True)
     comments_count = serializers.IntegerField(read_only=True)
     user_reaction = serializers.SerializerMethodField()
@@ -23,8 +27,10 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'text', 'imagen',
-            'referencia_narrativa', 'frontera_spoiler', 'nivel_spoiler', 'emocion_autor', 'created_at',
+            'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'obra_cruzada', 'text',
+            'imagen', 'imagenes', 'disposicion', 'personajes_comparados',
+            'referencia_narrativa', 'frontera_spoiler', 'frontera_cruzada', 'nivel_spoiler',
+            'emocion_autor', 'created_at',
             'likes_count', 'comments_count', 'user_reaction', 'is_own_post', 'is_saved',
         ]
 
@@ -38,8 +44,26 @@ class PostSerializer(serializers.ModelSerializer):
             self.context[clave] = calcular()
         return self.context[clave]
 
+    def get_obra_cruzada(self, obj):
+        if not obj.obra_cruzada_id:
+            return None
+        return {'titulo': obj.obra_cruzada.titulo, 'slug': obj.obra_cruzada.slug}
+
     def get_imagen(self, obj):
         return obj.image_url
+
+    def get_imagenes(self, obj):
+        """Lista única para pintar: la galería si existe; si no, la imagen simple."""
+        galeria = [{'url': i.image_url, 'etiqueta': i.etiqueta} for i in obj.imagenes.all() if i.image_url]
+        if galeria:
+            return galeria
+        return [{'url': obj.image_url, 'etiqueta': ''}] if obj.image_url else []
+
+    def get_personajes_comparados(self, obj):
+        return [
+            {'id': c.personaje_id, 'nombre': c.personaje.nombre, 'imagen_url': c.personaje.image_url}
+            for c in obj.comparaciones.all()
+        ]
 
     def get_autor_avatar(self, obj):
         return obj.author.profile.image_url if hasattr(obj.author, 'profile') else AVATAR_POR_DEFECTO

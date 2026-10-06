@@ -41,8 +41,13 @@
   cursor: pointer;
 }
 
-.chip:hover {
+.chip:hover:not(:disabled) {
   background: var(--border);
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .footer {

@@ -1,4 +1,4 @@
-import { ApiError } from './client'
+import { api, ApiError } from './client'
 import type { UnidadNarrativa } from './progreso'
 import { construirFormData, enviarFormData } from './formData'
 
@@ -55,9 +55,19 @@ export interface BibliotecaPublicar {
   temas: TemaPublicable[]
 }
 
+export interface PersonajePublicable {
+  id: number
+  nombre: string
+  imagen_url: string
+}
+
 export interface DatosPost {
   text: string
   image?: File | null
+  // Galería de 2 a 4 imágenes, con etiqueta por posición.
+  imagenes?: File[]
+  etiquetas?: string[]
+  disposicion?: string
   referenciaNarrativaId: number
   fronteraSpoilerId?: number | null
   nivelSpoiler?: string
@@ -70,6 +80,7 @@ export interface DatosPost {
   obraCruzadaId?: number | null
   fronteraCruzadaId?: number | null
   descartarReferenciaCruzada?: boolean
+  personajesComparadosIds?: number[]
 }
 
 type ResultadoConflicto = ProgresoRequerido | RequiereConfirmacionProgreso | ReferenciaCruzadaDetectada
@@ -83,14 +94,16 @@ interface CuerpoConflicto {
 }
 
 // Solo la biblioteca del usuario: se carga una vez y se filtra en cliente.
-export async function fetchObrasPublicar(): Promise<BibliotecaPublicar> {
-  const response = await fetch('/narrative/api/obras/publicar/', {
-    credentials: 'same-origin',
-    headers: { Accept: 'application/json' },
-  })
-  const body = await response.json().catch(() => null)
-  if (!response.ok) throw new ApiError(response.status, body)
-  return body as BibliotecaPublicar
+export function fetchObrasPublicar(): Promise<BibliotecaPublicar> {
+  return api.get<BibliotecaPublicar>('/narrative/api/obras/publicar/')
+}
+
+// Personajes ya aparecidos según el progreso del usuario en esa obra.
+export function fetchPersonajesPublicar(obraSlug: string, q = ''): Promise<PersonajePublicable[]> {
+  const params = q ? `?q=${encodeURIComponent(q)}` : ''
+  return api
+    .get<{ personajes: PersonajePublicable[] }>(`/narrative/api/obras/${obraSlug}/personajes-publicar/${params}`)
+    .then((data) => data.personajes)
 }
 
 export function mapearDetecciones(detecciones: DeteccionApi[] = []): DeteccionCruzada[] {
@@ -119,6 +132,9 @@ export async function crearPost(obraSlug: string, datos: DatosPost): Promise<Pos
   const response = await enviarFormData(`/posts/api/crear/${obraSlug}/`, 'POST', construirFormData({
     text: datos.text,
     image: datos.image,
+    imagenes: datos.imagenes,
+    etiquetas: datos.etiquetas,
+    disposicion: datos.disposicion,
     referencia_narrativa: datos.referenciaNarrativaId,
     frontera_spoiler: datos.fronteraSpoilerId,
     nivel_spoiler: datos.nivelSpoiler,
@@ -130,6 +146,7 @@ export async function crearPost(obraSlug: string, datos: DatosPost): Promise<Pos
     obra_cruzada: datos.obraCruzadaId,
     frontera_cruzada: datos.fronteraCruzadaId,
     descartar_referencia_cruzada: datos.descartarReferenciaCruzada,
+    personajes_comparados: datos.personajesComparadosIds,
   }))
 
   const body = await response.json().catch(() => null)

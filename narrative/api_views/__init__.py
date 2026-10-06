@@ -2,6 +2,8 @@ from .feed import FeedAPIView
 from .progreso import ProgresoAPIView, ProgresoExisteAPIView
 from .catalogo import (
     CatalogoObrasAPIView,
+    ObrasPublicarAPIView,
+    PersonajesPublicarAPIView,
     ObraDetalleAPIView,
     UnidadesBuscarAPIView,
     ObraContextoPublicarAPIView,
@@ -20,6 +22,8 @@ __all__ = [
     'ProgresoAPIView',
     'ProgresoExisteAPIView',
     'CatalogoObrasAPIView',
+    'ObrasPublicarAPIView',
+    'PersonajesPublicarAPIView',
     'ObraDetalleAPIView',
     'UnidadesBuscarAPIView',
     'ObraContextoPublicarAPIView',

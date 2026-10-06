@@ -5,6 +5,7 @@ import EmocionPopover from '../Emociones/EmocionPopover'
 import { EMOCIONES } from '../../constants/emociones'
 import { fetchSuggestedHashtags } from '../../api/textAutocomplete'
 import { useMentionHashtagAutocomplete } from '../../hooks/useMentionHashtagAutocomplete'
+import { MAX_IMAGENES } from '../Galeria/GaleriaPost'
 
 interface Props {
   id: string
@@ -12,8 +13,8 @@ interface Props {
   onTextoChange: Dispatch<SetStateAction<string>>
   emocion: string | null
   onEmocionChange: (emocion: string | null) => void
-  imagen: File | null
-  onImagenChange: (imagen: File | null) => void
+  numImagenes: number
+  onAnadirImagenes: (archivos: File[]) => void
 }
 
 // Deja que el clic en el popover o el dropdown llegue antes de cerrarlos.
@@ -21,7 +22,7 @@ const RETARDO_BLUR_MS = 150
 const TIPOS_IMAGEN = 'image/jpeg,image/png,image/webp'
 
 export default function EditorTexto({
-  id, texto, onTextoChange, emocion, onEmocionChange, imagen, onImagenChange,
+  id, texto, onTextoChange, emocion, onEmocionChange, numImagenes, onAnadirImagenes,
 }: Props) {
   const [emocionAbierta, setEmocionAbierta] = useState(false)
   const [hashtagsSugeridos, setHashtagsSugeridos] = useState<string[]>([])
@@ -54,6 +55,7 @@ export default function EditorTexto({
   }
 
   const emocionActual = EMOCIONES.find((e) => e.clave === emocion)
+  const completo = numImagenes >= MAX_IMAGENES
 
   return (
     <div className={styles.box}>
@@ -94,15 +96,25 @@ export default function EditorTexto({
             <button type="button" className={styles.emocionQuitar} onClick={() => onEmocionChange(null)}>×</button>
           </span>
         )}
-        <button type="button" className={styles.chip} onClick={() => fileInputRef.current?.click()}>
-          {imagen ? imagen.name : '📷 Añadir imagen'}
+        <button
+          type="button"
+          className={styles.chip}
+          onClick={() => fileInputRef.current?.click()}
+          disabled={completo}
+        >
+          {numImagenes === 0 ? '📷 Añadir imágenes' : `📷 Imágenes ${numImagenes}/${MAX_IMAGENES}`}
         </button>
         <input
           ref={fileInputRef}
           className={styles.inputOculto}
           type="file"
           accept={TIPOS_IMAGEN}
-          onChange={(e) => onImagenChange(e.target.files?.[0] ?? null)}
+          multiple
+          onChange={(e) => {
+            onAnadirImagenes(Array.from(e.target.files ?? []))
+            // Permite volver a elegir el mismo archivo tras quitarlo.
+            e.target.value = ''
+          }}
         />
       </div>
     </div>

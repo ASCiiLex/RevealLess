@@ -1,0 +1,151 @@
+.unica {
+  width: 100%;
+  border-radius: var(--radius);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.galeria {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.lado {
+  grid-template-columns: 1fr 1fr;
+  aspect-ratio: 16 / 9;
+}
+
+.apiladas {
+  grid-template-rows: 1fr 1fr;
+  aspect-ratio: 4 / 5;
+}
+
+.fila {
+  grid-template-columns: repeat(3, 1fr);
+  aspect-ratio: 2 / 1;
+}
+
+.destacada {
+  grid-template-columns: 2fr 1fr;
+  grid-auto-rows: 1fr;
+  aspect-ratio: 16 / 10;
+}
+
+.cuadricula {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  aspect-ratio: 1 / 1;
+}
+
+.celda {
+  position: relative;
+  margin: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+}
+
+.celda img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.etiqueta {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  max-width: calc(100% - 12px);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(21, 19, 15, 0.72);
+  color: var(--paper);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* Antes / después: la primera imagen se recorta sobre la segunda. */
+.deslizador {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 12px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+  touch-action: pan-y;
+}
+
+.capa {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.linea {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--paper);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.linea::after {
+  content: '⇆';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.etiquetaIzq {
+  top: 8px;
+  bottom: auto;
+  left: 8px;
+}
+
+.etiquetaDer {
+  top: 8px;
+  bottom: auto;
+  left: auto;
+  right: 8px;
+}
+
+/* Control invisible a pantalla completa: se arrastra en cualquier punto. */
+.control {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+}
+
+.control:focus-visible + * ,
+.deslizador:focus-within .linea {
+  background: var(--gold);
+}

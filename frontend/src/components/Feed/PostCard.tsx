@@ -3,6 +3,8 @@ import PostActions from './PostActions'
 import SaveButton from './SaveButton'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
+import GaleriaPost from '../Galeria/GaleriaPost'
+import VersusPersonajes from '../Comparativa/VersusPersonajes'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
 import type { FeedPost } from '../../api/feed'
 
@@ -11,6 +13,10 @@ interface Props {
 }
 
 export default function PostCard({ post }: Props) {
+  const imagenes = post.imagenes ?? []
+  // Una galería tiene controles propios (deslizador): va fuera del enlace al detalle.
+  const esGaleria = imagenes.length > 1
+
   return (
     <article className={styles.post} style={emocionHaloStyle(post.emocion_autor)}>
       {!post.is_own_post && <SaveButton postId={post.id} guardadoInicial={post.is_saved} />}
@@ -23,6 +29,12 @@ export default function PostCard({ post }: Props) {
         <span>·</span>
         <span className={styles.narrative}>
           <span>{post.obra_titulo}</span>
+          {post.obra_cruzada && (
+            <>
+              <span className={styles.cruce} aria-label="comparado con">⇄</span>
+              <span>{post.obra_cruzada.titulo}</span>
+            </>
+          )}
           {post.referencia_narrativa && (
             <>
               <span className={styles.narrativeSeparator}>|</span>
@@ -32,10 +44,14 @@ export default function PostCard({ post }: Props) {
         </span>
       </div>
 
+      <VersusPersonajes personajes={post.personajes_comparados ?? []} obraSlug={post.obra_slug} />
+
       <a className={styles.textLink} href={`/posts/${post.id}/`}>
         <p className={styles.text}>{post.text}</p>
-        {post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
+        {!esGaleria && post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
       </a>
+
+      {esGaleria && <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />}
 
       <PostActions postId={post.id} reaccionInicial={post.user_reaction} />
 

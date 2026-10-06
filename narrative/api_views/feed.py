@@ -4,6 +4,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 from posts.models import Post
+from subscriptions.models import Suscripcion
 from subscriptions.services import (
     filtro_posts_silenciados,
     filtro_posts_suscripciones,
@@ -25,10 +26,16 @@ class FeedAPIView(generics.ListAPIView):
         user = self.request.user
         params = self.request.query_params
 
+        # Comparativas: también llegan a quien sigue la obra cruzada (visible_for exige ambas fronteras).
+        obras_seguidas = Suscripcion.objects.filter(
+            usuario=user, activa=True, obra__isnull=False, unidad__isnull=True, tema__isnull=True,
+        ).values('obra_id')
+
         condiciones_del_feed = (
             Q(author=user)
             | Q(author__in=user.following.values_list('followed', flat=True))
             | filtro_posts_suscripciones(user)
+            | Q(obra_cruzada_id__in=obras_seguidas)
         )
 
         queryset = (
@@ -39,18 +46,22 @@ class FeedAPIView(generics.ListAPIView):
             .select_related(
                 'author__profile',
                 'obra',
+                'obra_cruzada',
                 'referencia_narrativa__padre',
                 'referencia_narrativa__obra',
                 'frontera_spoiler__padre',
                 'frontera_spoiler__obra',
+                'frontera_cruzada__padre',
+                'frontera_cruzada__obra',
             )
+            .prefetch_related('imagenes', 'comparaciones__personaje')
             .visible_for(user)
             .with_feed_stats()
         )
 
         obra_id = entero_o_none(params.get('obra'), 'obra')
         if obra_id is not None:
-            queryset = queryset.filter(obra_id=obra_id)
+            queryset = queryset.filter(Q(obra_id=obra_id) | Q(obra_cruzada_id=obra_id))
 
         hashtag = params.get('hashtag')
         if hashtag is not None:
