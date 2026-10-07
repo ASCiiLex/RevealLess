@@ -158,6 +158,10 @@ class UnidadNarrativa(models.Model):
         ordering = ['orden_inicio']
 
     def __str__(self):
+        # El contenedor distingue nombres repetidos («Episodio 1» de Naruto y de Shippūden).
+        # Quien liste muchas unidades debe hacer select_related('obra', 'padre').
+        if self.padre_id:
+            return f'{self.obra.titulo} · {self.padre.nombre} · {self.nombre}'
         return f'{self.obra.titulo} · {self.nombre}'
 
     @property

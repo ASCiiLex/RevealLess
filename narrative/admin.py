@@ -19,6 +19,13 @@ from .services.personajes import (
 # Cambios que alteran orden_inicio/orden_fin de la obra.
 CAMPOS_QUE_REORDENAN = {'orden_local', 'padre', 'orden_manual'}
 
+# Lo que usa UnidadNarrativa.__str__: evita una consulta por fila en listados y autocompletes.
+RELACIONES_UNIDAD = ('obra', 'padre')
+
+
+def relaciones_de(campo):
+    return tuple(f'{campo}__{rel}' for rel in RELACIONES_UNIDAD)
+
 
 class ImagenDesdeUrlForm(forms.ModelForm):
     """Añade 'Imagen desde URL': descarga la imagen y la guarda en el campo 'imagen'."""
@@ -52,7 +59,7 @@ def miniatura(obj, lado=40):
 def limitar_unidades_a_obra(campo, obra_id):
     """Selector de unidad restringido a una obra: el queryset valida en servidor y la URL
     del autocomplete lleva ?obra= (lo aplica UnidadNarrativaAdmin.get_search_results)."""
-    campo.queryset = campo.queryset.filter(obra_id=obra_id)
+    campo.queryset = campo.queryset.filter(obra_id=obra_id).select_related(*RELACIONES_UNIDAD)
     widget = getattr(campo.widget, 'widget', campo.widget)
     if hasattr(widget, 'get_url'):
         url = widget.get_url()
@@ -140,12 +147,17 @@ class UnidadNarrativaAdmin(ModelAdmin):
     list_display = ('obra', 'nombre', 'tipo', 'padre', 'orden_local', 'orden_inicio', 'orden_fin', 'fecha', 'imagen_tag')
     list_display_links = ('obra',)
     list_filter = ('obra', 'tipo')
-    search_fields = ('nombre', 'obra__titulo')
+    # padre__nombre: «shippūden 138» encuentra el episodio dentro de esa temporada.
+    search_fields = ('nombre', 'obra__titulo', 'padre__nombre')
     readonly_fields = ('orden_inicio', 'orden_fin')
     # Sin autocomplete, el desplegable de "padre" lista todas las unidades de la obra (1160+ en One Piece).
     autocomplete_fields = ('padre',)
     # Edición en bloque desde el listado: títulos, tipo, fecha y orden.
     list_editable = ('nombre', 'tipo', 'orden_local', 'fecha')
+
+    def get_queryset(self, request):
+        # También lo usa el autocomplete; padre__* cubre la columna «padre» del listado.
+        return super().get_queryset(request).select_related('obra', 'padre__obra', 'padre__padre')
 
     def get_search_results(self, request, queryset, search_term):
         # Autocompletes limitados a una obra (limitar_unidades_a_obra añade ?obra=).
@@ -180,6 +192,7 @@ class UnidadNarrativaAdmin(ModelAdmin):
 class ProgresoUsuarioAdmin(ModelAdmin):
     list_display = ('usuario', 'obra', 'unidad_actual', 'orden_absoluto', 'actualizado_en')
     list_filter = ('obra',)
+    list_select_related = ('usuario', 'obra', *relaciones_de('unidad_actual'))
     readonly_fields = ('orden_absoluto',)
     autocomplete_fields = ('unidad_actual',)
 
@@ -238,6 +251,9 @@ class EtapaPersonajeInline(TabularInline):
     fields = ('visible_tras', 'alias', 'nota', 'nivel', 'imagen', 'imagen_desde_url')
     autocomplete_fields = ('visible_tras',)
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(*relaciones_de('visible_tras'))
+
 
 class RelevanciaPersonajeInline(TabularInline):
     """Peso del personaje en cada obra: primer criterio del carrusel de la landing."""
@@ -264,7 +280,7 @@ class PropuestaAparicionInline(TabularInline):
     verbose_name_plural = 'Apariciones (propuestas y manuales)'
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('unidad__obra')
+        return super().get_queryset(request).select_related(*relaciones_de('unidad'))
 
 
 class PendientesFilter(admin.SimpleListFilter):
@@ -408,7 +424,7 @@ class PropuestaAparicionAdmin(ModelAdmin):
     list_editable = ('unidad',)
     list_filter = ('estado', 'origen', ConfianzaFilter, 'unidad__obra')
     search_fields = ('personaje__nombre', 'unidad__nombre', 'unidad__obra__titulo')
-    list_select_related = ('personaje', 'unidad__obra')
+    list_select_related = ('personaje', *relaciones_de('unidad'))
     autocomplete_fields = ('personaje', 'unidad')
     readonly_fields = ('resuelto_en', 'creado_en')
     actions = ['aprobar_propuestas', 'rechazar_propuestas']
@@ -473,7 +489,7 @@ class SolicitudPersonajeAdmin(ModelAdmin):
     list_editable = ('unidad', 'personaje')
     list_filter = ('estado', 'obra')
     search_fields = ('nombre', 'obra__titulo', 'usuario__username')
-    list_select_related = ('obra', 'unidad', 'personaje', 'usuario')
+    list_select_related = ('obra', *relaciones_de('unidad'), 'personaje', 'usuario')
     autocomplete_fields = ('obra', 'unidad', 'personaje', 'usuario')
     readonly_fields = ('creado_en', 'resuelto_en')
     actions = ['aprobar_solicitudes', 'rechazar_solicitudes']
@@ -519,4 +535,5 @@ class ExternalIdAdmin(ModelAdmin):
     list_display = ('source', 'external_id', 'obra', 'unidad')
     list_filter = ('source',)
     search_fields = ('external_id', 'obra__titulo', 'unidad__nombre')
+    list_select_related = ('obra', *relaciones_de('unidad'))
     autocomplete_fields = ('obra', 'unidad')
