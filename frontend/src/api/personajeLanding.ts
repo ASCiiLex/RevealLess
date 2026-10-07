@@ -14,12 +14,20 @@ export interface PersonajeContexto {
   slug: string
 }
 
+// Identidad vinculada (Sogeking ↔ Usopp): solo llega si el lector ya conoce el vínculo.
+export interface IdentidadVinculada {
+  id: number
+  nombre: string
+}
+
 export interface PersonajeDetalle {
   id: number
   nombre: string
   imagen_url: string
   nota: string | null
   contexto: PersonajeContexto | null
+  identidad_de: IdentidadVinculada | null
+  otras_identidades: IdentidadVinculada[]
   obras: PersonajeObra[]
   suscripcion_id: number | null
   total_suscriptores: number

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import styles from './PersonajeLandingView.module.css'
 import botones from '../../styles/botones.module.css'
 import { fetchPersonajeLanding, type PersonajeDetalle } from '../../api/personajeLanding'
@@ -60,6 +60,9 @@ export default function PersonajeLandingView({ personajeId }: Props) {
   }
 
   const siguiendo = personaje.suscripcion_id !== null
+  // Mantiene la obra de contexto al saltar entre identidades.
+  const enlace = (id: number) =>
+    `/narrative/personaje/${id}/${personaje.contexto ? `?obra=${encodeURIComponent(personaje.contexto.slug)}` : ''}`
 
   return (
     <div className={styles.wrapper}>
@@ -67,6 +70,22 @@ export default function PersonajeLandingView({ personajeId }: Props) {
         <img className={styles.imagen} src={personaje.imagen_url} alt="" />
         <div className={styles.info}>
           <h1 className={styles.titulo}>{personaje.nombre}</h1>
+          {personaje.identidad_de && (
+            <p className={styles.identidad}>
+              Es <a href={enlace(personaje.identidad_de.id)}>{personaje.identidad_de.nombre}</a>
+            </p>
+          )}
+          {personaje.otras_identidades.length > 0 && (
+            <p className={styles.identidad}>
+              También conocido como{' '}
+              {personaje.otras_identidades.map((o, i) => (
+                <Fragment key={o.id}>
+                  {i > 0 && ', '}
+                  <a href={enlace(o.id)}>{o.nombre}</a>
+                </Fragment>
+              ))}
+            </p>
+          )}
           {personaje.contexto && (
             <p className={styles.contexto}>
               Según tu progreso en{' '}

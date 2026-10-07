@@ -286,20 +286,25 @@ class PendientesFilter(admin.SimpleListFilter):
 @admin.register(Personaje)
 class PersonajeAdmin(ModelAdmin):
     form = PersonajeAdminForm
-    list_display = ('nombre', 'wikidata_id', 'total_apariciones', 'total_etapas', 'total_pendientes', 'imagen_tag')
+    list_display = (
+        'nombre', 'identidad_de', 'wikidata_id', 'total_apariciones', 'total_etapas', 'total_pendientes',
+        'imagen_tag',
+    )
     list_filter = (
         ('unidades__obra', admin.RelatedOnlyFieldListFilter),
         'relevancias__nivel',
         PendientesFilter,
         ('imagen', admin.EmptyFieldListFilter),
         ('wikidata_id', admin.EmptyFieldListFilter),
+        ('identidad_de', admin.EmptyFieldListFilter),
     )
     search_fields = ('nombre', 'wikidata_id', 'etapas__alias')
+    autocomplete_fields = ('identidad_de', 'identidad_revelada_tras')
     inlines = [RelevanciaPersonajeInline, EtapaPersonajeInline, PropuestaAparicionInline]
     actions = ['fusionar_seleccionados']
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(
+        return super().get_queryset(request).select_related('identidad_de').annotate(
             apariciones=Count('unidades', distinct=True),
             num_etapas=Count('etapas', distinct=True),
             pendientes=Count(

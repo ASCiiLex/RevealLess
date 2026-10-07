@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from posts.models import Post, PostImagen
+from ..services.personajes import presentacion_personaje
 from .unidades import UnidadNarrativaSerializer
 
 AVATAR_POR_DEFECTO = '/static/img/default_profile.jpg'
@@ -76,12 +77,18 @@ class PostSerializer(serializers.ModelSerializer):
         }]
 
     def get_personajes_comparados(self, obj):
+        """Nombre e imagen según la frontera del post: quien puede leerlo ya llegó ahí,
+        así que se muestra lo revelado hasta ese punto y nada posterior."""
+        progreso = {obj.obra_id: obj.frontera_orden or 0}
+        if obj.obra_cruzada_id:
+            progreso[obj.obra_cruzada_id] = obj.frontera_cruzada_orden or 0
         resultado = []
         for c in obj.comparaciones.all():
             if c.personaje_id:
+                datos = presentacion_personaje(c.personaje, progreso)
                 resultado.append({
-                    'id': c.personaje_id, 'nombre': c.personaje.nombre,
-                    'imagen_url': c.personaje.image_url, 'pendiente': False,
+                    'id': c.personaje_id, 'nombre': datos['nombre'],
+                    'imagen_url': datos['imagen_url'], 'pendiente': False,
                 })
             elif c.solicitud_id:
                 # Propuesto por el autor: visible con su nombre mientras se revisa.

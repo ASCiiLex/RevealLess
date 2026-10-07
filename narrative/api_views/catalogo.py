@@ -1,4 +1,6 @@
-from django.db.models import Max, OuterRef, Subquery, Value
+import unicodedata
+
+from django.db.models import Max, Min, OuterRef, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +9,7 @@ from rest_framework.views import APIView
 
 from ..models import Obra, Personaje, ProgresoUsuario, RelevanciaPersonaje, TemaTransversal, UnidadNarrativa
 from ..serializers import ObraResumenSerializer, UnidadNarrativaSerializer
+from ..services.personajes import nombres_conocidos, presentacion_personaje
 from .comun import (
     contexto_suscripcion_obra,
     ids_biblioteca,
@@ -14,6 +17,11 @@ from .comun import (
     temas_planos,
     temas_suscritos_serializados,
 )
+
+
+def _normalizar(texto):
+    descompuesto = unicodedata.normalize('NFKD', texto)
+    return ''.join(c for c in descompuesto if not unicodedata.combining(c)).lower().strip()
 
 
 class CatalogoObrasAPIView(APIView):
@@ -67,8 +75,9 @@ class ObrasPublicarAPIView(APIView):
 
 
 class PersonajesPublicarAPIView(APIView):
-    """Candidatos para una comparativa: personajes ya aparecidos según el progreso del
-    usuario, primero los más relevantes en la obra."""
+    """Candidatos para una comparativa: personajes ya aparecidos según el progreso del usuario,
+    primero los más relevantes. Se buscan y se muestran solo por los nombres que el lector ya
+    ha visto (alias revelados incluidos): buscar por uno aún oculto no debe encontrar nada."""
 
     permission_classes = [IsAuthenticated]
     LIMITE = 30
@@ -79,20 +88,36 @@ class PersonajesPublicarAPIView(APIView):
         if not progreso:
             return Response({'personajes': []})
 
+        hasta = progreso.orden_absoluto
         nivel = RelevanciaPersonaje.objects.filter(personaje=OuterRef('pk'), obra=obra).values('nivel')[:1]
-        personajes = (
+        candidatos = (
             Personaje.objects
-            .filter(unidades__obra=obra, unidades__orden_fin__lte=progreso.orden_absoluto)
-            .distinct()
-            .annotate(nivel_obra=Coalesce(Subquery(nivel), Value(RelevanciaPersonaje.NIVEL_SIN_MARCAR)))
+            .filter(unidades__obra=obra)
+            .annotate(
+                primera=Min('unidades__orden_fin', filter=Q(unidades__obra=obra)),
+                nivel_obra=Coalesce(Subquery(nivel), Value(RelevanciaPersonaje.NIVEL_SIN_MARCAR)),
+            )
+            .filter(primera__lte=hasta)
+            .prefetch_related('etapas__visible_tras')
         )
-        q = request.query_params.get('q', '').strip()
-        if q:
-            personajes = personajes.filter(nombre__icontains=q)
-        personajes = personajes.order_by('-nivel_obra', 'nombre')[:self.LIMITE]
 
+        q = _normalizar(request.query_params.get('q', ''))
+        progreso_obra = {obra.id: hasta}
+        resultado = []
+        for p in candidatos:
+            datos = presentacion_personaje(p, progreso_obra, obra_id=obra.id)
+            if q:
+                nombres = nombres_conocidos(p, obra.id, hasta, p.primera) | {datos['nombre']}
+                if not any(q in _normalizar(n) for n in nombres):
+                    continue
+            resultado.append((p.nivel_obra, datos['nombre'], {'id': p.id, **datos}))
+
+        resultado.sort(key=lambda fila: (-fila[0], fila[1].lower()))
         return Response({
-            'personajes': [{'id': p.id, 'nombre': p.nombre, 'imagen_url': p.image_url} for p in personajes],
+            'personajes': [
+                {'id': d['id'], 'nombre': d['nombre'], 'imagen_url': d['imagen_url']}
+                for _, _, d in resultado[:self.LIMITE]
+            ],
         })
 
 

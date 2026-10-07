@@ -32,7 +32,11 @@ class Personaje(models.Model):
 
     unidades: solo apariciones confirmadas. Es lo único que leen las landings.
     Se escribe siempre a través de PropuestaAparicion (aprobar, rechazar, mover),
-    para que cada aparición tenga origen y estado."""
+    para que cada aparición tenga origen y estado.
+
+    identidad_de: otra identidad con ficha propia (Sogeking → Usopp, Tobi → Obito).
+    Cada una conserva su ficha y su feed; la principal suma los de la otra solo
+    cuando el lector ya conoce el vínculo (identidad_revelada_tras)."""
 
     nombre = models.CharField(
         max_length=150, unique=True,
@@ -47,6 +51,16 @@ class Personaje(models.Model):
         upload_to=personaje_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS,
         help_text='Imagen base: la de su primera aparición.',
     )
+    identidad_de = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True, related_name='otras_identidades',
+        verbose_name='Es otra identidad de',
+        help_text='Disfraz o identidad con ficha propia (ej. Sogeking → Usopp). Cada uno mantiene su ficha y su feed.',
+    )
+    identidad_revelada_tras = models.ManyToManyField(
+        UnidadNarrativa, blank=True, related_name='identidades_reveladas',
+        verbose_name='Se sabe desde',
+        help_text='Unidades tras las que se conoce el vínculo (una por obra si hace falta). Vacío: desde su primera aparición.',
+    )
 
     class Meta:
         ordering = ['nombre']
@@ -55,6 +69,14 @@ class Personaje(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    def clean(self):
+        super().clean()
+        if self.identidad_de_id:
+            if self.identidad_de_id == self.pk:
+                raise ValidationError({'identidad_de': 'No puede ser otra identidad de sí mismo.'})
+            if self.identidad_de.identidad_de_id:
+                raise ValidationError({'identidad_de': 'Elige la identidad principal: no se encadenan identidades.'})
 
     @property
     def image_url(self):

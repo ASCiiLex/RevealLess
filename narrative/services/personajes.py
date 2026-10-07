@@ -1,10 +1,11 @@
-"""Personajes: revisión de apariciones, solicitudes de usuarios, fusión de duplicados,
-orden del carrusel y presentación según el progreso del lector."""
+"""Personajes: revisión de apariciones, solicitudes de usuarios, identidades vinculadas,
+fusión de duplicados, orden del carrusel y presentación según el progreso del lector."""
 
 from collections import Counter
 from datetime import date
 
 from django.db import transaction
+from django.db.models import Min
 from django.utils import timezone
 
 from ..models import (
@@ -132,6 +133,48 @@ def rechazar_solicitud_personaje(solicitud):
     solicitud.resuelto_en = timezone.now()
     solicitud.save(update_fields=['estado', 'resuelto_en'])
     return True
+
+
+def identidad_conocida(alter, progreso):
+    """¿Sabe ya el lector que 'alter' es otra identidad de alter.identidad_de?
+    Con unidades de revelación, al superar cualquiera; sin ellas, desde la primera
+    aparición alcanzada del alter ego (disfraz evidente, como Sogeking)."""
+    if not alter.identidad_de_id:
+        return False
+    reveladoras = list(alter.identidad_revelada_tras.all())
+    if reveladoras:
+        return any(progreso.get(u.obra_id, -1) >= u.orden_fin for u in reveladoras)
+    primeras = alter.unidades.order_by().values('obra_id').annotate(primera=Min('orden_fin'))
+    return any(progreso.get(f['obra_id'], -1) >= f['primera'] for f in primeras)
+
+
+def identidades_conocidas(personaje, progreso):
+    """Otras identidades del personaje cuyo vínculo ya conoce el lector."""
+    alters = personaje.otras_identidades.prefetch_related('identidad_revelada_tras', 'etapas__visible_tras')
+    return [a for a in alters if identidad_conocida(a, progreso)]
+
+
+def ids_con_identidades(personaje_id, usuario):
+    """El personaje y sus otras identidades ya conocidas: feed y suscripción de Usopp incluyen a Sogeking."""
+    alters = Personaje.objects.filter(identidad_de_id=personaje_id).prefetch_related('identidad_revelada_tras')
+    if not alters:
+        return [personaje_id]
+    progreso = progreso_por_obra(usuario)
+    return [personaje_id] + [a.id for a in alters if identidad_conocida(a, progreso)]
+
+
+def nombres_conocidos(personaje, obra_id, hasta_orden, primera_aparicion):
+    """Nombres que el lector ya ha visto del personaje en esta obra: los alias de etapas
+    superadas y el nombre base solo si llegó a mostrarse antes del primer alias
+    (con «Nico Robin» de base y «Miss All Sunday» desde su aparición, el base aún no se vio)."""
+    con_alias = sorted(
+        (e for e in personaje.etapas.all() if e.alias and e.visible_tras.obra_id == obra_id),
+        key=lambda e: e.visible_tras.orden_fin,
+    )
+    nombres = {e.alias for e in con_alias if e.visible_tras.orden_fin <= hasta_orden}
+    if not con_alias or primera_aparicion < con_alias[0].visible_tras.orden_fin:
+        nombres.add(personaje.nombre)
+    return nombres
 
 
 def _nivel_con_etapas(personaje, obra_id, nivel_base, progreso):

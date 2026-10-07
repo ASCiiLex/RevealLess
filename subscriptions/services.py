@@ -53,10 +53,12 @@ def reactivar_suscripcion(suscripcion):
     suscripcion.save(update_fields=['activa'])
 
 
-def q_posts_de_personaje(personaje_id):
+def q_posts_de_personaje(personaje_ids):
     """Posts etiquetados con el personaje o anclados a una unidad en la que aparece.
+    Admite un id o varios (el personaje y sus identidades ya conocidas).
     Compartido por la suscripción y el filtro ?personaje= del feed."""
-    return Q(personajes=personaje_id) | Q(referencia_narrativa__personajes=personaje_id)
+    ids = list(personaje_ids) if isinstance(personaje_ids, (list, tuple, set)) else [personaje_ids]
+    return Q(personajes__in=ids) | Q(referencia_narrativa__personajes__in=ids)
 
 
 def _query_para_suscripcion(suscripcion):
@@ -68,7 +70,10 @@ def _query_para_suscripcion(suscripcion):
     de que una nueva rama de alcance se añadiera en unas copias y no en
     otras."""
     if suscripcion.personaje_id:
-        return q_posts_de_personaje(suscripcion.personaje_id)
+        # Import diferido: narrative depende de subscriptions en sus vistas.
+        from narrative.services.personajes import ids_con_identidades
+
+        return q_posts_de_personaje(ids_con_identidades(suscripcion.personaje_id, suscripcion.usuario))
     if suscripcion.unidad_id:
         return Q(
             obra_id=suscripcion.obra_id,

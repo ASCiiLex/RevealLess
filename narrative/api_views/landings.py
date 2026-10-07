@@ -8,7 +8,13 @@ from rest_framework.views import APIView
 from subscriptions.models import Suscripcion
 from ..models import Categoria, Obra, Personaje, ProgresoUsuario, TemaTransversal
 from ..serializers import ObraLandingSerializer, ObraResumenSerializer
-from ..services.personajes import ordenar_por_relevancia, presentacion_personaje, progreso_por_obra
+from ..services.personajes import (
+    identidad_conocida,
+    identidades_conocidas,
+    ordenar_por_relevancia,
+    presentacion_personaje,
+    progreso_por_obra,
+)
 from .comun import contexto_suscripcion_obra, ids_familia, suscripcion_id_por_tema
 
 
@@ -58,6 +64,10 @@ def _suscripcion_id_por_personaje(usuario):
         Suscripcion.objects.filter(usuario=usuario, personaje__isnull=False)
         .values_list('personaje_id', 'id')
     )
+
+
+def _identidad(personaje, progreso):
+    return {'id': personaje.id, 'nombre': presentacion_personaje(personaje, progreso)['nombre']}
 
 
 class ObraLandingAPIView(APIView):
@@ -149,28 +159,40 @@ class PersonajeLandingAPIView(APIView):
     responde 404, igual que si no existiera: la URL directa no debe revelarlo.
     Nombre, imagen y nota salen de la etapa más reciente ya superada. Con ?obra=<slug>
     (desde el carrusel) solo cuentan las etapas de esa obra, si ya se alcanzó en ella;
-    si no, se ignora y se usan todas las obras alcanzadas."""
+    si no, se ignora y se usan todas las obras alcanzadas.
+    Las identidades vinculadas (Sogeking ↔ Usopp) solo aparecen si el lector ya conoce el vínculo."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, personaje_id):
-        personaje = get_object_or_404(Personaje.objects.prefetch_related('etapas__visible_tras'), id=personaje_id)
+        personaje = get_object_or_404(
+            Personaje.objects.select_related('identidad_de').prefetch_related(
+                'etapas__visible_tras', 'identidad_revelada_tras', 'identidad_de__etapas__visible_tras',
+            ),
+            id=personaje_id,
+        )
         obras = list(obras_visibles_de_personaje(personaje, request.user))
         if not obras:
             raise Http404
 
+        progreso = progreso_por_obra(request.user)
         slug = request.query_params.get('obra')
         obra_contexto = next((o for o in obras if o.slug == slug), None)
         presentacion = presentacion_personaje(
-            personaje, progreso_por_obra(request.user),
-            obra_id=obra_contexto.id if obra_contexto else None,
+            personaje, progreso, obra_id=obra_contexto.id if obra_contexto else None,
         )
         suscripcion = Suscripcion.objects.filter(usuario=request.user, personaje=personaje).first()
+
+        identidad_de = None
+        if personaje.identidad_de_id and identidad_conocida(personaje, progreso):
+            identidad_de = _identidad(personaje.identidad_de, progreso)
 
         return Response({
             'id': personaje.id,
             **presentacion,
             'contexto': {'titulo': obra_contexto.titulo, 'slug': obra_contexto.slug} if obra_contexto else None,
+            'identidad_de': identidad_de,
+            'otras_identidades': [_identidad(a, progreso) for a in identidades_conocidas(personaje, progreso)],
             'obras': [
                 {'id': o.id, 'titulo': o.titulo, 'slug': o.slug, 'imagen_url': o.image_url}
                 for o in obras

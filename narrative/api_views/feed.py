@@ -12,6 +12,7 @@ from subscriptions.services import (
 )
 from ..models import TemaTransversal
 from ..serializers import PostSerializer
+from ..services.personajes import ids_con_identidades
 from .comun import entero_o_none, ids_familia
 
 
@@ -55,7 +56,10 @@ class FeedAPIView(generics.ListAPIView):
                 'frontera_cruzada__obra',
             )
             .prefetch_related(
-                'imagenes', 'temas_transversales', 'comparaciones__personaje', 'comparaciones__solicitud',
+                'imagenes',
+                'temas_transversales',
+                'comparaciones__personaje__etapas__visible_tras',
+                'comparaciones__solicitud',
             )
             .visible_for(user)
             .with_feed_stats()
@@ -79,6 +83,7 @@ class FeedAPIView(generics.ListAPIView):
 
         personaje_id = entero_o_none(params.get('personaje'), 'personaje')
         if personaje_id is not None:
-            queryset = queryset.filter(q_posts_de_personaje(personaje_id))
+            # Incluye sus otras identidades ya conocidas por el lector (Usopp → también Sogeking).
+            queryset = queryset.filter(q_posts_de_personaje(ids_con_identidades(personaje_id, user)))
 
         return queryset.order_by('-created_at')

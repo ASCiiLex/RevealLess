@@ -39,6 +39,25 @@
   margin: 0 0 4px 0;
 }
 
+/* Identidades vinculadas ya conocidas (Sogeking ↔ Usopp). */
+.identidad {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.identidad a {
+  color: var(--gold-texto);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.identidad a:hover,
+.identidad a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Obra de la que salen nombre, imagen y nota (llegada desde el carrusel). */
 .contexto {
   margin: 0 0 6px;
