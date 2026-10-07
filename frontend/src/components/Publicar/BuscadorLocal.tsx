@@ -4,6 +4,8 @@ import styles from './BuscadorLocal.module.css'
 export interface BuscadorItem {
   id: number
   label: string
+  // Texto secundario bajo el nombre (ej. temporada): distingue nombres repetidos.
+  detalle?: string | null
 }
 
 interface Props {
@@ -148,6 +150,7 @@ export default function BuscadorLocal({
                   onClick={() => seleccionar(item)}
                 >
                   {item.label}
+                  {item.detalle && <span className={styles.detalle}>{item.detalle}</span>}
                 </button>
               ))}
               {puedeProponer && (

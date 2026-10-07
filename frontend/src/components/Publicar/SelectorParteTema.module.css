@@ -91,6 +91,13 @@
   background: color-mix(in srgb, var(--gold) 10%, var(--paper));
 }
 
+/* Temporada, saga… bajo el nombre de la parte. */
+.detalle {
+  display: block;
+  font-size: 11px;
+  color: var(--fog);
+}
+
 .optionProponer {
   border-top: 1px solid var(--border);
   font-weight: 600;

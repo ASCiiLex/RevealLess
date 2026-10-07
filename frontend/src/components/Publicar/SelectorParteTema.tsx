@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import styles from './SelectorParteTema.module.css'
-import { buscarUnidades } from '../../api/suscripciones'
+import { buscarUnidades, type UnidadBuscada } from '../../api/suscripciones'
 
 export interface Seleccion {
   id: number | null
@@ -25,7 +25,7 @@ interface Props {
 }
 
 type Opcion =
-  | { tipo: 'parte'; id: number; label: string }
+  | { tipo: 'parte'; id: number; label: string; detalle: string | null }
   | { tipo: 'tema'; id: number; label: string }
   | { tipo: 'proponer'; label: string }
 
@@ -43,7 +43,7 @@ export default function SelectorParteTema({
 }: Props) {
   const [abierto, setAbierto] = useState(false)
   const [query, setQuery] = useState('')
-  const [partes, setPartes] = useState<{ id: number; label: string }[]>([])
+  const [partes, setPartes] = useState<UnidadBuscada[]>([])
   const [buscando, setBuscando] = useState(false)
   const [activa, setActiva] = useState(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -74,7 +74,7 @@ export default function SelectorParteTema({
   const temasFiltrados = temas.filter((t) => !q || normalizar(t.nombre).includes(q)).slice(0, MAX_TEMAS)
   const hayExacto = temas.some((t) => normalizar(t.nombre) === q)
   const opciones: Opcion[] = [
-    ...partes.map((p) => ({ tipo: 'parte' as const, id: p.id, label: p.label })),
+    ...partes.map((p) => ({ tipo: 'parte' as const, id: p.id, label: p.label, detalle: p.detalle })),
     ...temasFiltrados.map((t) => ({ tipo: 'tema' as const, id: t.id, label: t.nombre })),
     ...(q && !hayExacto ? [{ tipo: 'proponer' as const, label: query.trim() }] : []),
   ]
@@ -181,7 +181,12 @@ export default function SelectorParteTema({
                   onMouseEnter={() => setActiva(i)}
                   onClick={() => elegir(opcion)}
                 >
-                  {opcion.tipo === 'parte' && opcion.label}
+                  {opcion.tipo === 'parte' && (
+                    <>
+                      {opcion.label}
+                      {opcion.detalle && <span className={styles.detalle}>{opcion.detalle}</span>}
+                    </>
+                  )}
                   {opcion.tipo === 'tema' && `#${opcion.label}`}
                   {opcion.tipo === 'proponer' && `Proponer «${opcion.label}» como tema nuevo`}
                 </button>

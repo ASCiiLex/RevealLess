@@ -68,6 +68,13 @@
   background: color-mix(in srgb, var(--gold) 10%, var(--paper));
 }
 
+/* Temporada, saga… bajo el nombre: distingue episodios con el mismo nombre. */
+.detalle {
+  display: block;
+  font-size: 11px;
+  color: var(--fog);
+}
+
 /* Valor nuevo propuesto por el usuario: se distingue de los existentes. */
 .optionProponer {
   border-top: 1px solid var(--border);

@@ -62,6 +62,13 @@ export interface SolicitudTema {
   resuelto_en: string | null
 }
 
+// Resultado del buscador de partes: el detalle (temporada, saga…) distingue nombres repetidos.
+export interface UnidadBuscada {
+  id: number
+  label: string
+  detalle: string | null
+}
+
 export function fetchSuscripciones(): Promise<Suscripcion[]> {
   return api.get<Suscripcion[]>('/api/suscripciones/')
 }
@@ -100,11 +107,13 @@ export function crearSolicitudTema(obraId: number, nombre: string): Promise<Soli
   })
 }
 
-export function buscarUnidades(obraSlug: string, q: string): Promise<{ id: number; label: string }[]> {
+export function buscarUnidades(obraSlug: string, q: string): Promise<UnidadBuscada[]> {
   const params = q ? `?q=${encodeURIComponent(q)}` : ''
   return api
-    .get<{ unidades: { id: number; etiqueta: string }[] }>(`/narrative/api/obras/${obraSlug}/unidades/${params}`)
-    .then((data) => data.unidades.map((u) => ({ id: u.id, label: u.etiqueta })))
+    .get<{ unidades: { id: number; etiqueta: string; padre_etiqueta: string | null }[] }>(
+      `/narrative/api/obras/${obraSlug}/unidades/${params}`
+    )
+    .then((data) => data.unidades.map((u) => ({ id: u.id, label: u.etiqueta, detalle: u.padre_etiqueta })))
 }
 
 export interface ObraContextoPublicar {
