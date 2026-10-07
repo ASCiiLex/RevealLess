@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from narrative.models import ClasificacionNarrativa
@@ -200,7 +200,12 @@ class Post(ClasificacionNarrativa, models.Model):
 
 
 class PostImagen(models.Model):
-    """Imagen de una galería (2 a 4 por post). La etiqueta se muestra sobre ella (ej. «Anime»)."""
+    """Imagen de una galería (2 a 4 por post). La etiqueta se muestra sobre ella (ej. «Anime»).
+    El encuadre (punto de enfoque y zoom) se aplica al mostrarla: el original no se recorta."""
+
+    ENFOQUE_CENTRO = 50
+    ZOOM_BASE = 100
+    ZOOM_MAXIMO = 300
 
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='imagenes')
     imagen = models.ImageField(
@@ -212,6 +217,12 @@ class PostImagen(models.Model):
     )
     etiqueta = models.CharField(max_length=40, blank=True)
     orden = models.PositiveSmallIntegerField(default=0)
+    # Porcentajes: 0 = borde izquierdo/superior, 100 = derecho/inferior.
+    enfoque_x = models.PositiveSmallIntegerField(default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)])
+    enfoque_y = models.PositiveSmallIntegerField(default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)])
+    zoom = models.PositiveSmallIntegerField(
+        default=ZOOM_BASE, validators=[MinValueValidator(ZOOM_BASE), MaxValueValidator(ZOOM_MAXIMO)],
+    )
 
     class Meta:
         ordering = ['orden']

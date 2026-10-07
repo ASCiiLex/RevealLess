@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import styles from './GaleriaPost.module.css'
 
 export interface ImagenGaleria {
   url: string
   etiqueta: string
+  enfoque_x?: number
+  enfoque_y?: number
+  zoom?: number
 }
 
 interface Props {
@@ -12,6 +15,8 @@ interface Props {
 }
 
 export const MAX_IMAGENES = 4
+export const ZOOM_BASE = 100
+export const ZOOM_MAXIMO = 300
 
 // Mismas claves que Post.DISPOSICIONES_POR_NUMERO; la primera es la de por defecto.
 export const DISPOSICIONES: Record<number, { valor: string; etiqueta: string }[]> = {
@@ -36,17 +41,29 @@ export function disposicionEfectiva(numero: number, disposicion?: string | null)
   return valida?.valor ?? opciones[0]?.valor ?? ''
 }
 
+// Encuadre elegido por el autor: punto visible y zoom anclado en ese punto.
+export function estiloEncuadre(img: ImagenGaleria): CSSProperties {
+  const x = img.enfoque_x ?? 50
+  const y = img.enfoque_y ?? 50
+  const escala = (img.zoom ?? ZOOM_BASE) / 100
+  return {
+    objectPosition: `${x}% ${y}%`,
+    transformOrigin: `${x}% ${y}%`,
+    transform: escala !== 1 ? `scale(${escala})` : undefined,
+  }
+}
+
 function Deslizador({ antes, despues }: { antes: ImagenGaleria; despues: ImagenGaleria }) {
   const [posicion, setPosicion] = useState(50)
   return (
     <div className={styles.deslizador}>
-      <img className={styles.capa} src={despues.url} alt={despues.etiqueta} />
-      <img
-        className={styles.capa}
-        src={antes.url}
-        alt={antes.etiqueta}
-        style={{ clipPath: `inset(0 ${100 - posicion}% 0 0)` }}
-      />
+      <div className={styles.capaRecorte}>
+        <img className={styles.capa} src={despues.url} alt={despues.etiqueta} style={estiloEncuadre(despues)} />
+      </div>
+      {/* El recorte va en el contenedor: así el zoom de la imagen no desplaza la línea. */}
+      <div className={styles.capaRecorte} style={{ clipPath: `inset(0 ${100 - posicion}% 0 0)` }}>
+        <img className={styles.capa} src={antes.url} alt={antes.etiqueta} style={estiloEncuadre(antes)} />
+      </div>
       <span className={styles.linea} style={{ left: `${posicion}%` }} aria-hidden="true" />
       {antes.etiqueta && <span className={`${styles.etiqueta} ${styles.etiquetaIzq}`}>{antes.etiqueta}</span>}
       {despues.etiqueta && <span className={`${styles.etiqueta} ${styles.etiquetaDer}`}>{despues.etiqueta}</span>}
@@ -81,7 +98,7 @@ export default function GaleriaPost({ imagenes, disposicion }: Props) {
           // La destacada ocupa todas las filas de la columna izquierda.
           style={tipo === 'destacada' && i === 0 ? { gridRow: `span ${imagenes.length - 1}` } : undefined}
         >
-          <img src={img.url} alt={img.etiqueta} loading="lazy" />
+          <img src={img.url} alt={img.etiqueta} loading="lazy" style={estiloEncuadre(img)} />
           {img.etiqueta && <figcaption className={styles.etiqueta}>{img.etiqueta}</figcaption>}
         </figure>
       ))}

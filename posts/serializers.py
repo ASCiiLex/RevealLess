@@ -1,11 +1,20 @@
 from rest_framework import serializers
 from narrative.models import ClasificacionNarrativa, Obra, Personaje, TemaTransversal, UnidadNarrativa
-from .models import Post
+from .models import Post, PostImagen
 
 
 EMOCION_CHOICES = [c[0] for c in ClasificacionNarrativa.EMOCION_CHOICES]
 DISPOSICIONES = [c[0] for c in Post.DISPOSICION_CHOICES]
 MODOS_CRUCE = [c[0] for c in Post.MODO_CRUCE_CHOICES]
+
+
+def _lista_enteros(minimo, maximo):
+    # Una posición por imagen de la galería, en el mismo orden.
+    return serializers.ListField(
+        child=serializers.IntegerField(min_value=minimo, max_value=maximo),
+        required=False,
+        max_length=Post.MAX_IMAGENES,
+    )
 
 
 class PostCreateSerializer(serializers.Serializer):
@@ -18,6 +27,9 @@ class PostCreateSerializer(serializers.Serializer):
     etiquetas = serializers.ListField(
         child=serializers.CharField(max_length=40, allow_blank=True), required=False,
     )
+    enfoques_x = _lista_enteros(0, 100)
+    enfoques_y = _lista_enteros(0, 100)
+    zooms = _lista_enteros(PostImagen.ZOOM_BASE, PostImagen.ZOOM_MAXIMO)
     disposicion = serializers.ChoiceField(choices=DISPOSICIONES, required=False, allow_blank=True)
     personajes_comparados = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=Personaje.objects.all()),

@@ -70,6 +70,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   pointer-events: none;
+  z-index: 1;
 }
 
 /* Antes / después: la primera imagen se recorta sobre la segunda. */
@@ -81,6 +82,14 @@
   overflow: hidden;
   background: color-mix(in srgb, var(--ink) 6%, var(--paper));
   touch-action: pan-y;
+}
+
+/* Contenedor de cada capa: recorta sin verse afectado por el zoom de la imagen. */
+.capaRecorte {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .capa {
@@ -101,6 +110,7 @@
   background: var(--paper);
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
   pointer-events: none;
+  z-index: 1;
 }
 
 .linea::after {
@@ -143,9 +153,9 @@
   margin: 0;
   opacity: 0;
   cursor: ew-resize;
+  z-index: 2;
 }
 
-.control:focus-visible + * ,
 .deslizador:focus-within .linea {
   background: var(--gold);
 }

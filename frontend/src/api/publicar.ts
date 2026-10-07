@@ -67,9 +67,12 @@ export type ModoCruce = 'comparativa' | 'misma_escena'
 export interface DatosPost {
   text: string
   image?: File | null
-  // Galería de 2 a 4 imágenes, con etiqueta por posición.
+  // Galería de 2 a 4 imágenes: etiqueta y encuadre por posición.
   imagenes?: File[]
   etiquetas?: string[]
+  enfoquesX?: number[]
+  enfoquesY?: number[]
+  zooms?: number[]
   disposicion?: string
   // Parte o tema: al menos uno de los dos.
   referenciaNarrativaId?: number | null
@@ -149,6 +152,9 @@ export async function crearPost(obraSlug: string, datos: DatosPost): Promise<Pos
     image: datos.image,
     imagenes: datos.imagenes,
     etiquetas: datos.etiquetas,
+    enfoques_x: datos.enfoquesX,
+    enfoques_y: datos.enfoquesY,
+    zooms: datos.zooms,
     disposicion: datos.disposicion,
     referencia_narrativa: datos.referenciaNarrativaId,
     frontera_spoiler: datos.fronteraSpoilerId,

@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
 import BuscadorLocal, { type BuscadorItem } from './BuscadorLocal'
 import EditorTexto from './EditorTexto'
-import GaleriaEditor, { type ImagenBorrador } from './GaleriaEditor'
+import GaleriaEditor, { type CambioEncuadre, type ImagenBorrador } from './GaleriaEditor'
 import SelectorParteTema, { type Seleccion } from './SelectorParteTema'
 import PersonajesEnfrentados, { type PersonajeElegido } from './PersonajesEnfrentados'
 import type { EstadoComparativa } from './Comparativa'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
-import { MAX_IMAGENES, disposicionEfectiva } from '../Galeria/GaleriaPost'
+import { MAX_IMAGENES, ZOOM_BASE, disposicionEfectiva } from '../Galeria/GaleriaPost'
 import { ApiError } from '../../api/client'
 import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
 import { crearPost, type DatosPost, type DeteccionCruzada } from '../../api/publicar'
@@ -29,6 +29,9 @@ interface Ajustes {
   descartarReferenciaCruzada?: boolean
 }
 
+// Origen de la parte de la segunda obra: a mano, autorrellenada o sin equivalente.
+type OrigenParteOtra = 'manual' | 'auto' | 'sin-equivalente'
+
 const SIN_SELECCION: Seleccion = { id: null, label: null }
 const ERROR_GENERICO = 'No se pudo publicar. Revisa los datos e inténtalo de nuevo.'
 
@@ -42,6 +45,8 @@ function mensajeDeError(err: unknown): string {
   }
   return ERROR_GENERICO
 }
+
+const normalizar = (texto: string) => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 
 interface CampoSeleccionProps {
   id: string
@@ -86,6 +91,9 @@ function datosExtra(
   } else if (imagenes.length > 1) {
     extra.imagenes = imagenes.map((i) => i.archivo)
     extra.etiquetas = imagenes.map((i) => i.etiqueta.trim())
+    extra.enfoquesX = imagenes.map((i) => i.enfoqueX)
+    extra.enfoquesY = imagenes.map((i) => i.enfoqueY)
+    extra.zooms = imagenes.map((i) => i.zoom)
     extra.disposicion = disposicionEfectiva(imagenes.length, disposicion)
   }
   if (comparativa.activa) {
@@ -113,6 +121,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   // Tema escrito que no existe: se envía como propuesta (solicitud de tema).
   const [temaPropuesto, setTemaPropuesto] = useState<string | null>(null)
   const [parteOtra, setParteOtra] = useState<Seleccion>(SIN_SELECCION)
+  const [origenParteOtra, setOrigenParteOtra] = useState<OrigenParteOtra>('auto')
   const [personajes, setPersonajes] = useState<PersonajeElegido[]>([])
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
   const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
@@ -121,6 +130,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const origenRef = useRef<OrigenParteOtra>('auto')
 
   useEffect(() => {
     if (obraSlug) fetchObraContextoPublicar(obraSlug).then(setContexto)
@@ -137,8 +147,34 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   const otraSlug = comparativa.obra?.slug ?? null
   useEffect(() => {
     setParteOtra(SIN_SELECCION)
+    origenRef.current = 'auto'
+    setOrigenParteOtra('auto')
     setPersonajes((prev) => prev.filter((p) => !p.deOtraObra))
   }, [otraSlug])
+
+  // Misma escena: la parte de la segunda obra se autorrellena por nombre, salvo si el autor la eligió a mano.
+  const mismaEscena = comparativa.activa && comparativa.modo === 'misma_escena'
+  useEffect(() => {
+    if (!mismaEscena || !otraSlug || !parte.label || origenRef.current === 'manual') return
+    let vigente = true
+    const nombre = parte.label
+    buscarUnidades(otraSlug, nombre).then((items) => {
+      if (!vigente || origenRef.current === 'manual') return
+      const igual = items.find((i) => normalizar(i.label) === normalizar(nombre))
+      if (igual) {
+        setParteOtra(igual)
+        origenRef.current = 'auto'
+        setOrigenParteOtra('auto')
+      } else {
+        setParteOtra(SIN_SELECCION)
+        origenRef.current = 'sin-equivalente'
+        setOrigenParteOtra('sin-equivalente')
+      }
+    })
+    return () => {
+      vigente = false
+    }
+  }, [mismaEscena, otraSlug, parte.label])
 
   // Referencias estables: BuscadorLocal relanza la búsqueda si cambia su prop buscar.
   const buscarUnidadesObra = useCallback(
@@ -162,12 +198,23 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     setTemaPropuesto(nombre)
   }
 
+  function handleParteOtra(seleccion: Seleccion) {
+    setParteOtra(seleccion)
+    // Vaciarla devuelve el control al autorrelleno.
+    const origen: OrigenParteOtra = seleccion.id ? 'manual' : 'auto'
+    origenRef.current = origen
+    setOrigenParteOtra(origen)
+  }
+
   function anadirImagenes(archivos: File[]) {
     const libres = MAX_IMAGENES - imagenes.length
     const nuevas = archivos.slice(0, libres).map((archivo) => ({
       archivo,
       etiqueta: '',
       url: URL.createObjectURL(archivo),
+      enfoqueX: 50,
+      enfoqueY: 50,
+      zoom: ZOOM_BASE,
     }))
     setImagenes([...imagenes, ...nuevas])
   }
@@ -179,6 +226,10 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
 
   function cambiarEtiqueta(indice: number, etiqueta: string) {
     setImagenes((prev) => prev.map((img, i) => (i === indice ? { ...img, etiqueta } : img)))
+  }
+
+  function cambiarEncuadre(indice: number, cambio: CambioEncuadre) {
+    setImagenes((prev) => prev.map((img, i) => (i === indice ? { ...img, ...cambio } : img)))
   }
 
   const hayParteOTema = Boolean(parte.id || tema.id || temaPropuesto)
@@ -235,6 +286,17 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
 
   const otra = comparativa.activa ? comparativa.obra : null
 
+  function pistaParteOtra(titulo: string) {
+    if (!mismaEscena) return 'Solo lo verá quien haya llegado aquí y a la frontera de la obra principal.'
+    if (origenParteOtra === 'sin-equivalente' && parte.label) {
+      return `No hay una parte llamada «${parte.label}» en ${titulo}: indícala.`
+    }
+    if (origenParteOtra === 'auto' && parteOtra.id) {
+      return 'Rellenada con la parte del mismo nombre. Cámbiala si no coincide.'
+    }
+    return `Así también lo verán quienes solo lleven ${titulo}.`
+  }
+
   return (
     <>
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -273,16 +335,16 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
           {otra && (
             <CampoSeleccion
               id="parte-otra"
-              etiqueta={`¿De qué parte de ${otra.titulo}?`}
+              etiqueta={
+                mismaEscena
+                  ? `¿En qué parte de ${otra.titulo} ocurre esta escena?`
+                  : `¿De qué parte de ${otra.titulo}?`
+              }
               seleccion={parteOtra}
-              onChange={setParteOtra}
+              onChange={handleParteOtra}
               placeholder="Buscar unidad..."
               buscar={buscarUnidadesOtra}
-              hint={
-                comparativa.modo === 'misma_escena'
-                  ? `La misma escena en ${otra.titulo}. Basta con haber llegado aquí o a la parte de la obra principal.`
-                  : `Solo lo verá quien haya llegado aquí y a la frontera de la obra principal.`
-              }
+              hint={pistaParteOtra(otra.titulo)}
             />
           )}
 
@@ -311,6 +373,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
               disposicion={disposicion}
               onDisposicion={setDisposicion}
               onEtiqueta={cambiarEtiqueta}
+              onEncuadre={cambiarEncuadre}
               onQuitar={quitarImagen}
             />
           </div>

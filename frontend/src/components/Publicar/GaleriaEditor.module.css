@@ -21,12 +21,20 @@
   min-width: 0;
 }
 
+/* Zona de arrastre: sin scroll táctil para que el gesto mueva la imagen. */
 .marco {
   position: relative;
   aspect-ratio: 1 / 1;
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--border);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.marco:active {
+  cursor: grabbing;
 }
 
 .marco img {
@@ -34,6 +42,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none;
 }
 
 .quitar {
@@ -49,6 +58,21 @@
   font-size: 15px;
   line-height: 1;
   cursor: pointer;
+  z-index: 1;
+}
+
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fog);
+}
+
+.zoom input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--gold);
 }
 
 .etiqueta {

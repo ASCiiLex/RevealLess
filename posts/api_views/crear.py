@@ -80,6 +80,10 @@ def _nombres_limpios(nombres):
     return limpios
 
 
+def _en(lista, indice, defecto):
+    return lista[indice] if indice < len(lista) else defecto
+
+
 class PostCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -127,6 +131,9 @@ class PostCreateAPIView(APIView):
         elif disposicion and disposicion not in Post.DISPOSICIONES_POR_NUMERO[len(imagenes)]:
             return error_400(ERROR_DISPOSICION)
         etiquetas = list(datos.get('etiquetas') or [])
+        enfoques_x = list(datos.get('enfoques_x') or [])
+        enfoques_y = list(datos.get('enfoques_y') or [])
+        zooms = list(datos.get('zooms') or [])
 
         comparados = list(dict.fromkeys(datos.get('personajes_comparados') or []))
         propuestos = _nombres_limpios(datos.get('personajes_propuestos') or [])
@@ -180,7 +187,14 @@ class PostCreateAPIView(APIView):
         _cubrir_personajes_comparados(post, comparados)
 
         galeria = [
-            PostImagen(imagen=archivo, etiqueta=(etiquetas[i] if i < len(etiquetas) else '').strip(), orden=i)
+            PostImagen(
+                imagen=archivo,
+                etiqueta=_en(etiquetas, i, '').strip(),
+                orden=i,
+                enfoque_x=_en(enfoques_x, i, PostImagen.ENFOQUE_CENTRO),
+                enfoque_y=_en(enfoques_y, i, PostImagen.ENFOQUE_CENTRO),
+                zoom=_en(zooms, i, PostImagen.ZOOM_BASE),
+            )
             for i, archivo in enumerate(imagenes)
         ]
         try:

@@ -14,6 +14,10 @@ interface UnidadPost {
 export interface ImagenPost {
   url: string
   etiqueta: string
+  // Encuadre en %: punto de enfoque y zoom (100 = sin zoom).
+  enfoque_x?: number
+  enfoque_y?: number
+  zoom?: number
 }
 
 export interface PersonajeComparado {

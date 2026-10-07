@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from posts.models import Post
+from posts.models import Post, PostImagen
 from .unidades import UnidadNarrativaSerializer
 
 AVATAR_POR_DEFECTO = '/static/img/default_profile.jpg'
@@ -57,11 +57,23 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.image_url
 
     def get_imagenes(self, obj):
-        """Lista única para pintar: la galería si existe; si no, la imagen simple."""
-        galeria = [{'url': i.image_url, 'etiqueta': i.etiqueta} for i in obj.imagenes.all() if i.image_url]
+        """Lista única para pintar: la galería (con su encuadre) si existe; si no, la imagen simple."""
+        galeria = [
+            {
+                'url': i.image_url, 'etiqueta': i.etiqueta,
+                'enfoque_x': i.enfoque_x, 'enfoque_y': i.enfoque_y, 'zoom': i.zoom,
+            }
+            for i in obj.imagenes.all() if i.image_url
+        ]
         if galeria:
             return galeria
-        return [{'url': obj.image_url, 'etiqueta': ''}] if obj.image_url else []
+        if not obj.image_url:
+            return []
+        return [{
+            'url': obj.image_url, 'etiqueta': '',
+            'enfoque_x': PostImagen.ENFOQUE_CENTRO, 'enfoque_y': PostImagen.ENFOQUE_CENTRO,
+            'zoom': PostImagen.ZOOM_BASE,
+        }]
 
     def get_personajes_comparados(self, obj):
         resultado = []
