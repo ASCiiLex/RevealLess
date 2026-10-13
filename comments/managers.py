@@ -1,8 +1,9 @@
 from django.db import models
-from django.db.models import F, OuterRef, Q, Subquery, Value
+from django.db.models import F, Q
 from django.db.models.functions import Coalesce
+from narrative.models import ClasificacionNarrativa
+from posts.managers import progreso_en, regla_frontera
 from posts.models import Post
-from narrative.models import ProgresoUsuario
 
 
 class CommentQuerySet(models.QuerySet):
@@ -10,35 +11,22 @@ class CommentQuerySet(models.QuerySet):
         if not user.is_authenticated:
             return self.none()
 
-        visible_posts = Post.objects.visible_for(user)
-
-        progreso_lector = ProgresoUsuario.objects.filter(
-            usuario=user, obra=OuterRef('post__obra')
-        ).values('orden_absoluto')[:1]
-
-        progreso_cruzado = ProgresoUsuario.objects.filter(
-            usuario=user, obra=OuterRef('obra_cruzada')
-        ).values('orden_absoluto')[:1]
+        heredado = Q(frontera_origen=ClasificacionNarrativa.ORIGEN_HEREDADO_POST)
+        # Heredado: la regla de su post (incluida «misma escena»), sin el privilegio de su autor.
+        regla_heredada = heredado & regla_frontera('progreso_lector', 'progreso_post_cruzado', prefijo='post__')
+        regla_propia = ~heredado & Q(progreso_lector__gte=F('frontera_efectiva_calculada'))
+        cruce_propio = (
+            Q(frontera_cruzada_orden__isnull=True)
+            | Q(progreso_cruzado__gte=F('frontera_cruzada_orden'))
+        )
 
         return self.annotate(
             frontera_efectiva_calculada=Coalesce('frontera_orden', 'post__frontera_orden'),
-            progreso_lector=Coalesce(
-                Subquery(progreso_lector, output_field=models.IntegerField()),
-                Value(0),
-            ),
-            progreso_cruzado=Coalesce(
-                Subquery(progreso_cruzado, output_field=models.IntegerField()),
-                Value(0),
-            ),
+            progreso_lector=progreso_en(user, 'post__obra'),
+            progreso_post_cruzado=progreso_en(user, 'post__obra_cruzada'),
+            progreso_cruzado=progreso_en(user, 'obra_cruzada'),
         ).filter(
-            post__in=visible_posts,
+            post__in=Post.objects.visible_for(user),
         ).filter(
-            Q(user=user)
-            | (
-                Q(progreso_lector__gte=F('frontera_efectiva_calculada'))
-                & (
-                    Q(frontera_cruzada_orden__isnull=True)
-                    | Q(progreso_cruzado__gte=F('frontera_cruzada_orden'))
-                )
-            )
+            Q(user=user) | ((regla_heredada | regla_propia) & cruce_propio)
         )
