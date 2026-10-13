@@ -11,22 +11,26 @@ from .managers import CommentQuerySet
 class Comment(ClasificacionNarrativa, models.Model):
     objects = CommentQuerySet.as_manager()
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments", verbose_name='Usuario')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments", verbose_name='Publicación')
     parent = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies",
+        verbose_name='Responde a',
     )
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    text = models.TextField(verbose_name='Texto')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
     frontera_origen = models.CharField(
         max_length=20,
         choices=ClasificacionNarrativa.ORIGEN_CHOICES,
         default=ClasificacionNarrativa.ORIGEN_HEREDADO_POST,
+        verbose_name='Origen de la frontera',
     )
 
     class Meta:
         ordering = ["created_at"]
+        verbose_name = 'Comentario'
+        verbose_name_plural = 'Comentarios'
         constraints = [
             models.CheckConstraint(
                 check=(
@@ -134,17 +138,21 @@ class CommentReaction(models.Model):
     ]
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="comment_reactions"
+        User, on_delete=models.CASCADE, related_name="comment_reactions", verbose_name='Usuario',
     )
     comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, related_name="reactions"
+        Comment, on_delete=models.CASCADE, related_name="reactions", verbose_name='Comentario',
     )
-    reaction = models.CharField(max_length=20, choices=REACTION_CHOICES, default="me_gusta")
-    created_at = models.DateTimeField(auto_now_add=True)
+    reaction = models.CharField(
+        max_length=20, choices=REACTION_CHOICES, default="me_gusta", verbose_name='Reacción',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
     class Meta:
         unique_together = ("user", "comment")
         ordering = ["-created_at"]
+        verbose_name = 'Reacción a comentario'
+        verbose_name_plural = 'Reacciones a comentarios'
 
     def __str__(self):
         return f'{self.user.username} reaccionó "{self.reaction}" al comentario {self.comment.id}'

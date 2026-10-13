@@ -6,21 +6,25 @@ class Message(models.Model):
     sender = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='sent_messages'
+        related_name='sent_messages',
+        verbose_name='Remitente',
     )
     receiver = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='received_messages'
+        related_name='received_messages',
+        verbose_name='Destinatario',
     )
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    text = models.TextField(verbose_name='Texto')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de envío')
 
-    # NUEVO: para saber si el receptor lo ha leído
-    is_read = models.BooleanField(default=False)
+    # Si el destinatario ya lo ha leído.
+    is_read = models.BooleanField(default=False, verbose_name='Leído')
 
     class Meta:
         ordering = ['created_at']
+        verbose_name = 'Mensaje'
+        verbose_name_plural = 'Mensajes'
 
     def __str__(self):
         return f"{self.sender.username} → {self.receiver.username}"
@@ -47,17 +51,21 @@ class MessageReaction(models.Model):
     ]
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="message_reactions"
+        User, on_delete=models.CASCADE, related_name="message_reactions", verbose_name='Usuario',
     )
     message = models.ForeignKey(
-        Message, on_delete=models.CASCADE, related_name="reactions"
+        Message, on_delete=models.CASCADE, related_name="reactions", verbose_name='Mensaje',
     )
-    reaction = models.CharField(max_length=20, choices=REACTION_CHOICES, default="me_gusta")
-    created_at = models.DateTimeField(auto_now_add=True)
+    reaction = models.CharField(
+        max_length=20, choices=REACTION_CHOICES, default="me_gusta", verbose_name='Reacción',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
     class Meta:
         unique_together = ("user", "message")
         ordering = ["-created_at"]
+        verbose_name = 'Reacción a mensaje'
+        verbose_name_plural = 'Reacciones a mensajes'
 
     def __str__(self):
         return f'{self.user.username} reaccionó "{self.reaction}" al mensaje {self.message.id}'

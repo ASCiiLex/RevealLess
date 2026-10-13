@@ -24,11 +24,15 @@ class TemaTransversal(models.Model):
         (TIPO_MINIHISTORIA, 'Minihistoria'),
     ]
 
-    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='temas_transversales')
-    nombre = models.CharField(max_length=150)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_TEMATICO)
+    obra = models.ForeignKey(
+        Obra, on_delete=models.CASCADE, related_name='temas_transversales', verbose_name='Obra',
+    )
+    nombre = models.CharField(max_length=150, verbose_name='Nombre')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_TEMATICO, verbose_name='Tipo')
     # Solo minihistorias: unidades donde aparece. No implica pertenencia narrativa.
-    unidades = models.ManyToManyField(UnidadNarrativa, blank=True, related_name='temas_transversales')
+    unidades = models.ManyToManyField(
+        UnidadNarrativa, blank=True, related_name='temas_transversales', verbose_name='Unidades',
+    )
     # Imagen propia del tema, deliberadamente distinta a la de su obra --
     # para no confundir un "lomo de tema" con un lomo de obra real en el
     # carrusel. Sin imagen propia -> icono generico via image_url.
@@ -40,6 +44,7 @@ class TemaTransversal(models.Model):
             FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size,
         ],
+        verbose_name='Imagen',
     )
 
     class Meta:
@@ -74,12 +79,16 @@ class SolicitudTema(models.Model):
         (ESTADO_RECHAZADA, 'Rechazada'),
     ]
 
-    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='solicitudes_tema')
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='solicitudes_tema')
-    nombre = models.CharField(max_length=150)
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)
-    creado_en = models.DateTimeField(auto_now_add=True)
-    resuelto_en = models.DateTimeField(null=True, blank=True)
+    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='solicitudes_tema', verbose_name='Obra')
+    usuario = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='solicitudes_tema', verbose_name='Usuario',
+    )
+    nombre = models.CharField(max_length=150, verbose_name='Nombre')
+    estado = models.CharField(
+        max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE, verbose_name='Estado',
+    )
+    creado_en = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
+    resuelto_en = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de resolución')
 
     class Meta:
         ordering = ['-creado_en']

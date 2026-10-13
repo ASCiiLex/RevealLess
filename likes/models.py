@@ -19,16 +19,18 @@ class PostReaction(models.Model):
     ]
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="post_reactions"
+        User, on_delete=models.CASCADE, related_name="post_reactions", verbose_name='Usuario',
     )
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
-    reaction = models.CharField(max_length=20, choices=REACTION_CHOICES, default="me_gusta")
-    created_at = models.DateTimeField(auto_now_add=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions", verbose_name='Publicación')
+    reaction = models.CharField(
+        max_length=20, choices=REACTION_CHOICES, default="me_gusta", verbose_name='Reacción',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
     class Meta:
         unique_together = ("user", "post")
-        verbose_name = "Reacción de post"
-        verbose_name_plural = "Reacciones de posts"
+        verbose_name = "Reacción a publicación"
+        verbose_name_plural = "Reacciones a publicaciones"
         ordering = ["-created_at"]
 
     def __str__(self):

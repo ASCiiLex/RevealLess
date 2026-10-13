@@ -39,16 +39,19 @@ class Personaje(models.Model):
     cuando el lector ya conoce el vínculo (identidad_revelada_tras)."""
 
     nombre = models.CharField(
-        max_length=150, unique=True,
+        max_length=150, unique=True, verbose_name='Nombre',
         help_text='Nombre en su primera aparición. Los que revelan algo después van como alias en sus etapas.',
     )
     wikidata_id = models.CharField(
-        max_length=20, unique=True, null=True, blank=True,
+        max_length=20, unique=True, null=True, blank=True, verbose_name='ID de Wikidata',
         help_text='Identificador Q de Wikidata: une al mismo personaje entre obras sin depender del nombre.',
     )
-    unidades = models.ManyToManyField(UnidadNarrativa, blank=True, related_name='personajes')
+    unidades = models.ManyToManyField(
+        UnidadNarrativa, blank=True, related_name='personajes', verbose_name='Apariciones',
+    )
     imagen = models.ImageField(
         upload_to=personaje_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS,
+        verbose_name='Imagen',
         help_text='Imagen base: la de su primera aparición.',
     )
     identidad_de = models.ForeignKey(
@@ -111,9 +114,13 @@ class RelevanciaPersonaje(models.Model):
         (NIVEL_EPISODICO, 'Episódico'),
     ]
 
-    personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='relevancias')
-    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='relevancias_personaje')
-    nivel = models.PositiveSmallIntegerField(choices=NIVEL_CHOICES, default=NIVEL_PRINCIPAL)
+    personaje = models.ForeignKey(
+        Personaje, on_delete=models.CASCADE, related_name='relevancias', verbose_name='Personaje',
+    )
+    obra = models.ForeignKey(
+        Obra, on_delete=models.CASCADE, related_name='relevancias_personaje', verbose_name='Obra',
+    )
+    nivel = models.PositiveSmallIntegerField(choices=NIVEL_CHOICES, default=NIVEL_PRINCIPAL, verbose_name='Nivel')
 
     class Meta:
         ordering = ['obra', '-nivel', 'personaje__nombre']
@@ -132,24 +139,29 @@ class EtapaPersonaje(models.Model):
     cuando el lector ha terminado 'visible_tras' (criterio conservador: al acabar el
     arco, no al empezarlo). Los campos vacíos heredan de la etapa anterior."""
 
-    personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='etapas')
+    personaje = models.ForeignKey(
+        Personaje, on_delete=models.CASCADE, related_name='etapas', verbose_name='Personaje',
+    )
     visible_tras = models.ForeignKey(
         UnidadNarrativa, on_delete=models.CASCADE, related_name='etapas_personaje',
+        verbose_name='Visible tras',
         help_text='Unidad tras la que se revela el cambio. Elige el arco completo salvo que quieras precisar el episodio.',
     )
     alias = models.CharField(
-        max_length=150, blank=True,
+        max_length=150, blank=True, verbose_name='Alias',
         help_text='Nombre con el que se le conoce desde esta etapa. En la web se muestra como su nombre, sin indicar que es un alias.',
     )
     nota = models.CharField(
-        max_length=120, blank=True,
+        max_length=120, blank=True, verbose_name='Nota',
         help_text='Dato breve visible desde esta etapa (ej. «Recompensa: 30.000.000 ฿»).',
     )
     nivel = models.PositiveSmallIntegerField(
-        choices=RelevanciaPersonaje.NIVEL_CHOICES, null=True, blank=True,
+        choices=RelevanciaPersonaje.NIVEL_CHOICES, null=True, blank=True, verbose_name='Nivel',
         help_text='Relevancia en esta obra desde esta etapa (ej. de Secundario a Principal al unirse). Vacío: no cambia.',
     )
-    imagen = models.ImageField(upload_to=etapa_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS)
+    imagen = models.ImageField(
+        upload_to=etapa_image_path, blank=True, null=True, validators=IMAGEN_VALIDATORS, verbose_name='Imagen',
+    )
 
     class Meta:
         ordering = ['visible_tras__orden_fin']
@@ -186,14 +198,23 @@ class PropuestaAparicion(models.Model):
         (ESTADO_RECHAZADA, 'Rechazada'),
     ]
 
-    personaje = models.ForeignKey(Personaje, on_delete=models.CASCADE, related_name='propuestas')
-    unidad = models.ForeignKey(UnidadNarrativa, on_delete=models.CASCADE, related_name='propuestas_personaje')
-    origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES, default=ORIGEN_MANUAL)
-    confianza = models.FloatField(null=True, blank=True)
-    nota = models.CharField(max_length=300, blank=True, help_text='Justificación breve de la IA, si la hay.')
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)
-    creado_en = models.DateTimeField(auto_now_add=True)
-    resuelto_en = models.DateTimeField(null=True, blank=True)
+    personaje = models.ForeignKey(
+        Personaje, on_delete=models.CASCADE, related_name='propuestas', verbose_name='Personaje',
+    )
+    unidad = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.CASCADE, related_name='propuestas_personaje',
+        verbose_name='Unidad narrativa',
+    )
+    origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES, default=ORIGEN_MANUAL, verbose_name='Origen')
+    confianza = models.FloatField(null=True, blank=True, verbose_name='Confianza')
+    nota = models.CharField(
+        max_length=300, blank=True, verbose_name='Nota', help_text='Justificación breve de la IA, si la hay.',
+    )
+    estado = models.CharField(
+        max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE, verbose_name='Estado',
+    )
+    creado_en = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
+    resuelto_en = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de resolución')
 
     class Meta:
         ordering = ['-creado_en']
@@ -221,20 +242,28 @@ class SolicitudPersonaje(models.Model):
         (ESTADO_RECHAZADA, 'Rechazada'),
     ]
 
-    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='solicitudes_personaje')
+    obra = models.ForeignKey(
+        Obra, on_delete=models.CASCADE, related_name='solicitudes_personaje', verbose_name='Obra',
+    )
     unidad = models.ForeignKey(
         UnidadNarrativa, on_delete=models.CASCADE, related_name='solicitudes_personaje',
-        help_text='Primera aparición. Se propone la frontera del post: corrígela antes de aprobar si hace falta.',
+        verbose_name='Primera aparición',
+        help_text='Se propone la frontera del post: corrígela antes de aprobar si hace falta.',
     )
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='solicitudes_personaje')
-    nombre = models.CharField(max_length=150)
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)
+    usuario = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='solicitudes_personaje', verbose_name='Usuario',
+    )
+    nombre = models.CharField(max_length=150, verbose_name='Nombre')
+    estado = models.CharField(
+        max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE, verbose_name='Estado',
+    )
     personaje = models.ForeignKey(
         Personaje, on_delete=models.SET_NULL, null=True, blank=True, related_name='solicitudes',
+        verbose_name='Personaje',
         help_text='Vacío: se crea al aprobar (o se reutiliza uno con el mismo nombre). Elige uno si es el mismo con otro nombre.',
     )
-    creado_en = models.DateTimeField(auto_now_add=True)
-    resuelto_en = models.DateTimeField(null=True, blank=True)
+    creado_en = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
+    resuelto_en = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de resolución')
 
     class Meta:
         ordering = ['-creado_en']

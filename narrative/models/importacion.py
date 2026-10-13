@@ -17,12 +17,20 @@ class ExternalId(models.Model):
         (SOURCE_WIKIDATA, 'Wikidata'),
     ]
 
-    source = models.CharField(max_length=30, choices=SOURCE_CHOICES)
-    external_id = models.CharField(max_length=50)
-    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, null=True, blank=True, related_name='external_ids')
-    unidad = models.ForeignKey(UnidadNarrativa, on_delete=models.CASCADE, null=True, blank=True, related_name='external_ids')
+    source = models.CharField(max_length=30, choices=SOURCE_CHOICES, verbose_name='Fuente')
+    external_id = models.CharField(max_length=50, verbose_name='ID externo')
+    obra = models.ForeignKey(
+        Obra, on_delete=models.CASCADE, null=True, blank=True, related_name='external_ids',
+        verbose_name='Obra',
+    )
+    unidad = models.ForeignKey(
+        UnidadNarrativa, on_delete=models.CASCADE, null=True, blank=True, related_name='external_ids',
+        verbose_name='Unidad narrativa',
+    )
 
     class Meta:
+        verbose_name = 'ID externo'
+        verbose_name_plural = 'IDs externos'
         constraints = [
             models.CheckConstraint(
                 check=(Q(obra__isnull=False) & Q(unidad__isnull=True))

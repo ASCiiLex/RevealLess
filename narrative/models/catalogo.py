@@ -26,7 +26,7 @@ class Categoria(models.Model):
     en frontera_orden ni en visibilidad. Si es_universo, agrupa una franquicia
     (ej. 'Tierra Media', 'Star Wars') y sus obras se muestran como relacionadas."""
 
-    nombre = models.CharField(max_length=50, unique=True)
+    nombre = models.CharField(max_length=50, unique=True, verbose_name='Nombre')
     es_universo = models.BooleanField(
         default=False,
         verbose_name='Es un universo',
@@ -68,20 +68,21 @@ class Obra(models.Model):
     }
     IMAGEN_POR_DEFECTO_GENERICA = '/static/img/default_serie.jpg'
 
-    titulo = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_SERIE)
-    sinopsis = models.TextField(blank=True)
-    fecha_publicacion = models.DateField(null=True, blank=True)
+    titulo = models.CharField(max_length=200, verbose_name='Título')
+    slug = models.SlugField(unique=True, verbose_name='Slug')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_SERIE, verbose_name='Tipo')
+    sinopsis = models.TextField(blank=True, verbose_name='Sinopsis')
+    fecha_publicacion = models.DateField(null=True, blank=True, verbose_name='Fecha de publicación')
     # Varios nombres separados por coma. Metadato cosmético, sin modelo Autor propio.
-    autor = models.CharField(max_length=200, blank=True)
+    autor = models.CharField(max_length=200, blank=True, verbose_name='Autor')
     imagen = models.ImageField(
         upload_to=obra_image_path,
         blank=True,
         null=True,
         validators=IMAGEN_VALIDATORS,
+        verbose_name='Portada',
     )
-    categorias = models.ManyToManyField(Categoria, blank=True, related_name='obras')
+    categorias = models.ManyToManyField(Categoria, blank=True, related_name='obras', verbose_name='Categorías')
 
     # Vínculo informativo entre continuidades (ej. anime -> manga). No
     # participa en frontera_orden ni en visible_for(): cada continuidad
@@ -92,15 +93,19 @@ class Obra(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name='adaptaciones',
+        verbose_name='Adaptación de',
         help_text='Obra origen si esta es una adaptación de otra continuidad (ej. anime → manga).',
     )
     traducido = models.BooleanField(
         default=False,
+        verbose_name='Traducido',
         help_text='Sinopsis ya traducida al español por traducir_catalogo.',
     )
 
     class Meta:
         ordering = ['titulo']
+        verbose_name = 'Obra'
+        verbose_name_plural = 'Obras'
 
     def __str__(self):
         return self.titulo
@@ -129,33 +134,38 @@ class Obra(models.Model):
 
 
 class UnidadNarrativa(models.Model):
-    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='unidades')
+    obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='unidades', verbose_name='Obra')
     padre = models.ForeignKey(
-        'self', null=True, blank=True, on_delete=models.CASCADE, related_name='hijos'
+        'self', null=True, blank=True, on_delete=models.CASCADE, related_name='hijos',
+        verbose_name='Unidad padre',
     )
-    tipo = models.CharField(max_length=50)
-    nombre = models.CharField(max_length=200)
-    orden_local = models.PositiveIntegerField()
+    tipo = models.CharField(max_length=50, verbose_name='Tipo')
+    nombre = models.CharField(max_length=200, verbose_name='Nombre')
+    orden_local = models.PositiveIntegerField(verbose_name='Orden local')
     # Real (Fase A, episodios vía Jikan) o aproximada (Fase B, por volumen).
-    fecha = models.DateField(null=True, blank=True)
+    fecha = models.DateField(null=True, blank=True, verbose_name='Fecha')
     imagen = models.ImageField(
         upload_to=unidad_image_path,
         blank=True,
         null=True,
         validators=IMAGEN_VALIDATORS,
+        verbose_name='Imagen',
     )
 
-    orden_inicio = models.PositiveIntegerField(editable=False, default=0)
-    orden_fin = models.PositiveIntegerField(editable=False, default=0)
+    orden_inicio = models.PositiveIntegerField(editable=False, default=0, verbose_name='Inicio en la obra')
+    orden_fin = models.PositiveIntegerField(editable=False, default=0, verbose_name='Fin en la obra')
 
-    orden_manual = models.PositiveIntegerField(null=True, blank=True)
+    orden_manual = models.PositiveIntegerField(null=True, blank=True, verbose_name='Orden manual')
     traducido = models.BooleanField(
         default=False,
+        verbose_name='Traducido',
         help_text='Nombre ya traducido al español por traducir_catalogo.',
     )
 
     class Meta:
         ordering = ['orden_inicio']
+        verbose_name = 'Unidad narrativa'
+        verbose_name_plural = 'Unidades narrativas'
 
     def __str__(self):
         # El contenedor distingue nombres repetidos («Episodio 1» de Naruto y de Shippūden).

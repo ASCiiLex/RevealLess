@@ -13,42 +13,48 @@ class Notification(models.Model):
     actor = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='notifications_sent'
+        related_name='notifications_sent',
+        verbose_name='Autor de la acción',
     )
 
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='notifications'
+        related_name='notifications',
+        verbose_name='Destinatario',
     )
 
-    verb = models.CharField(max_length=255)
+    verb = models.CharField(max_length=255, verbose_name='Acción')
 
     target_type = models.CharField(
         max_length=20,
         choices=[
-            ('post', 'Post'),
-            ('comment', 'Comment'),
-            ('reply', 'Reply'),
-            ('follow', 'Follow'),
-            ('message', 'Message'),
-        ]
+            ('post', 'Publicación'),
+            ('comment', 'Comentario'),
+            ('reply', 'Respuesta'),
+            ('follow', 'Seguimiento'),
+            ('message', 'Mensaje'),
+        ],
+        verbose_name='Tipo de objetivo',
     )
 
-    target_id = models.IntegerField(null=True, blank=True)
+    target_id = models.IntegerField(null=True, blank=True, verbose_name='ID del objetivo')
 
     reaction = models.CharField(
         max_length=20,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name='Reacción',
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
-    seen = models.BooleanField(default=False)
+    seen = models.BooleanField(default=False, verbose_name='Vista')
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = 'Notificación'
+        verbose_name_plural = 'Notificaciones'
 
     def __str__(self):
         return f"{self.actor.username} {self.verb}"

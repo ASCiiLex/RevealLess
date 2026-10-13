@@ -24,29 +24,35 @@ class Suscripcion(models.Model):
     que bloquea el contenido aunque llegue por otra vía como un usuario
     seguido). Prevalece el silencio sobre cualquier otra fuente."""
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='suscripciones')
+    usuario = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='suscripciones', verbose_name='Usuario',
+    )
     obra = models.ForeignKey(
         'narrative.Obra', on_delete=models.CASCADE, null=True, blank=True,
-        related_name='suscripciones',
+        related_name='suscripciones', verbose_name='Obra',
     )
     unidad = models.ForeignKey(
         'narrative.UnidadNarrativa', on_delete=models.CASCADE, null=True, blank=True,
-        related_name='suscripciones',
+        related_name='suscripciones', verbose_name='Unidad narrativa',
     )
     tema = models.ForeignKey(
         'narrative.TemaTransversal', on_delete=models.CASCADE, null=True, blank=True,
-        related_name='suscripciones',
+        related_name='suscripciones', verbose_name='Tema transversal',
     )
     personaje = models.ForeignKey(
         'narrative.Personaje', on_delete=models.CASCADE, null=True, blank=True,
-        related_name='suscripciones',
+        related_name='suscripciones', verbose_name='Personaje',
     )
-    activa = models.BooleanField(default=True)
-    creado_en = models.DateTimeField(auto_now_add=True)
-    ultima_visita = models.DateTimeField(null=True, blank=True)
+    activa = models.BooleanField(
+        default=True, verbose_name='Activa', help_text='Desmarcada: suscripción silenciada.',
+    )
+    creado_en = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
+    ultima_visita = models.DateTimeField(null=True, blank=True, verbose_name='Última visita')
 
     class Meta:
         ordering = ['-creado_en']
+        verbose_name = 'Suscripción'
+        verbose_name_plural = 'Suscripciones'
         constraints = [
             models.CheckConstraint(
                 check=(

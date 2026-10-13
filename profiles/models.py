@@ -9,9 +9,9 @@ def profile_image_path(instance, filename):
     return f'profiles/{instance.user.username}/{filename}'
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
-    interests = models.CharField(max_length=255, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Usuario')
+    bio = models.TextField(blank=True, verbose_name='Biografía')
+    interests = models.CharField(max_length=255, blank=True, verbose_name='Intereses')
     image = models.ImageField(
         upload_to=profile_image_path,
         blank=True,
@@ -20,7 +20,12 @@ class Profile(models.Model):
             FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size,
         ],
+        verbose_name='Foto',
     )
+
+    class Meta:
+        verbose_name = 'Perfil'
+        verbose_name_plural = 'Perfiles'
 
     def __str__(self):
         return f'Perfil de {self.user.username}'

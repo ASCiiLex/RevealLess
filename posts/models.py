@@ -63,22 +63,25 @@ class Post(ClasificacionNarrativa, models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='posts'
+        related_name='posts',
+        verbose_name='Autor',
     )
     obra = models.ForeignKey(
         'narrative.Obra',
         on_delete=models.PROTECT,
-        related_name='posts'
+        related_name='posts',
+        verbose_name='Obra',
     )
     # Opcional solo en posts: uno puede hablar de un tema sin anclarse a una parte.
     referencia_narrativa = models.ForeignKey(
         'narrative.UnidadNarrativa', on_delete=models.PROTECT, null=True, blank=True,
-        related_name='%(class)s_referenciados',
+        related_name='%(class)s_referenciados', verbose_name='Referencia narrativa',
     )
     modo_cruce = models.CharField(
         max_length=20, choices=MODO_CRUCE_CHOICES, default=MODO_COMPARATIVA,
+        verbose_name='Modo de cruce',
     )
-    text = models.TextField(max_length=500)
+    text = models.TextField(max_length=500, verbose_name='Texto')
     # Imagen única. Con 2 o más se usa la galería (PostImagen).
     image = models.ImageField(
         upload_to=post_image_path,
@@ -88,24 +91,28 @@ class Post(ClasificacionNarrativa, models.Model):
             FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size,
         ],
+        verbose_name='Imagen',
     )
     disposicion = models.CharField(
         max_length=20, choices=DISPOSICION_CHOICES, blank=True, default=DISPOSICION_AUTO,
+        verbose_name='Disposición de la galería',
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
-    is_processed = models.BooleanField(default=False)
+    is_processed = models.BooleanField(default=False, verbose_name='Hashtags procesados')
 
     temas_transversales = models.ManyToManyField(
         'narrative.TemaTransversal',
         blank=True,
         related_name='posts',
+        verbose_name='Temas transversales',
     )
 
     personajes = models.ManyToManyField(
         'narrative.Personaje',
         blank=True,
         related_name='posts',
+        verbose_name='Personajes',
     )
 
     # «X vs Z»: elegidos por el autor, con orden. También se vuelcan en `personajes`.
@@ -114,10 +121,13 @@ class Post(ClasificacionNarrativa, models.Model):
         through='PersonajeComparado',
         blank=True,
         related_name='posts_comparados',
+        verbose_name='Personajes comparados',
     )
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = 'Publicación'
+        verbose_name_plural = 'Publicaciones'
         constraints = [
             models.CheckConstraint(
                 check=~models.Q(frontera_origen=ClasificacionNarrativa.ORIGEN_HEREDADO_POST),
@@ -207,27 +217,33 @@ class PostImagen(models.Model):
     ZOOM_BASE = 100
     ZOOM_MAXIMO = 300
 
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='imagenes')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='imagenes', verbose_name='Publicación')
     imagen = models.ImageField(
         upload_to=post_galeria_path,
         validators=[
             FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size,
         ],
+        verbose_name='Imagen',
     )
-    etiqueta = models.CharField(max_length=40, blank=True)
-    orden = models.PositiveSmallIntegerField(default=0)
+    etiqueta = models.CharField(max_length=40, blank=True, verbose_name='Etiqueta')
+    orden = models.PositiveSmallIntegerField(default=0, verbose_name='Orden')
     # Porcentajes: 0 = borde izquierdo/superior, 100 = derecho/inferior.
-    enfoque_x = models.PositiveSmallIntegerField(default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)])
-    enfoque_y = models.PositiveSmallIntegerField(default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)])
+    enfoque_x = models.PositiveSmallIntegerField(
+        default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)], verbose_name='Enfoque horizontal (%)',
+    )
+    enfoque_y = models.PositiveSmallIntegerField(
+        default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)], verbose_name='Enfoque vertical (%)',
+    )
     zoom = models.PositiveSmallIntegerField(
         default=ZOOM_BASE, validators=[MinValueValidator(ZOOM_BASE), MaxValueValidator(ZOOM_MAXIMO)],
+        verbose_name='Zoom (%)',
     )
 
     class Meta:
         ordering = ['orden']
-        verbose_name = 'Imagen de post'
-        verbose_name_plural = 'Imágenes de post'
+        verbose_name = 'Imagen de publicación'
+        verbose_name_plural = 'Imágenes de publicación'
 
     def __str__(self):
         return f'{self.post_id} · imagen {self.orden + 1}'
@@ -245,15 +261,18 @@ class PostImagen(models.Model):
 class PersonajeComparado(models.Model):
     """Personaje de un «X vs Z». Sin personaje aún si está propuesto (solicitud pendiente)."""
 
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comparaciones')
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name='comparaciones', verbose_name='Publicación',
+    )
     personaje = models.ForeignKey(
         'narrative.Personaje', on_delete=models.CASCADE, null=True, blank=True, related_name='comparaciones',
+        verbose_name='Personaje',
     )
     solicitud = models.ForeignKey(
         'narrative.SolicitudPersonaje', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='comparaciones',
+        related_name='comparaciones', verbose_name='Solicitud',
     )
-    orden = models.PositiveSmallIntegerField(default=0)
+    orden = models.PositiveSmallIntegerField(default=0, verbose_name='Orden')
 
     class Meta:
         ordering = ['orden']
@@ -268,10 +287,12 @@ class PersonajeComparado(models.Model):
 
 
 class Hashtag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50, unique=True, verbose_name='Nombre')
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'Hashtag'
+        verbose_name_plural = 'Hashtags'
 
     def __str__(self):
         return f"#{self.name}"
@@ -281,16 +302,20 @@ class PostHashtag(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name="post_hashtags"
+        related_name="post_hashtags",
+        verbose_name='Publicación',
     )
     hashtag = models.ForeignKey(
         Hashtag,
         on_delete=models.CASCADE,
-        related_name="posts"
+        related_name="posts",
+        verbose_name='Hashtag',
     )
 
     class Meta:
         unique_together = ('post', 'hashtag')
+        verbose_name = 'Hashtag de publicación'
+        verbose_name_plural = 'Hashtags de publicación'
 
     def __str__(self):
         return f"{self.post.id} - #{self.hashtag.name}"

@@ -32,7 +32,7 @@ class PersonajeComparadoInline(TabularInline):
 class PostAdmin(ModelAdmin):
     list_display = (
         'id', 'author', 'obra', 'short_text', 'frontera', 'frontera_origen',
-        'created_at', 'likes_count', 'comments_count'
+        'created_at', 'total_reacciones', 'total_comentarios',
     )
     search_fields = ('author__username', 'text')
     list_filter = ('created_at', 'obra', 'frontera_origen')
@@ -41,15 +41,8 @@ class PostAdmin(ModelAdmin):
     autocomplete_fields = ('referencia_narrativa', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada')
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return (
-            qs.select_related("author", "obra", "frontera_spoiler")
-            .prefetch_related("comments")
-            .annotate(
-                likes_total=Count("reactions", distinct=True),
-                comments_total=Count("comments", distinct=True),
-            )
-        )
+        # with_feed_stats: contadores por subquery, sin el join cruzado de dos Count().
+        return super().get_queryset(request).select_related('author', 'obra', 'frontera_spoiler').with_feed_stats()
 
     @admin.display(description='Texto')
     def short_text(self, obj):
@@ -58,6 +51,14 @@ class PostAdmin(ModelAdmin):
     @admin.display(description='Frontera', ordering='frontera_orden')
     def frontera(self, obj):
         return obj.frontera_spoiler.nombre if obj.frontera_spoiler_id else '-'
+
+    @admin.display(description='Reacciones', ordering='likes_total')
+    def total_reacciones(self, obj):
+        return obj.likes_total
+
+    @admin.display(description='Comentarios', ordering='comments_total')
+    def total_comentarios(self, obj):
+        return obj.comments_total
 
 
 @admin.register(Hashtag)
@@ -70,6 +71,6 @@ class HashtagAdmin(ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(num_posts=Count('posts', distinct=True))
 
-    @admin.display(description='Posts', ordering='num_posts')
+    @admin.display(description='Publicaciones', ordering='num_posts')
     def total_posts(self, obj):
         return obj.num_posts

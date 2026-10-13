@@ -21,7 +21,7 @@ class ClasificacionNarrativa(models.Model):
     ORIGEN_CHOICES = [
         (ORIGEN_EXPLICITO, 'Explícito'),
         (ORIGEN_IA, 'IA'),
-        (ORIGEN_FALLBACK, 'Fallback'),
+        (ORIGEN_FALLBACK, 'Progreso del autor'),
         (ORIGEN_HEREDADO_POST, 'Heredado del post'),
         (ORIGEN_ADMIN, 'Corrección administrativa'),
     ]
@@ -62,33 +62,41 @@ class ClasificacionNarrativa(models.Model):
 
     referencia_narrativa = models.ForeignKey(
         UnidadNarrativa, on_delete=models.PROTECT,
-        related_name='%(class)s_referenciados',
+        related_name='%(class)s_referenciados', verbose_name='Referencia narrativa',
     )
     frontera_spoiler = models.ForeignKey(
         UnidadNarrativa, on_delete=models.PROTECT, null=True, blank=True,
-        related_name='%(class)s_frontera',
+        related_name='%(class)s_frontera', verbose_name='Frontera de spoiler',
     )
-    frontera_orden = models.PositiveIntegerField(null=True, blank=True, editable=False)
-    frontera_origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES)
-    nivel_spoiler = models.CharField(max_length=20, choices=NIVEL_CHOICES, default=NIVEL_MENOR)
-    ia_confianza = models.FloatField(null=True, blank=True)
-    clasificado_en = models.DateTimeField(null=True, blank=True)
+    frontera_orden = models.PositiveIntegerField(
+        null=True, blank=True, editable=False, verbose_name='Posición de la frontera',
+    )
+    frontera_origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES, verbose_name='Origen de la frontera')
+    nivel_spoiler = models.CharField(
+        max_length=20, choices=NIVEL_CHOICES, default=NIVEL_MENOR, verbose_name='Nivel de spoiler',
+    )
+    ia_confianza = models.FloatField(null=True, blank=True, verbose_name='Confianza de la IA')
+    clasificado_en = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de clasificación')
 
     emocion_autor = models.CharField(
-        max_length=20, choices=EMOCION_CHOICES, null=True, blank=True,
+        max_length=20, choices=EMOCION_CHOICES, null=True, blank=True, verbose_name='Emoción del autor',
     )
 
     obra_cruzada = models.ForeignKey(
         Obra, on_delete=models.PROTECT, null=True, blank=True,
         related_name='%(class)s_cruzados',
+        verbose_name='Obra cruzada',
         help_text='Obra distinta (ej. manga si esto es del anime) cuya frontera también debe cumplirse.',
     )
     frontera_cruzada = models.ForeignKey(
         UnidadNarrativa, on_delete=models.PROTECT, null=True, blank=True,
         related_name='%(class)s_frontera_cruzada',
+        verbose_name='Frontera cruzada',
         help_text='Punto de obra_cruzada hasta el que hay que haber llegado.',
     )
-    frontera_cruzada_orden = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    frontera_cruzada_orden = models.PositiveIntegerField(
+        null=True, blank=True, editable=False, verbose_name='Posición de la frontera cruzada',
+    )
 
     class Meta:
         abstract = True
