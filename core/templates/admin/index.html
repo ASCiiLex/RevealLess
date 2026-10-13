@@ -39,7 +39,7 @@
 </div>
 
 <div class="grid grid-cols-1 gap-4 mb-6">
-  {% component "unfold/components/card.html" with title="Actividad por obra (% de posts)" %}
+  {% component "unfold/components/card.html" with title="Actividad por obra (% de publicaciones)" %}
     {% for item in actividad_por_obra %}
       {% component "unfold/components/progress.html" with title=item.title description=item.description value=item.value %}{% endcomponent %}
     {% endfor %}

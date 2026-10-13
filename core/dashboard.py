@@ -38,7 +38,7 @@ def _serie_diaria(queryset, campo_fecha):
 
 @register_component
 class ActividadDiariaComponent(BaseComponent):
-    """Posts y comentarios creados por día, últimos 30 días."""
+    """Publicaciones y comentarios creados por día, últimos 30 días."""
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -50,7 +50,7 @@ class ActividadDiariaComponent(BaseComponent):
             'data': json.dumps({
                 'labels': etiquetas,
                 'datasets': [
-                    {'label': 'Posts', 'data': posts_serie},
+                    {'label': 'Publicaciones', 'data': posts_serie},
                     {'label': 'Comentarios', 'data': comentarios_serie},
                 ],
             }),
@@ -78,8 +78,17 @@ class RegistrosDiariosComponent(BaseComponent):
         return context
 
 
+def _publicaciones(n):
+    return f'{n} publicación' if n == 1 else f'{n} publicaciones'
+
+
+def _porcentaje(parte, total):
+    # Texto con punto: Unfold lo usa como ancho CSS y, en español, un float saldría con coma.
+    return f'{parte / total * 100:.1f}'
+
+
 def _actividad_por_obra():
-    """% de posts por obra sobre el total, top 6 + 'Otras' agrupadas."""
+    """% de publicaciones por obra sobre el total, top 6 + 'Otras' agrupadas."""
     total = Post.objects.count()
     if not total:
         return []
@@ -96,16 +105,16 @@ def _actividad_por_obra():
     items = [
         {
             'title': o.titulo,
-            'description': f'{o.posts_total} posts',
-            'value': round(o.posts_total / total * 100, 1),
+            'description': _publicaciones(o.posts_total),
+            'value': _porcentaje(o.posts_total, total),
         }
         for o in top
     ]
     if resto:
         items.append({
             'title': 'Otras obras',
-            'description': f'{resto} posts',
-            'value': round(resto / total * 100, 1),
+            'description': _publicaciones(resto),
+            'value': _porcentaje(resto, total),
         })
     return items
 
