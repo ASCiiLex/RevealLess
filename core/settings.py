@@ -276,6 +276,7 @@ PENDIENTE = 'estado__exact=pendiente'
 
 # Menú por tareas, no por app. Un modelo nuevo debe añadirse aquí a mano
 # (hasta entonces sigue accesible desde «Todas las aplicaciones»).
+# Panel y Pendientes siempre abiertos; el resto, plegables.
 NAVEGACION_ADMIN = [
     {
         'title': 'Panel',
@@ -298,6 +299,7 @@ NAVEGACION_ADMIN = [
     {
         'title': 'Catálogo',
         'separator': True,
+        'collapsible': True,
         'items': [
             _item('Obras', 'movie', 'narrative_obra'),
             _item('Unidades narrativas', 'account_tree', 'narrative_unidadnarrativa'),
@@ -309,6 +311,7 @@ NAVEGACION_ADMIN = [
     {
         'title': 'Personajes',
         'separator': True,
+        'collapsible': True,
         'items': [
             _item('Personajes', 'groups', 'narrative_personaje'),
             _item('Relevancias', 'military_tech', 'narrative_relevanciapersonaje'),
@@ -318,6 +321,7 @@ NAVEGACION_ADMIN = [
     {
         'title': 'Contenido',
         'separator': True,
+        'collapsible': True,
         'items': [
             _item('Publicaciones', 'article', 'posts_post'),
             _item('Comentarios', 'chat_bubble', 'comments_comment'),
