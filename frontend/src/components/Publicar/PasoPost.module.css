@@ -70,39 +70,6 @@
   cursor: default;
 }
 
-/* Justificación de la propuesta: cada hecho y dónde se confirma. */
-.revelaciones {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: -6px;
-  padding: 10px 14px;
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  color: var(--paper);
-  font-size: 13px;
-}
-
-.revelacionesTitulo {
-  font-size: 12px;
-  font-weight: 600;
-  opacity: 0.85;
-}
-
-.revelacionesLista {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding-left: 18px;
-}
-
-.revelacionUnidad {
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 .error {
   background: color-mix(in srgb, var(--gold) 12%, var(--paper));
   color: var(--ink);

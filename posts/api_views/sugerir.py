@@ -14,8 +14,8 @@ def _unidad_json(unidad):
 
 
 class SugerirFronteraAPIView(APIView):
-    """Propuesta de la IA antes de publicar: frontera, parte (si el autor no la eligió) y revelaciones
-    que la justifican. Sin propuesta fiable, frontera=None; las revelaciones se devuelven igual como pista."""
+    """Propuesta de la IA antes de publicar. Revisa el autor, así que se devuelve aunque no supere
+    el umbral (fiable=False). Los hechos que la justifican nunca salen: serían spoilers para el autor."""
 
     permission_classes = [IsAuthenticated]
 
@@ -38,12 +38,10 @@ class SugerirFronteraAPIView(APIView):
         )
 
         sugerencia = proponer_clasificacion(texto, obra, referencia, timeout=TIMEOUT_SUGERENCIA)
-        utilizable = sugerencia.es_utilizable
+        frontera = sugerencia.frontera_spoiler
         return Response({
-            'frontera': _unidad_json(sugerencia.frontera_spoiler) if utilizable else None,
-            'parte': _unidad_json(sugerencia.parte) if utilizable and not referencia else None,
+            'frontera': _unidad_json(frontera),
+            'parte': None if referencia or frontera is None else _unidad_json(sugerencia.parte),
             'confianza': round(sugerencia.confianza, 2),
-            'revelaciones': [
-                {'hecho': r.hecho, 'etiqueta': etiqueta_unidad(r.unidad)} for r in sugerencia.revelaciones
-            ],
+            'fiable': sugerencia.es_utilizable,
         })

@@ -11,7 +11,7 @@ import { useGaleriaBorrador } from './useGaleriaBorrador'
 import { useParteOtra } from './useParteOtra'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
-import { crearPost, sugerirFrontera, type DeteccionCruzada, type RevelacionIA } from '../../api/publicar'
+import { crearPost, sugerirFrontera, type DeteccionCruzada } from '../../api/publicar'
 
 interface Props {
   // null = aún no hay obra elegida: el formulario se muestra desactivado.
@@ -33,10 +33,9 @@ interface Ajustes {
 interface SugerenciaVista {
   id: number
   confianza: number
+  fiable: boolean
 }
 
-const AVISO_SIN_PROPUESTA = 'La IA no ha encontrado una frontera fiable: elige una o se usará tu progreso actual.'
-const AVISO_POCO_SEGURA = 'La IA no está segura de dónde se confirma esto: revisa la lista y elige la frontera.'
 const AVISO_FALLO_IA = 'No se pudo consultar a la IA: elige la frontera o se usará tu progreso actual.'
 
 export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPublicado, onProgresoRequerido }: Props) {
@@ -44,13 +43,14 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   const [texto, setTexto] = useState('')
   const [emocion, setEmocion] = useState<string | null>(null)
   const [parte, setParte] = useState<Seleccion>(SIN_SELECCION)
+  // Id de la parte rellenada por la IA: mientras siga elegida, se avisa de que hay que comprobarla.
+  const [parteDeIA, setParteDeIA] = useState<number | null>(null)
   const [tema, setTema] = useState<Seleccion>({ id: temaIdInicial ?? null, label: null })
   // Tema escrito que no existe: se envía como propuesta (solicitud de tema).
   const [temaPropuesto, setTemaPropuesto] = useState<string | null>(null)
   const [personajes, setPersonajes] = useState<PersonajeElegido[]>([])
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
   const [sugerencia, setSugerencia] = useState<SugerenciaVista | null>(null)
-  const [revelaciones, setRevelaciones] = useState<RevelacionIA[]>([])
   const [sugiriendo, setSugiriendo] = useState(false)
   const [avisoIA, setAvisoIA] = useState<string | null>(null)
   const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
@@ -108,18 +108,18 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     setAvisoIA(null)
     try {
       const resultado = await sugerirFrontera(obraSlug, texto, parte.id)
-      setRevelaciones(resultado.revelaciones)
+      if (!resultado.frontera) {
+        setSugerencia(null)
+        setAvisoIA(AVISO_FALLO_IA)
+        return
+      }
       // La parte solo se propone si el autor no la había elegido.
       if (resultado.parte && !parte.id) {
         setParte({ id: resultado.parte.id, label: resultado.parte.etiqueta })
+        setParteDeIA(resultado.parte.id)
       }
-      if (resultado.frontera) {
-        setFrontera({ id: resultado.frontera.id, label: resultado.frontera.etiqueta })
-        setSugerencia({ id: resultado.frontera.id, confianza: resultado.confianza })
-      } else {
-        setSugerencia(null)
-        setAvisoIA(resultado.revelaciones.length ? AVISO_POCO_SEGURA : AVISO_SIN_PROPUESTA)
-      }
+      setFrontera({ id: resultado.frontera.id, label: resultado.frontera.etiqueta })
+      setSugerencia({ id: resultado.frontera.id, confianza: resultado.confianza, fiable: resultado.fiable })
     } catch {
       setAvisoIA(AVISO_FALLO_IA)
     } finally {
@@ -127,14 +127,25 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     }
   }
 
+  const parteSugeridaVigente = parteDeIA !== null && parte.id === parteDeIA
+  const pistaParte = temaPropuesto
+    ? 'Si el tema ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.'
+    : parteSugeridaVigente
+      ? 'Parte propuesta por la IA: compruébala. Solo indica de qué habla; quién lo ve lo decide la frontera.'
+      : 'Opcional si indicas la frontera. Elegirla antes de sugerir ayuda a la IA a acertar.'
+
+  // «Certeza»: lo seguro que está el modelo del punto elegido, no lo protegido que está el post.
   const sugerenciaVigente = sugerencia !== null && frontera.id === sugerencia.id
+  const certeza = sugerencia ? Math.round(sugerencia.confianza * 100) : 0
   const pistaFrontera = sugerenciaVigente
-    ? `Propuesta por la IA (confianza ${Math.round(sugerencia.confianza * 100)} %). Puedes cambiarla.`
+    ? sugerencia.fiable
+      ? `Propuesta por la IA (certeza ${certeza} %). Revísala.`
+      : `Propuesta por la IA con certeza baja (${certeza} %): comprueba el episodio antes de publicar.`
     : frontera.id
       ? 'Frontera elegida por ti.'
       : 'Si no indicas ninguna, la IA la estimará al publicar; si no puede, se usa tu progreso actual.'
 
-  // Basta con parte, tema o frontera: con solo frontera, el post habla de ese punto.
+  // Basta con parte, tema o frontera: la parte es contexto, la visibilidad la decide la frontera.
   const hayAncla = Boolean(parte.id || tema.id || temaPropuesto || frontera.id)
   const comparativaIncompleta =
     comparativa.activa && ((comparativa.obra !== null && !parteOtra.id) || personajes.length === 1)
@@ -249,11 +260,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
               onTema={handleTema}
               onProponerTema={handleProponerTema}
             />
-            <span className={styles.hint}>
-              {temaPropuesto
-                ? 'Si el tema ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.'
-                : 'Opcional si indicas la frontera. Si la dejas vacía, la IA la propone al sugerir la frontera.'}
-            </span>
+            <span className={styles.hint}>{pistaParte}</span>
           </div>
 
           {otra && (
@@ -294,19 +301,6 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             buscar={buscarUnidadesObra}
             hint={pistaFrontera}
           />
-
-          {revelaciones.length > 0 && (
-            <div className={styles.revelaciones}>
-              <span className={styles.revelacionesTitulo}>Según la IA, el texto revela:</span>
-              <ul className={styles.revelacionesLista}>
-                {revelaciones.map((r) => (
-                  <li key={`${r.hecho}-${r.etiqueta}`}>
-                    {r.hecho} <span className={styles.revelacionUnidad}>→ {r.etiqueta}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           <CampoSeleccion
             id="nuevo-progreso"

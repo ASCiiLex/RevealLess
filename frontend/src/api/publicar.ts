@@ -67,18 +67,13 @@ export interface UnidadSugerida {
   etiqueta: string
 }
 
-// Hecho que el texto revela y unidad donde la obra lo confirma.
-export interface RevelacionIA {
-  hecho: string
-  etiqueta: string
-}
-
-// Propuesta de la IA antes de publicar; frontera null si no es fiable, parte solo si no se eligió.
+// Propuesta de la IA antes de publicar. frontera null solo si la IA falló;
+// fiable=false si no supera el umbral (se muestra igual, con aviso).
 export interface SugerenciaFrontera {
   frontera: UnidadSugerida | null
   parte: UnidadSugerida | null
   confianza: number
-  revelaciones: RevelacionIA[]
+  fiable: boolean
 }
 
 export type ModoCruce = 'comparativa' | 'misma_escena'

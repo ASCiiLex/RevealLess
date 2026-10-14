@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from django.test import SimpleTestCase
 
-from narrative.ai_assistant import _resolver, proponer_clasificacion
+from narrative.ai_assistant import MODELO_IA, _candidatas, _parametros_modelo, _resolver, proponer_clasificacion
 
 
 def _unidades(*ordenes):
@@ -46,3 +46,28 @@ class ResolverTests(SimpleTestCase):
     @patch.dict(os.environ, {'ANTHROPIC_API_KEY': ''})
     def test_sin_api_key_no_es_utilizable(self):
         self.assertFalse(proponer_clasificacion('texto', obra=None).es_utilizable)
+
+
+class CandidatasTests(SimpleTestCase):
+    def test_excluye_las_unidades_que_abarcan_la_obra_entera(self):
+        raiz = SimpleNamespace(orden_inicio=1, orden_fin=500)
+        temporada = SimpleNamespace(orden_inicio=1, orden_fin=20)
+        episodio = SimpleNamespace(orden_inicio=344, orden_fin=344)
+        self.assertEqual(_candidatas([raiz, temporada, episodio]), [temporada, episodio])
+
+    def test_obra_de_una_sola_unidad_la_conserva(self):
+        pelicula = SimpleNamespace(orden_inicio=1, orden_fin=1)
+        self.assertEqual(_candidatas([pelicula]), [pelicula])
+
+
+class ParametrosModeloTests(SimpleTestCase):
+    def test_haiku_4_fuerza_la_herramienta_y_es_determinista(self):
+        parametros = _parametros_modelo(MODELO_IA)
+        self.assertEqual(parametros['tool_choice']['type'], 'tool')
+        self.assertEqual(parametros['temperature'], 0)
+
+    def test_modelos_5_no_fuerzan_ni_fijan_temperatura_y_piensan_poco(self):
+        parametros = _parametros_modelo('claude-sonnet-5-5')
+        self.assertEqual(parametros['tool_choice'], {'type': 'auto'})
+        self.assertNotIn('temperature', parametros)
+        self.assertEqual(parametros['extra_body']['output_config']['effort'], 'low')
