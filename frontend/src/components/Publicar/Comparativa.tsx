@@ -15,7 +15,7 @@ interface InterruptorProps {
   onChange: (valor: EstadoComparativa) => void
 }
 
-// Primera decisión del formulario: ¿post normal o comparativo?
+// Justo tras elegir la obra: ¿post normal o comparativo?
 export function InterruptorComparativa({ valor, onChange }: InterruptorProps) {
   return (
     <div className={styles.interruptor}>

@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.ai_assistant import SugerenciaIA
+from narrative.ai_assistant import Revelacion, SugerenciaIA
 from narrative.services import actualizar_progreso
 from .utils import crear_obra
 
@@ -23,21 +23,32 @@ class SugerirFronteraAPIViewTests(TestCase):
     def _con_progreso(self):
         actualizar_progreso(self.usuario, self.obra, self.ep[2])
 
-    def test_devuelve_la_propuesta_y_pasa_la_parte_a_la_ia(self):
+    def _sugerencia(self, confianza=0.9):
+        return SugerenciaIA(self.ep[2], confianza, self.ep[0], [Revelacion('Tobi es Obito', self.ep[2], confianza)])
+
+    def test_devuelve_frontera_y_revelaciones_y_pasa_la_parte(self):
         self._con_progreso()
-        with patch(PROPONER, return_value=SugerenciaIA(self.ep[1], 0.9)) as proponer:
+        with patch(PROPONER, return_value=self._sugerencia()) as proponer:
             response = self.client.post(self.url, {'text': 'escena', 'referencia_narrativa': self.ep[0].id})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['frontera']['id'], self.ep[1].id)
-        self.assertEqual(response.data['confianza'], 0.9)
-        self.assertEqual(proponer.call_args.args[3], self.ep[0])
+        self.assertEqual(response.data['frontera']['id'], self.ep[2].id)
+        self.assertEqual(response.data['revelaciones'][0]['hecho'], 'Tobi es Obito')
+        self.assertIsNone(response.data['parte'])
+        self.assertEqual(proponer.call_args.args[2], self.ep[0])
 
-    def test_confianza_baja_no_propone_frontera(self):
+    def test_sin_parte_elegida_propone_la_parte(self):
         self._con_progreso()
-        with patch(PROPONER, return_value=SugerenciaIA(self.ep[1], 0.3)):
+        with patch(PROPONER, return_value=self._sugerencia()):
             response = self.client.post(self.url, {'text': 'escena'})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['parte']['id'], self.ep[0].id)
+
+    def test_confianza_baja_no_propone_frontera_pero_devuelve_revelaciones(self):
+        self._con_progreso()
+        with patch(PROPONER, return_value=self._sugerencia(0.3)):
+            response = self.client.post(self.url, {'text': 'escena'})
         self.assertIsNone(response.data['frontera'])
+        self.assertIsNone(response.data['parte'])
+        self.assertEqual(len(response.data['revelaciones']), 1)
 
     def test_sin_texto_devuelve_400(self):
         self._con_progreso()

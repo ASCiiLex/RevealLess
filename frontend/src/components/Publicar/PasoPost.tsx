@@ -11,7 +11,7 @@ import { useGaleriaBorrador } from './useGaleriaBorrador'
 import { useParteOtra } from './useParteOtra'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
-import { crearPost, sugerirFrontera, type DeteccionCruzada } from '../../api/publicar'
+import { crearPost, sugerirFrontera, type DeteccionCruzada, type RevelacionIA } from '../../api/publicar'
 
 interface Props {
   // null = aún no hay obra elegida: el formulario se muestra desactivado.
@@ -36,6 +36,7 @@ interface SugerenciaVista {
 }
 
 const AVISO_SIN_PROPUESTA = 'La IA no ha encontrado una frontera fiable: elige una o se usará tu progreso actual.'
+const AVISO_POCO_SEGURA = 'La IA no está segura de dónde se confirma esto: revisa la lista y elige la frontera.'
 const AVISO_FALLO_IA = 'No se pudo consultar a la IA: elige la frontera o se usará tu progreso actual.'
 
 export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPublicado, onProgresoRequerido }: Props) {
@@ -49,6 +50,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   const [personajes, setPersonajes] = useState<PersonajeElegido[]>([])
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
   const [sugerencia, setSugerencia] = useState<SugerenciaVista | null>(null)
+  const [revelaciones, setRevelaciones] = useState<RevelacionIA[]>([])
   const [sugiriendo, setSugiriendo] = useState(false)
   const [avisoIA, setAvisoIA] = useState<string | null>(null)
   const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
@@ -106,12 +108,17 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     setAvisoIA(null)
     try {
       const resultado = await sugerirFrontera(obraSlug, texto, parte.id)
+      setRevelaciones(resultado.revelaciones)
+      // La parte solo se propone si el autor no la había elegido.
+      if (resultado.parte && !parte.id) {
+        setParte({ id: resultado.parte.id, label: resultado.parte.etiqueta })
+      }
       if (resultado.frontera) {
         setFrontera({ id: resultado.frontera.id, label: resultado.frontera.etiqueta })
         setSugerencia({ id: resultado.frontera.id, confianza: resultado.confianza })
       } else {
         setSugerencia(null)
-        setAvisoIA(AVISO_SIN_PROPUESTA)
+        setAvisoIA(resultado.revelaciones.length ? AVISO_POCO_SEGURA : AVISO_SIN_PROPUESTA)
       }
     } catch {
       setAvisoIA(AVISO_FALLO_IA)
@@ -127,12 +134,13 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
       ? 'Frontera elegida por ti.'
       : 'Si no indicas ninguna, la IA la estimará al publicar; si no puede, se usa tu progreso actual.'
 
-  const hayParteOTema = Boolean(parte.id || tema.id || temaPropuesto)
+  // Basta con parte, tema o frontera: con solo frontera, el post habla de ese punto.
+  const hayAncla = Boolean(parte.id || tema.id || temaPropuesto || frontera.id)
   const comparativaIncompleta =
     comparativa.activa && ((comparativa.obra !== null && !parteOtra.id) || personajes.length === 1)
 
   async function enviar(ajustesEnvio: Ajustes) {
-    if (!obraSlug || !hayParteOTema || enviando) return
+    if (!obraSlug || !hayAncla || enviando) return
     setError(null)
     setAvisoSalto(null)
     setEnviando(true)
@@ -198,42 +206,6 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
 
         {/* fieldset disabled desactiva de golpe todos los controles hasta que haya obra. */}
         <fieldset className={styles.campos} disabled={!activo}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="parte-tema">¿De qué parte o tema habla?</label>
-            <SelectorParteTema
-              id="parte-tema"
-              obraSlug={obraSlug}
-              temas={contexto?.temas ?? []}
-              parte={parte}
-              tema={tema}
-              temaPropuesto={temaPropuesto}
-              onParte={setParte}
-              onTema={handleTema}
-              onProponerTema={handleProponerTema}
-            />
-            <span className={styles.hint}>
-              {temaPropuesto
-                ? 'Si el tema ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.'
-                : 'Elige una parte, un tema o ambos.'}
-            </span>
-          </div>
-
-          {otra && (
-            <CampoSeleccion
-              id="parte-otra"
-              etiqueta={
-                mismaEscena
-                  ? `¿En qué parte de ${otra.titulo} ocurre esta escena?`
-                  : `¿De qué parte de ${otra.titulo}?`
-              }
-              seleccion={parteOtra}
-              onChange={elegirParteOtra}
-              placeholder="Buscar unidad..."
-              buscar={buscarUnidadesOtra}
-              hint={pistaParteOtra(otra.titulo)}
-            />
-          )}
-
           {comparativa.activa && (
             <PersonajesEnfrentados
               obraSlug={obraSlug}
@@ -264,26 +236,42 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             />
           </div>
 
-          <CampoSeleccion
-            id="nuevo-progreso"
-            etiqueta="Actualizar mi progreso a (opcional)"
-            seleccion={nuevoProgreso}
-            onChange={setNuevoProgreso}
-            placeholder="Buscar unidad..."
-            emptyLabel="No actualizar"
-            buscar={buscarUnidadesObra}
-          />
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="parte-tema">¿De qué parte o tema habla?</label>
+            <SelectorParteTema
+              id="parte-tema"
+              obraSlug={obraSlug}
+              temas={contexto?.temas ?? []}
+              parte={parte}
+              tema={tema}
+              temaPropuesto={temaPropuesto}
+              onParte={setParte}
+              onTema={handleTema}
+              onProponerTema={handleProponerTema}
+            />
+            <span className={styles.hint}>
+              {temaPropuesto
+                ? 'Si el tema ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.'
+                : 'Opcional si indicas la frontera. Si la dejas vacía, la IA la propone al sugerir la frontera.'}
+            </span>
+          </div>
 
-          <CampoSeleccion
-            id="frontera"
-            etiqueta="Frontera de spoiler (opcional)"
-            seleccion={frontera}
-            onChange={setFrontera}
-            placeholder="Buscar unidad..."
-            emptyLabel="Dejar que la IA la estime al publicar"
-            buscar={buscarUnidadesObra}
-            hint={pistaFrontera}
-          />
+          {otra && (
+            <CampoSeleccion
+              id="parte-otra"
+              etiqueta={
+                mismaEscena
+                  ? `¿En qué parte de ${otra.titulo} ocurre esta escena?`
+                  : `¿De qué parte de ${otra.titulo}?`
+              }
+              seleccion={parteOtra}
+              onChange={elegirParteOtra}
+              placeholder="Buscar unidad..."
+              buscar={buscarUnidadesOtra}
+              hint={pistaParteOtra(otra.titulo)}
+            />
+          )}
+
           <div className={styles.filaIA}>
             <button
               type="button"
@@ -296,10 +284,44 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             {avisoIA && <span className={styles.hint}>{avisoIA}</span>}
           </div>
 
+          <CampoSeleccion
+            id="frontera"
+            etiqueta="Frontera de spoiler"
+            seleccion={frontera}
+            onChange={setFrontera}
+            placeholder="Buscar unidad..."
+            emptyLabel="Dejar que la IA la estime al publicar"
+            buscar={buscarUnidadesObra}
+            hint={pistaFrontera}
+          />
+
+          {revelaciones.length > 0 && (
+            <div className={styles.revelaciones}>
+              <span className={styles.revelacionesTitulo}>Según la IA, el texto revela:</span>
+              <ul className={styles.revelacionesLista}>
+                {revelaciones.map((r) => (
+                  <li key={`${r.hecho}-${r.etiqueta}`}>
+                    {r.hecho} <span className={styles.revelacionUnidad}>→ {r.etiqueta}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <CampoSeleccion
+            id="nuevo-progreso"
+            etiqueta="Actualizar mi progreso a (opcional)"
+            seleccion={nuevoProgreso}
+            onChange={setNuevoProgreso}
+            placeholder="Buscar unidad..."
+            emptyLabel="No actualizar"
+            buscar={buscarUnidadesObra}
+          />
+
           <button
             className={styles.submit}
             type="submit"
-            disabled={enviando || !hayParteOTema || comparativaIncompleta}
+            disabled={enviando || !hayAncla || comparativaIncompleta}
           >
             {enviando ? 'Publicando...' : 'Publicar'}
           </button>

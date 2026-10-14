@@ -4,131 +4,164 @@ import os
 logger = logging.getLogger(__name__)
 
 CONFIANZA_MINIMA = 0.6
+# Modelo base de todos los servicios de IA; ANTHROPIC_MODEL solo cambia el de la frontera.
 MODELO_IA = 'claude-haiku-4-5-20251001'
-TIMEOUT_SEGUNDOS = 8
+TIMEOUT_PUBLICAR = 8
+# El autor espera con el botón pulsado: margen para un modelo mayor.
+TIMEOUT_SUGERENCIA = 20
+MAX_REVELACIONES = 6
+
+SYSTEM_PROMPT = (
+    'Eres el asistente antispoiler de RevealLess. Recibes el texto de una publicación sobre una obra '
+    'y la lista de sus unidades narrativas (arcos, episodios, capítulos) ordenadas por posición de consumo.\n'
+    '1. parte_id: la unidad donde ocurre la escena o el momento que comenta el texto. '
+    'Si el autor ya la ha indicado, usa esa.\n'
+    '2. revelaciones: cada hecho de la trama que el texto revela o da por sabido y que alguien que solo '
+    'haya llegado a esa parte todavía no conoce (identidades ocultas, muertes, transformaciones, giros, '
+    'relaciones). Para cada hecho, la unidad donde la obra lo confirma por primera vez: si se insinúa antes '
+    'y se confirma después, la confirmación. Prefiere un episodio o capítulo concreto; si no sabes cuál, '
+    'el arco donde ocurre. Lo que ya se sabe en esa parte no es una revelación. Si no hay ninguna, deja la lista vacía.\n'
+    '3. confianza: de 0 a 1, por cada revelación y una general (la parte es correcta y no falta ninguna revelación).\n'
+    'No calcules la frontera: será la revelación más tardía. Usa solo ids de la lista.'
+)
+
+HERRAMIENTA = {
+    'name': 'clasificar_frontera',
+    'description': 'Registra la parte que comenta el texto y los hechos que revela, cada uno con la unidad donde la obra lo confirma.',
+    'input_schema': {
+        'type': 'object',
+        'properties': {
+            'parte_id': {'type': 'integer', 'description': 'id de la unidad donde ocurre lo que comenta el texto'},
+            'revelaciones': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'hecho': {'type': 'string', 'description': 'hecho revelado, en una frase corta'},
+                        'unidad_id': {'type': 'integer', 'description': 'id de la unidad donde se confirma'},
+                        'confianza': {'type': 'number'},
+                    },
+                    'required': ['hecho', 'unidad_id', 'confianza'],
+                },
+            },
+            'confianza': {'type': 'number', 'description': 'confianza general, entre 0 y 1'},
+        },
+        'required': ['parte_id', 'revelaciones', 'confianza'],
+    },
+}
+
+
+class Revelacion:
+    def __init__(self, hecho, unidad, confianza):
+        self.hecho = hecho
+        self.unidad = unidad
+        self.confianza = confianza
 
 
 class SugerenciaIA:
-    def __init__(self, frontera_spoiler=None, confianza=0.0):
+    def __init__(self, frontera_spoiler=None, confianza=0.0, parte=None, revelaciones=()):
         self.frontera_spoiler = frontera_spoiler
         self.confianza = confianza
+        self.parte = parte
+        self.revelaciones = list(revelaciones)
 
     @property
     def es_utilizable(self):
         return self.frontera_spoiler is not None and self.confianza >= CONFIANZA_MINIMA
 
 
-def proponer_clasificacion(texto, obra, unidad_autor, referencia=None):
-    """Punto único de entrada al asistente de IA. Nunca lanza excepción hacia
-    fuera: cualquier fallo (API caída, timeout, sin API key, id inventado)
-    se traduce en una sugerencia no utilizable, y quien llama cae al
-    fallback (progreso del autor) sin bloquear la publicación."""
+def etiqueta_unidad(unidad):
+    return f'{unidad.padre.nombre} · {unidad.nombre}' if unidad.padre_id else unidad.nombre
+
+
+def proponer_clasificacion(texto, obra, referencia=None, timeout=TIMEOUT_PUBLICAR):
+    """Punto único de entrada a la IA de clasificación. Nunca lanza: cualquier fallo devuelve una
+    sugerencia no utilizable y quien llama cae al fallback sin bloquear la publicación."""
     try:
-        return _llamar_api(texto, obra, unidad_autor, referencia)
+        return _llamar_api(texto, obra, referencia, timeout)
     except Exception:
         logger.exception('Fallo al llamar a la API de IA de clasificación')
         return SugerenciaIA()
 
 
-def _llamar_api(texto, obra, unidad_autor, referencia):
-    from .models import UnidadNarrativa
-
+def _llamar_api(texto, obra, referencia, timeout):
     api_key = os.environ.get('ANTHROPIC_API_KEY')
     if not api_key:
         raise RuntimeError('ANTHROPIC_API_KEY no configurada.')
 
     import anthropic
+    from .models import UnidadNarrativa
 
     unidades = list(
-        UnidadNarrativa.objects.filter(obra=obra).order_by('orden_inicio')
+        UnidadNarrativa.objects.filter(obra=obra).select_related('padre').order_by('orden_inicio')
     )
     if not unidades:
         raise RuntimeError('La obra no tiene unidades narrativas.')
 
-    unidades_por_id = {u.id: u for u in unidades}
-    candidatas = [
-        {
-            'id': u.id,
-            'nombre': u.nombre,
-            'tipo': u.tipo,
-            'orden_inicio': u.orden_inicio,
-            'orden_fin': u.orden_fin,
-        }
-        for u in unidades
-    ]
-
-    system_prompt = (
-        'Eres el asistente de clasificación anti-spoiler de RevealLess. '
-        'Dado el texto de una publicación y la lista de unidades narrativas '
-        'de la obra (ordenadas por posición de consumo), debes elegir la '
-        'unidad que debería usarse como frontera de spoiler: el punto hasta '
-        'el que un lector debe haber llegado para leer este texto sin '
-        'riesgo de spoiler. Elige la unidad más concreta posible (un episodio '
-        'o capítulo antes que un arco completo) que cubra todo lo que el texto '
-        'revela; no elijas el final de un arco si lo descrito ocurre antes. '
-        'Nunca elijas una unidad anterior a la parte de la que habla la '
-        'publicación. Si el texto no revela nada más allá de esa parte, elige '
-        'esa misma parte. Nunca elijas una unidad con un id que no esté en la '
-        'lista proporcionada.'
+    lineas = '\n'.join(
+        f'{u.id} | {u.tipo} | {etiqueta_unidad(u)} | {u.orden_inicio}-{u.orden_fin}' for u in unidades
     )
-
     parte = (
-        f'Parte de la que habla la publicación: id={referencia.id} '
-        f'({referencia.nombre}, orden_fin={referencia.orden_fin}).\n'
-        if referencia else ''
+        f'Parte indicada por el autor: id={referencia.id} ({etiqueta_unidad(referencia)}).'
+        if referencia else 'El autor no ha indicado la parte: proponla en parte_id.'
     )
     user_prompt = (
-        f'Posición actual del autor: id={unidad_autor.id} '
-        f'({unidad_autor.nombre}, orden_fin={unidad_autor.orden_fin}).\n'
-        f'{parte}\n'
-        f'Unidades narrativas disponibles:\n{candidatas}\n\n'
+        f'Obra: {obra.titulo}\n{parte}\n\n'
+        f'Unidades (id | tipo | nombre | orden):\n{lineas}\n\n'
         f'Texto de la publicación:\n"""{texto}"""'
     )
 
-    tools = [{
-        'name': 'clasificar_frontera',
-        'description': (
-            'Registra la unidad narrativa elegida como frontera de spoiler '
-            'y la confianza de esa elección.'
-        ),
-        'input_schema': {
-            'type': 'object',
-            'properties': {
-                'unidad_id': {
-                    'type': 'integer',
-                    'description': 'id de la unidad elegida, debe estar en la lista dada',
-                },
-                'confianza': {
-                    'type': 'number',
-                    'description': 'confianza de la clasificación, entre 0 y 1',
-                },
-            },
-            'required': ['unidad_id', 'confianza'],
-        },
-    }]
-
-    client = anthropic.Anthropic(api_key=api_key, timeout=TIMEOUT_SEGUNDOS)
+    client = anthropic.Anthropic(api_key=api_key, timeout=timeout)
     response = client.messages.create(
-        model=MODELO_IA,
-        max_tokens=200,
-        system=system_prompt,
-        tools=tools,
-        tool_choice={'type': 'tool', 'name': 'clasificar_frontera'},
+        model=os.environ.get('ANTHROPIC_MODEL') or MODELO_IA,
+        max_tokens=800,
+        system=SYSTEM_PROMPT,
+        tools=[HERRAMIENTA],
+        tool_choice={'type': 'tool', 'name': HERRAMIENTA['name']},
         messages=[{'role': 'user', 'content': user_prompt}],
     )
 
-    bloque = next(
-        (b for b in response.content if b.type == 'tool_use'), None
-    )
+    bloque = next((b for b in response.content if b.type == 'tool_use'), None)
     if bloque is None:
         raise RuntimeError('La respuesta de la IA no incluyó una clasificación.')
 
-    unidad_id = bloque.input.get('unidad_id')
-    confianza = float(bloque.input.get('confianza', 0))
-    confianza = max(0.0, min(1.0, confianza))
+    return _resolver(bloque.input, {u.id: u for u in unidades}, referencia)
 
-    unidad = unidades_por_id.get(unidad_id)
+
+def _entero(valor):
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return None
+
+
+def _acotar(valor):
+    try:
+        return max(0.0, min(1.0, float(valor)))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _unidad(unidades_por_id, valor):
+    unidad = unidades_por_id.get(_entero(valor))
     if unidad is None:
-        raise RuntimeError(f'La IA propuso un id inexistente: {unidad_id}')
+        raise RuntimeError(f'La IA propuso un id inexistente: {valor}')
+    return unidad
 
-    return SugerenciaIA(frontera_spoiler=unidad, confianza=confianza)
+
+def _resolver(entrada, unidades_por_id, referencia):
+    """Frontera = la revelación más tardía, nunca anterior a la parte. Confianza = la mínima.
+    Un id inventado invalida toda la propuesta: podría ser justo la revelación más tardía."""
+    parte = referencia or _unidad(unidades_por_id, entrada.get('parte_id'))
+    revelaciones = []
+    for r in (entrada.get('revelaciones') or [])[:MAX_REVELACIONES]:
+        hecho = ' '.join(str(r.get('hecho') or '').split())[:200]
+        if hecho:
+            revelaciones.append(
+                Revelacion(hecho, _unidad(unidades_por_id, r.get('unidad_id')), _acotar(r.get('confianza')))
+            )
+    revelaciones.sort(key=lambda r: r.unidad.orden_fin)
+
+    confianza = min([_acotar(entrada.get('confianza'))] + [r.confianza for r in revelaciones])
+    frontera = max([parte] + [r.unidad for r in revelaciones], key=lambda u: u.orden_fin)
+    return SugerenciaIA(frontera, confianza, parte, revelaciones)

@@ -62,10 +62,23 @@ export interface PersonajePublicable {
   imagen_url: string
 }
 
-// Propuesta de la IA antes de publicar; frontera null si no hay una fiable.
+export interface UnidadSugerida {
+  id: number
+  etiqueta: string
+}
+
+// Hecho que el texto revela y unidad donde la obra lo confirma.
+export interface RevelacionIA {
+  hecho: string
+  etiqueta: string
+}
+
+// Propuesta de la IA antes de publicar; frontera null si no es fiable, parte solo si no se eligió.
 export interface SugerenciaFrontera {
-  frontera: { id: number; etiqueta: string } | null
+  frontera: UnidadSugerida | null
+  parte: UnidadSugerida | null
   confianza: number
+  revelaciones: RevelacionIA[]
 }
 
 export type ModoCruce = 'comparativa' | 'misma_escena'
@@ -80,7 +93,7 @@ export interface DatosPost {
   enfoquesY?: number[]
   zooms?: number[]
   disposicion?: string
-  // Parte o tema: al menos uno de los dos.
+  // Parte, tema o frontera: al menos uno de los tres.
   referenciaNarrativaId?: number | null
   fronteraSpoilerId?: number | null
   // Propuesta de la IA vista antes de publicar: si coincide con la frontera, queda con origen IA.

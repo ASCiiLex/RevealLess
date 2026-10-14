@@ -18,11 +18,11 @@ class ParteOTemaTests(TestCase):
         self.tema = TemaTransversal.objects.create(obra=self.obra, nombre='Haki')
         self.client.force_authenticate(user=self.autor)
 
-    def _publicar(self, **extra):
-        return self.client.post(
-            reverse('posts_api_create', args=[self.obra.slug]),
-            {'text': 'sobre el haki', 'frontera_spoiler': self.ep[0].id, **extra},
-        )
+    def _publicar(self, con_frontera=True, **extra):
+        datos = {'text': 'sobre el haki', **extra}
+        if con_frontera:
+            datos['frontera_spoiler'] = self.ep[0].id
+        return self.client.post(reverse('posts_api_create', args=[self.obra.slug]), datos)
 
     def test_solo_tema_sin_parte(self):
         response = self._publicar(tema=self.tema.id)
@@ -34,8 +34,13 @@ class ParteOTemaTests(TestCase):
     def test_solo_tema_propuesto(self):
         self.assertEqual(self._publicar(tema_propuesto='Frutas del diablo').status_code, 201)
 
-    def test_sin_parte_ni_tema_devuelve_400(self):
-        self.assertEqual(self._publicar().status_code, 400)
+    def test_solo_frontera_la_usa_como_parte(self):
+        response = self._publicar()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Post.objects.get(id=response.data['id']).referencia_narrativa, self.ep[0])
+
+    def test_sin_parte_tema_ni_frontera_devuelve_400(self):
+        self.assertEqual(self._publicar(con_frontera=False).status_code, 400)
         self.assertFalse(Post.objects.exists())
 
     def test_con_parte_sigue_funcionando(self):

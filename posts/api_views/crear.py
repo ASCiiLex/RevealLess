@@ -29,7 +29,7 @@ from .comun import (
     ERROR_IMAGEN_Y_GALERIA,
     ERROR_MODO_CRUCE,
     ERROR_NUMERO_COMPARADOS,
-    ERROR_SIN_PARTE_NI_TEMA,
+    ERROR_SIN_REFERENCIA,
     ERROR_TEMA_OTRA_OBRA,
     error_400,
     tema_de_otra_obra,
@@ -63,7 +63,7 @@ def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
         return
 
-    sugerencia = proponer_clasificacion(post.text, obra, progreso.unidad_actual, post.referencia_narrativa)
+    sugerencia = proponer_clasificacion(post.text, obra, post.referencia_narrativa)
     if sugerencia.es_utilizable:
         post.frontera_spoiler = sugerencia.frontera_spoiler
         post.frontera_origen = ClasificacionNarrativa.ORIGEN_IA
@@ -136,8 +136,12 @@ class PostCreateAPIView(APIView):
             return error_400(ERROR_TEMA_OTRA_OBRA)
         tema_propuesto = (datos.get('tema_propuesto') or '').strip()
         referencia = datos.get('referencia_narrativa')
+        frontera_explicita = datos.get('frontera_spoiler')
+        if not (referencia or tema or tema_propuesto or frontera_explicita):
+            return error_400(ERROR_SIN_REFERENCIA)
+        # Solo frontera: el post habla de ese punto.
         if not (referencia or tema or tema_propuesto):
-            return error_400(ERROR_SIN_PARTE_NI_TEMA)
+            referencia = frontera_explicita
 
         imagen_unica = datos.get('image')
         imagenes = list(datos.get('imagenes') or [])
@@ -205,7 +209,7 @@ class PostCreateAPIView(APIView):
         )
         # frontera_sugerida_ia: la propuesta vista antes de publicar; si coincide con la elegida, origen IA.
         _asignar_frontera(
-            post, obra, progreso, datos.get('frontera_spoiler'),
+            post, obra, progreso, frontera_explicita,
             _id_entero(request.data.get('frontera_sugerida_ia')),
             _confianza(request.data.get('ia_confianza')),
         )

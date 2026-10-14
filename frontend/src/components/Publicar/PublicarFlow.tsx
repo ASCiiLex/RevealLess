@@ -9,7 +9,7 @@ import type { TemaPublicable } from '../../api/publicar'
 
 type Estado = 'sin-obra' | 'cargando' | 'progreso' | 'post'
 
-// Orden: ¿comparativo? → obra → segunda obra → resto del formulario.
+// Orden: obra → ¿comparativo? → segunda obra → resto del formulario.
 export default function PublicarFlow() {
   const [obra, setObra] = useState<ObraSeleccionada | null>(null)
   const [temaId, setTemaId] = useState<number | null>(null)
@@ -45,14 +45,14 @@ export default function PublicarFlow() {
     <div className={styles.wrapper}>
       <h1 className={styles.title}>Publicar</h1>
 
-      <InterruptorComparativa valor={comparativa} onChange={setComparativa} />
-
       <SelectorObra
         seleccion={obra}
         onElegirObra={(o) => seleccionar(o, null)}
         onElegirTema={handleElegirTema}
         onCambiar={handleCambiar}
       />
+
+      <InterruptorComparativa valor={comparativa} onChange={setComparativa} />
 
       {comparativa.activa && (
         <Comparativa obraPrincipalSlug={obra?.slug ?? null} valor={comparativa} onChange={setComparativa} />
