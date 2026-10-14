@@ -11,7 +11,7 @@ import { useGaleriaBorrador } from './useGaleriaBorrador'
 import { useParteOtra } from './useParteOtra'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
-import { crearPost, type DeteccionCruzada } from '../../api/publicar'
+import { crearPost, sugerirFrontera, type DeteccionCruzada } from '../../api/publicar'
 
 interface Props {
   // null = aún no hay obra elegida: el formulario se muestra desactivado.
@@ -30,6 +30,14 @@ interface Ajustes {
   descartarReferenciaCruzada?: boolean
 }
 
+interface SugerenciaVista {
+  id: number
+  confianza: number
+}
+
+const AVISO_SIN_PROPUESTA = 'La IA no ha encontrado una frontera fiable: elige una o se usará tu progreso actual.'
+const AVISO_FALLO_IA = 'No se pudo consultar a la IA: elige la frontera o se usará tu progreso actual.'
+
 export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPublicado, onProgresoRequerido }: Props) {
   const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
   const [texto, setTexto] = useState('')
@@ -40,6 +48,9 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   const [temaPropuesto, setTemaPropuesto] = useState<string | null>(null)
   const [personajes, setPersonajes] = useState<PersonajeElegido[]>([])
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
+  const [sugerencia, setSugerencia] = useState<SugerenciaVista | null>(null)
+  const [sugiriendo, setSugiriendo] = useState(false)
+  const [avisoIA, setAvisoIA] = useState<string | null>(null)
   const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
   const [ajustes, setAjustes] = useState<Ajustes>({})
   const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
@@ -89,6 +100,33 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     setTemaPropuesto(nombre)
   }
 
+  async function pedirSugerencia() {
+    if (!obraSlug || !texto.trim() || sugiriendo) return
+    setSugiriendo(true)
+    setAvisoIA(null)
+    try {
+      const resultado = await sugerirFrontera(obraSlug, texto, parte.id)
+      if (resultado.frontera) {
+        setFrontera({ id: resultado.frontera.id, label: resultado.frontera.etiqueta })
+        setSugerencia({ id: resultado.frontera.id, confianza: resultado.confianza })
+      } else {
+        setSugerencia(null)
+        setAvisoIA(AVISO_SIN_PROPUESTA)
+      }
+    } catch {
+      setAvisoIA(AVISO_FALLO_IA)
+    } finally {
+      setSugiriendo(false)
+    }
+  }
+
+  const sugerenciaVigente = sugerencia !== null && frontera.id === sugerencia.id
+  const pistaFrontera = sugerenciaVigente
+    ? `Propuesta por la IA (confianza ${Math.round(sugerencia.confianza * 100)} %). Puedes cambiarla.`
+    : frontera.id
+      ? 'Frontera elegida por ti.'
+      : 'Si no indicas ninguna, la IA la estimará al publicar; si no puede, se usa tu progreso actual.'
+
   const hayParteOTema = Boolean(parte.id || tema.id || temaPropuesto)
   const comparativaIncompleta =
     comparativa.activa && ((comparativa.obra !== null && !parteOtra.id) || personajes.length === 1)
@@ -104,6 +142,8 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
         text: texto,
         referenciaNarrativaId: parte.id,
         fronteraSpoilerId: frontera.id,
+        fronteraSugeridaIaId: sugerencia?.id ?? null,
+        iaConfianza: sugerencia?.confianza ?? null,
         emocionAutor: emocion,
         temaId: tema.id,
         temaPropuesto: tema.id ? undefined : temaPropuesto ?? undefined,
@@ -240,10 +280,21 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             seleccion={frontera}
             onChange={setFrontera}
             placeholder="Buscar unidad..."
-            emptyLabel="Dejar que la IA sugiera (o usar tu progreso actual)"
+            emptyLabel="Dejar que la IA la estime al publicar"
             buscar={buscarUnidadesObra}
-            hint="Si no se indica, se intenta clasificar automáticamente; si no es posible, se usa tu progreso actual."
+            hint={pistaFrontera}
           />
+          <div className={styles.filaIA}>
+            <button
+              type="button"
+              className={styles.sugerir}
+              onClick={pedirSugerencia}
+              disabled={sugiriendo || !texto.trim()}
+            >
+              {sugiriendo ? 'Consultando a la IA…' : 'Sugerir frontera con IA'}
+            </button>
+            {avisoIA && <span className={styles.hint}>{avisoIA}</span>}
+          </div>
 
           <button
             className={styles.submit}
@@ -258,6 +309,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
       {detecciones && (
         <ReferenciaCruzadaAviso
           detecciones={detecciones}
+          parteNombre={parte.label}
           onConfirmar={(obraCruzadaId, fronteraCruzadaId) => enviarCon({ obraCruzadaId, fronteraCruzadaId })}
           onDescartar={() => enviarCon({ descartarReferenciaCruzada: true })}
           onCancelar={() => setDetecciones(null)}

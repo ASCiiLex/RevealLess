@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { buscarUnidades } from '../../api/suscripciones'
+import { normalizar } from '../../utils/texto'
 import type { EstadoComparativa } from './Comparativa'
 import { SIN_SELECCION } from './pasoPostDatos'
 import type { Seleccion } from './SelectorParteTema'
 
 // Origen de la parte de la segunda obra: a mano, autorrellenada o sin equivalente.
 type OrigenParteOtra = 'manual' | 'auto' | 'sin-equivalente'
-
-const normalizar = (texto: string) => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 
 // Parte de la segunda obra en una comparativa. En «misma escena» se autorrellena
 // por nombre con la parte elegida en la obra principal, salvo si el autor la fija a mano.

@@ -36,14 +36,34 @@ from .comun import (
 )
 
 
-def _asignar_frontera(post, obra, progreso, frontera_explicita):
-    """Prioridad: explícita > propuesta IA > fallback al progreso actual."""
+def _id_entero(valor):
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return None
+
+
+def _confianza(valor):
+    try:
+        return max(0.0, min(1.0, float(valor)))
+    except (TypeError, ValueError):
+        return None
+
+
+def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None, confianza=None):
+    """Prioridad: elegida por el autor (origen IA si acepta tal cual la propuesta previa)
+    > propuesta IA al publicar > fallback al progreso actual."""
     if frontera_explicita:
         post.frontera_spoiler = frontera_explicita
-        post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
+        if sugerida_id == frontera_explicita.id:
+            post.frontera_origen = ClasificacionNarrativa.ORIGEN_IA
+            post.ia_confianza = confianza
+            post.clasificado_en = timezone.now()
+        else:
+            post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
         return
 
-    sugerencia = proponer_clasificacion(post.text, obra, progreso.unidad_actual)
+    sugerencia = proponer_clasificacion(post.text, obra, progreso.unidad_actual, post.referencia_narrativa)
     if sugerencia.es_utilizable:
         post.frontera_spoiler = sugerencia.frontera_spoiler
         post.frontera_origen = ClasificacionNarrativa.ORIGEN_IA
@@ -183,7 +203,12 @@ class PostCreateAPIView(APIView):
             frontera_cruzada=frontera_cruzada,
             modo_cruce=modo_cruce,
         )
-        _asignar_frontera(post, obra, progreso, datos.get('frontera_spoiler'))
+        # frontera_sugerida_ia: la propuesta vista antes de publicar; si coincide con la elegida, origen IA.
+        _asignar_frontera(
+            post, obra, progreso, datos.get('frontera_spoiler'),
+            _id_entero(request.data.get('frontera_sugerida_ia')),
+            _confianza(request.data.get('ia_confianza')),
+        )
         _cubrir_personajes_comparados(post, comparados)
 
         galeria = [

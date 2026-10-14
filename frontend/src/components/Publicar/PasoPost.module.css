@@ -39,6 +39,38 @@
   opacity: 0.7;
 }
 
+/* Botón de sugerencia de la IA bajo el campo de frontera. */
+.filaIA {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: -6px;
+}
+
+.sugerir {
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.sugerir:hover:not(:disabled),
+.sugerir:focus-visible {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.sugerir:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .error {
   background: color-mix(in srgb, var(--gold) 12%, var(--paper));
   color: var(--ink);

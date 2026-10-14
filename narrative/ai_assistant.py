@@ -18,19 +18,19 @@ class SugerenciaIA:
         return self.frontera_spoiler is not None and self.confianza >= CONFIANZA_MINIMA
 
 
-def proponer_clasificacion(texto, obra, unidad_autor):
+def proponer_clasificacion(texto, obra, unidad_autor, referencia=None):
     """Punto único de entrada al asistente de IA. Nunca lanza excepción hacia
     fuera: cualquier fallo (API caída, timeout, sin API key, id inventado)
     se traduce en una sugerencia no utilizable, y quien llama cae al
     fallback (progreso del autor) sin bloquear la publicación."""
     try:
-        return _llamar_api(texto, obra, unidad_autor)
+        return _llamar_api(texto, obra, unidad_autor, referencia)
     except Exception:
         logger.exception('Fallo al llamar a la API de IA de clasificación')
         return SugerenciaIA()
 
 
-def _llamar_api(texto, obra, unidad_autor):
+def _llamar_api(texto, obra, unidad_autor, referencia):
     from .models import UnidadNarrativa
 
     api_key = os.environ.get('ANTHROPIC_API_KEY')
@@ -63,14 +63,24 @@ def _llamar_api(texto, obra, unidad_autor):
         'de la obra (ordenadas por posición de consumo), debes elegir la '
         'unidad que debería usarse como frontera de spoiler: el punto hasta '
         'el que un lector debe haber llegado para leer este texto sin '
-        'riesgo de spoiler. Si el texto no revela nada más allá de la '
-        'posición actual del autor, elige esa misma unidad. Nunca elijas '
-        'una unidad con un id que no esté en la lista proporcionada.'
+        'riesgo de spoiler. Elige la unidad más concreta posible (un episodio '
+        'o capítulo antes que un arco completo) que cubra todo lo que el texto '
+        'revela; no elijas el final de un arco si lo descrito ocurre antes. '
+        'Nunca elijas una unidad anterior a la parte de la que habla la '
+        'publicación. Si el texto no revela nada más allá de esa parte, elige '
+        'esa misma parte. Nunca elijas una unidad con un id que no esté en la '
+        'lista proporcionada.'
     )
 
+    parte = (
+        f'Parte de la que habla la publicación: id={referencia.id} '
+        f'({referencia.nombre}, orden_fin={referencia.orden_fin}).\n'
+        if referencia else ''
+    )
     user_prompt = (
         f'Posición actual del autor: id={unidad_autor.id} '
-        f'({unidad_autor.nombre}, orden_fin={unidad_autor.orden_fin}).\n\n'
+        f'({unidad_autor.nombre}, orden_fin={unidad_autor.orden_fin}).\n'
+        f'{parte}\n'
         f'Unidades narrativas disponibles:\n{candidatas}\n\n'
         f'Texto de la publicación:\n"""{texto}"""'
     )

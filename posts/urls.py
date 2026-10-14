@@ -10,12 +10,14 @@ from .views.search import (
     suggested_hashtags,
 )
 from .api_views import PostCreateAPIView, PostDetailAPIView, PostUpdateAPIView
+from .api_views.sugerir import SugerirFronteraAPIView
 
 urlpatterns = [
     path('post/', publicar_react_view, name='post_create'),
     path('<int:post_id>/', post_detail_react_view, name='post_detail'),
 
     path('api/crear/<slug:obra_slug>/', PostCreateAPIView.as_view(), name='posts_api_create'),
+    path('api/sugerir-frontera/<slug:obra_slug>/', SugerirFronteraAPIView.as_view(), name='posts_api_sugerir_frontera'),
     path('api/<int:post_id>/', PostDetailAPIView.as_view(), name='posts_api_detail'),
     path('api/<int:post_id>/editar/', PostUpdateAPIView.as_view(), name='posts_api_update'),
 

@@ -62,6 +62,12 @@ export interface PersonajePublicable {
   imagen_url: string
 }
 
+// Propuesta de la IA antes de publicar; frontera null si no hay una fiable.
+export interface SugerenciaFrontera {
+  frontera: { id: number; etiqueta: string } | null
+  confianza: number
+}
+
 export type ModoCruce = 'comparativa' | 'misma_escena'
 
 export interface DatosPost {
@@ -77,6 +83,9 @@ export interface DatosPost {
   // Parte o tema: al menos uno de los dos.
   referenciaNarrativaId?: number | null
   fronteraSpoilerId?: number | null
+  // Propuesta de la IA vista antes de publicar: si coincide con la frontera, queda con origen IA.
+  fronteraSugeridaIaId?: number | null
+  iaConfianza?: number | null
   nivelSpoiler?: string
   emocionAutor?: string | null
   temaId?: number | null
@@ -146,6 +155,18 @@ function interpretarConflicto(body: CuerpoConflicto, obraSlug: string): Resultad
   return null
 }
 
+export async function sugerirFrontera(
+  obraSlug: string, texto: string, referenciaId: number | null,
+): Promise<SugerenciaFrontera> {
+  const response = await enviarFormData(`/posts/api/sugerir-frontera/${obraSlug}/`, 'POST', construirFormData({
+    text: texto,
+    referencia_narrativa: referenciaId,
+  }))
+  const body = await response.json().catch(() => null)
+  if (!response.ok) throw new ApiError(response.status, body)
+  return body as SugerenciaFrontera
+}
+
 export async function crearPost(obraSlug: string, datos: DatosPost): Promise<PostCreado | ResultadoConflicto> {
   const response = await enviarFormData(`/posts/api/crear/${obraSlug}/`, 'POST', construirFormData({
     text: datos.text,
@@ -158,6 +179,8 @@ export async function crearPost(obraSlug: string, datos: DatosPost): Promise<Pos
     disposicion: datos.disposicion,
     referencia_narrativa: datos.referenciaNarrativaId,
     frontera_spoiler: datos.fronteraSpoilerId,
+    frontera_sugerida_ia: datos.fronteraSugeridaIaId,
+    ia_confianza: datos.iaConfianza,
     nivel_spoiler: datos.nivelSpoiler,
     emocion_autor: datos.emocionAutor,
     tema: datos.temaId,

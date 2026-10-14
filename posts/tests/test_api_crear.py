@@ -51,6 +51,24 @@ class PostCreateAPIViewTests(TestCase):
         self.assertEqual(post.frontera_origen, ClasificacionNarrativa.ORIGEN_EXPLICITO)
         self.assertEqual(post.frontera_spoiler, self.ep[1])
 
+    def test_frontera_aceptada_de_la_ia_queda_con_origen_ia(self):
+        self._con_progreso()
+        self._publicar(
+            'aceptada', frontera_spoiler=self.ep[1].id, frontera_sugerida_ia=self.ep[1].id, ia_confianza='0.85',
+        )
+        post = Post.objects.get(text='aceptada')
+        self.assertEqual(post.frontera_origen, ClasificacionNarrativa.ORIGEN_IA)
+        self.assertEqual(post.ia_confianza, 0.85)
+
+    def test_frontera_cambiada_tras_la_sugerencia_queda_explicita(self):
+        self._con_progreso()
+        self._publicar(
+            'cambiada', frontera_spoiler=self.ep[2].id, frontera_sugerida_ia=self.ep[1].id, ia_confianza='0.85',
+        )
+        post = Post.objects.get(text='cambiada')
+        self.assertEqual(post.frontera_origen, ClasificacionNarrativa.ORIGEN_EXPLICITO)
+        self.assertIsNone(post.ia_confianza)
+
     # Sin clave explícita en el test: nunca debe depender del .env ni llamar a la API real.
     @patch.dict(os.environ, {'ANTHROPIC_API_KEY': ''})
     def test_sin_frontera_explicita_cae_a_fallback_sin_api_key(self):
