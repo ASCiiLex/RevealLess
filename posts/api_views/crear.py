@@ -137,11 +137,9 @@ class PostCreateAPIView(APIView):
         tema_propuesto = (datos.get('tema_propuesto') or '').strip()
         referencia = datos.get('referencia_narrativa')
         frontera_explicita = datos.get('frontera_spoiler')
+        # La parte es contexto; la visibilidad la decide la frontera. Con solo frontera, el post va sin parte.
         if not (referencia or tema or tema_propuesto or frontera_explicita):
             return error_400(ERROR_SIN_REFERENCIA)
-        # Solo frontera: el post habla de ese punto.
-        if not (referencia or tema or tema_propuesto):
-            referencia = frontera_explicita
 
         imagen_unica = datos.get('image')
         imagenes = list(datos.get('imagenes') or [])

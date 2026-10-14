@@ -34,10 +34,12 @@ class ParteOTemaTests(TestCase):
     def test_solo_tema_propuesto(self):
         self.assertEqual(self._publicar(tema_propuesto='Frutas del diablo').status_code, 201)
 
-    def test_solo_frontera_la_usa_como_parte(self):
+    def test_solo_frontera_publica_sin_parte(self):
         response = self._publicar()
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Post.objects.get(id=response.data['id']).referencia_narrativa, self.ep[0])
+        post = Post.objects.get(id=response.data['id'])
+        self.assertIsNone(post.referencia_narrativa)
+        self.assertEqual(post.frontera_spoiler, self.ep[0])
 
     def test_sin_parte_tema_ni_frontera_devuelve_400(self):
         self.assertEqual(self._publicar(con_frontera=False).status_code, 400)
