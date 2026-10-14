@@ -114,7 +114,7 @@ export default function PersonajesEnfrentados({ obraSlug, otraObra, valor, onCha
       <span className={styles.hint}>
         {valor.length === 1
           ? 'Añade al menos otro personaje.'
-          : 'Solo aparecen los que ya conoces. Si falta alguno, propónlo: se revisará antes de añadirlo.'}
+          : 'Solo aparecen los que ya conoces. Si falta alguno, proponlo: se revisará antes de añadirlo.'}
       </span>
     </div>
   )
