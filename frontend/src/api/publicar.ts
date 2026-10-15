@@ -18,6 +18,8 @@ export interface DeteccionCruzada {
   obraTitulo: string
   obraSlug: string
   palabra: string
+  // Adaptación de la misma historia: el aviso ofrece «misma escena».
+  mismaHistoria: boolean
 }
 
 export interface ReferenciaCruzadaDetectada {
@@ -34,6 +36,7 @@ export interface DeteccionApi {
   obra_titulo: string
   obra_slug: string
   palabra: string
+  misma_historia?: boolean
 }
 
 export interface ObraPublicable {
@@ -147,6 +150,7 @@ export function mapearDetecciones(detecciones: DeteccionApi[] = []): DeteccionCr
     obraTitulo: d.obra_titulo,
     obraSlug: d.obra_slug,
     palabra: d.palabra,
+    mismaHistoria: Boolean(d.misma_historia),
   }))
 }
 
@@ -163,12 +167,14 @@ function interpretarConflicto(body: CuerpoConflicto, obraSlug: string): Resultad
   return null
 }
 
+// desde: obra desde la que se publica, para pedir la frontera de la obra cruzada sin progreso en ella.
 export async function sugerirFrontera(
-  obraSlug: string, texto: string, referenciaId: number | null,
+  obraSlug: string, texto: string, referenciaId: number | null, desde: string | null = null,
 ): Promise<SugerenciaFrontera> {
   const response = await enviarFormData(`/posts/api/sugerir-frontera/${obraSlug}/`, 'POST', construirFormData({
     text: texto,
     referencia_narrativa: referenciaId,
+    desde,
   }))
   const body = await response.json().catch(() => null)
   if (!response.ok) throw new ApiError(response.status, body)

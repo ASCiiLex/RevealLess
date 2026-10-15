@@ -11,7 +11,7 @@ import { useGaleriaBorrador } from './useGaleriaBorrador'
 import { useParteOtra } from './useParteOtra'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
-import { crearPost, sugerirFrontera, type DeteccionCruzada } from '../../api/publicar'
+import { crearPost, sugerirFrontera, type DeteccionCruzada, type ModoCruce } from '../../api/publicar'
 
 interface Props {
   // null = aún no hay obra elegida: el formulario se muestra desactivado.
@@ -27,6 +27,7 @@ interface Ajustes {
   confirmarSaltoProgreso?: boolean
   obraCruzadaId?: number | null
   fronteraCruzadaId?: number | null
+  modoCruce?: ModoCruce
   descartarReferenciaCruzada?: boolean
 }
 
@@ -325,8 +326,12 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
       {detecciones && (
         <ReferenciaCruzadaAviso
           detecciones={detecciones}
-          parteNombre={parte.label}
-          onConfirmar={(obraCruzadaId, fronteraCruzadaId) => enviarCon({ obraCruzadaId, fronteraCruzadaId })}
+          fronteraNombre={frontera.label}
+          texto={texto}
+          obraPrincipalSlug={obraSlug}
+          onConfirmar={(obraCruzadaId, fronteraCruzadaId, modoCruce) =>
+            enviarCon({ obraCruzadaId, fronteraCruzadaId, modoCruce })
+          }
           onDescartar={() => enviarCon({ descartarReferenciaCruzada: true })}
           onCancelar={() => setDetecciones(null)}
         />

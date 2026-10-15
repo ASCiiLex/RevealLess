@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -13,15 +15,20 @@ def _unidad_json(unidad):
     return {'id': unidad.id, 'etiqueta': etiqueta_unidad(unidad)} if unidad else None
 
 
+# Cada llamada cuesta tokens de la API: límite por usuario.
+@method_decorator(ratelimit(key='user_or_ip', rate='10/m', method='POST', block=True), name='post')
 class SugerirFronteraAPIView(APIView):
     """Propuesta de la IA antes de publicar. Revisa el autor, así que se devuelve aunque no supere
-    el umbral (fiable=False). Los hechos que la justifican nunca salen: serían spoilers para el autor."""
+    el umbral (fiable=False). Los hechos que la justifican nunca salen: serían spoilers para el autor.
+    `desde`: obra desde la que se publica; para la obra cruzada basta con tener progreso en ella."""
 
     permission_classes = [IsAuthenticated]
 
     def post(self, request, obra_slug):
         obra = get_object_or_404(Obra, slug=obra_slug)
-        if not ProgresoUsuario.objects.filter(usuario=request.user, obra=obra).exists():
+        desde = (request.data.get('desde') or '').strip()
+        slugs = {obra.slug, desde} - {''}
+        if not ProgresoUsuario.objects.filter(usuario=request.user, obra__slug__in=slugs).exists():
             return Response(
                 {'detail': 'progreso_requerido', 'obra_slug': obra.slug},
                 status=status.HTTP_409_CONFLICT,

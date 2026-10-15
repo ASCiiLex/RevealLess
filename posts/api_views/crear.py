@@ -172,7 +172,7 @@ class PostCreateAPIView(APIView):
             if detecciones:
                 return Response({
                     'detail': 'referencia_cruzada_detectada',
-                    'detecciones': serializar_detecciones(detecciones),
+                    'detecciones': serializar_detecciones(detecciones, obra),
                 }, status=status.HTTP_409_CONFLICT)
 
         # El progreso solo se actualiza tras superar todas las validaciones previas.
