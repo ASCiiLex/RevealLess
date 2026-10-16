@@ -2,15 +2,76 @@
   padding: 12px 0;
 }
 
+/* Referencia de posición para las flechas: quedan fuera de la máscara de la fila. */
+.marco {
+  position: relative;
+}
+
 .wrapper {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
+  scroll-behavior: smooth;
 }
 
 .wrapper::-webkit-scrollbar {
   display: none;
+}
+
+/* Fundido en el borde por el que siguen los chips; no depende del color de fondo. */
+.fundidoIzquierda {
+  mask-image: linear-gradient(to right, transparent 0, #000 48px);
+}
+
+.fundidoDerecha {
+  mask-image: linear-gradient(to left, transparent 0, #000 48px);
+}
+
+.fundidoIzquierda.fundidoDerecha {
+  mask-image: linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+}
+
+/* Mismo lenguaje que las flechas del carrusel, en tamaño de chip. */
+.flecha {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-50%);
+  border: none;
+  border-radius: 999px;
+  background: rgba(21, 19, 15, 0.72);
+  color: var(--paper);
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 3px;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.flecha:hover,
+.flecha:focus-visible {
+  background: rgba(21, 19, 15, 0.9);
+}
+
+.flecha:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.flechaIzquierda {
+  left: 0;
+}
+
+.flechaDerecha {
+  right: 0;
 }
 
 /* Filtros, no acciones: identidad de acento, nunca dorado. */
@@ -80,4 +141,11 @@
   margin: 8px 0 0;
   font-size: 11px;
   color: var(--on-dark-soft);
+}
+
+/* En móvil se desliza con el dedo; el fundido basta como pista. */
+@media (max-width: 767px) {
+  .flecha {
+    display: none;
+  }
 }
