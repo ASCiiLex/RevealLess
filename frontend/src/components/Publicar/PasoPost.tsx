@@ -9,6 +9,7 @@ import type { EstadoComparativa } from './Comparativa'
 import { SIN_SELECCION, datosExtra, mensajeDeError } from './pasoPostDatos'
 import { useGaleriaBorrador } from './useGaleriaBorrador'
 import { useParteOtra } from './useParteOtra'
+import AvisoIA from '../IA/AvisoIA'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
 import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
 import { crearPost, sugerirFrontera, type DeteccionCruzada, type ModoCruce } from '../../api/publicar'
@@ -138,10 +139,9 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   // «Certeza»: lo seguro que está el modelo del punto elegido, no lo protegido que está el post.
   const sugerenciaVigente = sugerencia !== null && frontera.id === sugerencia.id
   const certeza = sugerencia ? Math.round(sugerencia.confianza * 100) : 0
+  // Con propuesta de la IA vigente, la pista la sustituye el aviso destacado.
   const pistaFrontera = sugerenciaVigente
-    ? sugerencia.fiable
-      ? `Propuesta por la IA (certeza ${certeza} %). Revísala.`
-      : `Propuesta por la IA con certeza baja (${certeza} %): comprueba el episodio antes de publicar.`
+    ? ''
     : frontera.id
       ? 'Frontera elegida por ti.'
       : 'Si no indicas ninguna, la IA la estimará al publicar; si no puede, se usa tu progreso actual.'
@@ -302,6 +302,10 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             buscar={buscarUnidadesObra}
             hint={pistaFrontera}
           />
+
+          {sugerenciaVigente && (
+            <AvisoIA certeza={certeza} fiable={sugerencia.fiable} accion="publicar" />
+          )}
 
           <CampoSeleccion
             id="nuevo-progreso"

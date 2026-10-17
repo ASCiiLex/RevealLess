@@ -1,9 +1,16 @@
 import logging
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
 CONFIANZA_MINIMA = 0.6
+# Tope cuando la IA elige una unidad sin título: no puede saber qué ocurre en ella. Por debajo del umbral.
+CONFIANZA_MAX_SIN_NOMBRE = 0.5
+# «Episodio 227», «Capítulo 12», «Vol. 3»...: unidades sin título propio.
+NOMBRE_GENERICO = re.compile(
+    r'^(episodio|episode|ep\.?|cap[ií]tulo|chapter|cap\.?|volumen|vol\.?|tomo)\s*\d+$', re.IGNORECASE
+)
 # Modelo base de todos los servicios de IA; ANTHROPIC_MODEL solo cambia el de la frontera.
 MODELO_IA = 'claude-haiku-4-5-20251001'
 # Generación 4: admite forzar la herramienta y fijar temperature. Las 5.x lo rechazan con 400.
@@ -80,6 +87,10 @@ class SugerenciaIA:
 
 def etiqueta_unidad(unidad):
     return f'{unidad.padre.nombre} · {unidad.nombre}' if unidad.padre_id else unidad.nombre
+
+
+def es_nombre_generico(unidad):
+    return bool(NOMBRE_GENERICO.match(unidad.nombre.strip()))
 
 
 def proponer_clasificacion(texto, obra, referencia=None, timeout=TIMEOUT_PUBLICAR):
@@ -185,7 +196,9 @@ def _unidad(unidades_por_id, valor):
 
 def _resolver(entrada, unidades_por_id, referencia):
     """Frontera = la revelación más tardía, nunca anterior a la parte. Confianza = la mínima.
-    Un id inventado o excluido invalida toda la propuesta: podría ser justo la revelación más tardía."""
+    Un id inventado o excluido invalida toda la propuesta: podría ser justo la revelación más tardía.
+    Si la IA elige por su cuenta una unidad sin título, la confianza se limita por debajo del umbral:
+    no se aplica sola al publicar y la interfaz avisa de certeza baja."""
     parte = referencia or _unidad(unidades_por_id, entrada.get('parte_id'))
     revelaciones = []
     for r in (entrada.get('revelaciones') or [])[:MAX_REVELACIONES]:
@@ -198,4 +211,7 @@ def _resolver(entrada, unidades_por_id, referencia):
 
     confianza = min([_acotar(entrada.get('confianza'))] + [r.confianza for r in revelaciones])
     frontera = max([parte] + [r.unidad for r in revelaciones], key=lambda u: u.orden_fin)
+    elegida_por_ia = referencia is None or frontera.id != referencia.id
+    if elegida_por_ia and es_nombre_generico(frontera):
+        confianza = min(confianza, CONFIANZA_MAX_SIN_NOMBRE)
     return SugerenciaIA(frontera, confianza, parte, revelaciones)

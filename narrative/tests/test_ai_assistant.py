@@ -4,11 +4,14 @@ from unittest.mock import patch
 
 from django.test import SimpleTestCase
 
-from narrative.ai_assistant import MODELO_IA, _candidatas, _parametros_modelo, _resolver, proponer_clasificacion
+from narrative.ai_assistant import (
+    CONFIANZA_MAX_SIN_NOMBRE, MODELO_IA, _candidatas, _parametros_modelo, _resolver,
+    es_nombre_generico, proponer_clasificacion,
+)
 
 
 def _unidades(*ordenes):
-    return {i: SimpleNamespace(id=i, orden_fin=orden) for i, orden in enumerate(ordenes, start=1)}
+    return {i: SimpleNamespace(id=i, nombre=f'Arco {i}', orden_fin=orden) for i, orden in enumerate(ordenes, start=1)}
 
 
 def _revelacion(unidad_id, confianza=0.9):
@@ -46,6 +49,36 @@ class ResolverTests(SimpleTestCase):
     @patch.dict(os.environ, {'ANTHROPIC_API_KEY': ''})
     def test_sin_api_key_no_es_utilizable(self):
         self.assertFalse(proponer_clasificacion('texto', obra=None).es_utilizable)
+
+
+class UnidadesSinNombreTests(SimpleTestCase):
+    def setUp(self):
+        self.u = {
+            1: SimpleNamespace(id=1, nombre='Arco de Water 7', orden_fin=10),
+            2: SimpleNamespace(id=2, nombre='Episodio 227', orden_fin=20),
+        }
+
+    def test_frontera_sin_titulo_elegida_por_la_ia_no_se_aplica_sola(self):
+        entrada = {'parte_id': 1, 'confianza': 0.9, 'revelaciones': [_revelacion(2, 0.75)]}
+        sugerencia = _resolver(entrada, self.u, None)
+        self.assertEqual(sugerencia.frontera_spoiler, self.u[2])
+        self.assertEqual(sugerencia.confianza, CONFIANZA_MAX_SIN_NOMBRE)
+        self.assertFalse(sugerencia.es_utilizable)
+
+    def test_frontera_con_nombre_conserva_la_confianza(self):
+        sugerencia = _resolver({'parte_id': 1, 'confianza': 0.9, 'revelaciones': []}, self.u, None)
+        self.assertEqual(sugerencia.confianza, 0.9)
+        self.assertTrue(sugerencia.es_utilizable)
+
+    def test_la_parte_elegida_por_el_autor_no_se_penaliza(self):
+        sugerencia = _resolver({'parte_id': 2, 'confianza': 0.9, 'revelaciones': []}, self.u, self.u[2])
+        self.assertEqual(sugerencia.confianza, 0.9)
+
+    def test_detecta_nombres_genericos(self):
+        for nombre in ('Episodio 227', 'episodio 3', 'Capítulo 12', 'Cap. 4', 'Volumen 7', 'Chapter 10'):
+            self.assertTrue(es_nombre_generico(SimpleNamespace(nombre=nombre)), nombre)
+        for nombre in ('Arco de Water 7', 'Episodio 1: Romance Dawn', 'Temporada 1'):
+            self.assertFalse(es_nombre_generico(SimpleNamespace(nombre=nombre)), nombre)
 
 
 class CandidatasTests(SimpleTestCase):

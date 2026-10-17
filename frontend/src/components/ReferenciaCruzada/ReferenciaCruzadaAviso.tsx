@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './ReferenciaCruzadaAviso.module.css'
+import AvisoIA from '../IA/AvisoIA'
 import { fetchObraDetalle } from '../../api/suscripciones'
 import { sugerirFrontera, type DeteccionCruzada, type ModoCruce } from '../../api/publicar'
 import { normalizar } from '../../utils/texto'
@@ -84,15 +85,12 @@ export default function ReferenciaCruzadaAviso({
   }
 
   const titulo = detectada.obraTitulo
+  // La propuesta de la IA no va como pista discreta: la muestra el aviso destacado.
   const pistaPropuesta = buscandoIA
     ? `La IA está buscando el punto equivalente en ${titulo}…`
     : propuesta?.origen === 'nombre'
       ? `Propuesta: la parte con el mismo nombre en ${titulo}. Cámbiala si no coincide.`
-      : propuesta?.origen === 'ia'
-        ? propuesta.fiable
-          ? `Propuesta por la IA (certeza ${propuesta.certeza} %). Revísala.`
-          : `Propuesta por la IA con certeza baja (${propuesta.certeza} %): compruébala antes de confirmar.`
-        : null
+      : null
 
   return (
     <div className={styles.overlay}>
@@ -161,6 +159,12 @@ export default function ReferenciaCruzadaAviso({
         </select>
 
         {pistaPropuesta && <p className={styles.hint}>{pistaPropuesta}</p>}
+
+        {!buscandoIA && propuesta?.origen === 'ia' && (
+          <div className={styles.avisoIA}>
+            <AvisoIA certeza={propuesta.certeza} fiable={propuesta.fiable} accion="confirmar" superficie="clara" />
+          </div>
+        )}
 
         <div className={styles.actions}>
           <button

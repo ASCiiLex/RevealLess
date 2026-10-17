@@ -1,0 +1,45 @@
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-left: 4px solid;
+  border-radius: var(--radius, 8px);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.icono {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.titulo {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 700;
+}
+
+.texto {
+  display: block;
+}
+
+/* Certeza suficiente: revisión recomendada. */
+.revisar {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 22%, transparent);
+}
+
+/* Certeza baja: revisión obligada. */
+.baja {
+  border-color: var(--alerta, #e0623f);
+  background: color-mix(in srgb, var(--alerta, #e0623f) 24%, transparent);
+}
+
+.oscura {
+  color: var(--paper);
+}
+
+.clara {
+  color: var(--ink);
+}
