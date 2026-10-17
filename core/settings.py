@@ -109,6 +109,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Peticiones más lentas que el umbral quedan en los logs con sus consultas y su tiempo en BD.
+RENDIMIENTO_UMBRAL_MS = int(os.environ.get('RENDIMIENTO_UMBRAL_MS', '500'))
+if not _EN_TESTS:
+    MIDDLEWARE.insert(0, 'core.rendimiento.RegistroLentitudMiddleware')
+
 # ==========================================================
 # URLS / TEMPLATES
 # ==========================================================
