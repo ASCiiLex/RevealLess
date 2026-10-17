@@ -7,6 +7,8 @@ interface Props {
   targetId: number
   target?: 'post' | 'comment'
   reaccionInicial: string | null
+  /** Totales que ya trae el feed o el detalle: con ellos no se piden por separado. */
+  totalesIniciales?: Record<string, number> | null
 }
 
 async function fetchCommentReactionsTotals(commentId: number): Promise<{ totals: Record<string, number> }> {
@@ -16,17 +18,18 @@ async function fetchCommentReactionsTotals(commentId: number): Promise<{ totals:
   return response.json()
 }
 
-export default function ReactionBar({ targetId, target = 'post', reaccionInicial }: Props) {
+export default function ReactionBar({ targetId, target = 'post', reaccionInicial, totalesIniciales }: Props) {
   const [reaccion, setReaccion] = useState(reaccionInicial)
-  const [totales, setTotales] = useState<Record<string, number>>({})
+  const [totales, setTotales] = useState<Record<string, number>>(totalesIniciales ?? {})
   const [abierto, setAbierto] = useState(false)
   const [posicion, setPosicion] = useState<'abajo' | 'arriba'>('abajo')
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (totalesIniciales) return
     const fetchTotales = target === 'post' ? fetchPostReactionsTotals : fetchCommentReactionsTotals
     fetchTotales(targetId).then((data) => setTotales(data.totals))
-  }, [targetId, target])
+  }, [targetId, target, totalesIniciales])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

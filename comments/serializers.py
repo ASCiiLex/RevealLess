@@ -1,9 +1,12 @@
 from rest_framework import serializers
 
+from core.reacciones import totales_de
 from narrative.models import ClasificacionNarrativa, Obra, UnidadNarrativa
+from .models import CommentReaction
 
 
 EMOCION_CHOICES = [c[0] for c in ClasificacionNarrativa.EMOCION_CHOICES]
+CLAVES_REACCION = tuple(c for c, _ in CommentReaction.REACTION_CHOICES)
 
 
 class CommentCreateSerializer(serializers.Serializer):
@@ -47,9 +50,8 @@ class CommentUpdateSerializer(serializers.Serializer):
 
 
 class CommentSerializer(serializers.Serializer):
-    """Recursivo: cada reply se serializa con el mismo serializer,
-    compartiendo el context (reaction_map) para no repetir la consulta
-    de reacciones del usuario en cada nivel de anidación."""
+    """Recursivo: cada reply se serializa con el mismo serializer, compartiendo el context
+    (reaction_map y reacciones_totales) para no repetir consultas en cada nivel de anidación."""
 
     id = serializers.IntegerField()
     user = serializers.CharField(source='user.username')
@@ -65,8 +67,15 @@ class CommentSerializer(serializers.Serializer):
     frontera_cruzada_id = serializers.IntegerField(allow_null=True)
     is_own_comment = serializers.SerializerMethodField()
     reactions_count = serializers.SerializerMethodField()
+    reacciones_totales = serializers.SerializerMethodField()
     user_reaction = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
+
+    def _totales(self, obj):
+        """Precalculados en la vista; sin ellos (otros usos del serializer), None."""
+        if 'reacciones_totales' not in self.context:
+            return None
+        return totales_de(self.context['reacciones_totales'], obj.id, CLAVES_REACCION)
 
     def get_avatar(self, obj):
         return obj.user.profile.image_url if hasattr(obj.user, 'profile') else '/static/img/default_profile.jpg'
@@ -76,7 +85,11 @@ class CommentSerializer(serializers.Serializer):
         return bool(request and request.user.is_authenticated and request.user == obj.user)
 
     def get_reactions_count(self, obj):
-        return obj.reactions.count()
+        totales = self._totales(obj)
+        return sum(totales.values()) if totales is not None else obj.reactions.count()
+
+    def get_reacciones_totales(self, obj):
+        return self._totales(obj)
 
     def get_user_reaction(self, obj):
         reaction_map = self.context.get('reaction_map', {})

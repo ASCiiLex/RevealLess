@@ -56,6 +56,8 @@ export interface FeedPost {
   created_at: string
   likes_count: number
   comments_count: number
+  // Totales por emoción ya calculados: la tarjeta no necesita pedirlos.
+  reacciones_totales?: Record<string, number>
   user_reaction: string | null
   is_own_post: boolean
   is_saved: boolean

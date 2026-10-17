@@ -106,7 +106,11 @@ export default function PostDetailView({ postId }: Props) {
 
         <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />
 
-        <PostActions postId={post.id} reaccionInicial={detalle.post_reaction} />
+        <PostActions
+          postId={post.id}
+          reaccionInicial={detalle.post_reaction}
+          totalesIniciales={post.reacciones_totales}
+        />
       </div>
 
       {editando && (

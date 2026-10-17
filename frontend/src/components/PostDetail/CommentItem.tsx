@@ -78,7 +78,12 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, o
       <p className={styles.text}><LinkedText text={textoActual} /></p>
 
       <div className={styles.actions}>
-        <ReactionBar targetId={comment.id} target="comment" reaccionInicial={comment.user_reaction} />
+        <ReactionBar
+          targetId={comment.id}
+          target="comment"
+          reaccionInicial={comment.user_reaction}
+          totalesIniciales={comment.reacciones_totales}
+        />
         {nivel < NIVEL_MAXIMO && (
           <button className={styles.replyButton} onClick={() => setReplyAbierto((v) => !v)}>
             Responder

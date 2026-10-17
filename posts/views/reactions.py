@@ -6,16 +6,16 @@ from django.views.decorators.http import require_POST
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+from core.reacciones import totales_agrupados, totales_de
 from core.serializers import serializar_reactores
 from likes.models import PostReaction
 from ..models import Post
 
+CLAVES = tuple(clave for clave, _ in PostReaction.REACTION_CHOICES)
+
 
 def _counts_por_reaccion(post):
-    return {
-        clave: post.reactions.filter(reaction=clave).count()
-        for clave, _ in PostReaction.REACTION_CHOICES
-    }
+    return totales_de(totales_agrupados(post.reactions.all(), 'post_id', CLAVES), post.id, CLAVES)
 
 
 @login_required

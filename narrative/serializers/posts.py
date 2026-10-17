@@ -1,5 +1,7 @@
+from django.db.models.query import QuerySet
 from rest_framework import serializers
 
+from core.reacciones import totales_agrupados, totales_de
 from posts.models import Post, PostImagen
 from ..services.personajes import presentacion_personaje
 from .unidades import UnidadNarrativaSerializer
@@ -22,6 +24,7 @@ class PostSerializer(serializers.ModelSerializer):
     frontera_cruzada = UnidadNarrativaSerializer(read_only=True)
     likes_count = serializers.IntegerField(read_only=True)
     comments_count = serializers.IntegerField(read_only=True)
+    reacciones_totales = serializers.SerializerMethodField()
     user_reaction = serializers.SerializerMethodField()
     is_own_post = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
@@ -33,7 +36,7 @@ class PostSerializer(serializers.ModelSerializer):
             'temas', 'text', 'imagen', 'imagenes', 'disposicion', 'personajes_comparados',
             'referencia_narrativa', 'frontera_spoiler', 'frontera_cruzada', 'nivel_spoiler',
             'emocion_autor', 'created_at',
-            'likes_count', 'comments_count', 'user_reaction', 'is_own_post', 'is_saved',
+            'likes_count', 'comments_count', 'reacciones_totales', 'user_reaction', 'is_own_post', 'is_saved',
         ]
 
     def _usuario(self):
@@ -45,6 +48,13 @@ class PostSerializer(serializers.ModelSerializer):
         if clave not in self.context:
             self.context[clave] = calcular()
         return self.context[clave]
+
+    def _ids_de_la_lista(self, obj):
+        """Ids de todos los posts de la lista que se está serializando; fuera de una lista, solo este."""
+        lista = self.parent.instance if isinstance(self.parent, serializers.ListSerializer) else None
+        if isinstance(lista, (list, tuple, QuerySet)):
+            return [p.id for p in lista]
+        return [obj.id]
 
     def get_obra_cruzada(self, obj):
         if not obj.obra_cruzada_id:
@@ -97,6 +107,20 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_autor_avatar(self, obj):
         return obj.author.profile.image_url if hasattr(obj.author, 'profile') else AVATAR_POR_DEFECTO
+
+    def get_reacciones_totales(self, obj):
+        """Totales por emoción de todos los posts de la lista en una consulta agrupada:
+        cada tarjeta ya no tiene que pedirlos por separado."""
+        from likes.models import PostReaction
+        claves = tuple(c for c, _ in PostReaction.REACTION_CHOICES)
+        cache = self.context.setdefault('_reacciones_totales', {'ids': set(), 'totales': {}})
+        if obj.id not in cache['ids']:
+            ids = self._ids_de_la_lista(obj)
+            cache['totales'].update(
+                totales_agrupados(PostReaction.objects.filter(post_id__in=ids), 'post_id', claves)
+            )
+            cache['ids'].update(ids)
+        return totales_de(cache['totales'], obj.id, claves)
 
     def get_user_reaction(self, obj):
         usuario = self._usuario()

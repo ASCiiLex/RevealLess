@@ -18,6 +18,8 @@ export interface CommentItem {
   frontera_cruzada_id: number | null
   is_own_comment: boolean
   reactions_count: number
+  // Totales por emoción ya calculados en el detalle; null si la respuesta no los trae.
+  reacciones_totales?: Record<string, number> | null
   user_reaction: string | null
   replies: CommentItem[]
 }
@@ -78,6 +80,8 @@ export function comentarioDesdeCreado(creado: ComentarioCreado): CommentItem {
     frontera_cruzada_id: creado.frontera_cruzada_id,
     is_own_comment: true,
     reactions_count: 0,
+    // Recién creado: sin reacciones, no hace falta pedirlas.
+    reacciones_totales: {},
     user_reaction: null,
     replies: [],
   }

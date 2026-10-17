@@ -56,7 +56,11 @@ export default function PostCard({ post }: Props) {
 
       {esGaleria && <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />}
 
-      <PostActions postId={post.id} reaccionInicial={post.user_reaction} />
+      <PostActions
+        postId={post.id}
+        reaccionInicial={post.user_reaction}
+        totalesIniciales={post.reacciones_totales}
+      />
 
       <a className={styles.commentsLink} href={`/posts/${post.id}/`}>
         {post.comments_count} comentarios
