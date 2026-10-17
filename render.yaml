@@ -1,0 +1,37 @@
+# Blueprint de Render: servicio web (Docker) + Postgres gestionado, en Frankfurt.
+services:
+  - type: web
+    name: revealless
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    # Si falla, el despliegue se cancela y sigue sirviendo la versión anterior.
+    preDeployCommand: python manage.py migrate --noinput
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: revealless-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      # sync: false -> Render pide el valor al crear el Blueprint; no se guarda en el repo.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AWS_STORAGE_BUCKET_NAME
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_ENDPOINT_URL
+        value: https://t3.storage.dev
+
+databases:
+  - name: revealless-db
+    plan: basic-256mb
+    region: frankfurt
+    databaseName: revealless
+    user: revealless

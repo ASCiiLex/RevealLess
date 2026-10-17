@@ -1,24 +1,32 @@
-FROM python:3.11-slim
+# Etapa 1: compila el frontend (Vite) en static/frontend/dist
+FROM node:22-slim AS frontend
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# Etapa 2: Django servido por Daphne (ASGI)
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
-RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 COPY . .
-RUN chmod +x entrypoint.sh
+COPY --from=frontend /app/static/frontend/dist ./static/frontend/dist
 
-RUN python manage.py collectstatic --noinput
+# collectstatic no usa la BD ni secretos: la clave solo permite cargar settings.
+RUN SECRET_KEY=solo-para-build DJANGO_DEBUG=False python manage.py collectstatic --noinput
 
-EXPOSE 8080
+RUN useradd --create-home --uid 1000 app
+USER app
 
-CMD ["./entrypoint.sh"]
+# Render fija PORT (10000 por defecto). Las migraciones van en el preDeployCommand de render.yaml.
+CMD ["sh", "-c", "exec daphne -b 0.0.0.0 -p ${PORT:-8000} core.asgi:application"]

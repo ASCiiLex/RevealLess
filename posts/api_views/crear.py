@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+from django_ratelimit.core import is_ratelimited
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -50,9 +52,16 @@ def _confianza(valor):
         return None
 
 
-def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None, confianza=None):
+def _ia_disponible(request):
+    """Tope por usuario de llamadas a la IA al publicar. Solo consume cupo cuando la IA se va a llamar."""
+    return not is_ratelimited(
+        request, group='ia_publicar', key='user', rate=settings.IA_LIMITE_PUBLICAR, increment=True,
+    )
+
+
+def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None, confianza=None, request=None):
     """Prioridad: elegida por el autor (origen IA si acepta tal cual la propuesta previa)
-    > propuesta IA al publicar > fallback al progreso actual."""
+    > propuesta IA al publicar (si queda cupo) > fallback al progreso actual."""
     if frontera_explicita:
         post.frontera_spoiler = frontera_explicita
         if sugerida_id == frontera_explicita.id:
@@ -63,8 +72,11 @@ def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
         return
 
-    sugerencia = proponer_clasificacion(post.text, obra, post.referencia_narrativa)
-    if sugerencia.es_utilizable:
+    sugerencia = (
+        proponer_clasificacion(post.text, obra, post.referencia_narrativa)
+        if request is None or _ia_disponible(request) else None
+    )
+    if sugerencia and sugerencia.es_utilizable:
         post.frontera_spoiler = sugerencia.frontera_spoiler
         post.frontera_origen = ClasificacionNarrativa.ORIGEN_IA
         post.ia_confianza = sugerencia.confianza
@@ -210,6 +222,7 @@ class PostCreateAPIView(APIView):
             post, obra, progreso, frontera_explicita,
             _id_entero(request.data.get('frontera_sugerida_ia')),
             _confianza(request.data.get('ia_confianza')),
+            request=request,
         )
         _cubrir_personajes_comparados(post, comparados)
 

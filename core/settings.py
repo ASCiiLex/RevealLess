@@ -10,6 +10,8 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+_EN_TESTS = 'pytest' in sys.modules
+
 # ==========================================================
 # SEGURIDAD
 # ==========================================================
@@ -23,18 +25,17 @@ if not SECRET_KEY:
     else:
         sys.exit("SECRET_KEY no definida en el entorno de producción.")
 
-ALLOWED_HOSTS = [
-    'revealless.fly.dev',
-    '.fly.dev',
-    'localhost',
-    '127.0.0.1'
-]
+_HOSTS_LOCALES = ['localhost', '127.0.0.1']
+# Dominios propios separados por comas. Render inyecta RENDER_EXTERNAL_HOSTNAME en cada servicio web.
+_HOSTS_EXTRA = [h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if h.strip()]
+_HOST_RENDER = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 
+ALLOWED_HOSTS = _HOSTS_LOCALES + _HOSTS_EXTRA + ([_HOST_RENDER] if _HOST_RENDER else [])
 CSRF_TRUSTED_ORIGINS = [
-    "https://revealless.fly.dev"
+    f'https://{h}' for h in ALLOWED_HOSTS if h not in _HOSTS_LOCALES and not h.startswith('.')
 ]
 
-# Fly.io termina TLS en el edge y reenvía por X-Forwarded-Proto.
+# Render termina TLS en su proxy y reenvía el esquema original en X-Forwarded-Proto.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 SECURE_SSL_REDIRECT = not DEBUG
@@ -144,9 +145,8 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-    }
+    # Sin conexiones persistentes: bajo ASGI se acumulan por hilo y agotan el límite de Postgres.
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=0)}
 else:
     DATABASES = {
         'default': {
@@ -176,7 +176,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Traduce también los textos de Django, DRF y Unfold (admin, validaciones de la API).
 LANGUAGE_CODE = 'es'
-TIME_ZONE = 'UTC'
+# La BD sigue guardando UTC; esto solo afecta a la presentación y a los cortes por día.
+TIME_ZONE = 'Europe/Madrid'
 USE_I18N = True
 USE_TZ = True
 
@@ -188,13 +189,36 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Imágenes subidas en Tigris (S3) si hay bucket configurado; nunca en tests.
+_USAR_TIGRIS = bool(os.environ.get('AWS_STORAGE_BUCKET_NAME')) and not _EN_TESTS
+
+if _USAR_TIGRIS:
+    _MEDIA_STORAGE = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            'bucket_name': os.environ['AWS_STORAGE_BUCKET_NAME'],
+            'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
+            'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
+            'endpoint_url': os.environ.get('AWS_S3_ENDPOINT_URL', 'https://t3.storage.dev'),
+            'region_name': 'auto',
+            'addressing_style': 'virtual',
+            'signature_version': 's3v4',
+            # Bucket privado y URLs firmadas: solo recibe la URL quien puede ver el contenido.
+            'querystring_auth': True,
+            'querystring_expire': 60 * 60 * 6,
+            'file_overwrite': False,
+        },
+    }
+else:
+    _MEDIA_STORAGE = {'BACKEND': 'django.core.files.storage.FileSystemStorage'}
+
 # STATICFILES_STORAGE desapareció en Django 5.1: sin STORAGES se ignoraba en silencio.
 # Los tests no ejecutan collectstatic; sin manifiesto, el storage con hash fallaría al renderizar.
-_EN_TESTS = 'pytest' in sys.modules
 STORAGES = {
-    'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
-    },
+    'default': _MEDIA_STORAGE,
     'staticfiles': {
         'BACKEND': (
             'django.contrib.staticfiles.storage.StaticFilesStorage' if _EN_TESTS
@@ -203,10 +227,7 @@ STORAGES = {
     },
 }
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-SERVE_MEDIA = os.environ.get('SERVE_MEDIA', 'True' if DEBUG else 'False') == 'True'
+SERVE_MEDIA = not _USAR_TIGRIS and os.environ.get('SERVE_MEDIA', 'True' if DEBUG else 'False') == 'True'
 
 # ==========================================================
 # LOGIN
@@ -217,7 +238,7 @@ LOGIN_REDIRECT_URL = '/feed/'
 LOGOUT_REDIRECT_URL = '/cuentas/login/'
 
 # ==========================================================
-# CHANNELS (REDIS EN PRODUCCIÓN / MEMORY EN LOCAL)
+# CHANNELS (REDIS SI HAY VARIAS INSTANCIAS / MEMORIA CON UNA)
 # ==========================================================
 
 REDIS_URL = os.environ.get("REDIS_URL")
@@ -239,6 +260,16 @@ else:
     }
 
 # ==========================================================
+# RATE LIMIT E IA
+# ==========================================================
+
+# IP real del cliente tras el proxy de Render (X-Forwarded-For es falsificable).
+RATELIMIT_IP_META_KEY = 'core.red.ip_cliente'
+
+# Llamadas a la IA por usuario al publicar sin frontera; superado, se usa el progreso del autor.
+IA_LIMITE_PUBLICAR = os.environ.get('IA_LIMITE_PUBLICAR', '20/h')
+
+# ==========================================================
 # DJANGO REST FRAMEWORK
 # ==========================================================
 
@@ -251,6 +282,30 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 12,
+}
+
+# ==========================================================
+# LOGGING
+# ==========================================================
+
+# A consola: Render recoge stdout/stderr en sus logs.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {'format': '{levelname} {name}: {message}', 'style': '{'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+    },
+    'root': {'handlers': ['console'], 'level': 'WARNING'},
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
+    },
 }
 
 # ==========================================================
