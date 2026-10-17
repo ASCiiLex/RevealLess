@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './ReactionBar.module.css'
-import { toggleReactionPost, toggleReactionComment, toggleReactionMessage, fetchPostReactionsTotals } from '../../api/postDetail'
+import { toggleReactionPost, toggleReactionComment, fetchPostReactionsTotals } from '../../api/postDetail'
 import { EMOCIONES } from '../../constants/emociones'
 
 interface Props {
   targetId: number
-  target?: 'post' | 'comment' | 'message'
+  target?: 'post' | 'comment'
   reaccionInicial: string | null
-  totalesEnVivo?: Record<string, number>
-  variante?: 'normal' | 'sutil'
 }
 
 async function fetchCommentReactionsTotals(commentId: number): Promise<{ totals: Record<string, number> }> {
@@ -18,20 +16,7 @@ async function fetchCommentReactionsTotals(commentId: number): Promise<{ totals:
   return response.json()
 }
 
-async function fetchMessageReactionsTotals(messageId: number): Promise<{ totals: Record<string, number> }> {
-  const response = await fetch(`/mensajes/${messageId}/reactions/`, {
-    credentials: 'same-origin',
-  })
-  return response.json()
-}
-
-export default function ReactionBar({
-  targetId,
-  target = 'post',
-  reaccionInicial,
-  totalesEnVivo,
-  variante = 'normal',
-}: Props) {
+export default function ReactionBar({ targetId, target = 'post', reaccionInicial }: Props) {
   const [reaccion, setReaccion] = useState(reaccionInicial)
   const [totales, setTotales] = useState<Record<string, number>>({})
   const [abierto, setAbierto] = useState(false)
@@ -39,18 +24,9 @@ export default function ReactionBar({
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const fetchTotales =
-      target === 'post' ? fetchPostReactionsTotals :
-      target === 'comment' ? fetchCommentReactionsTotals :
-      fetchMessageReactionsTotals
+    const fetchTotales = target === 'post' ? fetchPostReactionsTotals : fetchCommentReactionsTotals
     fetchTotales(targetId).then((data) => setTotales(data.totals))
   }, [targetId, target])
-
-  useEffect(() => {
-    if (totalesEnVivo) {
-      setTotales(totalesEnVivo)
-    }
-  }, [totalesEnVivo])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -73,9 +49,7 @@ export default function ReactionBar({
 
   async function handleReaccion(tipo: string) {
     const resultado =
-      target === 'post' ? await toggleReactionPost(targetId, tipo) :
-      target === 'comment' ? await toggleReactionComment(targetId, tipo) :
-      await toggleReactionMessage(targetId, tipo)
+      target === 'post' ? await toggleReactionPost(targetId, tipo) : await toggleReactionComment(targetId, tipo)
     setReaccion(resultado.removed ? null : tipo)
     setTotales(resultado.counts)
     setAbierto(false)
@@ -93,7 +67,7 @@ export default function ReactionBar({
   return (
     <div className={styles.wrapper} ref={wrapperRef}>
       <button
-        className={`${styles.trigger} ${variante === 'sutil' ? styles.triggerSutil : ''} ${reaccion ? styles.triggerActive : ''}`}
+        className={`${styles.trigger} ${reaccion ? styles.triggerActive : ''}`}
         onClick={handleAbrir}
         aria-expanded={abierto}
       >

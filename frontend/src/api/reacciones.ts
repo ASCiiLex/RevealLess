@@ -17,7 +17,7 @@ export function toggleReactionComment(commentId: number, reaction: string) {
   return toggle(`/comments/${commentId}/reaction/`, { reaction })
 }
 
-export function toggleReactionMessage(messageId: number, reaction: string) {
+export function toggleReactionMessage(messageId: number, reaction: string): Promise<{ reaccion?: string | null }> {
   return toggle(`/mensajes/${messageId}/reaction/`, { reaction })
 }
 

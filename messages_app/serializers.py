@@ -4,18 +4,16 @@ from .models import Message
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.CharField(source='sender.username', read_only=True)
-    user_reaction = serializers.SerializerMethodField()
+    reaccion = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'text', 'created_at', 'user_reaction']
+        fields = ['id', 'sender', 'text', 'created_at', 'reaccion']
 
-    def get_user_reaction(self, obj):
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return None
-        reaction = obj.reactions.filter(user=request.user).first()
-        return reaction.reaction if reaction else None
+    def get_reaccion(self, obj):
+        """La del destinatario, la única que cuenta (se ignoran las antiguas del remitente).
+        Usa las reacciones precargadas: sin consulta por mensaje."""
+        return next((r.reaction for r in obj.reactions.all() if r.user_id == obj.receiver_id), None)
 
 
 class InboxItemSerializer(serializers.Serializer):

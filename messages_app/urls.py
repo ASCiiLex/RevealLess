@@ -1,8 +1,5 @@
 from django.urls import path
-from .views import (
-    inbox_react_view, chat_react_view,
-    toggle_reaction_message, message_reactions_list,
-)
+from .views import inbox_react_view, chat_react_view, toggle_reaction_message
 from .api_views import InboxListAPIView, ChatHistoryAPIView
 
 urlpatterns = [
@@ -12,7 +9,6 @@ urlpatterns = [
     path('api/<str:username>/', ChatHistoryAPIView.as_view(), name='messages_api_chat'),
 
     path('<int:message_id>/reaction/', toggle_reaction_message, name='toggle_reaction_message'),
-    path('<int:message_id>/reactions/', message_reactions_list, name='message_reactions_list'),
 
     path('<str:username>/', chat_react_view, name='chat'),
 ]

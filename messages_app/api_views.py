@@ -76,7 +76,7 @@ class ChatHistoryAPIView(APIView):
     del otro usuario, envía el recuento real actualizado por WebSocket
     al propio usuario (mismo group_send que la vista Django clásica, no
     un endpoint nuevo de "marcar leído" separado), y devuelve el
-    historial completo de la conversación."""
+    historial completo de la conversación con la reacción de cada mensaje."""
 
     permission_classes = [IsAuthenticated]
 
@@ -99,10 +99,11 @@ class ChatHistoryAPIView(APIView):
             Message.objects
             .filter(sender__in=[request.user, other], receiver__in=[request.user, other])
             .select_related('sender', 'receiver')
+            .prefetch_related('reactions')
             .order_by('created_at')
         )
 
         return Response({
             'other': {'username': other.username, 'avatar': other.profile.image_url if hasattr(other, 'profile') else '/static/img/default_profile.jpg'},
-            'messages': MessageSerializer(messages, many=True, context={'request': request}).data,
+            'messages': MessageSerializer(messages, many=True).data,
         })

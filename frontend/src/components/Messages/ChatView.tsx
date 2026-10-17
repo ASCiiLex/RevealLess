@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './ChatView.module.css'
 import botones from '../../styles/botones.module.css'
-import ReactionBar from '../Feed/ReactionBar'
+import ReaccionMensaje from './ReaccionMensaje'
 import { fetchChatHistory, type ChatMessage } from '../../api/messages'
 import { useChatSocket } from '../../hooks/useChatSocket'
 
@@ -9,20 +9,12 @@ interface Props {
   username: string
 }
 
-interface MensajeUnificado {
-  id: number
-  text: string
-  sender: string
-  created_at: string
-  user_reaction?: string | null
-}
-
 export default function ChatView({ username }: Props) {
   const [historial, setHistorial] = useState<ChatMessage[] | null>(null)
   const [texto, setTexto] = useState('')
   const chatBoxRef = useRef<HTMLDivElement>(null)
 
-  const { mensajesSocket, enviarMensaje, reaccionesEnVivo } = useChatSocket(username)
+  const { mensajesSocket, enviarMensaje, reaccionesEnVivo, fijarReaccion } = useChatSocket(username)
 
   useEffect(() => {
     fetchChatHistory(username).then((data) => {
@@ -30,7 +22,7 @@ export default function ChatView({ username }: Props) {
     })
   }, [username])
 
-  const mensajes: MensajeUnificado[] = [
+  const mensajes: ChatMessage[] = [
     ...(historial ?? []),
     ...mensajesSocket,
   ]
@@ -57,26 +49,29 @@ export default function ChatView({ username }: Props) {
         {mensajes.length === 0 ? (
           <p className={styles.empty}>No hay mensajes todavía.</p>
         ) : (
-          mensajes.map((msg, i) => (
-            <div
-              key={msg.id ?? i}
-              className={`${styles.message} ${msg.sender === username ? styles.received : styles.sent}`}
-            >
-              {msg.text}
-              <div className={styles.time}>
-                {new Date(msg.created_at).toLocaleString()}
+          mensajes.map((msg, i) => {
+            const recibido = msg.sender === username
+            const reaccion = msg.id in reaccionesEnVivo ? reaccionesEnVivo[msg.id] : msg.reaccion
+            return (
+              <div
+                key={msg.id ?? i}
+                className={`${styles.message} ${recibido ? styles.received : styles.sent}`}
+              >
+                {msg.text}
+                <div className={styles.time}>
+                  {new Date(msg.created_at).toLocaleString()}
+                </div>
+                {msg.id && (
+                  <ReaccionMensaje
+                    messageId={msg.id}
+                    reaccion={reaccion ?? null}
+                    editable={recibido}
+                    onCambio={(nueva) => fijarReaccion(msg.id, nueva)}
+                  />
+                )}
               </div>
-              {msg.id && (
-                <ReactionBar
-                  targetId={msg.id}
-                  target="message"
-                  reaccionInicial={msg.user_reaction ?? null}
-                  totalesEnVivo={reaccionesEnVivo[msg.id]}
-                  variante="sutil"
-                />
-              )}
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 

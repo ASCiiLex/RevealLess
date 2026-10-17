@@ -5,6 +5,7 @@ from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 
 from .models import Message
+from .salas import sala_chat
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +24,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        usernames = sorted([self.user.username, self.other_username])
-        self.room_name = f"chat_{usernames[0]}_{usernames[1]}"
+        self.room_name = sala_chat(self.user.username, self.other_username)
 
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         await self.accept()
@@ -52,6 +52,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "text": message.text,
             "sender": message.sender.username,
             "created_at": message.created_at.isoformat(),
+            "reaccion": None,
         }
 
         await self.channel_layer.group_send(

@@ -12,6 +12,8 @@ export interface ChatMessage {
   sender: string
   text: string
   created_at: string
+  /** Reacción del destinatario, la única posible. */
+  reaccion: string | null
 }
 
 export interface ChatHistory {

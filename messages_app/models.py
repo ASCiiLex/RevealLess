@@ -32,9 +32,8 @@ class Message(models.Model):
 
 class MessageReaction(models.Model):
     """Mismo catálogo de 11 emociones que PostReaction/CommentReaction.
-    Solo el remitente o el destinatario del mensaje pueden reaccionar
-    (verificado en la vista, no aquí) -- una reacción a un mensaje
-    ajeno a la conversación no tiene sentido."""
+    Solo reacciona el destinatario del mensaje (verificado en la vista):
+    en un chat de dos, reaccionar al mensaje propio no aporta nada."""
 
     REACTION_CHOICES = [
         ("me_gusta", "Me gusta"),

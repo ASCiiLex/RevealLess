@@ -1,35 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-
-interface MensajeEntrante {
-  id: number
-  text: string
-  sender: string
-  created_at: string
-}
+import type { ChatMessage } from '../api/messages'
 
 interface ReaccionEntrante {
   type: 'reaction'
   message_id: number
-  counts: Record<string, number>
+  reaccion: string | null
 }
 
-export interface ChatSocketMessage {
-  id: number
-  text: string
-  sender: string
-  created_at: string
-}
-
-/** Réplica de messages_ws.js: conecta a /ws/chat/<username>/, reconecta
- * cada segundo si se cierra. Devuelve la lista de mensajes recibidos
- * por el socket (no el historial inicial, que se carga aparte vía
- * REST), una función para enviar un mensaje nuevo, y el mapa de
- * conteos de reacciones actualizado en vivo cuando el otro
- * participante reacciona (o cuando reaccionas tú mismo, ya que el
- * servidor reenvía el evento a toda la sala, incluido el emisor). */
+/** Conecta a /ws/chat/<username>/ y reconecta cada segundo si se cierra. Devuelve los mensajes
+ * llegados por el socket (el historial se carga aparte), la función de envío y la reacción en vivo
+ * de cada mensaje: el servidor la reenvía a toda la sala, incluido quien reacciona. */
 export function useChatSocket(otherUsername: string) {
-  const [mensajesSocket, setMensajesSocket] = useState<ChatSocketMessage[]>([])
-  const [reaccionesEnVivo, setReaccionesEnVivo] = useState<Record<number, Record<string, number>>>({})
+  const [mensajesSocket, setMensajesSocket] = useState<ChatMessage[]>([])
+  const [reaccionesEnVivo, setReaccionesEnVivo] = useState<Record<number, string | null>>({})
   const socketRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
@@ -42,14 +25,14 @@ export function useChatSocket(otherUsername: string) {
       socketRef.current = socket
 
       socket.onmessage = (e) => {
-        const data: MensajeEntrante | ReaccionEntrante = JSON.parse(e.data)
+        const data: ChatMessage | ReaccionEntrante = JSON.parse(e.data)
 
         if ('type' in data && data.type === 'reaction') {
-          setReaccionesEnVivo((prev) => ({ ...prev, [data.message_id]: data.counts }))
+          setReaccionesEnVivo((prev) => ({ ...prev, [data.message_id]: data.reaccion }))
           return
         }
 
-        setMensajesSocket((prev) => [...prev, data as MensajeEntrante])
+        setMensajesSocket((prev) => [...prev, data as ChatMessage])
       }
 
       socket.onclose = () => {
@@ -74,5 +57,10 @@ export function useChatSocket(otherUsername: string) {
     socket.send(JSON.stringify({ text }))
   }
 
-  return { mensajesSocket, enviarMensaje, reaccionesEnVivo }
+  /** Refleja al momento la respuesta propia, sin esperar al eco del socket. */
+  function fijarReaccion(messageId: number, reaccion: string | null) {
+    setReaccionesEnVivo((prev) => ({ ...prev, [messageId]: reaccion }))
+  }
+
+  return { mensajesSocket, enviarMensaje, reaccionesEnVivo, fijarReaccion }
 }
