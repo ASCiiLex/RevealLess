@@ -221,7 +221,7 @@
   color: var(--fog);
 }
 
-/* Columna estrecha (móvil): controles compactos y sin el total visible. */
+/* Columna estrecha: controles compactos y sin el total visible. */
 @container (max-width: 280px) {
   .stepper {
     gap: 6px 5px;
@@ -258,5 +258,32 @@
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+  }
+}
+
+/* Columna de móvil junto a la portada (~180px): los tres grupos caben en una línea (~162px). */
+@container (max-width: 210px) {
+  .stepper {
+    gap: 4px;
+  }
+
+  .grupo {
+    gap: 2px;
+  }
+
+  .paso {
+    width: 24px;
+  }
+
+  .campo {
+    padding: 0 2px;
+  }
+
+  .cantidad {
+    width: 28px;
+  }
+
+  .numero {
+    width: 46px;
   }
 }

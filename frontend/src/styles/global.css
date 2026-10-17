@@ -3,6 +3,12 @@
 @import '@fontsource/public-sans/600.css';
 @import './tokens.css';
 
+/* Solo tema claro: impide que el modo oscuro del navegador invierta los colores por su cuenta.
+   Un tema oscuro propio queda para v2. */
+:root {
+  color-scheme: only light;
+}
+
 * {
   box-sizing: border-box;
 }
