@@ -11,19 +11,20 @@ from narrative.serializers import PostSerializer
 from narrative.services.etiquetado import etiquetar_personajes
 from ..models import Post
 from ..serializers import PostUpdateSerializer
-from .comun import ERROR_CRUZADA_INCOMPLETA, ERROR_TEMA_OTRA_OBRA, error_400, tema_de_otra_obra
+from .comun import ERROR_CRUZADA_INCOMPLETA, ERROR_TEMA_OTRA_OBRA, error_400, frontera_minima, tema_de_otra_obra
 
 CAMPOS_EDITABLES = (
     'text', 'image', 'referencia_narrativa', 'nivel_spoiler',
     'emocion_autor', 'obra_cruzada', 'frontera_cruzada',
 )
 # Cambian qué personajes se nombran o hasta dónde se pueden etiquetar.
-CAMPOS_QUE_REETIQUETAN = {'text', 'frontera_spoiler', 'obra_cruzada', 'frontera_cruzada'}
+CAMPOS_QUE_REETIQUETAN = {'text', 'frontera_spoiler', 'referencia_narrativa', 'obra_cruzada', 'frontera_cruzada'}
 
 
 class PostUpdateAPIView(APIView):
     """Solo el autor edita. Sin IA ni detección de referencia cruzada:
-    una frontera enviada se marca ORIGEN_EXPLICITO; si no se envía, no se toca."""
+    una frontera enviada se marca ORIGEN_EXPLICITO; si no se envía, no se toca.
+    En ambos casos nunca queda por debajo de la parte de la que habla el post."""
 
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -54,6 +55,7 @@ class PostUpdateAPIView(APIView):
         if 'frontera_spoiler' in datos:
             post.frontera_spoiler = datos['frontera_spoiler']
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
+        post.frontera_spoiler = frontera_minima(post.frontera_spoiler, post.referencia_narrativa)
 
         # Se valida el estado resultante: la edición puede tocar solo uno de los dos campos.
         if bool(post.obra_cruzada_id) != bool(post.frontera_cruzada_id):

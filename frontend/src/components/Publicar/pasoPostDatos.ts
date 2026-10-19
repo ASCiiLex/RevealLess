@@ -20,6 +20,11 @@ export function mensajeDeError(err: unknown): string {
   return ERROR_GENERICO
 }
 
+// Algún personaje elegido de la obra comparada: su primera aparición basta como frontera cruzada.
+export function hayPersonajeDeOtraObra(personajes: PersonajeElegido[]): boolean {
+  return personajes.some((p) => p.deOtraObra && p.id !== null)
+}
+
 // Galería, segunda obra y personajes: se añaden a la petición solo si se usan.
 export function datosExtra(
   imagenes: ImagenBorrador[],
@@ -40,8 +45,9 @@ export function datosExtra(
     extra.disposicion = disposicionEfectiva(imagenes.length, disposicion)
   }
   if (comparativa.activa) {
-    if (comparativa.obra && parteOtra.id) {
+    if (comparativa.obra && (parteOtra.id || hayPersonajeDeOtraObra(personajes))) {
       extra.obraCruzadaId = comparativa.obra.id
+      // Sin parte: el servidor usa la primera aparición de sus personajes enfrentados.
       extra.fronteraCruzadaId = parteOtra.id
       extra.modoCruce = comparativa.modo
     }

@@ -27,6 +27,7 @@ from ..serializers import PostCreateSerializer
 from .comun import (
     ERROR_COMPARADO_AJENO,
     ERROR_CRUZADA_INCOMPLETA,
+    ERROR_CRUZADA_SIN_FRONTERA,
     ERROR_DISPOSICION,
     ERROR_IMAGEN_Y_GALERIA,
     ERROR_MODO_CRUCE,
@@ -34,6 +35,7 @@ from .comun import (
     ERROR_SIN_REFERENCIA,
     ERROR_TEMA_OTRA_OBRA,
     error_400,
+    frontera_minima,
     tema_de_otra_obra,
 )
 
@@ -87,8 +89,9 @@ def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None
 
 
 def _cubrir_personajes_comparados(post, comparados):
-    """Eleva la frontera (o la cruzada) hasta la primera aparición de cada personaje
-    comparado: quien pueda leer el post ya los conoce a todos."""
+    """Eleva la frontera y la cruzada hasta la primera aparición de cada personaje comparado
+    en cada obra donde aparece: quien pueda leer el post ya los conoce a todos.
+    Sin parte elegida en la obra cruzada, su frontera queda en esa primera aparición."""
     for personaje in comparados:
         for obra_id, campo in ((post.obra_id, 'frontera_spoiler'), (post.obra_cruzada_id, 'frontera_cruzada')):
             if not obra_id:
@@ -99,7 +102,6 @@ def _cubrir_personajes_comparados(post, comparados):
             actual = getattr(post, campo)
             if actual is None or primera.orden_fin > actual.orden_fin:
                 setattr(post, campo, primera)
-            break
 
 
 def _nombres_limpios(nombres):
@@ -135,7 +137,7 @@ class PostCreateAPIView(APIView):
 
         obra_cruzada = datos.get('obra_cruzada')
         frontera_cruzada = datos.get('frontera_cruzada')
-        if bool(obra_cruzada) != bool(frontera_cruzada):
+        if frontera_cruzada and not obra_cruzada:
             return error_400(ERROR_CRUZADA_INCOMPLETA)
         modo_cruce = datos.get('modo_cruce') or Post.MODO_COMPARATIVA
         if not obra_cruzada:
@@ -178,6 +180,11 @@ class PostCreateAPIView(APIView):
             obras_validas = [obra.id] + ([obra_cruzada.id] if obra_cruzada else [])
             if any(not p.unidades.filter(obra_id__in=obras_validas).exists() for p in comparados):
                 return error_400(ERROR_COMPARADO_AJENO)
+        # Sin parte de la obra cruzada, su frontera sale de algún personaje comparado de esa obra.
+        if obra_cruzada and not frontera_cruzada and not any(
+            p.unidades.filter(obra_id=obra_cruzada.id).exists() for p in comparados
+        ):
+            return error_400(ERROR_CRUZADA_SIN_FRONTERA)
 
         if not obra_cruzada and not datos.get('descartar_referencia_cruzada'):
             detecciones = detectar_posibles_referencias_cruzadas(datos['text'], obra)
@@ -225,6 +232,7 @@ class PostCreateAPIView(APIView):
             request=request,
         )
         _cubrir_personajes_comparados(post, comparados)
+        post.frontera_spoiler = frontera_minima(post.frontera_spoiler, post.referencia_narrativa)
 
         galeria = [
             PostImagen(

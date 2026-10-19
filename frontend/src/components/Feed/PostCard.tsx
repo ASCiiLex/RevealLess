@@ -33,6 +33,13 @@ export default function PostCard({ post }: Props) {
             <>
               <span className={styles.cruce} aria-label="comparado con">⇄</span>
               <span>{post.obra_cruzada.titulo}</span>
+              {/* Quien ve la tarjeta ya superó esta frontera: indicarla no revela nada. */}
+              {post.frontera_cruzada && (
+                <>
+                  <span className={styles.narrativeSeparator}>·</span>
+                  <NarrativeLabel unidad={post.frontera_cruzada} />
+                </>
+              )}
             </>
           )}
           {post.referencia_narrativa && (

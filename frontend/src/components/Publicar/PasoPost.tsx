@@ -6,7 +6,7 @@ import GaleriaEditor from './GaleriaEditor'
 import SelectorParteTema, { type Seleccion } from './SelectorParteTema'
 import PersonajesEnfrentados, { type PersonajeElegido } from './PersonajesEnfrentados'
 import type { EstadoComparativa } from './Comparativa'
-import { SIN_SELECCION, datosExtra, mensajeDeError } from './pasoPostDatos'
+import { SIN_SELECCION, datosExtra, hayPersonajeDeOtraObra, mensajeDeError } from './pasoPostDatos'
 import { useGaleriaBorrador } from './useGaleriaBorrador'
 import { useParteOtra } from './useParteOtra'
 import AvisoIA from '../IA/AvisoIA'
@@ -143,13 +143,16 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   const pistaFrontera = sugerenciaVigente
     ? ''
     : frontera.id
-      ? 'Frontera elegida por ti.'
+      ? 'Frontera elegida por ti. Nunca quedará por debajo de la parte de la que hablas.'
       : 'Si no indicas ninguna, la IA la estimará al publicar; si no puede, se usa tu progreso actual.'
 
   // Basta con parte, tema o frontera: la parte es contexto, la visibilidad la decide la frontera.
   const hayAncla = Boolean(parte.id || tema.id || temaPropuesto || frontera.id)
+  // Con un personaje de la otra obra, su parte es opcional: la frontera cruzada sale de su primera aparición.
+  const conPersonajeDeOtra = hayPersonajeDeOtraObra(personajes)
   const comparativaIncompleta =
-    comparativa.activa && ((comparativa.obra !== null && !parteOtra.id) || personajes.length === 1)
+    comparativa.activa &&
+    ((comparativa.obra !== null && !parteOtra.id && !conPersonajeDeOtra) || personajes.length === 1)
 
   async function enviar(ajustesEnvio: Ajustes) {
     if (!obraSlug || !hayAncla || enviando) return
@@ -202,6 +205,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   }
 
   const otra = comparativa.activa ? comparativa.obra : null
+  const parteOtraOpcional = conPersonajeDeOtra && !parteOtra.id
 
   return (
     <>
@@ -275,8 +279,13 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
               seleccion={parteOtra}
               onChange={elegirParteOtra}
               placeholder="Buscar unidad..."
+              emptyLabel={conPersonajeDeOtra ? 'Sin parte concreta' : undefined}
               buscar={buscarUnidadesOtra}
-              hint={pistaParteOtra(otra.titulo)}
+              hint={
+                parteOtraOpcional
+                  ? `Opcional: sin parte, lo verá quien ya conozca a sus personajes en ${otra.titulo}.`
+                  : pistaParteOtra(otra.titulo)
+              }
             />
           )}
 
