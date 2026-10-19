@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Case, Exists, F, IntegerField, OuterRef, Subquery, Value, When
+from django.db.models.functions import Greatest
 
 from .catalogo import Obra, UnidadNarrativa
 
@@ -18,3 +20,20 @@ class ProgresoUsuario(models.Model):
 
     def __str__(self):
         return f'{self.usuario.username} · {self.obra.titulo} · {self.orden_absoluto}'
+
+
+def refrescar_progresos(obra):
+    """orden_absoluto se guarda al declarar: tras recalcular el orden de la obra se actualiza
+    con el criterio de calcular_orden_absoluto (hoja: su inicio; bloque: justo antes)."""
+    tiene_hijos = Exists(UnidadNarrativa.objects.filter(padre=OuterRef('pk')))
+    posicion = (
+        UnidadNarrativa.objects
+        .filter(pk=OuterRef('unidad_actual'))
+        .annotate(posicion=Case(
+            When(tiene_hijos, then=Greatest(F('orden_inicio') - 1, Value(0), output_field=IntegerField())),
+            default=F('orden_inicio'),
+            output_field=IntegerField(),
+        ))
+        .values('posicion')[:1]
+    )
+    ProgresoUsuario.objects.filter(obra=obra).update(orden_absoluto=Subquery(posicion))

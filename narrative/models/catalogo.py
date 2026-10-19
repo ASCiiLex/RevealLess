@@ -132,9 +132,11 @@ class Obra(models.Model):
 
     def recalcular_orden(self):
         recalcular_orden(self)
-        # Diferido: clasificacion importa este módulo.
+        # Diferidos: clasificacion y progreso importan este módulo.
         from .clasificacion import refrescar_fronteras
+        from .progreso import refrescar_progresos
         refrescar_fronteras(self)
+        refrescar_progresos(self)
 
 
 class UnidadNarrativa(models.Model):
