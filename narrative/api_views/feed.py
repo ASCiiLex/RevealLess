@@ -23,10 +23,9 @@ class FeedAPIView(generics.ListAPIView):
     def get_serializer_context(self):
         return {'request': self.request}
 
-    def get_queryset(self):
-        user = self.request.user
-        params = self.request.query_params
-
+    def _ids_del_feed(self, user, params):
+        """Qué posts entran en el feed, solo como ids. Los joins de las condiciones pueden repetir
+        un post; el IN de la consulta principal los descarta sin DISTINCT sobre filas anchas."""
         # Comparativas: también llegan a quien sigue la obra cruzada (visible_for decide las fronteras).
         obras_seguidas = Suscripcion.objects.filter(
             usuario=user, activa=True, obra__isnull=False, unidad__isnull=True, tema__isnull=True,
@@ -38,12 +37,36 @@ class FeedAPIView(generics.ListAPIView):
             | filtro_posts_suscripciones(user)
             | Q(obra_cruzada_id__in=obras_seguidas)
         )
+        base = Post.objects.filter(condiciones_del_feed).exclude(filtro_posts_silenciados(user))
 
-        queryset = (
+        obra_id = entero_o_none(params.get('obra'), 'obra')
+        if obra_id is not None:
+            base = base.filter(Q(obra_id=obra_id) | Q(obra_cruzada_id=obra_id))
+
+        hashtag = params.get('hashtag')
+        if hashtag is not None:
+            base = base.filter(post_hashtags__hashtag__name=hashtag)
+
+        tema_id = entero_o_none(params.get('tema'), 'tema')
+        if tema_id is not None:
+            tema = get_object_or_404(TemaTransversal.objects.select_related('obra'), id=tema_id)
+            base = base.filter(
+                temas_transversales__nombre=tema.nombre,
+                temas_transversales__obra_id__in=ids_familia(tema.obra),
+            )
+
+        personaje_id = entero_o_none(params.get('personaje'), 'personaje')
+        if personaje_id is not None:
+            # Incluye sus otras identidades ya conocidas por el lector (Usopp → también Sogeking).
+            base = base.filter(q_posts_de_personaje(ids_con_identidades(personaje_id, user)))
+
+        return base.values('id')
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
             Post.objects
-            .filter(condiciones_del_feed)
-            .exclude(filtro_posts_silenciados(user))
-            .distinct()
+            .filter(id__in=self._ids_del_feed(user, self.request.query_params))
             .select_related(
                 'author__profile',
                 'obra',
@@ -63,27 +86,5 @@ class FeedAPIView(generics.ListAPIView):
             )
             .visible_for(user)
             .with_feed_stats()
+            .order_by('-created_at')
         )
-
-        obra_id = entero_o_none(params.get('obra'), 'obra')
-        if obra_id is not None:
-            queryset = queryset.filter(Q(obra_id=obra_id) | Q(obra_cruzada_id=obra_id))
-
-        hashtag = params.get('hashtag')
-        if hashtag is not None:
-            queryset = queryset.filter(post_hashtags__hashtag__name=hashtag)
-
-        tema_id = entero_o_none(params.get('tema'), 'tema')
-        if tema_id is not None:
-            tema = get_object_or_404(TemaTransversal.objects.select_related('obra'), id=tema_id)
-            queryset = queryset.filter(
-                temas_transversales__nombre=tema.nombre,
-                temas_transversales__obra_id__in=ids_familia(tema.obra),
-            )
-
-        personaje_id = entero_o_none(params.get('personaje'), 'personaje')
-        if personaje_id is not None:
-            # Incluye sus otras identidades ya conocidas por el lector (Usopp → también Sogeking).
-            queryset = queryset.filter(q_posts_de_personaje(ids_con_identidades(personaje_id, user)))
-
-        return queryset.order_by('-created_at')

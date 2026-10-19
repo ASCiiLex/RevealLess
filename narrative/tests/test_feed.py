@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -135,6 +137,16 @@ class FeedAPIViewTests(TestCase):
         response = self.client.get(reverse('narrative_api_feed'))
         ids = [p['id'] for p in response.data['results']]
         self.assertIn(self.post_propio.id, ids)
+
+    def test_la_consulta_principal_no_usa_distinct(self):
+        """El DISTINCT sobre filas con todos los joins era la consulta más lenta en producción:
+        los duplicados se resuelven en la subconsulta de ids."""
+        self.client.force_authenticate(user=self.usuario)
+        with CaptureQueriesContext(connection) as consultas:
+            self.client.get(reverse('narrative_api_feed'))
+        self.assertFalse(
+            [c['sql'] for c in consultas if c['sql'].startswith('SELECT DISTINCT "posts_post"')]
+        )
 
 
 class FeedFiltroHashtagTests(TestCase):
