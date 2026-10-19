@@ -3,8 +3,9 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from narrative.models import Obra, UnidadNarrativa
+from narrative.models import Obra, TemaTransversal, UnidadNarrativa
 from narrative.services import actualizar_progreso
+from subscriptions.models import Suscripcion
 from subscriptions.services import crear_suscripcion
 
 
@@ -26,115 +27,101 @@ class CatalogoObrasAPIViewTests(TestCase):
         actualizar_progreso(self.usuario, self.obra_con_progreso, self.e1)
         crear_suscripcion(self.usuario, self.obra_con_suscripcion)
 
+    def _catalogo(self):
+        self.client.force_authenticate(user=self.usuario)
+        return self.client.get(reverse('narrative_api_obras')).data
+
+    @staticmethod
+    def _slugs(lista):
+        return {o['slug'] for o in lista if not o.get('es_tema')}
+
+    @staticmethod
+    def _lomo(lista, slug):
+        return next(o for o in lista if o['slug'] == slug and not o.get('es_tema'))
+
     def test_requiere_autenticacion(self):
         response = self.client.get(reverse('narrative_api_obras'))
         self.assertEqual(response.status_code, 403)
 
     def test_obra_con_progreso_va_a_biblioteca(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        slugs = [o['slug'] for o in response.data['biblioteca']]
-        self.assertIn('con-progreso', slugs)
+        self.assertIn('con-progreso', self._slugs(self._catalogo()['biblioteca']))
 
     def test_obra_con_suscripcion_va_a_biblioteca(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        slugs = [o['slug'] for o in response.data['biblioteca']]
-        self.assertIn('con-suscripcion', slugs)
+        self.assertIn('con-suscripcion', self._slugs(self._catalogo()['biblioteca']))
 
-    def test_obra_sin_relacion_va_a_descubrir(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        slugs_descubrir = [o['slug'] for o in response.data['descubrir']]
-        slugs_biblioteca = [o['slug'] for o in response.data['biblioteca']]
-        self.assertIn('sin-relacion', slugs_descubrir)
-        self.assertNotIn('sin-relacion', slugs_biblioteca)
+    def test_obra_sin_relacion_va_solo_a_descubrir(self):
+        datos = self._catalogo()
+        self.assertIn('sin-relacion', self._slugs(datos['descubrir']))
+        self.assertNotIn('sin-relacion', self._slugs(datos['biblioteca']))
 
-    def test_una_obra_no_aparece_en_ambas_listas(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        slugs_biblioteca = {o['slug'] for o in response.data['biblioteca']}
-        slugs_descubrir = {o['slug'] for o in response.data['descubrir']}
-        self.assertEqual(slugs_biblioteca & slugs_descubrir, set())
+    def test_obra_con_progreso_sin_seguir_aparece_en_ambas(self):
+        datos = self._catalogo()
+        self.assertIn('con-progreso', self._slugs(datos['biblioteca']))
+        self.assertIn('con-progreso', self._slugs(datos['descubrir']))
 
-    def test_respuesta_incluye_imagen_url_y_categorias(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = response.data['biblioteca'][0]
+    def test_obra_seguida_entera_no_aparece_en_descubrir(self):
+        self.assertNotIn('con-suscripcion', self._slugs(self._catalogo()['descubrir']))
+
+    def test_obra_silenciada_queda_en_biblioteca_marcada_y_fuera_de_descubrir(self):
+        Suscripcion.objects.filter(usuario=self.usuario, obra=self.obra_con_suscripcion).update(activa=False)
+        datos = self._catalogo()
+        lomo = self._lomo(datos['biblioteca'], 'con-suscripcion')
+        self.assertTrue(lomo['silenciada'])
+        self.assertTrue(lomo['suscrito'])
+        self.assertNotIn('con-suscripcion', self._slugs(datos['descubrir']))
+
+    def test_respuesta_incluye_imagen_url_categorias_y_silenciada(self):
+        obra_data = self._catalogo()['biblioteca'][0]
         self.assertIn('imagen_url', obra_data)
         self.assertIn('categorias', obra_data)
+        self.assertIn('silenciada', obra_data)
 
-    def test_progreso_pct_calculado_para_obra_con_progreso(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = next(
-            o for o in response.data['biblioteca'] if o['slug'] == 'con-progreso'
-        )
-        self.assertEqual(obra_data['progreso_pct'], 100)
+    def test_progreso_pct_en_ambas_estanterias(self):
+        datos = self._catalogo()
+        self.assertEqual(self._lomo(datos['biblioteca'], 'con-progreso')['progreso_pct'], 100)
+        self.assertEqual(self._lomo(datos['descubrir'], 'con-progreso')['progreso_pct'], 100)
 
     def test_progreso_pct_es_none_sin_progreso_registrado(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = next(
-            o for o in response.data['biblioteca'] if o['slug'] == 'con-suscripcion'
-        )
-        self.assertIsNone(obra_data['progreso_pct'])
-
-    def test_progreso_pct_es_none_en_descubrir(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = response.data['descubrir'][0]
-        self.assertIsNone(obra_data['progreso_pct'])
+        datos = self._catalogo()
+        self.assertIsNone(self._lomo(datos['biblioteca'], 'con-suscripcion')['progreso_pct'])
+        self.assertIsNone(self._lomo(datos['descubrir'], 'sin-relacion')['progreso_pct'])
 
     def test_suscrito_true_para_obra_con_suscripcion(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = next(
-            o for o in response.data['biblioteca'] if o['slug'] == 'con-suscripcion'
-        )
-        self.assertTrue(obra_data['suscrito'])
+        self.assertTrue(self._lomo(self._catalogo()['biblioteca'], 'con-suscripcion')['suscrito'])
 
     def test_suscrito_false_para_obra_solo_con_progreso(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = next(
-            o for o in response.data['biblioteca'] if o['slug'] == 'con-progreso'
-        )
-        self.assertFalse(obra_data['suscrito'])
+        self.assertFalse(self._lomo(self._catalogo()['biblioteca'], 'con-progreso')['suscrito'])
 
     def test_suscripcion_id_presente_para_suscripcion_de_obra_completa(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = next(
-            o for o in response.data['biblioteca'] if o['slug'] == 'con-suscripcion'
-        )
-        self.assertIsNotNone(obra_data['suscripcion_id'])
+        self.assertIsNotNone(self._lomo(self._catalogo()['biblioteca'], 'con-suscripcion')['suscripcion_id'])
 
     def test_suscripcion_id_es_none_sin_ninguna_suscripcion(self):
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = next(
-            o for o in response.data['biblioteca'] if o['slug'] == 'con-progreso'
-        )
-        self.assertIsNone(obra_data['suscripcion_id'])
+        self.assertIsNone(self._lomo(self._catalogo()['biblioteca'], 'con-progreso')['suscripcion_id'])
 
-    def test_suscripcion_id_es_none_si_la_suscripcion_es_de_nivel_fino(self):
-        """El campo suscripcion_id representa exclusivamente la
-        suscripción a nivel obra completa. Si el usuario solo está
-        suscrito a una unidad o tema de esa obra, suscrito puede ser
-        True (la obra entra en Biblioteca) pero suscripcion_id debe ser
-        None, porque no hay ninguna suscripción de obra completa que
-        el botón Seguir/Siguiendo del Lomo pueda deshacer."""
+    def test_suscripcion_de_nivel_fino_no_marca_la_obra_como_seguida(self):
+        """Solo la suscripción a obra completa cuenta como «Siguiendo»: es la única que el
+        botón del lomo puede deshacer. La obra entra en Biblioteca y sigue en Descubrir."""
         obra_solo_unidad = Obra.objects.create(titulo='Solo unidad', slug='solo-unidad')
         unidad = UnidadNarrativa.objects.create(
             obra=obra_solo_unidad, tipo='arco', nombre='Arco 1', orden_local=1,
         )
         crear_suscripcion(self.usuario, obra_solo_unidad, unidad=unidad)
 
-        self.client.force_authenticate(user=self.usuario)
-        response = self.client.get(reverse('narrative_api_obras'))
-        obra_data = next(
-            o for o in response.data['biblioteca'] if o['slug'] == 'solo-unidad'
-        )
-        self.assertTrue(obra_data['suscrito'])
-        self.assertIsNone(obra_data['suscripcion_id'])
+        datos = self._catalogo()
+        lomo = self._lomo(datos['biblioteca'], 'solo-unidad')
+        self.assertFalse(lomo['suscrito'])
+        self.assertIsNone(lomo['suscripcion_id'])
+        self.assertIn('solo-unidad', self._slugs(datos['descubrir']))
+
+    def test_lomo_de_tema_suscrito_y_silenciado(self):
+        tema = TemaTransversal.objects.create(obra=self.obra_sin_relacion, nombre='Tema seguido')
+        crear_suscripcion(self.usuario, self.obra_sin_relacion, tema=tema)
+
+        lomo = next(o for o in self._catalogo()['biblioteca'] if o.get('es_tema'))
+        self.assertEqual(lomo['tema_id'], tema.id)
+        self.assertEqual(lomo['id'], -tema.id)
+        self.assertFalse(lomo['silenciada'])
+
+        Suscripcion.objects.filter(usuario=self.usuario, tema=tema).update(activa=False)
+        lomo = next(o for o in self._catalogo()['biblioteca'] if o.get('es_tema'))
+        self.assertTrue(lomo['silenciada'])

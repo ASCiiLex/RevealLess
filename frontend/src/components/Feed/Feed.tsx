@@ -25,6 +25,7 @@ interface Props {
 }
 
 const MENSAJE_VACIO = {
+  silenciado: 'Lo has silenciado: no verás sus publicaciones hasta reactivarlo desde Suscripciones.',
   filtro: 'No hay publicaciones visibles con este filtro por ahora.',
   biblioteca: 'Aún no hay nada que mostrar aquí. Sigue una obra o publica algo para empezar.',
   descubrir:
@@ -32,7 +33,7 @@ const MENSAJE_VACIO = {
 }
 
 export default function Feed({ filtroExterno, version = 0 }: Props) {
-  const { view, obraFiltro } = useCatalogView()
+  const { view, obraFiltro, temaFiltro, filtroSilenciado } = useCatalogView()
   const [posts, setPosts] = useState<FeedPost[] | null>(null)
   const [siguiente, setSiguiente] = useState<string | null>(null)
   const [cargandoMas, setCargandoMas] = useState(false)
@@ -86,9 +87,14 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
       return
     }
 
+    if (!filtroExterno && temaFiltro !== null) {
+      fetchFeed({ temaId: temaFiltro, vista }).then(aplicar).catch(vaciar)
+      return
+    }
+
     const obraId = filtroExterno?.tipo === 'obra' ? Number(filtroExterno.valor) : obraFiltro
     fetchFeed({ obraId, vista }).then(aplicar).catch(vaciar)
-  }, [obraFiltro, filtroExterno, version, vista])
+  }, [obraFiltro, temaFiltro, filtroExterno, version, vista])
 
   const cargarMas = useCallback(() => {
     if (!siguiente || cargandoMas) return
@@ -131,7 +137,13 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
     return null
   }
 
-  const hayFiltro = Boolean(filtroExterno) || obraFiltro !== null
+  const hayFiltro = Boolean(filtroExterno) || obraFiltro !== null || temaFiltro !== null
+
+  const mensajeVacio = filtroSilenciado
+    ? MENSAJE_VACIO.silenciado
+    : hayFiltro
+      ? MENSAJE_VACIO.filtro
+      : MENSAJE_VACIO[vista]
 
   const tituloFiltro =
     filtroExterno?.tipo === 'hashtag'
@@ -156,7 +168,7 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
       {filtroExterno && <FilterHeader titulo={tituloFiltro ?? ''} linkHref={linkHrefFiltro} />}
 
       {posts.length === 0 ? (
-        <p className={styles.empty}>{hayFiltro ? MENSAJE_VACIO.filtro : MENSAJE_VACIO[vista]}</p>
+        <p className={styles.empty}>{mensajeVacio}</p>
       ) : (
         posts.map((post) => <PostCard key={post.id} post={post} />)
       )}

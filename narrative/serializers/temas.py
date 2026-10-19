@@ -9,6 +9,7 @@ class CarruselMixin(serializers.Serializer):
     imagen_url = serializers.SerializerMethodField()
     suscrito = serializers.SerializerMethodField()
     suscripcion_id = serializers.SerializerMethodField()
+    silenciada = serializers.SerializerMethodField()
 
     def get_imagen_url(self, obj):
         return obj.image_url
@@ -44,6 +45,9 @@ class TemaLomoSerializer(CarruselMixin):
 
     def get_suscripcion_id(self, obj):
         return self.context.get('suscripcion_id_por_tema', {}).get(obj.id)
+
+    def get_silenciada(self, obj):
+        return obj.id in self.context.get('ids_temas_silenciados', set())
 
     def get_es_tema(self, obj):
         return True

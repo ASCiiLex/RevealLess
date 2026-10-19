@@ -34,7 +34,14 @@ function coincide(obra: LomoObra, filtros: Filtros) {
 }
 
 export default function Carousel({ onCambioSuscripcion }: Props) {
-  const { view, obraFiltro, setObraFiltro } = useCatalogView()
+  const {
+    view,
+    obraFiltro,
+    setObraFiltro,
+    temaFiltro,
+    setTemaFiltro,
+    setFiltroSilenciado,
+  } = useCatalogView()
   const [obras, setObras] = useState<{ biblioteca: LomoObra[]; descubrir: LomoObra[] } | null>(
     null
   )
@@ -60,7 +67,9 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
   useEffect(() => {
     setFiltros({})
     setObraFiltro(null)
-  }, [view, setObraFiltro])
+    setTemaFiltro(null)
+    setFiltroSilenciado(false)
+  }, [view, setObraFiltro, setTemaFiltro, setFiltroSilenciado])
 
   const listaCompleta = obras ? obras[view] : []
 
@@ -94,8 +103,16 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
     })
   }
 
-  function handleSelectObra(obra: LomoObra) {
-    setObraFiltro(obraFiltro === obra.id ? null : obra.id)
+  function estaActivo(lomo: LomoObra) {
+    return lomo.es_tema ? temaFiltro === lomo.tema_id : obraFiltro === lomo.id
+  }
+
+  // Un tema filtra por su id real; una obra, por el suyo. Pulsar de nuevo quita el filtro.
+  function handleSelectObra(lomo: LomoObra) {
+    const seleccionar = !estaActivo(lomo)
+    setObraFiltro(seleccionar && !lomo.es_tema ? lomo.id : null)
+    setTemaFiltro(seleccionar && lomo.es_tema ? lomo.tema_id ?? null : null)
+    setFiltroSilenciado(seleccionar && Boolean(lomo.silenciada))
   }
 
   function desplazar(direccion: 'left' | 'right') {
@@ -150,7 +167,7 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
                 <Lomo
                   key={obra.id}
                   obra={obra}
-                  activa={obraFiltro === obra.id}
+                  activa={estaActivo(obra)}
                   onSelect={handleSelectObra}
                   mostrarProgreso={view === 'biblioteca'}
                   onCambioSuscripcion={handleCambioSuscripcion}

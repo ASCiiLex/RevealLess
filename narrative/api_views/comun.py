@@ -42,16 +42,21 @@ def temas_planos(obra):
 
 
 def contexto_suscripcion_obra(user):
-    ids_obras_suscritas = set()
+    """Estado de la suscripción a la obra completa: la única que el lomo sigue o deja de seguir.
+    Las de tema, unidad o personaje no marcan la obra como seguida."""
     suscripcion_id_por_obra = {}
-    filas = Suscripcion.objects.filter(usuario=user).values_list('id', 'obra_id', 'unidad_id', 'tema_id')
-    for suscripcion_id, obra_id, unidad_id, tema_id in filas:
-        ids_obras_suscritas.add(obra_id)
-        if unidad_id is None and tema_id is None:
-            suscripcion_id_por_obra[obra_id] = suscripcion_id
+    ids_obras_silenciadas = set()
+    filas = Suscripcion.objects.filter(
+        usuario=user, obra__isnull=False, unidad__isnull=True, tema__isnull=True,
+    ).values_list('id', 'obra_id', 'activa')
+    for suscripcion_id, obra_id, activa in filas:
+        suscripcion_id_por_obra[obra_id] = suscripcion_id
+        if not activa:
+            ids_obras_silenciadas.add(obra_id)
     return {
-        'ids_obras_suscritas': ids_obras_suscritas,
+        'ids_obras_suscritas': set(suscripcion_id_por_obra),
         'suscripcion_id_por_obra': suscripcion_id_por_obra,
+        'ids_obras_silenciadas': ids_obras_silenciadas,
     }
 
 
@@ -62,14 +67,19 @@ def suscripcion_id_por_tema(user):
 
 
 def temas_suscritos_serializados(user):
-    """Temas a los que el usuario esta suscrito individualmente,
+    """Temas a los que el usuario está suscrito individualmente,
     listos para mostrarse como lomos en el carrusel de Biblioteca."""
     from ..serializers import TemaLomoSerializer
 
-    ids_temas = set(suscripcion_id_por_tema(user).keys())
-    if not ids_temas:
+    filas = list(
+        Suscripcion.objects.filter(usuario=user, tema__isnull=False).values_list('tema_id', 'id', 'activa')
+    )
+    if not filas:
         return []
 
-    temas = TemaTransversal.objects.filter(id__in=ids_temas).select_related('obra')
-    contexto = {'suscripcion_id_por_tema': suscripcion_id_por_tema(user)}
+    contexto = {
+        'suscripcion_id_por_tema': {tema_id: suscripcion_id for tema_id, suscripcion_id, _ in filas},
+        'ids_temas_silenciados': {tema_id for tema_id, _, activa in filas if not activa},
+    }
+    temas = TemaTransversal.objects.filter(id__in=contexto['suscripcion_id_por_tema']).select_related('obra')
     return TemaLomoSerializer(temas, many=True, context=contexto).data

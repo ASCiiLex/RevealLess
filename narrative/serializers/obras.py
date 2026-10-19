@@ -26,7 +26,7 @@ def calcular_progreso_pct(orden_absoluto, longitud_total):
 
 
 class ObraSuscripcionMixin(CarruselMixin):
-    """Imagen, categorías y estado de suscripción de una obra, a partir del contexto de la vista."""
+    """Imagen, categorías y estado de la suscripción a la obra completa, a partir del contexto de la vista."""
 
     categorias = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nombre')
 
@@ -36,6 +36,9 @@ class ObraSuscripcionMixin(CarruselMixin):
     def get_suscripcion_id(self, obj):
         return (self.context.get('suscripcion_id_por_obra') or {}).get(obj.id)
 
+    def get_silenciada(self, obj):
+        return obj.id in (self.context.get('ids_obras_silenciadas') or set())
+
 
 class ObraResumenSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
     progreso_pct = serializers.SerializerMethodField()
@@ -44,7 +47,7 @@ class ObraResumenSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         model = Obra
         fields = [
             'id', 'titulo', 'slug', 'imagen_url', 'categorias',
-            'progreso_pct', 'suscrito', 'suscripcion_id',
+            'progreso_pct', 'suscrito', 'suscripcion_id', 'silenciada',
         ]
 
     def get_progreso_pct(self, obj):
@@ -69,7 +72,7 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         model = Obra
         fields = [
             'id', 'titulo', 'slug', 'sinopsis', 'imagen_url', 'categorias', 'categorias_detalle',
-            'suscrito', 'suscripcion_id', 'progreso_pct', 'total_suscriptores', 'temas',
+            'suscrito', 'suscripcion_id', 'silenciada', 'progreso_pct', 'total_suscriptores', 'temas',
             'obras_relacionadas', 'personajes', 'grupos_relevancia',
         ]
 

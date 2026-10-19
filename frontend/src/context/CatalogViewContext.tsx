@@ -7,6 +7,12 @@ interface CatalogViewContextValue {
   setView: (view: CatalogView) => void
   obraFiltro: number | null
   setObraFiltro: (id: number | null) => void
+  // Lomo de tema seleccionado: id real del tema, no el negativo del lomo.
+  temaFiltro: number | null
+  setTemaFiltro: (id: number | null) => void
+  // El lomo seleccionado está silenciado: el feed explica por qué sale vacío.
+  filtroSilenciado: boolean
+  setFiltroSilenciado: (silenciado: boolean) => void
 }
 
 const CatalogViewContext = createContext<CatalogViewContextValue | null>(null)
@@ -19,6 +25,8 @@ function leerViewInicial(): CatalogView {
 export function CatalogViewProvider({ children }: { children: ReactNode }) {
   const [view, setViewState] = useState<CatalogView>(leerViewInicial)
   const [obraFiltro, setObraFiltro] = useState<number | null>(null)
+  const [temaFiltro, setTemaFiltro] = useState<number | null>(null)
+  const [filtroSilenciado, setFiltroSilenciado] = useState(false)
 
   function setView(nuevo: CatalogView) {
     setViewState(nuevo)
@@ -28,7 +36,18 @@ export function CatalogViewProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <CatalogViewContext.Provider value={{ view, setView, obraFiltro, setObraFiltro }}>
+    <CatalogViewContext.Provider
+      value={{
+        view,
+        setView,
+        obraFiltro,
+        setObraFiltro,
+        temaFiltro,
+        setTemaFiltro,
+        filtroSilenciado,
+        setFiltroSilenciado,
+      }}
+    >
       {children}
     </CatalogViewContext.Provider>
   )

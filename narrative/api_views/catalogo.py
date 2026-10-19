@@ -25,6 +25,9 @@ def _normalizar(texto):
 
 
 class CatalogoObrasAPIView(APIView):
+    """Biblioteca: obras con progreso o alguna suscripción. Descubrir: obras que no sigues enteras.
+    Una obra con progreso pero sin seguir aparece en ambas, igual que su contenido en los feeds."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -32,7 +35,6 @@ class CatalogoObrasAPIView(APIView):
             ProgresoUsuario.objects.filter(usuario=request.user).values_list('obra_id', 'orden_absoluto')
         )
         contexto_suscripcion = contexto_suscripcion_obra(request.user)
-        ids = set(progreso_por_obra) | contexto_suscripcion['ids_obras_suscritas']
 
         todas = Obra.objects.prefetch_related('categorias').annotate(
             longitud_total=Max('unidades__orden_fin')
@@ -40,14 +42,16 @@ class CatalogoObrasAPIView(APIView):
         contexto = {'progreso_por_obra': progreso_por_obra, **contexto_suscripcion}
 
         biblioteca = ObraResumenSerializer(
-            todas.filter(id__in=ids), many=True, context=contexto,
+            todas.filter(id__in=ids_biblioteca(request.user)), many=True, context=contexto,
+        ).data
+        descubrir = ObraResumenSerializer(
+            todas.exclude(id__in=list(contexto_suscripcion['suscripcion_id_por_obra'])),
+            many=True, context=contexto,
         ).data
 
         return Response({
             'biblioteca': biblioteca + temas_suscritos_serializados(request.user),
-            'descubrir': ObraResumenSerializer(
-                todas.exclude(id__in=ids), many=True, context=contexto,
-            ).data,
+            'descubrir': descubrir,
         })
 
 

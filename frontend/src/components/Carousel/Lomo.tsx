@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styles from './Lomo.module.css'
 import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
 
@@ -9,8 +9,10 @@ export interface LomoObra {
   imagen_url: string
   categorias: string[]
   progreso_pct?: number
+  // Solo la suscripción a la obra completa (o al tema, en lomos de tema).
   suscrito: boolean
   suscripcion_id: number | null
+  silenciada?: boolean
   es_tema?: boolean
   tema_id?: number | null
 }
@@ -23,10 +25,18 @@ interface Props {
   onCambioSuscripcion?: () => void
 }
 
+const URL_SUSCRIPCIONES = '/suscripciones/'
+
 export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambioSuscripcion }: Props) {
   const [siguiendo, setSiguiendo] = useState(obra.suscrito)
   const [suscripcionId, setSuscripcionId] = useState(obra.suscripcion_id)
   const [cargando, setCargando] = useState(false)
+
+  // Tras recargar el catálogo, el estado del servidor manda sobre el local.
+  useEffect(() => {
+    setSiguiendo(obra.suscrito)
+    setSuscripcionId(obra.suscripcion_id)
+  }, [obra.suscrito, obra.suscripcion_id])
 
   const esTema = !!obra.es_tema
 
@@ -95,19 +105,31 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
         </a>
       )}
 
-      {/* Sin campanas: la campana queda reservada para silenciar desde Suscripciones. */}
-      <button
-        type="button"
-        className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
-        onClick={handleToggleSeguir}
-        disabled={cargando}
-        aria-pressed={siguiendo}
-        aria-label={siguiendo ? `Dejar de seguir ${obra.titulo}` : `Seguir ${obra.titulo}`}
-        title={siguiendo ? 'Dejar de seguir' : 'Seguir'}
-      >
-        <span className={styles.followIcon} aria-hidden="true">{siguiendo ? '✓' : '+'}</span>
-        <span className={styles.actionText}>{siguiendo ? 'Siguiendo' : 'Seguir'}</span>
-      </button>
+      {/* El silencio se gestiona solo desde Suscripciones: aquí se informa, no se cambia. */}
+      {obra.silenciada ? (
+        <a
+          className={styles.progressLink}
+          href={URL_SUSCRIPCIONES}
+          title="Gestionar en Suscripciones"
+          aria-label={`${obra.titulo} está silenciada: gestionar en Suscripciones`}
+        >
+          <span className={styles.progressIcon} aria-hidden="true">🔇</span>
+          <span className={styles.actionText}>Silenciada</span>
+        </a>
+      ) : (
+        <button
+          type="button"
+          className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
+          onClick={handleToggleSeguir}
+          disabled={cargando}
+          aria-pressed={siguiendo}
+          aria-label={siguiendo ? `Dejar de seguir ${obra.titulo}` : `Seguir ${obra.titulo}`}
+          title={siguiendo ? 'Dejar de seguir' : 'Seguir'}
+        >
+          <span className={styles.followIcon} aria-hidden="true">{siguiendo ? '✓' : '+'}</span>
+          <span className={styles.actionText}>{siguiendo ? 'Siguiendo' : 'Seguir'}</span>
+        </button>
+      )}
     </div>
   )
 }
