@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from narrative.models import Obra, Personaje, ProgresoUsuario, UnidadNarrativa
 from posts.models import Post
+from subscriptions.models import Suscripcion
 from subscriptions.services import crear_suscripcion, filtro_posts_suscripciones
 
 
@@ -37,11 +38,14 @@ class PersonajeBase(TestCase):
             usuario=self.usuario, obra=unidad.obra, unidad_actual=unidad, orden_absoluto=unidad.orden_fin,
         )
 
-    def _post(self, unidad):
-        return Post.objects.create(
+    def _post(self, unidad, etiquetado=False):
+        post = Post.objects.create(
             author=self.autor, obra=unidad.obra, text='x',
             referencia_narrativa=unidad, frontera_spoiler=unidad, frontera_origen='explicito',
         )
+        if etiquetado:
+            post.personajes.add(self.personaje)
+        return post
 
 
 class PersonajeLandingTests(PersonajeBase):
@@ -81,27 +85,26 @@ class PersonajeFeedTests(PersonajeBase):
         self._progreso(self.e2)
         crear_suscripcion(self.usuario, obra=self.serie)
 
-    def test_filtra_por_unidad_de_aparicion_y_por_etiqueta(self):
-        dentro = self._post(self.e2)
+    def test_filtra_solo_por_etiqueta(self):
+        """Anclarse a una unidad donde aparece no basta: el post tiene que etiquetarlo."""
+        self._post(self.e2)
         self._post(self.e1)
-        etiquetado = self._post(self.e1)
-        etiquetado.personajes.add(self.personaje)
+        etiquetado = self._post(self.e1, etiquetado=True)
 
         response = self.client.get(reverse('narrative_api_feed'), {'personaje': self.personaje.id})
         ids = {p['id'] for p in response.json()['results']}
-        self.assertEqual(ids, {dentro.id, etiquetado.id})
+        self.assertEqual(ids, {etiquetado.id})
 
     def test_personaje_no_numerico_da_400(self):
         response = self.client.get(reverse('narrative_api_feed'), {'personaje': 'abc'})
         self.assertEqual(response.status_code, 400)
 
-    def test_la_suscripcion_incluye_posts_de_sus_unidades(self):
-        from subscriptions.models import Suscripcion
+    def test_la_suscripcion_solo_incluye_posts_etiquetados(self):
         Suscripcion.objects.filter(usuario=self.usuario).delete()
-        dentro = self._post(self.e2)
-        fuera = self._post(self.e1)
+        sin_etiqueta = self._post(self.e2)
+        etiquetado = self._post(self.e2, etiquetado=True)
         crear_suscripcion(self.usuario, personaje=self.personaje)
 
         ids = set(Post.objects.filter(filtro_posts_suscripciones(self.usuario)).values_list('id', flat=True))
-        self.assertEqual(ids, {dentro.id})
-        self.assertNotIn(fuera.id, ids)
+        self.assertEqual(ids, {etiquetado.id})
+        self.assertNotIn(sin_etiqueta.id, ids)

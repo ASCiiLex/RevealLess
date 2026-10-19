@@ -54,11 +54,12 @@ def reactivar_suscripcion(suscripcion):
 
 
 def q_posts_de_personaje(personaje_ids):
-    """Posts etiquetados con el personaje o anclados a una unidad en la que aparece.
-    Admite un id o varios (el personaje y sus identidades ya conocidas).
-    Compartido por la suscripción y el filtro ?personaje= del feed."""
+    """Posts etiquetados con el personaje (a mano, por mención detectada o por comparativa).
+    No basta con anclarse a una unidad donde aparece: en una película o un arco largo
+    saldría medio reparto. Admite un id o varios (el personaje y sus identidades ya
+    conocidas). Compartido por la suscripción y el filtro ?personaje= del feed."""
     ids = list(personaje_ids) if isinstance(personaje_ids, (list, tuple, set)) else [personaje_ids]
-    return Q(personajes__in=ids) | Q(referencia_narrativa__personajes__in=ids)
+    return Q(personajes__in=ids)
 
 
 def _query_para_suscripcion(suscripcion):
