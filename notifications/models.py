@@ -7,6 +7,7 @@ VERBOS_TEXTO = {
     'replied': 'respondió a tu comentario',
     'mentioned': 'te ha mencionado en un comentario',
 }
+TIPOS_DE_COMENTARIO = ('comment', 'reply')
 
 
 class Notification(models.Model):
@@ -59,11 +60,32 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.actor.username} {self.verb}"
 
+    @staticmethod
+    def precargar_posts(notificaciones):
+        """Resuelve el post de todas las notificaciones con dos consultas en vez de una por notificación."""
+        from comments.models import Comment
+        from posts.models import Post
+
+        notificaciones = list(notificaciones)
+        ids_post = {n.target_id for n in notificaciones if n.target_type == 'post' and n.target_id}
+        ids_comentario = {n.target_id for n in notificaciones if n.target_type in TIPOS_DE_COMENTARIO and n.target_id}
+        post_de_comentario = (
+            dict(Comment.objects.filter(id__in=ids_comentario).values_list('id', 'post_id'))
+            if ids_comentario else {}
+        )
+        posts = Post.objects.only('id', 'image').in_bulk(ids_post | set(post_de_comentario.values()))
+        for n in notificaciones:
+            if n.target_type == 'post':
+                n._post_cache = posts.get(n.target_id)
+            elif n.target_type in TIPOS_DE_COMENTARIO:
+                n._post_cache = posts.get(post_de_comentario.get(n.target_id))
+        return notificaciones
+
     @property
     def verb_display(self):
         """Texto en español del verbo; si no es un código conocido, se devuelve tal cual."""
         if self.verb == 'reacted':
-            objetivo = 'comentario' if self.target_type in ('comment', 'reply') else 'publicación'
+            objetivo = 'comentario' if self.target_type in TIPOS_DE_COMENTARIO else 'publicación'
             return f'reaccionó a tu {objetivo}'
         return VERBOS_TEXTO.get(self.verb, self.verb)
 
@@ -84,7 +106,7 @@ class Notification(models.Model):
                 posts = Post.objects.only("id", "image")
                 if self.target_type == "post":
                     self._post_cache = posts.filter(id=self.target_id).first()
-                elif self.target_type in ("comment", "reply"):
+                elif self.target_type in TIPOS_DE_COMENTARIO:
                     self._post_cache = posts.filter(comments__id=self.target_id).first()
         return self._post_cache
 
@@ -98,7 +120,7 @@ class Notification(models.Model):
     @property
     def url(self):
         # Todas las rutas apuntan a las vistas React (Fase 4).
-        if self.target_type in ("post", "comment", "reply"):
+        if self.target_type in ("post", *TIPOS_DE_COMENTARIO):
             post = self._related_post
             if post:
                 return f"/posts/{post.id}/"

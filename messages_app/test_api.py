@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -36,6 +38,15 @@ class InboxListAPIViewTests(TestCase):
         self.assertEqual(item['last_message'], 'segundo, el ultimo')
         self.assertEqual(item['unread_count'], 2)
 
+    def test_ultimo_mensaje_aunque_sea_propio(self):
+        Message.objects.create(sender=self.otro, receiver=self.usuario, text='pregunta')
+        Message.objects.create(sender=self.usuario, receiver=self.otro, text='mi respuesta')
+
+        self.client.force_authenticate(user=self.usuario)
+        item = self.client.get(reverse('messages_api_inbox')).data[0]
+        self.assertEqual(item['last_message'], 'mi respuesta')
+        self.assertEqual(item['unread_count'], 1)
+
     def test_conversaciones_ordenadas_por_ultimo_mensaje(self):
         Message.objects.create(sender=self.usuario, receiver=self.tercero, text='mas antiguo')
         Message.objects.create(sender=self.usuario, receiver=self.otro, text='mas reciente')
@@ -44,6 +55,21 @@ class InboxListAPIViewTests(TestCase):
         response = self.client.get(reverse('messages_api_inbox'))
         usernames = [u['username'] for u in response.data]
         self.assertEqual(usernames[0], 'inbox_otro')
+
+    def test_las_consultas_no_crecen_con_las_conversaciones(self):
+        self.client.force_authenticate(user=self.usuario)
+        Message.objects.create(sender=self.otro, receiver=self.usuario, text='a')
+
+        def consultas():
+            with CaptureQueriesContext(connection) as capturadas:
+                self.client.get(reverse('messages_api_inbox'))
+            return len(capturadas)
+
+        antes = consultas()
+        for i in range(3):
+            extra = User.objects.create_user(f'inbox_extra_{i}', password='x')
+            Message.objects.create(sender=extra, receiver=self.usuario, text='b')
+        self.assertEqual(consultas(), antes)
 
 
 class ChatHistoryAPIViewTests(TestCase):

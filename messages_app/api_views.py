@@ -1,7 +1,7 @@
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.contrib.auth.models import User
-from django.db.models import Max, Q
+from django.db.models import Case, Count, F, IntegerField, Q, When
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,62 +10,47 @@ from rest_framework.views import APIView
 from .models import Message
 from .serializers import MessageSerializer, InboxItemSerializer
 
+AVATAR_POR_DEFECTO = '/static/img/default_profile.jpg'
+
 
 class InboxListAPIView(APIView):
-    """Réplica exacta de inbox_view: misma lógica de agrupar por
-    conversación, ordenar por último mensaje, calcular no leídos por
-    remitente. No se reescribe con una query más "elegante" a
-    propósito -- mantiene el mismo comportamiento verificado que ya
-    tenía la vista Django, para no arriesgar una divergencia sutil en
-    el orden o el conteo."""
+    """Conversaciones del usuario ordenadas por su último mensaje, con ese mensaje y los no leídos
+    de cada remitente. Número fijo de consultas, tenga las conversaciones que tenga."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        conversations = (
+        yo = request.user
+
+        # Último mensaje de cada conversación en una sola consulta (DISTINCT ON de Postgres).
+        ultimos = list(
             Message.objects
-            .filter(Q(sender=request.user) | Q(receiver=request.user))
-            .values('sender', 'receiver')
-            .annotate(last_time=Max('created_at'))
-            .order_by('-last_time')
+            .filter(Q(sender=yo) | Q(receiver=yo))
+            .annotate(otro=Case(
+                When(sender=yo, then=F('receiver')), default=F('sender'), output_field=IntegerField(),
+            ))
+            .order_by('otro', '-created_at')
+            .distinct('otro')
+            .values('otro', 'text', 'created_at')
         )
+        ultimos.sort(key=lambda m: m['created_at'], reverse=True)
 
-        user_ids = []
-        last_message_map = {}
-
-        for c in conversations:
-            sender_id = c['sender']
-            receiver_id = c['receiver']
-            other_id = sender_id if sender_id != request.user.id else receiver_id
-
-            if other_id not in user_ids:
-                user_ids.append(other_id)
-            last_message_map[other_id] = c['last_time']
-
-        users = list(User.objects.filter(id__in=user_ids))
-        users = sorted(users, key=lambda u: last_message_map.get(u.id), reverse=True)
+        no_leidos = dict(
+            Message.objects.filter(receiver=yo, is_read=False)
+            .order_by().values('sender').annotate(n=Count('id')).values_list('sender', 'n')
+        )
+        usuarios = User.objects.select_related('profile').in_bulk([m['otro'] for m in ultimos])
 
         inbox_data = []
-        for u in users:
-            avatar = u.profile.image_url if hasattr(u, 'profile') else '/static/img/default_profile.jpg'
-
-            last_message_obj = (
-                Message.objects
-                .filter(sender__in=[request.user, u], receiver__in=[request.user, u])
-                .order_by('-created_at')
-                .first()
-            )
-            last_message = last_message_obj.text if last_message_obj else ''
-
-            unread = Message.objects.filter(
-                sender=u, receiver=request.user, is_read=False
-            ).count()
-
+        for mensaje in ultimos:
+            otro = usuarios.get(mensaje['otro'])
+            if otro is None:
+                continue
             inbox_data.append({
-                'username': u.username,
-                'avatar': avatar,
-                'last_message': last_message,
-                'unread_count': unread,
+                'username': otro.username,
+                'avatar': otro.profile.image_url if hasattr(otro, 'profile') else AVATAR_POR_DEFECTO,
+                'last_message': mensaje['text'],
+                'unread_count': no_leidos.get(otro.id, 0),
             })
 
         return Response(InboxItemSerializer(inbox_data, many=True).data)
@@ -104,6 +89,9 @@ class ChatHistoryAPIView(APIView):
         )
 
         return Response({
-            'other': {'username': other.username, 'avatar': other.profile.image_url if hasattr(other, 'profile') else '/static/img/default_profile.jpg'},
+            'other': {
+                'username': other.username,
+                'avatar': other.profile.image_url if hasattr(other, 'profile') else AVATAR_POR_DEFECTO,
+            },
             'messages': MessageSerializer(messages, many=True).data,
         })
