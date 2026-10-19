@@ -25,7 +25,7 @@ interface Props {
 }
 
 const MENSAJE_VACIO = {
-  silenciado: 'Lo has silenciado: no verás sus publicaciones hasta reactivarlo desde Suscripciones.',
+  silenciado: 'Lo has silenciado: no verás sus publicaciones hasta reactivarlo.',
   filtro: 'No hay publicaciones visibles con este filtro por ahora.',
   biblioteca: 'Aún no hay nada que mostrar aquí. Sigue una obra o publica algo para empezar.',
   descubrir:
@@ -33,7 +33,7 @@ const MENSAJE_VACIO = {
 }
 
 export default function Feed({ filtroExterno, version = 0 }: Props) {
-  const { view, obraFiltro, temaFiltro, filtroSilenciado } = useCatalogView()
+  const { view, obraFiltro, temaFiltro, personajeFiltro, filtroSilenciado } = useCatalogView()
   const [posts, setPosts] = useState<FeedPost[] | null>(null)
   const [siguiente, setSiguiente] = useState<string | null>(null)
   const [cargandoMas, setCargandoMas] = useState(false)
@@ -87,14 +87,20 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
       return
     }
 
+    // Lomos del carrusel (sin filtro externo): tema o personaje tienen prioridad sobre obra.
     if (!filtroExterno && temaFiltro !== null) {
       fetchFeed({ temaId: temaFiltro, vista }).then(aplicar).catch(vaciar)
       return
     }
 
+    if (!filtroExterno && personajeFiltro !== null) {
+      fetchFeed({ personajeId: personajeFiltro, vista }).then(aplicar).catch(vaciar)
+      return
+    }
+
     const obraId = filtroExterno?.tipo === 'obra' ? Number(filtroExterno.valor) : obraFiltro
     fetchFeed({ obraId, vista }).then(aplicar).catch(vaciar)
-  }, [obraFiltro, temaFiltro, filtroExterno, version, vista])
+  }, [obraFiltro, temaFiltro, personajeFiltro, filtroExterno, version, vista])
 
   const cargarMas = useCallback(() => {
     if (!siguiente || cargandoMas) return
@@ -137,7 +143,8 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
     return null
   }
 
-  const hayFiltro = Boolean(filtroExterno) || obraFiltro !== null || temaFiltro !== null
+  const hayFiltro =
+    Boolean(filtroExterno) || obraFiltro !== null || temaFiltro !== null || personajeFiltro !== null
 
   const mensajeVacio = filtroSilenciado
     ? MENSAJE_VACIO.silenciado

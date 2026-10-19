@@ -10,6 +10,8 @@ interface CatalogViewContextValue {
   // Lomo de tema seleccionado: id real del tema, no el negativo del lomo.
   temaFiltro: number | null
   setTemaFiltro: (id: number | null) => void
+  personajeFiltro: number | null
+  setPersonajeFiltro: (id: number | null) => void
   // El lomo seleccionado está silenciado: el feed explica por qué sale vacío.
   filtroSilenciado: boolean
   setFiltroSilenciado: (silenciado: boolean) => void
@@ -26,6 +28,7 @@ export function CatalogViewProvider({ children }: { children: ReactNode }) {
   const [view, setViewState] = useState<CatalogView>(leerViewInicial)
   const [obraFiltro, setObraFiltro] = useState<number | null>(null)
   const [temaFiltro, setTemaFiltro] = useState<number | null>(null)
+  const [personajeFiltro, setPersonajeFiltro] = useState<number | null>(null)
   const [filtroSilenciado, setFiltroSilenciado] = useState(false)
 
   function setView(nuevo: CatalogView) {
@@ -44,6 +47,8 @@ export function CatalogViewProvider({ children }: { children: ReactNode }) {
         setObraFiltro,
         temaFiltro,
         setTemaFiltro,
+        personajeFiltro,
+        setPersonajeFiltro,
         filtroSilenciado,
         setFiltroSilenciado,
       }}

@@ -41,14 +41,18 @@ class ObraSuscripcionMixin(CarruselMixin):
 
 
 class ObraResumenSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
+    clave = serializers.SerializerMethodField()
     progreso_pct = serializers.SerializerMethodField()
 
     class Meta:
         model = Obra
         fields = [
-            'id', 'titulo', 'slug', 'imagen_url', 'categorias',
+            'id', 'clave', 'titulo', 'slug', 'imagen_url', 'categorias',
             'progreso_pct', 'suscrito', 'suscripcion_id', 'silenciada',
         ]
+
+    def get_clave(self, obj):
+        return f'obra-{obj.id}'
 
     def get_progreso_pct(self, obj):
         progreso_por_obra = self.context.get('progreso_por_obra') or {}

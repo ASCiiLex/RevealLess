@@ -4,7 +4,7 @@ from ..models import SolicitudTema
 
 
 class CarruselMixin(serializers.Serializer):
-    """Campos comunes a todo lo que se muestra como lomo en el carrusel (obras y temas)."""
+    """Campos comunes a todo lo que se muestra como lomo en el carrusel (obras, temas y personajes)."""
 
     imagen_url = serializers.SerializerMethodField()
     suscrito = serializers.SerializerMethodField()
@@ -24,10 +24,11 @@ class TemaConSuscripcionSerializer(serializers.Serializer):
 
 class TemaLomoSerializer(CarruselMixin):
     """TemaTransversal suscrito con el mismo formato que ObraResumenSerializer, sin progreso_pct.
-    'slug' es el de la obra dueña (enlace a su landing). 'id' va en negativo porque los PK
-    de temas y obras colisionan y rompen las keys de React; el id real está en tema_id."""
+    'slug' es el de la obra dueña (enlace a su landing). 'id' va en negativo por compatibilidad;
+    la key de React es 'clave' y el id real está en tema_id."""
 
     id = serializers.SerializerMethodField()
+    clave = serializers.SerializerMethodField()
     titulo = serializers.CharField(source='nombre')
     slug = serializers.CharField(source='obra.slug')
     categorias = serializers.SerializerMethodField()
@@ -36,6 +37,9 @@ class TemaLomoSerializer(CarruselMixin):
 
     def get_id(self, obj):
         return -obj.id
+
+    def get_clave(self, obj):
+        return f'tema-{obj.id}'
 
     def get_categorias(self, obj):
         return ['Temas']

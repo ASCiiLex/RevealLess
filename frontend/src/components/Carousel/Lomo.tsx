@@ -2,23 +2,28 @@ import { useEffect, useState } from 'react'
 import styles from './Lomo.module.css'
 import {
   crearSuscripcion,
+  crearSuscripcionPersonaje,
   eliminarSuscripcion,
   toggleActivaSuscripcion,
 } from '../../api/suscripciones'
 
 export interface LomoObra {
   id: number
+  // Única entre tipos (obra-1, tema-2, personaje-3): key de React.
+  clave: string
   titulo: string
   slug: string
   imagen_url: string
   categorias: string[]
   progreso_pct?: number
-  // Solo la suscripción a la obra completa (o al tema, en lomos de tema).
+  // Solo la suscripción a la obra completa, al tema o al personaje del lomo.
   suscrito: boolean
   suscripcion_id: number | null
   silenciada?: boolean
   es_tema?: boolean
   tema_id?: number | null
+  es_personaje?: boolean
+  personaje_id?: number | null
 }
 
 interface Props {
@@ -73,15 +78,20 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
   }, [obra.suscrito, obra.silenciada, obra.suscripcion_id])
 
   const esTema = !!obra.es_tema
+  const esPersonaje = !!obra.es_personaje
+
+  function crear() {
+    if (esPersonaje) return crearSuscripcionPersonaje(obra.personaje_id ?? obra.id)
+    if (esTema) return crearSuscripcion(obra.slug, { temaId: obra.tema_id ?? undefined })
+    return crearSuscripcion(obra.slug)
+  }
 
   async function handleCiclo() {
     if (cargando) return
     setCargando(true)
     try {
       if (estado === 'ninguno') {
-        const suscripcion = esTema
-          ? await crearSuscripcion(obra.slug, { temaId: obra.tema_id ?? undefined })
-          : await crearSuscripcion(obra.slug)
+        const suscripcion = await crear()
         setSuscripcionId(suscripcion.id)
         setEstado('activa')
       } else if (suscripcionId === null) {
@@ -100,8 +110,13 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
     }
   }
 
-  const hrefInfo = esTema ? `/narrative/tema/${obra.tema_id}/` : `/narrative/obra/${obra.slug}/`
-  const mostrarProgresoFinal = mostrarProgreso && !esTema
+  const hrefInfo = esPersonaje
+    ? `/narrative/personaje/${obra.personaje_id}/`
+    : esTema
+      ? `/narrative/tema/${obra.tema_id}/`
+      : `/narrative/obra/${obra.slug}/`
+  const esObra = !esTema && !esPersonaje
+  const mostrarProgresoFinal = mostrarProgreso && esObra
   const { texto, accion } = PRESENTACION[estado]
   const claseEstado =
     estado === 'activa'
@@ -120,7 +135,7 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
           onClick={() => onSelect(obra)}
           aria-pressed={activa}
         >
-          {!esTema && typeof obra.progreso_pct === 'number' && (
+          {esObra && typeof obra.progreso_pct === 'number' && (
             <div className={styles.progressTrack}>
               <div className={styles.progressFill} style={{ width: `${obra.progreso_pct}%` }} />
             </div>

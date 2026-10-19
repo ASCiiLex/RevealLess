@@ -14,6 +14,7 @@ from .comun import (
     contexto_suscripcion_obra,
     ids_biblioteca,
     obra_basica,
+    personajes_suscritos_serializados,
     temas_planos,
     temas_suscritos_serializados,
 )
@@ -25,8 +26,9 @@ def _normalizar(texto):
 
 
 class CatalogoObrasAPIView(APIView):
-    """Biblioteca: obras con progreso o alguna suscripción. Descubrir: obras que no sigues enteras.
-    Una obra con progreso pero sin seguir aparece en ambas, igual que su contenido en los feeds."""
+    """Biblioteca: obras con progreso o alguna suscripción, más temas y personajes suscritos.
+    Descubrir: obras que no sigues enteras. Una obra con progreso pero sin seguir aparece en
+    ambas, igual que su contenido en los feeds."""
 
     permission_classes = [IsAuthenticated]
 
@@ -50,7 +52,11 @@ class CatalogoObrasAPIView(APIView):
         ).data
 
         return Response({
-            'biblioteca': biblioteca + temas_suscritos_serializados(request.user),
+            'biblioteca': (
+                biblioteca
+                + temas_suscritos_serializados(request.user)
+                + personajes_suscritos_serializados(request.user)
+            ),
             'descubrir': descubrir,
         })
 

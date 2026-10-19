@@ -1,7 +1,9 @@
+from django.db.models import Min
 from rest_framework.exceptions import ValidationError
 
 from subscriptions.models import Suscripcion
-from ..models import ProgresoUsuario, TemaTransversal
+from ..models import Personaje, ProgresoUsuario, TemaTransversal, UnidadNarrativa
+from ..services.personajes import progreso_por_obra
 
 
 def entero_o_none(valor, campo):
@@ -83,3 +85,36 @@ def temas_suscritos_serializados(user):
     }
     temas = TemaTransversal.objects.filter(id__in=contexto['suscripcion_id_por_tema']).select_related('obra')
     return TemaLomoSerializer(temas, many=True, context=contexto).data
+
+
+def personajes_suscritos_serializados(user):
+    """Personajes suscritos como lomos de Biblioteca. Solo los ya alcanzados en alguna obra:
+    sin ninguna aparición alcanzada (p. ej., tras retroceder) se ocultan, igual que su landing."""
+    from ..serializers import PersonajeLomoSerializer
+
+    filas = list(
+        Suscripcion.objects.filter(usuario=user, personaje__isnull=False)
+        .values_list('personaje_id', 'id', 'activa')
+    )
+    if not filas:
+        return []
+
+    progreso = progreso_por_obra(user)
+    primeras = (
+        UnidadNarrativa.objects
+        .filter(personajes__in=[personaje_id for personaje_id, _, _ in filas])
+        .order_by()
+        .values('personajes', 'obra_id')
+        .annotate(primera=Min('orden_fin'))
+    )
+    alcanzados = {f['personajes'] for f in primeras if progreso.get(f['obra_id'], -1) >= f['primera']}
+    if not alcanzados:
+        return []
+
+    contexto = {
+        'progreso_por_obra': progreso,
+        'suscripcion_id_por_personaje': {p: s for p, s, _ in filas},
+        'ids_personajes_silenciados': {p for p, _, activa in filas if not activa},
+    }
+    personajes = Personaje.objects.filter(id__in=alcanzados).prefetch_related('etapas__visible_tras')
+    return PersonajeLomoSerializer(personajes, many=True, context=contexto).data

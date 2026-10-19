@@ -6,6 +6,7 @@ import { fetchCatalogoObras } from '../../api/obras'
 import { useCatalogView } from '../../context/CatalogViewContext'
 
 const CHIP_TEMAS = 'Temas'
+const CHIP_PERSONAJES = 'Personajes'
 
 type Filtros = Record<string, EstadoChip>
 
@@ -16,20 +17,21 @@ interface Props {
   onCambioSuscripcion?: () => void
 }
 
-function tiene(obra: LomoObra, categoria: string) {
-  if (categoria === CHIP_TEMAS) return Boolean(obra.es_tema)
-  if (obra.es_tema) return false
-  return obra.categorias?.includes(categoria) ?? false
+function tiene(lomo: LomoObra, categoria: string) {
+  if (categoria === CHIP_TEMAS) return Boolean(lomo.es_tema)
+  if (categoria === CHIP_PERSONAJES) return Boolean(lomo.es_personaje)
+  if (lomo.es_tema || lomo.es_personaje) return false
+  return lomo.categorias?.includes(categoria) ?? false
 }
 
 // Todas las Y obligatorias y, si hay alguna O, al menos una de ellas.
-function coincide(obra: LomoObra, filtros: Filtros) {
+function coincide(lomo: LomoObra, filtros: Filtros) {
   const entradas = Object.entries(filtros)
   const obligatorias = entradas.filter(([, e]) => e === 'y').map(([c]) => c)
   const opcionales = entradas.filter(([, e]) => e === 'o').map(([c]) => c)
   return (
-    obligatorias.every((c) => tiene(obra, c)) &&
-    (opcionales.length === 0 || opcionales.some((c) => tiene(obra, c)))
+    obligatorias.every((c) => tiene(lomo, c)) &&
+    (opcionales.length === 0 || opcionales.some((c) => tiene(lomo, c)))
   )
 }
 
@@ -40,6 +42,8 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
     setObraFiltro,
     temaFiltro,
     setTemaFiltro,
+    personajeFiltro,
+    setPersonajeFiltro,
     setFiltroSilenciado,
   } = useCatalogView()
   const [obras, setObras] = useState<{ biblioteca: LomoObra[]; descubrir: LomoObra[] } | null>(
@@ -68,31 +72,36 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
     setFiltros({})
     setObraFiltro(null)
     setTemaFiltro(null)
+    setPersonajeFiltro(null)
     setFiltroSilenciado(false)
-  }, [view, setObraFiltro, setTemaFiltro, setFiltroSilenciado])
+  }, [view, setObraFiltro, setTemaFiltro, setPersonajeFiltro, setFiltroSilenciado])
 
   const listaCompleta = obras ? obras[view] : []
 
   const categoriasDisponibles = useMemo(() => {
     const set = new Set<string>()
     let hayTemas = false
-    listaCompleta.forEach((obra) => {
-      if (obra.es_tema) {
+    let hayPersonajes = false
+    listaCompleta.forEach((lomo) => {
+      if (lomo.es_tema) {
         hayTemas = true
         return
       }
-      obra.categorias?.forEach((cat) => set.add(cat))
+      if (lomo.es_personaje) {
+        hayPersonajes = true
+        return
+      }
+      lomo.categorias?.forEach((cat) => set.add(cat))
     })
     const categorias = Array.from(set).sort()
-    if (hayTemas) {
-      categorias.push(CHIP_TEMAS)
-    }
+    if (hayTemas) categorias.push(CHIP_TEMAS)
+    if (hayPersonajes) categorias.push(CHIP_PERSONAJES)
     return categorias
   }, [listaCompleta])
 
   const hayFiltro = Object.keys(filtros).length > 0
   const listaFiltrada = hayFiltro
-    ? listaCompleta.filter((obra) => coincide(obra, filtros))
+    ? listaCompleta.filter((lomo) => coincide(lomo, filtros))
     : listaCompleta
 
   function ciclarCategoria(categoria: string) {
@@ -104,14 +113,18 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
   }
 
   function estaActivo(lomo: LomoObra) {
-    return lomo.es_tema ? temaFiltro === lomo.tema_id : obraFiltro === lomo.id
+    if (lomo.es_personaje) return personajeFiltro === lomo.personaje_id
+    if (lomo.es_tema) return temaFiltro === lomo.tema_id
+    return obraFiltro === lomo.id
   }
 
-  // Un tema filtra por su id real; una obra, por el suyo. Pulsar de nuevo quita el filtro.
+  // Cada tipo filtra por su id real. Pulsar de nuevo el mismo lomo quita el filtro.
   function handleSelectObra(lomo: LomoObra) {
     const seleccionar = !estaActivo(lomo)
-    setObraFiltro(seleccionar && !lomo.es_tema ? lomo.id : null)
+    const esObra = !lomo.es_tema && !lomo.es_personaje
+    setObraFiltro(seleccionar && esObra ? lomo.id : null)
     setTemaFiltro(seleccionar && lomo.es_tema ? lomo.tema_id ?? null : null)
+    setPersonajeFiltro(seleccionar && lomo.es_personaje ? lomo.personaje_id ?? null : null)
     setFiltroSilenciado(seleccionar && Boolean(lomo.silenciada))
   }
 
@@ -163,11 +176,11 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
             </button>
 
             <div ref={trackRef} className={styles.track}>
-              {listaFiltrada.map((obra) => (
+              {listaFiltrada.map((lomo) => (
                 <Lomo
-                  key={obra.id}
-                  obra={obra}
-                  activa={estaActivo(obra)}
+                  key={lomo.clave}
+                  obra={lomo}
+                  activa={estaActivo(lomo)}
                   onSelect={handleSelectObra}
                   mostrarProgreso={view === 'biblioteca'}
                   onCambioSuscripcion={handleCambioSuscripcion}
