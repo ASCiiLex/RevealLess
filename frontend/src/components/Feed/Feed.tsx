@@ -1,10 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import styles from './Feed.module.css'
 import PostCard from './PostCard'
 import FilterHeader from './FilterHeader'
-import { fetchFeed, type FeedPost } from '../../api/feed'
+import {
+  fetchFeed,
+  fetchFeedPagina,
+  type FeedPost,
+  type PaginaFeed,
+  type VistaFeed,
+} from '../../api/feed'
 import { fetchTemaLanding } from '../../api/temaLanding'
-import { fetchFeedPersonaje, fetchPersonajeLanding } from '../../api/personajeLanding'
+import { fetchPersonajeLanding } from '../../api/personajeLanding'
 import { useCatalogView } from '../../context/CatalogViewContext'
 
 interface FiltroExterno {
@@ -18,48 +24,108 @@ interface Props {
   version?: number
 }
 
+const MENSAJE_VACIO = {
+  filtro: 'No hay publicaciones visibles con este filtro por ahora.',
+  biblioteca: 'Aún no hay nada que mostrar aquí. Sigue una obra o publica algo para empezar.',
+  descubrir:
+    'Nada que descubrir por ahora. Aquí aparece lo que puedes leer sin spoilers y aún no te llega por Biblioteca.',
+}
+
 export default function Feed({ filtroExterno, version = 0 }: Props) {
-  const { obraFiltro } = useCatalogView()
+  const { view, obraFiltro } = useCatalogView()
   const [posts, setPosts] = useState<FeedPost[] | null>(null)
+  const [siguiente, setSiguiente] = useState<string | null>(null)
+  const [cargandoMas, setCargandoMas] = useState(false)
+  const [errorMas, setErrorMas] = useState(false)
   // Título que hay que pedir aparte (tema o personaje).
   const [tituloRemoto, setTituloRemoto] = useState<string | null>(null)
+  // Cada carga inicial invalida las respuestas pendientes de la anterior.
+  const peticion = useRef(0)
+  const centinela = useRef<HTMLDivElement>(null)
+
+  // Con filtro externo no hay pestañas: siempre Biblioteca.
+  const vista: VistaFeed = filtroExterno ? 'biblioteca' : view
 
   useEffect(() => {
+    const id = ++peticion.current
+    const vigente = () => id === peticion.current
     setPosts(null)
+    setSiguiente(null)
+    setCargandoMas(false)
+    setErrorMas(false)
     setTituloRemoto(null)
 
+    const aplicar = (pagina: PaginaFeed) => {
+      if (!vigente()) return
+      setPosts(pagina.results)
+      setSiguiente(pagina.next)
+    }
+    const vaciar = () => {
+      if (vigente()) setPosts([])
+    }
+    const titulo = (nombre: string) => {
+      if (vigente()) setTituloRemoto(nombre)
+    }
+
     if (filtroExterno?.tipo === 'hashtag') {
-      fetchFeed({ hashtag: filtroExterno.valor })
-        .then((data) => setPosts(data.results))
-        .catch(() => setPosts([]))
+      fetchFeed({ hashtag: filtroExterno.valor }).then(aplicar).catch(vaciar)
       return
     }
 
     if (filtroExterno?.tipo === 'tema') {
       const temaId = Number(filtroExterno.valor)
-      fetchTemaLanding(temaId).then((data) => setTituloRemoto(data.nombre))
-      fetchFeed({ temaId })
-        .then((data) => setPosts(data.results))
-        .catch(() => setPosts([]))
+      fetchTemaLanding(temaId).then((data) => titulo(data.nombre)).catch(() => titulo(''))
+      fetchFeed({ temaId }).then(aplicar).catch(vaciar)
       return
     }
 
     if (filtroExterno?.tipo === 'personaje') {
       const personajeId = Number(filtroExterno.valor)
-      fetchPersonajeLanding(personajeId)
-        .then((data) => setTituloRemoto(data.nombre))
-        .catch(() => setTituloRemoto(''))
-      fetchFeedPersonaje(personajeId)
-        .then(setPosts)
-        .catch(() => setPosts([]))
+      fetchPersonajeLanding(personajeId).then((data) => titulo(data.nombre)).catch(() => titulo(''))
+      fetchFeed({ personajeId }).then(aplicar).catch(vaciar)
       return
     }
 
     const obraId = filtroExterno?.tipo === 'obra' ? Number(filtroExterno.valor) : obraFiltro
-    fetchFeed({ obraId })
-      .then((data) => setPosts(data.results))
-      .catch(() => setPosts([]))
-  }, [obraFiltro, filtroExterno, version])
+    fetchFeed({ obraId, vista }).then(aplicar).catch(vaciar)
+  }, [obraFiltro, filtroExterno, version, vista])
+
+  const cargarMas = useCallback(() => {
+    if (!siguiente || cargandoMas) return
+    const id = peticion.current
+    setCargandoMas(true)
+    setErrorMas(false)
+    fetchFeedPagina(siguiente)
+      .then((pagina) => {
+        if (id !== peticion.current) return
+        setPosts((actuales) => {
+          const previos = actuales ?? []
+          const vistos = new Set(previos.map((p) => p.id))
+          return [...previos, ...pagina.results.filter((p) => !vistos.has(p.id))]
+        })
+        setSiguiente(pagina.next)
+      })
+      .catch(() => {
+        if (id === peticion.current) setErrorMas(true)
+      })
+      .finally(() => {
+        if (id === peticion.current) setCargandoMas(false)
+      })
+  }, [siguiente, cargandoMas])
+
+  // Se recrea tras cada carga: si el centinela sigue a la vista, pide la siguiente página.
+  useEffect(() => {
+    const nodo = centinela.current
+    if (!nodo || !siguiente || errorMas) return
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        if (entradas[0]?.isIntersecting) cargarMas()
+      },
+      { rootMargin: '600px 0px' },
+    )
+    observador.observe(nodo)
+    return () => observador.disconnect()
+  }, [siguiente, errorMas, cargarMas])
 
   if (!posts) {
     return null
@@ -90,13 +156,19 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
       {filtroExterno && <FilterHeader titulo={tituloFiltro ?? ''} linkHref={linkHrefFiltro} />}
 
       {posts.length === 0 ? (
-        <p className={styles.empty}>
-          {hayFiltro
-            ? 'No hay publicaciones visibles con este filtro por ahora.'
-            : 'Aún no hay nada que mostrar aquí. Sigue una obra o publica algo para empezar.'}
-        </p>
+        <p className={styles.empty}>{hayFiltro ? MENSAJE_VACIO.filtro : MENSAJE_VACIO[vista]}</p>
       ) : (
         posts.map((post) => <PostCard key={post.id} post={post} />)
+      )}
+
+      {siguiente && !errorMas && <div ref={centinela} className={styles.centinela} aria-hidden="true" />}
+
+      {cargandoMas && <p className={styles.estado}>Cargando…</p>}
+
+      {errorMas && (
+        <button type="button" className={styles.reintentar} onClick={cargarMas}>
+          No se pudieron cargar más publicaciones. Reintentar
+        </button>
       )}
     </div>
   )

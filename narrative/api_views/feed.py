@@ -1,6 +1,8 @@
 from django.db.models import Q
 from rest_framework import generics
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import IsAuthenticated
 
 from posts.models import Post
@@ -15,29 +17,58 @@ from ..serializers import PostSerializer
 from ..services.personajes import ids_con_identidades
 from .comun import entero_o_none, ids_familia
 
+VISTA_BIBLIOTECA = 'biblioteca'
+VISTA_DESCUBRIR = 'descubrir'
+VISTAS = (VISTA_BIBLIOTECA, VISTA_DESCUBRIR)
+
+
+class FeedCursorPagination(CursorPagination):
+    """Cursor y no offset: los posts nuevos no desplazan las páginas ya cargadas
+    y se evita el COUNT sobre visible_for()."""
+
+    page_size = 12
+    ordering = ('-created_at', '-id')
+
+
+def q_biblioteca(user):
+    """Lo que llega por Biblioteca: propios, seguidos, suscripciones activas y comparativas
+    que cruzan una obra seguida. Única definición: Descubrir es su complemento."""
+    obras_seguidas = Suscripcion.objects.filter(
+        usuario=user, activa=True, obra__isnull=False, unidad__isnull=True, tema__isnull=True,
+    ).values('obra_id')
+
+    return (
+        Q(author=user)
+        | Q(author__in=user.following.values_list('followed', flat=True))
+        | filtro_posts_suscripciones(user)
+        | Q(obra_cruzada_id__in=obras_seguidas)
+    )
+
 
 class FeedAPIView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = FeedCursorPagination
 
     def get_serializer_context(self):
         return {'request': self.request}
 
+    def _vista(self, params):
+        vista = params.get('vista') or VISTA_BIBLIOTECA
+        if vista not in VISTAS:
+            raise ValidationError({'vista': [f'Debe ser una de: {", ".join(VISTAS)}.']})
+        return vista
+
     def _ids_del_feed(self, user, params):
         """Qué posts entran en el feed, solo como ids. Los joins de las condiciones pueden repetir
         un post; el IN de la consulta principal los descarta sin DISTINCT sobre filas anchas."""
-        # Comparativas: también llegan a quien sigue la obra cruzada (visible_for decide las fronteras).
-        obras_seguidas = Suscripcion.objects.filter(
-            usuario=user, activa=True, obra__isnull=False, unidad__isnull=True, tema__isnull=True,
-        ).values('obra_id')
-
-        condiciones_del_feed = (
-            Q(author=user)
-            | Q(author__in=user.following.values_list('followed', flat=True))
-            | filtro_posts_suscripciones(user)
-            | Q(obra_cruzada_id__in=obras_seguidas)
-        )
-        base = Post.objects.filter(condiciones_del_feed).exclude(filtro_posts_silenciados(user))
+        biblioteca = Post.objects.filter(q_biblioteca(user))
+        if self._vista(params) == VISTA_DESCUBRIR:
+            # Contenido ajeno que no llega por ninguna otra vía; visible_for decide qué se lee.
+            base = Post.objects.exclude(id__in=biblioteca.values('id'))
+        else:
+            base = biblioteca
+        base = base.exclude(filtro_posts_silenciados(user))
 
         obra_id = entero_o_none(params.get('obra'), 'obra')
         if obra_id is not None:
@@ -86,5 +117,5 @@ class FeedAPIView(generics.ListAPIView):
             )
             .visible_for(user)
             .with_feed_stats()
-            .order_by('-created_at')
+            .order_by('-created_at', '-id')
         )

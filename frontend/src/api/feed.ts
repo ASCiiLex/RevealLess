@@ -63,26 +63,40 @@ export interface FeedPost {
   is_saved: boolean
 }
 
-interface PaginatedResponse<T> {
-  count: number
+export type VistaFeed = 'biblioteca' | 'descubrir'
+
+// Paginación por cursor: sin count, solo enlaces a la página siguiente/anterior.
+export interface PaginaFeed {
   next: string | null
   previous: string | null
-  results: T[]
+  results: FeedPost[]
 }
 
 export interface FetchFeedOptions {
   obraId?: number | null
   hashtag?: string
   temaId?: number
+  personajeId?: number
+  vista?: VistaFeed
 }
 
-export function fetchFeed(opciones: FetchFeedOptions = {}): Promise<PaginatedResponse<FeedPost>> {
+// next llega absoluto: se reduce a ruta para no depender del esquema que ve Django tras el proxy.
+function rutaRelativa(url: string): string {
+  const destino = new URL(url, window.location.origin)
+  return `${destino.pathname}${destino.search}`
+}
+
+export function fetchFeed(opciones: FetchFeedOptions = {}): Promise<PaginaFeed> {
   const params = new URLSearchParams()
+  if (opciones.vista === 'descubrir') params.set('vista', 'descubrir')
   if (opciones.obraId) params.set('obra', String(opciones.obraId))
   if (opciones.hashtag) params.set('hashtag', opciones.hashtag)
   if (opciones.temaId) params.set('tema', String(opciones.temaId))
+  if (opciones.personajeId) params.set('personaje', String(opciones.personajeId))
   const query = params.toString()
-  return api.get<PaginatedResponse<FeedPost>>(
-    `/narrative/api/feed/${query ? `?${query}` : ''}`
-  )
+  return api.get<PaginaFeed>(`/narrative/api/feed/${query ? `?${query}` : ''}`)
+}
+
+export function fetchFeedPagina(url: string): Promise<PaginaFeed> {
+  return api.get<PaginaFeed>(rutaRelativa(url))
 }
