@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from narrative.models import ClasificacionNarrativa
 from ..models import Comment
 from ..serializers import CommentUpdateSerializer
+from .fronteras import ajustar_frontera
 from .respuestas import datos_clasificacion
 
 CAMPOS_EDITABLES = ('text', 'emocion_autor', 'referencia_narrativa', 'obra_cruzada', 'frontera_cruzada')
@@ -20,7 +21,7 @@ class CommentUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, comment_id):
-        comment = get_object_or_404(Comment, id=comment_id)
+        comment = get_object_or_404(Comment.objects.select_related('post'), id=comment_id)
 
         if comment.user != request.user:
             return Response(
@@ -38,6 +39,7 @@ class CommentUpdateAPIView(APIView):
         if 'frontera_spoiler' in datos:
             comment.frontera_spoiler = datos['frontera_spoiler']
             comment.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
+        ajustar_frontera(comment)
 
         # Se valida el estado resultante: la edición puede tocar solo uno de los dos campos.
         if bool(comment.obra_cruzada_id) != bool(comment.frontera_cruzada_id):

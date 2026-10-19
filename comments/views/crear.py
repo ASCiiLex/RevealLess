@@ -10,6 +10,7 @@ from narrative.services.detecciones import serializar_detecciones
 from posts.models import Post
 from ..models import Comment
 from ..serializers import CommentCreateSerializer
+from .fronteras import ajustar_frontera
 from .respuestas import datos_clasificacion
 
 
@@ -75,6 +76,7 @@ def add_comment(request):
     if frontera:
         comment.frontera_spoiler = frontera
         comment.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
+    ajustar_frontera(comment)
 
     try:
         comment.full_clean()
