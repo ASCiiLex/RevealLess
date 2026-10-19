@@ -51,7 +51,9 @@ export default function PostCard({ post }: Props) {
 
       <a className={styles.textLink} href={`/posts/${post.id}/`}>
         <p className={styles.text}>{post.text}</p>
-        {!esGaleria && post.imagen && <img className={styles.image} src={post.imagen} alt="" />}
+        {!esGaleria && post.imagen && (
+          <img className={styles.image} src={post.imagen} alt="" loading="lazy" decoding="async" />
+        )}
       </a>
 
       {esGaleria && <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />}

@@ -109,7 +109,7 @@ function ObraRow({ obra }: { obra: LomoObra }) {
   return (
     <div className={styles.row}>
       <a className={styles.rowMainLink} href={`/narrative/obra/${obra.slug}/`}>
-        <img className={styles.thumb} src={obra.imagen_url} alt="" />
+        <img className={styles.thumb} src={obra.imagen_url} alt="" loading="lazy" decoding="async" />
         <span className={styles.titulo}>{obra.titulo}</span>
       </a>
       <button
@@ -184,7 +184,7 @@ function TemaRow({ tema }: { tema: TemaBusqueda }) {
 function UsuarioRow({ usuario }: { usuario: UsuarioBusqueda }) {
   return (
     <a className={styles.rowLink} href={`/perfil/${usuario.username}/`}>
-      <img className={styles.avatarThumb} src={usuario.avatar_url} alt="" />
+      <img className={styles.avatarThumb} src={usuario.avatar_url} alt="" loading="lazy" decoding="async" />
       <span className={styles.titulo}>@{usuario.username}</span>
     </a>
   )

@@ -60,7 +60,7 @@ export default function CommentItem({ comment, postId, obraDetalle, nivel = 1, o
   return (
     <div className={styles.comment} style={emocionHaloStyle(emocionActual, 'comentario')}>
       <div className={styles.header}>
-        <img className={styles.avatar} src={comment.avatar} alt="" />
+        <img className={styles.avatar} src={comment.avatar} alt="" loading="lazy" decoding="async" />
         <span className={styles.username}>@{comment.user}</span>
         <EmocionBadge emocionAutor={emocionActual} />
         {comment.is_own_comment && (

@@ -47,7 +47,13 @@ export default function SuscripcionRow({ suscripcion, onRemove }: Props) {
   return (
     <div className={styles.row}>
       <div className={styles.left}>
-        <img className={`${styles.thumb} ${retrato ? styles.thumbRetrato : ''}`} src={imagen} alt="" />
+        <img
+          className={`${styles.thumb} ${retrato ? styles.thumbRetrato : ''}`}
+          src={imagen}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
         <div>
           <div className={styles.titulo}>{titulo}</div>
           <div className={styles.detalle}>

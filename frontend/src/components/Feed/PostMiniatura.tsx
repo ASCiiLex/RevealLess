@@ -8,7 +8,7 @@ interface Props {
 // Tesela de grid (perfil, guardados): la foto si la hay; si no, el arranque del texto.
 export default function PostMiniatura({ imagen, texto }: Props) {
   if (imagen) {
-    return <img className={styles.imagen} src={imagen} alt="" />
+    return <img className={styles.imagen} src={imagen} alt="" loading="lazy" decoding="async" />
   }
   return (
     <div className={styles.texto}>

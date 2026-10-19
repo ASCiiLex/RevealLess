@@ -72,7 +72,8 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
             </div>
           )}
 
-          <img className={styles.image} src={obra.imagen_url} alt="" />
+          {/* Las portadas fuera de la parte visible del carrusel se descargan al acercarse. */}
+          <img className={styles.image} src={obra.imagen_url} alt="" loading="lazy" decoding="async" />
           <div className={styles.overlay} />
           <span className={styles.title}>{obra.titulo}</span>
         </button>

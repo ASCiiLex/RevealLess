@@ -58,11 +58,25 @@ function Deslizador({ antes, despues }: { antes: ImagenGaleria; despues: ImagenG
   return (
     <div className={styles.deslizador}>
       <div className={styles.capaRecorte}>
-        <img className={styles.capa} src={despues.url} alt={despues.etiqueta} style={estiloEncuadre(despues)} />
+        <img
+          className={styles.capa}
+          src={despues.url}
+          alt={despues.etiqueta}
+          loading="lazy"
+          decoding="async"
+          style={estiloEncuadre(despues)}
+        />
       </div>
       {/* El recorte va en el contenedor: así el zoom de la imagen no desplaza la línea. */}
       <div className={styles.capaRecorte} style={{ clipPath: `inset(0 ${100 - posicion}% 0 0)` }}>
-        <img className={styles.capa} src={antes.url} alt={antes.etiqueta} style={estiloEncuadre(antes)} />
+        <img
+          className={styles.capa}
+          src={antes.url}
+          alt={antes.etiqueta}
+          loading="lazy"
+          decoding="async"
+          style={estiloEncuadre(antes)}
+        />
       </div>
       <span className={styles.linea} style={{ left: `${posicion}%` }} aria-hidden="true" />
       {antes.etiqueta && <span className={`${styles.etiqueta} ${styles.etiquetaIzq}`}>{antes.etiqueta}</span>}
@@ -83,7 +97,15 @@ function Deslizador({ antes, despues }: { antes: ImagenGaleria; despues: ImagenG
 export default function GaleriaPost({ imagenes, disposicion }: Props) {
   if (imagenes.length === 0) return null
   if (imagenes.length === 1) {
-    return <img className={styles.unica} src={imagenes[0].url} alt={imagenes[0].etiqueta} />
+    return (
+      <img
+        className={styles.unica}
+        src={imagenes[0].url}
+        alt={imagenes[0].etiqueta}
+        loading="lazy"
+        decoding="async"
+      />
+    )
   }
 
   const tipo = disposicionEfectiva(imagenes.length, disposicion)
@@ -98,7 +120,7 @@ export default function GaleriaPost({ imagenes, disposicion }: Props) {
           // La destacada ocupa todas las filas de la columna izquierda.
           style={tipo === 'destacada' && i === 0 ? { gridRow: `span ${imagenes.length - 1}` } : undefined}
         >
-          <img src={img.url} alt={img.etiqueta} loading="lazy" style={estiloEncuadre(img)} />
+          <img src={img.url} alt={img.etiqueta} loading="lazy" decoding="async" style={estiloEncuadre(img)} />
           {img.etiqueta && <figcaption className={styles.etiqueta}>{img.etiqueta}</figcaption>}
         </figure>
       ))}
