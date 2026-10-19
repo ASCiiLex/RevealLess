@@ -148,12 +148,21 @@
   transform: translateY(-1px);
 }
 
-/* «+» / «✓»: mismo código que los botones de seguir de las landings. */
+/* «+» / «✓» / silencio: mismo código que los botones de seguir de las landings. */
 .followIcon {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
   font-size: 14px;
   font-weight: 700;
+}
+
+/* Mide lo mismo que los glifos «+» y «✓». */
+.iconoSilencio {
+  width: 1em;
+  height: 1em;
+  display: block;
 }
 
 .followButton {
@@ -182,6 +191,15 @@
 
 .followButtonActive:hover,
 .followButtonActive:focus-visible {
+  color: var(--paper);
+}
+
+.followButtonSilenciada {
+  color: var(--fog);
+}
+
+.followButtonSilenciada:hover,
+.followButtonSilenciada:focus-visible {
   color: var(--paper);
 }
 

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import styles from './Lomo.module.css'
-import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
+import {
+  crearSuscripcion,
+  eliminarSuscripcion,
+  toggleActivaSuscripcion,
+} from '../../api/suscripciones'
 
 export interface LomoObra {
   id: number
@@ -25,37 +29,70 @@ interface Props {
   onCambioSuscripcion?: () => void
 }
 
-const URL_SUSCRIPCIONES = '/suscripciones/'
+type EstadoSeguimiento = 'ninguno' | 'activa' | 'silenciada'
+
+// Ciclo del botón: + → ✓ → silenciada → +. Si se pasa, basta con seguir pulsando.
+const PRESENTACION: Record<EstadoSeguimiento, { texto: string; accion: string }> = {
+  ninguno: { texto: 'Seguir', accion: 'Seguir' },
+  activa: { texto: 'Siguiendo', accion: 'Silenciar' },
+  silenciada: { texto: 'Silenciada', accion: 'Dejar de seguir' },
+}
+
+function estadoInicial(obra: LomoObra): EstadoSeguimiento {
+  if (obra.silenciada) return 'silenciada'
+  return obra.suscrito ? 'activa' : 'ninguno'
+}
+
+function IconoSilencio() {
+  return (
+    <svg
+      className={styles.iconoSilencio}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 9h4l5-4v14l-5-4H4z" />
+      <path d="M17 9l5 6M22 9l-5 6" />
+    </svg>
+  )
+}
 
 export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambioSuscripcion }: Props) {
-  const [siguiendo, setSiguiendo] = useState(obra.suscrito)
+  const [estado, setEstado] = useState<EstadoSeguimiento>(() => estadoInicial(obra))
   const [suscripcionId, setSuscripcionId] = useState(obra.suscripcion_id)
   const [cargando, setCargando] = useState(false)
 
   // Tras recargar el catálogo, el estado del servidor manda sobre el local.
   useEffect(() => {
-    setSiguiendo(obra.suscrito)
+    setEstado(estadoInicial(obra))
     setSuscripcionId(obra.suscripcion_id)
-  }, [obra.suscrito, obra.suscripcion_id])
+  }, [obra.suscrito, obra.silenciada, obra.suscripcion_id])
 
   const esTema = !!obra.es_tema
 
-  async function handleToggleSeguir() {
+  async function handleCiclo() {
     if (cargando) return
     setCargando(true)
     try {
-      if (siguiendo) {
-        if (suscripcionId !== null) {
-          await eliminarSuscripcion(suscripcionId)
-        }
-        setSiguiendo(false)
-        setSuscripcionId(null)
-      } else {
+      if (estado === 'ninguno') {
         const suscripcion = esTema
           ? await crearSuscripcion(obra.slug, { temaId: obra.tema_id ?? undefined })
           : await crearSuscripcion(obra.slug)
-        setSiguiendo(true)
         setSuscripcionId(suscripcion.id)
+        setEstado('activa')
+      } else if (suscripcionId === null) {
+        setEstado('ninguno')
+      } else if (estado === 'activa') {
+        await toggleActivaSuscripcion(suscripcionId, false)
+        setEstado('silenciada')
+      } else {
+        await eliminarSuscripcion(suscripcionId)
+        setSuscripcionId(null)
+        setEstado('ninguno')
       }
       onCambioSuscripcion?.()
     } finally {
@@ -65,6 +102,13 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
 
   const hrefInfo = esTema ? `/narrative/tema/${obra.tema_id}/` : `/narrative/obra/${obra.slug}/`
   const mostrarProgresoFinal = mostrarProgreso && !esTema
+  const { texto, accion } = PRESENTACION[estado]
+  const claseEstado =
+    estado === 'activa'
+      ? styles.followButtonActive
+      : estado === 'silenciada'
+        ? styles.followButtonSilenciada
+        : ''
 
   return (
     <div className={styles.wrapper}>
@@ -105,31 +149,19 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
         </a>
       )}
 
-      {/* El silencio se gestiona solo desde Suscripciones: aquí se informa, no se cambia. */}
-      {obra.silenciada ? (
-        <a
-          className={styles.progressLink}
-          href={URL_SUSCRIPCIONES}
-          title="Gestionar en Suscripciones"
-          aria-label={`${obra.titulo} está silenciada: gestionar en Suscripciones`}
-        >
-          <span className={styles.progressIcon} aria-hidden="true">🔇</span>
-          <span className={styles.actionText}>Silenciada</span>
-        </a>
-      ) : (
-        <button
-          type="button"
-          className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
-          onClick={handleToggleSeguir}
-          disabled={cargando}
-          aria-pressed={siguiendo}
-          aria-label={siguiendo ? `Dejar de seguir ${obra.titulo}` : `Seguir ${obra.titulo}`}
-          title={siguiendo ? 'Dejar de seguir' : 'Seguir'}
-        >
-          <span className={styles.followIcon} aria-hidden="true">{siguiendo ? '✓' : '+'}</span>
-          <span className={styles.actionText}>{siguiendo ? 'Siguiendo' : 'Seguir'}</span>
-        </button>
-      )}
+      <button
+        type="button"
+        className={`${styles.followButton} ${claseEstado}`}
+        onClick={handleCiclo}
+        disabled={cargando}
+        aria-label={`${texto}: ${obra.titulo}. Pulsa para ${accion.toLowerCase()}`}
+        title={`${texto} · pulsa para ${accion.toLowerCase()}`}
+      >
+        <span className={styles.followIcon} aria-hidden="true">
+          {estado === 'silenciada' ? <IconoSilencio /> : estado === 'activa' ? '✓' : '+'}
+        </span>
+        <span className={styles.actionText}>{texto}</span>
+      </button>
     </div>
   )
 }
