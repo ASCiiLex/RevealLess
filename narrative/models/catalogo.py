@@ -1,6 +1,7 @@
 from django.core.validators import FileExtensionValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import Case, F, Q, Value, When
+from django.db.models.functions import Greatest
 
 from core.validators import validate_image_size
 
@@ -131,9 +132,15 @@ class Obra(models.Model):
 
     def recalcular_orden(self):
         recalcular_orden(self)
+        # Diferido: clasificacion importa este módulo.
+        from .clasificacion import refrescar_fronteras
+        refrescar_fronteras(self)
 
 
 class UnidadNarrativa(models.Model):
+    # Entrega anunciada y aún no estrenada: se lee justo antes de ella.
+    TIPO_PREVIO = 'previo'
+
     obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name='unidades', verbose_name='Obra')
     padre = models.ForeignKey(
         'self', null=True, blank=True, on_delete=models.CASCADE, related_name='hijos',
@@ -179,6 +186,18 @@ class UnidadNarrativa(models.Model):
         return not self.hijos.exists()
 
     @property
+    def es_previa(self):
+        return self.tipo == self.TIPO_PREVIO
+
+    @property
+    def orden_frontera(self):
+        """Posición que exige como frontera. El previo, la anterior a él:
+        0 en una obra nueva, el final de la entrega anterior en una continuación."""
+        if self.es_previa:
+            return max(self.orden_inicio - 1, 0)
+        return self.orden_fin
+
+    @property
     def etiqueta(self):
         return self.nombre
 
@@ -190,3 +209,15 @@ class UnidadNarrativa(models.Model):
         except ValueError:
             pass
         return self.obra.image_url
+
+
+def expresion_orden_frontera():
+    """Equivalente SQL de UnidadNarrativa.orden_frontera, para recalcular en bloque."""
+    return Case(
+        When(
+            tipo=UnidadNarrativa.TIPO_PREVIO,
+            then=Greatest(F('orden_inicio') - 1, Value(0), output_field=models.IntegerField()),
+        ),
+        default=F('orden_fin'),
+        output_field=models.IntegerField(),
+    )

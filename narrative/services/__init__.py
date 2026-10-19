@@ -8,7 +8,7 @@ from ..models import Obra, SolicitudTema, TemaTransversal, UnidadNarrativa
 
 UMBRAL_SALTO_GRANDE = 3
 
-UNIDAD_PREVIA_TIPO = 'previo'
+UNIDAD_PREVIA_TIPO = UnidadNarrativa.TIPO_PREVIO
 UNIDAD_PREVIA_NOMBRE = 'Previo al estreno'
 
 TIPO_PALABRAS_CLAVE = {

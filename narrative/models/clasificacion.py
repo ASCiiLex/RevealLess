@@ -1,6 +1,13 @@
 from django.db import models
+from django.db.models import OuterRef, Subquery
 
-from .catalogo import Obra, UnidadNarrativa
+from .catalogo import Obra, UnidadNarrativa, expresion_orden_frontera
+
+# FK a UnidadNarrativa → campo donde se cachea su posición.
+CAMPOS_FRONTERA = {
+    'frontera_spoiler': 'frontera_orden',
+    'frontera_cruzada': 'frontera_cruzada_orden',
+}
 
 
 class ClasificacionNarrativa(models.Model):
@@ -105,10 +112,30 @@ class ClasificacionNarrativa(models.Model):
         if self.frontera_origen == self.ORIGEN_HEREDADO_POST:
             self.frontera_orden = None
         elif self.frontera_spoiler_id:
-            self.frontera_orden = self.frontera_spoiler.orden_fin
+            self.frontera_orden = self.frontera_spoiler.orden_frontera
 
         self.frontera_cruzada_orden = (
-            self.frontera_cruzada.orden_fin if self.frontera_cruzada_id else None
+            self.frontera_cruzada.orden_frontera if self.frontera_cruzada_id else None
         )
 
         super().save(*args, **kwargs)
+
+
+def refrescar_fronteras(obra):
+    """Las posiciones de frontera se cachean al guardar: tras recalcular el orden de la obra
+    se actualizan en bloque, o el motor compararía contra posiciones antiguas.
+    Recorre las relaciones inversas para no importar posts ni comments desde narrative."""
+    for relacion in UnidadNarrativa._meta.related_objects:
+        campo_fk = relacion.field.name
+        campo_cache = CAMPOS_FRONTERA.get(campo_fk)
+        if campo_cache is None or not issubclass(relacion.related_model, ClasificacionNarrativa):
+            continue
+        orden = (
+            UnidadNarrativa.objects
+            .filter(pk=OuterRef(campo_fk))
+            .annotate(posicion=expresion_orden_frontera())
+            .values('posicion')[:1]
+        )
+        relacion.related_model.objects.filter(**{f'{campo_fk}__obra': obra}).update(
+            **{campo_cache: Subquery(orden)}
+        )
