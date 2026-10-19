@@ -7,11 +7,14 @@ from django.views.decorators.http import require_POST
 from narrative.models import ClasificacionNarrativa
 from narrative.services import detectar_posibles_referencias_cruzadas
 from narrative.services.detecciones import serializar_detecciones
+from narrative.services.fronteras import previa_cerrada
 from posts.models import Post
 from ..models import Comment
 from ..serializers import CommentCreateSerializer
 from .fronteras import ajustar_frontera
 from .respuestas import datos_clasificacion
+
+MENSAJE_PREVIA_CERRADA = 'Ese previo al estreno ya está cerrado: elige como frontera una parte ya estrenada.'
 
 
 def _error(mensaje, status=400):
@@ -53,6 +56,10 @@ def add_comment(request):
     if bool(obra_cruzada) != bool(frontera_cruzada):
         return _error('Indica la obra cruzada y su frontera juntas, o ninguna de las dos.')
 
+    frontera = datos.get('frontera_spoiler')
+    if previa_cerrada(frontera) or previa_cerrada(frontera_cruzada):
+        return _error(MENSAJE_PREVIA_CERRADA)
+
     if not obra_cruzada and not datos.get('descartar_referencia_cruzada'):
         detecciones = detectar_posibles_referencias_cruzadas(text, post.obra)
         if detecciones:
@@ -72,7 +79,6 @@ def add_comment(request):
         frontera_cruzada=frontera_cruzada,
     )
 
-    frontera = datos.get('frontera_spoiler')
     if frontera:
         comment.frontera_spoiler = frontera
         comment.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO

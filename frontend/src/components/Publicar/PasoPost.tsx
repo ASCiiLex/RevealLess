@@ -87,8 +87,13 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     (q: string) => (obraSlug ? buscarUnidades(obraSlug, q) : Promise.resolve([])),
     [obraSlug]
   )
-  const buscarUnidadesOtra = useCallback(
-    (q: string) => (otraSlug ? buscarUnidades(otraSlug, q) : Promise.resolve([])),
+  // Fronteras (propia y de la otra obra): sin los previos ya estrenados.
+  const buscarFronterasObra = useCallback(
+    (q: string) => (obraSlug ? buscarUnidades(obraSlug, q, true) : Promise.resolve([])),
+    [obraSlug]
+  )
+  const buscarFronterasOtra = useCallback(
+    (q: string) => (otraSlug ? buscarUnidades(otraSlug, q, true) : Promise.resolve([])),
     [otraSlug]
   )
 
@@ -280,7 +285,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
               onChange={elegirParteOtra}
               placeholder="Buscar unidad..."
               emptyLabel={conPersonajeDeOtra ? 'Sin parte concreta' : undefined}
-              buscar={buscarUnidadesOtra}
+              buscar={buscarFronterasOtra}
               hint={
                 parteOtraOpcional
                   ? `Opcional: sin parte, lo verá quien ya conozca a sus personajes en ${otra.titulo}.`
@@ -308,7 +313,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             onChange={setFrontera}
             placeholder="Buscar unidad..."
             emptyLabel="Dejar que la IA la estime al publicar"
-            buscar={buscarUnidadesObra}
+            buscar={buscarFronterasObra}
             hint={pistaFrontera}
           />
 

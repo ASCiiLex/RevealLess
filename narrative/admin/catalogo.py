@@ -3,6 +3,8 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 
 from ..models import Categoria, ExternalId, Obra, ProgresoUsuario, TemaTransversal, UnidadNarrativa
+from ..services import asegurar_unidad_previa
+from ..services.previos import crear_previo
 from .comun import (
     CAMPOS_QUE_REORDENAN, RELACIONES_UNIDAD, ImagenDesdeUrlForm, miniatura, relaciones_de,
 )
@@ -44,7 +46,7 @@ class ObraAdmin(ModelAdmin):
     filter_horizontal = ('categorias',)
     autocomplete_fields = ('adapta_a',)
     date_hierarchy = 'fecha_publicacion'
-    actions = ['recalcular_orden_seleccionadas']
+    actions = ['recalcular_orden_seleccionadas', 'crear_previo_obras_sin_estructura']
 
     fieldsets = (
         ('Identidad', {
@@ -72,6 +74,11 @@ class ObraAdmin(ModelAdmin):
             obra.recalcular_orden()
         self.message_user(request, f'{queryset.count()} obra(s) recalculada(s).')
 
+    @admin.action(description='Crear «Previo al estreno» en las obras sin estructura')
+    def crear_previo_obras_sin_estructura(self, request, queryset):
+        creados = sum(1 for obra in queryset if asegurar_unidad_previa(obra))
+        self.message_user(request, f'{creados} previo(s) creado(s); las obras con unidades no cambian.')
+
 
 class UnidadNarrativaAdminForm(ImagenDesdeUrlForm):
     class Meta:
@@ -92,6 +99,7 @@ class UnidadNarrativaAdmin(ModelAdmin):
     autocomplete_fields = ('padre',)
     # Edición en bloque desde el listado: títulos, tipo, fecha y orden.
     list_editable = ('nombre', 'tipo', 'orden_local', 'fecha')
+    actions = ['crear_previo_seleccionadas']
 
     def get_queryset(self, request):
         # También lo usa el autocomplete; padre__* cubre la columna «padre» del listado.
@@ -107,6 +115,14 @@ class UnidadNarrativaAdmin(ModelAdmin):
     @admin.display(description='Portada')
     def imagen_tag(self, obj):
         return miniatura(obj, 32)
+
+    @admin.action(description='Crear «Previo» justo antes de las unidades seleccionadas')
+    def crear_previo_seleccionadas(self, request, queryset):
+        previos = [crear_previo(unidad) for unidad in queryset if not unidad.es_previa]
+        self.message_user(
+            request,
+            f'{len(previos)} previo(s) listo(s). Fija su fecha de estreno si la entrega aún no tiene episodios con fecha.',
+        )
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)

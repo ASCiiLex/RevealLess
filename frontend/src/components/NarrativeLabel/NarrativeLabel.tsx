@@ -16,7 +16,11 @@ interface Props {
   prefix?: string
 }
 
+const TIPO_PREVIO = 'previo'
+
 export default function NarrativeLabel({ unidad, prefix }: Props) {
+  const esPrevio = unidad.tipo === TIPO_PREVIO
+
   return (
     <span className={styles.label}>
       {prefix && <span className={styles.prefix}>{prefix}</span>}
@@ -28,7 +32,7 @@ export default function NarrativeLabel({ unidad, prefix }: Props) {
         </>
       )}
 
-      <span className={styles.nombre}>{unidad.etiqueta}</span>
+      <span className={`${styles.nombre} ${esPrevio ? styles.previo : ''}`}>{unidad.etiqueta}</span>
     </span>
   )
 }

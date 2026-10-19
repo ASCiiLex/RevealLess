@@ -1,12 +1,15 @@
 from rest_framework import status
 from rest_framework.response import Response
 
-from narrative.services.fronteras import frontera_minima
+from narrative.services.fronteras import frontera_minima, frontera_sin_previa_cerrada, previa_cerrada
 
 ERROR_CRUZADA_INCOMPLETA = 'Indica la obra cruzada y su frontera juntas, o ninguna de las dos.'
 ERROR_CRUZADA_SIN_FRONTERA = {
     'frontera_cruzada': ['Indica de qué parte de la obra comparada hablas o enfrenta a algún personaje suyo.'],
 }
+MENSAJE_PREVIA_CERRADA = 'Ese previo al estreno ya está cerrado: elige como frontera una parte ya estrenada.'
+ERROR_PREVIA_CERRADA = {'frontera_spoiler': [MENSAJE_PREVIA_CERRADA]}
+ERROR_PREVIA_CERRADA_CRUZADA = {'frontera_cruzada': [MENSAJE_PREVIA_CERRADA]}
 ERROR_TEMA_OTRA_OBRA = {'tema': ['Debe pertenecer a la obra del post.']}
 ERROR_SIN_REFERENCIA = {'referencia_narrativa': ['Indica de qué parte o tema habla el post, o su frontera de spoiler.']}
 ERROR_IMAGEN_Y_GALERIA = {'imagenes': ['Envía una imagen o una galería, no ambas.']}
@@ -15,7 +18,7 @@ ERROR_NUMERO_COMPARADOS = {'personajes_comparados': ['Una comparativa necesita d
 ERROR_COMPARADO_AJENO = {'personajes_comparados': ['Cada personaje debe pertenecer a la obra o a la obra comparada.']}
 ERROR_MODO_CRUCE = {'modo_cruce': ['La misma escena solo vale entre adaptaciones de una misma historia.']}
 
-__all__ = ['error_400', 'frontera_minima', 'tema_de_otra_obra']
+__all__ = ['error_400', 'frontera_minima', 'frontera_sin_previa_cerrada', 'previa_cerrada', 'tema_de_otra_obra']
 
 
 def error_400(detail):

@@ -9,9 +9,11 @@ from rest_framework.views import APIView
 
 from ..models import Obra, Personaje, ProgresoUsuario, RelevanciaPersonaje, TemaTransversal, UnidadNarrativa
 from ..serializers import ObraResumenSerializer, UnidadNarrativaSerializer
+from ..services.fronteras import previa_cerrada
 from ..services.personajes import nombres_conocidos, presentacion_personaje
 from .comun import (
     contexto_suscripcion_obra,
+    es_verdadero,
     ids_biblioteca,
     obra_basica,
     personajes_suscritos_serializados,
@@ -153,7 +155,8 @@ class ObraDetalleAPIView(APIView):
 
 
 class UnidadesBuscarAPIView(APIView):
-    """Búsqueda por texto para BuscadorLocal: evita cargar obras enteras en el formulario de publicar."""
+    """Búsqueda por texto para BuscadorLocal: evita cargar obras enteras en el formulario de publicar.
+    ?frontera=1: para elegir frontera, sin los previos ya estrenados (siguen valiendo como parte)."""
 
     permission_classes = [IsAuthenticated]
     LIMITE = 30
@@ -165,7 +168,9 @@ class UnidadesBuscarAPIView(APIView):
         unidades = UnidadNarrativa.objects.filter(obra=obra).select_related('padre', 'obra')
         if q:
             unidades = unidades.filter(nombre__icontains=q)
-        unidades = unidades.order_by('orden_inicio')[:self.LIMITE]
+        unidades = list(unidades.order_by('orden_inicio')[:self.LIMITE])
+        if es_verdadero(request.query_params.get('frontera')):
+            unidades = [u for u in unidades if not previa_cerrada(u)]
 
         return Response({'unidades': UnidadNarrativaSerializer(unidades, many=True).data})
 

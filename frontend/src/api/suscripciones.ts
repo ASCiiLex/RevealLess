@@ -107,11 +107,15 @@ export function crearSolicitudTema(obraId: number, nombre: string): Promise<Soli
   })
 }
 
-export function buscarUnidades(obraSlug: string, q: string): Promise<UnidadBuscada[]> {
-  const params = q ? `?q=${encodeURIComponent(q)}` : ''
+// soloFronteras: sin los previos ya estrenados, que siguen valiendo como parte pero no como frontera.
+export function buscarUnidades(obraSlug: string, q: string, soloFronteras = false): Promise<UnidadBuscada[]> {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  if (soloFronteras) params.set('frontera', '1')
+  const query = params.toString()
   return api
     .get<{ unidades: { id: number; etiqueta: string; padre_etiqueta: string | null }[] }>(
-      `/narrative/api/obras/${obraSlug}/unidades/${params}`
+      `/narrative/api/obras/${obraSlug}/unidades/${query ? `?${query}` : ''}`
     )
     .then((data) => data.unidades.map((u) => ({ id: u.id, label: u.etiqueta, detalle: u.padre_etiqueta })))
 }

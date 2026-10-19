@@ -26,3 +26,12 @@
 .nombre {
   color: var(--fog);
 }
+
+/* Previo al estreno: contenido promocional, destacado como el resto de marcas de oro. */
+.previo {
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  color: var(--gold-texto);
+  font-weight: 600;
+}

@@ -32,10 +32,14 @@ from .comun import (
     ERROR_IMAGEN_Y_GALERIA,
     ERROR_MODO_CRUCE,
     ERROR_NUMERO_COMPARADOS,
+    ERROR_PREVIA_CERRADA,
+    ERROR_PREVIA_CERRADA_CRUZADA,
     ERROR_SIN_REFERENCIA,
     ERROR_TEMA_OTRA_OBRA,
     error_400,
     frontera_minima,
+    frontera_sin_previa_cerrada,
+    previa_cerrada,
     tema_de_otra_obra,
 )
 
@@ -154,6 +158,11 @@ class PostCreateAPIView(APIView):
         # La parte es contexto; la visibilidad la decide la frontera. Con solo frontera, el post va sin parte.
         if not (referencia or tema or tema_propuesto or frontera_explicita):
             return error_400(ERROR_SIN_REFERENCIA)
+        # Un previo ya estrenado sigue valiendo como parte, pero no como frontera.
+        if previa_cerrada(frontera_explicita):
+            return error_400(ERROR_PREVIA_CERRADA)
+        if previa_cerrada(frontera_cruzada):
+            return error_400(ERROR_PREVIA_CERRADA_CRUZADA)
 
         imagen_unica = datos.get('image')
         imagenes = list(datos.get('imagenes') or [])
@@ -232,7 +241,9 @@ class PostCreateAPIView(APIView):
             request=request,
         )
         _cubrir_personajes_comparados(post, comparados)
-        post.frontera_spoiler = frontera_minima(post.frontera_spoiler, post.referencia_narrativa)
+        post.frontera_spoiler = frontera_sin_previa_cerrada(
+            frontera_minima(post.frontera_spoiler, post.referencia_narrativa)
+        )
 
         galeria = [
             PostImagen(

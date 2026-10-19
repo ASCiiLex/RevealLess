@@ -11,7 +11,16 @@ from narrative.serializers import PostSerializer
 from narrative.services.etiquetado import etiquetar_personajes
 from ..models import Post
 from ..serializers import PostUpdateSerializer
-from .comun import ERROR_CRUZADA_INCOMPLETA, ERROR_TEMA_OTRA_OBRA, error_400, frontera_minima, tema_de_otra_obra
+from .comun import (
+    ERROR_CRUZADA_INCOMPLETA,
+    ERROR_PREVIA_CERRADA,
+    ERROR_PREVIA_CERRADA_CRUZADA,
+    ERROR_TEMA_OTRA_OBRA,
+    error_400,
+    frontera_minima,
+    previa_cerrada,
+    tema_de_otra_obra,
+)
 
 CAMPOS_EDITABLES = (
     'text', 'image', 'referencia_narrativa', 'nivel_spoiler',
@@ -24,7 +33,8 @@ CAMPOS_QUE_REETIQUETAN = {'text', 'frontera_spoiler', 'referencia_narrativa', 'o
 class PostUpdateAPIView(APIView):
     """Solo el autor edita. Sin IA ni detección de referencia cruzada:
     una frontera enviada se marca ORIGEN_EXPLICITO; si no se envía, no se toca.
-    En ambos casos nunca queda por debajo de la parte de la que habla el post."""
+    En ambos casos nunca queda por debajo de la parte de la que habla el post,
+    y no se puede pasar a un previo ya estrenado (los que ya lo tenían lo conservan)."""
 
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -46,6 +56,10 @@ class PostUpdateAPIView(APIView):
         tema = datos.get('tema')
         if tema_de_otra_obra(tema, post.obra_id):
             return error_400(ERROR_TEMA_OTRA_OBRA)
+        if previa_cerrada(datos.get('frontera_spoiler')):
+            return error_400(ERROR_PREVIA_CERRADA)
+        if previa_cerrada(datos.get('frontera_cruzada')):
+            return error_400(ERROR_PREVIA_CERRADA_CRUZADA)
 
         for campo in CAMPOS_EDITABLES:
             if campo in datos:

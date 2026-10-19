@@ -9,8 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from narrative.models import ClasificacionNarrativa
+from narrative.services.fronteras import previa_cerrada
 from ..models import Comment
 from ..serializers import CommentUpdateSerializer
+from .crear import MENSAJE_PREVIA_CERRADA
 from .fronteras import ajustar_frontera
 from .respuestas import datos_clasificacion
 
@@ -32,6 +34,10 @@ class CommentUpdateAPIView(APIView):
         entrada = CommentUpdateSerializer(data=request.data, partial=True)
         entrada.is_valid(raise_exception=True)
         datos = entrada.validated_data
+
+        # Solo se comprueba lo que cambia: un comentario que ya tenía ese previo lo conserva.
+        if previa_cerrada(datos.get('frontera_spoiler')) or previa_cerrada(datos.get('frontera_cruzada')):
+            return Response({'detail': MENSAJE_PREVIA_CERRADA}, status=status.HTTP_400_BAD_REQUEST)
 
         for campo in CAMPOS_EDITABLES:
             if campo in datos:

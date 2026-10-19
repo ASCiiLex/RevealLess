@@ -1,6 +1,9 @@
 """Cálculo de orden_inicio/orden_fin (DFS) sobre el árbol de UnidadNarrativa.
 Sin imports de modelos: opera vía obra.unidades para evitar ciclos."""
 
+# Mismo valor que UnidadNarrativa.TIPO_PREVIO; aquí sin importar modelos.
+TIPO_PREVIO = 'previo'
+
 
 def recalcular_orden(obra):
     """orden_manual es un índice de inserción (1-based) sobre la secuencia
@@ -25,7 +28,8 @@ def _agrupar_por_padre(unidades):
     for u in unidades:
         por_padre.setdefault(u.padre_id, []).append(u)
     for hijos in por_padre.values():
-        hijos.sort(key=lambda u: u.orden_local)
+        # Un previo comparte orden_local con su entrega y va siempre delante de ella.
+        hijos.sort(key=lambda u: (u.orden_local, u.tipo != TIPO_PREVIO))
     return por_padre
 
 
