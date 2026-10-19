@@ -150,8 +150,10 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    # Sin conexiones persistentes: bajo ASGI se acumulan por hilo y agotan el límite de Postgres.
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=0)}
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
+    # Pool de psycopg 3: reutiliza conexiones entre peticiones. Bajo ASGI Django desaconseja CONN_MAX_AGE,
+    # y abrir una conexión por petición (proceso nuevo + autenticación SCRAM) satura un Postgres de 0,1 CPU.
+    DATABASES['default']['OPTIONS'] = {'pool': {'min_size': 2, 'max_size': 10, 'timeout': 10}}
 else:
     DATABASES = {
         'default': {
