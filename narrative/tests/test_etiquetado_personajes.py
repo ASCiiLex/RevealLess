@@ -26,6 +26,10 @@ class PersonajesMencionadosTests(TestCase):
         zoro = self._personaje('Roronoa Zoro', self.ep[0])
         self.assertEqual(self._menciona('Zoro se pierde otra vez', self.ep[0]), {zoro.id})
 
+    def test_nombre_de_una_palabra_en_minusculas_sigue_etiquetando(self):
+        nami = self._personaje('Nami', self.ep[0])
+        self.assertEqual(self._menciona('nami dibuja mapas', self.ep[0]), {nami.id})
+
     def test_palabra_ambigua_no_etiqueta(self):
         self._personaje('Monkey D. Luffy', self.ep[0])
         self._personaje('Monkey D. Garp', self.ep[0])
@@ -34,6 +38,20 @@ class PersonajesMencionadosTests(TestCase):
     def test_respeta_limites_de_palabra(self):
         self._personaje('Ana', self.ep[0])
         self.assertEqual(self._menciona('me como una banana', self.ep[0]), set())
+
+    def test_palabra_comun_en_minusculas_no_etiqueta(self):
+        self._personaje('Han Solo', self.ep[0])
+        self.assertEqual(self._menciona('sin contar la Fuerza, sólo habilidad con la espada', self.ep[0]), set())
+        self.assertEqual(self._menciona('es solo una opinión', self.ep[0]), set())
+
+    def test_palabra_comun_con_mayuscula_etiqueta(self):
+        han = self._personaje('Han Solo', self.ep[0])
+        self.assertEqual(self._menciona('y entonces Solo dispara primero', self.ep[0]), {han.id})
+
+    def test_nombre_corriente_de_una_palabra_exige_mayuscula(self):
+        rey = self._personaje('Rey', self.ep[0])
+        self.assertEqual(self._menciona('el rey del norte', self.ep[0]), set())
+        self.assertEqual(self._menciona('la pelea de Rey con Kylo', self.ep[0]), {rey.id})
 
     def test_no_etiqueta_personajes_posteriores_a_la_frontera(self):
         self._personaje('Shanks', self.ep[2])
