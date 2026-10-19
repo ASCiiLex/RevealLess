@@ -204,7 +204,8 @@ _USAR_TIGRIS = bool(os.environ.get('AWS_STORAGE_BUCKET_NAME')) and not _EN_TESTS
 
 if _USAR_TIGRIS:
     _MEDIA_STORAGE = {
-        'BACKEND': 'storages.backends.s3.S3Storage',
+        # Subclase de S3Storage con la conexión compartida por proceso (ver core/almacenamiento.py).
+        'BACKEND': 'core.almacenamiento.TigrisStorage',
         'OPTIONS': {
             'bucket_name': os.environ['AWS_STORAGE_BUCKET_NAME'],
             'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
