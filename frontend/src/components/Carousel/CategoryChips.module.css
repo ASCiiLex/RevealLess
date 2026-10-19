@@ -143,8 +143,8 @@
   color: var(--on-dark-soft);
 }
 
-/* En móvil se desliza con el dedo; el fundido basta como pista. */
-@media (max-width: 767px) {
+/* En táctil se desliza con el dedo; el fundido basta como pista. Con ratón, flechas a cualquier ancho. */
+@media (hover: none), (pointer: coarse) {
   .flecha {
     display: none;
   }
