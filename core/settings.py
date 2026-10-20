@@ -205,7 +205,7 @@ _USAR_TIGRIS = bool(os.environ.get('AWS_STORAGE_BUCKET_NAME')) and not _EN_TESTS
 
 if _USAR_TIGRIS:
     _MEDIA_STORAGE = {
-        # Subclase de S3Storage con la conexión compartida por proceso (ver core/almacenamiento.py).
+        # Subclase de S3Storage con conexión compartida y URLs reutilizables (ver core/imagenes/almacenamiento.py).
         'BACKEND': 'core.imagenes.almacenamiento.TigrisStorage',
         'OPTIONS': {
             'bucket_name': os.environ['AWS_STORAGE_BUCKET_NAME'],
@@ -219,6 +219,8 @@ if _USAR_TIGRIS:
             'querystring_auth': True,
             'querystring_expire': 60 * 60 * 6,
             'file_overwrite': False,
+            # Las subidas nuevas guardan la cabecera; las antiguas la reciben en la URL firmada.
+            'object_parameters': {'CacheControl': 'private, max-age=21600'},
         },
     }
 else:
