@@ -1,6 +1,7 @@
 import logging
-import os
 import re
+
+from django.conf import settings
 
 from ia.cliente import llamar_claude
 from ia.models import UsoIA
@@ -14,11 +15,12 @@ CONFIANZA_MAX_SIN_NOMBRE = 0.5
 NOMBRE_GENERICO = re.compile(
     r'^(episodio|episode|ep\.?|cap[ií]tulo|chapter|cap\.?|volumen|vol\.?|tomo)\s*\d+$', re.IGNORECASE
 )
-# Modelo base de todos los servicios de IA; ANTHROPIC_MODEL solo cambia el de la frontera.
+# Modelo de los servicios de catálogo (traducción, personajes). Las fronteras usan IA_MODELO_FRONTERAS.
 MODELO_IA = 'claude-haiku-4-5-20251001'
 # Generación 4: admite forzar la herramienta y fijar temperature. Las 5.x lo rechazan con 400.
 PREFIJOS_CON_FORZADO = ('claude-haiku-4', 'claude-sonnet-4', 'claude-opus-4')
-TIMEOUT_PUBLICAR = 8
+# Si se agota, se publica con el fallback seguro (progreso del autor).
+TIMEOUT_PUBLICAR = 12
 # El autor espera con el botón pulsado: margen para un modelo que razona antes de responder.
 TIMEOUT_SUGERENCIA = 45
 MAX_REVELACIONES = 6
@@ -26,6 +28,8 @@ MAX_REVELACIONES = 6
 SYSTEM_PROMPT = (
     'Eres el asistente antispoiler de RevealLess. Recibes el texto de una publicación sobre una obra '
     'y la lista de sus unidades narrativas (arcos, episodios, capítulos) ordenadas por posición de consumo. '
+    'Las unidades son de una versión concreta (libro, serie, película, manga...): sitúa cada hecho según '
+    'esa versión, no según otras adaptaciones de la misma historia, que a veces lo cuentan en otro momento. '
     'Responde siempre llamando a la herramienta clasificar_frontera.\n'
     '1. parte_id: la unidad donde ocurre la escena o el momento que comenta el texto. '
     'Si el autor ya la ha indicado, usa esa.\n'
@@ -67,6 +71,10 @@ HERRAMIENTA = {
 }
 
 
+class RespuestaInvalida(RuntimeError):
+    """La IA respondió con un formato o unos ids que no se pueden usar: se descarta entera."""
+
+
 class Revelacion:
     # El hecho solo obliga al modelo a razonar; nunca sale del servidor (sería un spoiler para el autor).
     def __init__(self, hecho, unidad, confianza):
@@ -88,6 +96,10 @@ class SugerenciaIA:
         return self.frontera_spoiler is not None and self.confianza >= CONFIANZA_MINIMA
 
 
+def modelo_fronteras():
+    return getattr(settings, 'IA_MODELO_FRONTERAS', MODELO_IA)
+
+
 def etiqueta_unidad(unidad):
     return f'{unidad.padre.nombre} · {unidad.nombre}' if unidad.padre_id else unidad.nombre
 
@@ -102,12 +114,14 @@ def proponer_clasificacion(
 ):
     """Punto único de entrada a la IA de clasificación. Nunca lanza: cualquier fallo devuelve una
     sugerencia vacía y quien llama cae al fallback sin bloquear la publicación.
-    usuario y funcion: registro de uso. modelo: solo para evaluar; por defecto ANTHROPIC_MODEL o MODELO_IA."""
+    usuario y funcion: registro de uso. modelo: solo para evaluar; por defecto IA_MODELO_FRONTERAS."""
     try:
         return _llamar_api(texto, obra, referencia, timeout, usuario, funcion, modelo)
+    except RespuestaInvalida as e:
+        logger.warning('Propuesta de la IA descartada: %s', e)
     except Exception:
         logger.exception('Fallo al llamar a la API de IA de clasificación')
-        return SugerenciaIA()
+    return SugerenciaIA()
 
 
 def _parametros_modelo(modelo):
@@ -148,17 +162,17 @@ def _llamar_api(texto, obra, referencia, timeout, usuario, funcion, modelo):
     lineas = '\n'.join(
         f'{u.id} | {u.tipo} | {etiqueta_unidad(u)} | {u.orden_inicio}-{u.orden_fin}' for u in unidades
     )
+    contexto_obra = (
+        f'Obra: {obra.titulo} (versión: {obra.get_tipo_display()})\n\n'
+        f'Unidades (id | tipo | nombre | orden):\n{lineas}'
+    )
     parte = (
         f'Parte indicada por el autor: id={referencia.id} ({etiqueta_unidad(referencia)}).'
         if referencia else 'El autor no ha indicado la parte: proponla en parte_id.'
     )
-    user_prompt = (
-        f'Obra: {obra.titulo}\n{parte}\n\n'
-        f'Unidades (id | tipo | nombre | orden):\n{lineas}\n\n'
-        f'Texto de la publicación:\n"""{texto}"""'
-    )
+    peticion = f'{parte}\n\nTexto de la publicación:\n"""{texto}"""'
 
-    modelo = modelo or os.environ.get('ANTHROPIC_MODEL') or MODELO_IA
+    modelo = modelo or modelo_fronteras()
     response = llamar_claude(
         funcion,
         usuario=usuario,
@@ -167,13 +181,17 @@ def _llamar_api(texto, obra, referencia, timeout, usuario, funcion, modelo):
         model=modelo,
         system=SYSTEM_PROMPT,
         tools=[HERRAMIENTA],
-        messages=[{'role': 'user', 'content': user_prompt}],
+        messages=[{'role': 'user', 'content': [
+            # La obra y sus unidades se repiten entre publicaciones: van en caché.
+            {'type': 'text', 'text': contexto_obra, 'cache_control': {'type': 'ephemeral'}},
+            {'type': 'text', 'text': peticion},
+        ]}],
         **_parametros_modelo(modelo),
     )
 
     bloque = next((b for b in response.content if b.type == 'tool_use'), None)
     if bloque is None:
-        raise RuntimeError('La respuesta de la IA no incluyó una clasificación.')
+        raise RespuestaInvalida('la respuesta no incluyó una clasificación.')
 
     return _resolver(bloque.input, {u.id: u for u in unidades}, referencia)
 
@@ -195,18 +213,24 @@ def _acotar(valor):
 def _unidad(unidades_por_id, valor):
     unidad = unidades_por_id.get(_entero(valor))
     if unidad is None:
-        raise RuntimeError(f'La IA propuso un id inexistente: {valor}')
+        raise RespuestaInvalida(f'id inexistente o excluido: {valor}')
     return unidad
 
 
 def _resolver(entrada, unidades_por_id, referencia):
     """Frontera = la revelación más tardía, nunca anterior a la parte. Confianza = la mínima.
-    Un id inventado o excluido invalida toda la propuesta: podría ser justo la revelación más tardía.
-    Si la IA elige por su cuenta una unidad sin título, la confianza se limita por debajo del umbral:
-    no se aplica sola al publicar y la interfaz avisa de certeza baja."""
+    Un formato inválido o un id inventado invalida toda la propuesta: lo descartado podría ser
+    justo la revelación más tardía. Si la IA elige por su cuenta una unidad sin título, la confianza
+    se limita por debajo del umbral: no se aplica sola al publicar y la interfaz avisa de certeza baja."""
+    if not isinstance(entrada, dict):
+        raise RespuestaInvalida('la clasificación no es un objeto.')
+    crudas = entrada.get('revelaciones') or []
+    if not isinstance(crudas, list) or not all(isinstance(r, dict) for r in crudas):
+        raise RespuestaInvalida('revelaciones con formato inválido.')
+
     parte = referencia or _unidad(unidades_por_id, entrada.get('parte_id'))
     revelaciones = []
-    for r in (entrada.get('revelaciones') or [])[:MAX_REVELACIONES]:
+    for r in crudas[:MAX_REVELACIONES]:
         hecho = ' '.join(str(r.get('hecho') or '').split())[:200]
         if hecho:
             revelaciones.append(

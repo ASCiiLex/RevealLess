@@ -1,4 +1,3 @@
-import os
 import time
 
 import yaml
@@ -7,7 +6,7 @@ from django.db.models import Sum
 from django.utils import timezone
 
 from ia.models import UsoIA
-from narrative.ai_assistant import MODELO_IA, TIMEOUT_SUGERENCIA, etiqueta_unidad, proponer_clasificacion
+from narrative.ai_assistant import TIMEOUT_SUGERENCIA, etiqueta_unidad, modelo_fronteras, proponer_clasificacion
 from narrative.models import Obra, UnidadNarrativa
 
 SEPARADOR_PADRE = ' · '
@@ -27,7 +26,7 @@ class Command(BaseCommand):
         parser.add_argument('archivo', help='YAML de casos (ver narrative/data/evaluacion_fronteras.yaml).')
         parser.add_argument(
             '--modelo', action='append', default=[],
-            help='Modelo a evaluar (repetible). Por defecto, el que usa la web.',
+            help='Modelo a evaluar (repetible). Por defecto, el que usa la web (IA_MODELO_FRONTERAS).',
         )
 
     def handle(self, *args, **opciones):
@@ -43,7 +42,7 @@ class Command(BaseCommand):
         if not casos:
             raise CommandError('No hay casos válidos que evaluar.')
 
-        modelos = opciones['modelo'] or [os.environ.get('ANTHROPIC_MODEL') or MODELO_IA]
+        modelos = opciones['modelo'] or [modelo_fronteras()]
         self.stdout.write(f'{len(casos)} caso(s) × {len(modelos)} modelo(s) = {len(casos) * len(modelos)} llamada(s).\n')
         for modelo in modelos:
             self._evaluar(modelo, casos)
@@ -122,7 +121,10 @@ class Command(BaseCommand):
         total = len(casos)
         uso = UsoIA.objects.filter(
             funcion=UsoIA.FUNCION_EVALUACION, modelo=modelo, creado_en__gte=inicio,
-        ).aggregate(coste=Sum('coste_estimado'), entrada=Sum('tokens_entrada'), salida=Sum('tokens_salida'))
+        ).aggregate(
+            coste=Sum('coste_estimado'), entrada=Sum('tokens_entrada'), salida=Sum('tokens_salida'),
+            escritura=Sum('tokens_cache_escritura'), lectura=Sum('tokens_cache_lectura'),
+        )
         coste = f'{uso["coste"]:.4f} USD' if uso['coste'] is not None else 'sin precio configurado'
 
         self.stdout.write(self.style.SUCCESS(f'Exactos: {exactos}/{total}'))
@@ -132,4 +134,7 @@ class Command(BaseCommand):
         if distancias:
             self.stdout.write(f'Distancia media: {sum(distancias) / len(distancias):.1f} posiciones')
             self.stdout.write(f'Confianza media: {sum(confianzas) / len(confianzas):.2f}')
-        self.stdout.write(f'Tokens: {uso["entrada"] or 0} de entrada, {uso["salida"] or 0} de salida · Coste: {coste}')
+        self.stdout.write(
+            f'Tokens: {uso["entrada"] or 0} de entrada, {uso["escritura"] or 0} escritos en caché, '
+            f'{uso["lectura"] or 0} leídos de caché, {uso["salida"] or 0} de salida · Coste: {coste}'
+        )

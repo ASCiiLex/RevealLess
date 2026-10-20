@@ -278,6 +278,10 @@ RATELIMIT_IP_META_KEY = 'core.red.ip_cliente'
 # Llamadas a la IA por usuario al publicar sin frontera; superado, se usa el progreso del autor.
 IA_LIMITE_PUBLICAR = os.environ.get('IA_LIMITE_PUBLICAR', '20/h')
 
+# Modelo de la IA de fronteras (núcleo antispoiler): el más preciso en evaluar_fronteras.
+# Traducción y personajes usan Haiku (MODELO_IA), más barato para tareas de catálogo.
+IA_MODELO_FRONTERAS = os.environ.get('IA_MODELO_FRONTERAS', 'claude-sonnet-5-5')
+
 # ==========================================================
 # DJANGO REST FRAMEWORK
 # ==========================================================

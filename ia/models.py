@@ -32,9 +32,12 @@ class UsoIA(models.Model):
         'narrative.Obra', on_delete=models.SET_NULL, null=True, blank=True, related_name='usos_ia',
         verbose_name='Obra',
     )
+    # Entrada sin caché; la cacheada va aparte porque se factura a otro precio.
     tokens_entrada = models.PositiveIntegerField(default=0, verbose_name='Tokens de entrada')
+    tokens_cache_escritura = models.PositiveIntegerField(default=0, verbose_name='Tokens escritos en caché')
+    tokens_cache_lectura = models.PositiveIntegerField(default=0, verbose_name='Tokens leídos de caché')
     tokens_salida = models.PositiveIntegerField(default=0, verbose_name='Tokens de salida')
-    # USD según IA_PRECIOS en el momento de la llamada; vacío si el modelo no tiene precio configurado.
+    # USD según los precios en el momento de la llamada; vacío si el modelo no tiene precio configurado.
     coste_estimado = models.DecimalField(
         max_digits=12, decimal_places=6, null=True, blank=True, verbose_name='Coste estimado (USD)',
     )

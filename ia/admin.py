@@ -9,8 +9,8 @@ class UsoIAAdmin(ModelAdmin):
     """Solo lectura: es un registro de costes, no se edita a mano."""
 
     list_display = (
-        'creado_en', 'funcion', 'modelo', 'usuario', 'obra',
-        'tokens_entrada', 'tokens_salida', 'coste_estimado', 'exito', 'duracion_ms',
+        'creado_en', 'funcion', 'modelo', 'usuario', 'obra', 'tokens_entrada',
+        'tokens_cache_lectura', 'tokens_salida', 'coste_estimado', 'exito', 'duracion_ms',
     )
     list_filter = ('funcion', 'modelo', 'exito')
     list_select_related = ('usuario', 'obra')

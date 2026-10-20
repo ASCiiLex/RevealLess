@@ -13,7 +13,11 @@ logger = logging.getLogger(__name__)
 # Comprobar en https://platform.claude.com/docs/en/about-claude/pricing al cambiar de modelo.
 PRECIOS_POR_DEFECTO = {
     'claude-haiku-4-5': (Decimal('1.00'), Decimal('5.00')),
+    'claude-sonnet-5-5': (Decimal('2.00'), Decimal('10.00')),
 }
+# Caché de 5 minutos: escribir cuesta 1,25 veces la entrada y leer, una décima parte.
+FACTOR_CACHE_ESCRITURA = Decimal('1.25')
+FACTOR_CACHE_LECTURA = Decimal('0.1')
 MILLON = Decimal(1_000_000)
 
 
@@ -25,14 +29,16 @@ def _precios():
     return {**PRECIOS_POR_DEFECTO, **getattr(settings, 'IA_PRECIOS', {})}
 
 
-def coste_estimado(modelo, tokens_entrada, tokens_salida):
+def coste_estimado(modelo, tokens_entrada, tokens_salida, cache_escritura=0, cache_lectura=0):
     """Coste en USD, o None si el modelo no tiene precio configurado (se guardan igual los tokens)."""
     for prefijo, (precio_entrada, precio_salida) in _precios().items():
         if modelo.startswith(prefijo):
-            return (
-                Decimal(tokens_entrada) * Decimal(str(precio_entrada))
-                + Decimal(tokens_salida) * Decimal(str(precio_salida))
-            ) / MILLON
+            entrada = (
+                Decimal(tokens_entrada)
+                + Decimal(cache_escritura) * FACTOR_CACHE_ESCRITURA
+                + Decimal(cache_lectura) * FACTOR_CACHE_LECTURA
+            )
+            return (entrada * Decimal(str(precio_entrada)) + Decimal(tokens_salida) * Decimal(str(precio_salida))) / MILLON
     return None
 
 
@@ -68,14 +74,18 @@ def llamar_claude(funcion, *, usuario=None, obra=None, timeout=60, **parametros)
         uso = getattr(respuesta, 'usage', None)
         entrada = _entero(getattr(uso, 'input_tokens', 0))
         salida = _entero(getattr(uso, 'output_tokens', 0))
+        escritura = _entero(getattr(uso, 'cache_creation_input_tokens', 0))
+        lectura = _entero(getattr(uso, 'cache_read_input_tokens', 0))
         _registrar(
             funcion=funcion,
             modelo=modelo,
             usuario=usuario if getattr(usuario, 'is_authenticated', False) else None,
             obra=obra,
             tokens_entrada=entrada,
+            tokens_cache_escritura=escritura,
+            tokens_cache_lectura=lectura,
             tokens_salida=salida,
-            coste_estimado=coste_estimado(modelo, entrada, salida),
+            coste_estimado=coste_estimado(modelo, entrada, salida, escritura, lectura),
             exito=respuesta is not None,
             duracion_ms=int((time.monotonic() - inicio) * 1000),
         )

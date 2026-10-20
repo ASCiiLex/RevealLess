@@ -13,8 +13,12 @@ from ia.models import UsoIA
 PARAMETROS = {'model': 'claude-haiku-4-5-20251001', 'max_tokens': 10, 'messages': []}
 
 
-def _respuesta(entrada=1000, salida=500):
-    return SimpleNamespace(usage=SimpleNamespace(input_tokens=entrada, output_tokens=salida), content=[])
+def _respuesta(entrada=1000, salida=500, escritura=0, lectura=0):
+    uso = SimpleNamespace(
+        input_tokens=entrada, output_tokens=salida,
+        cache_creation_input_tokens=escritura, cache_read_input_tokens=lectura,
+    )
+    return SimpleNamespace(usage=uso, content=[])
 
 
 @patch.dict(os.environ, {'ANTHROPIC_API_KEY': 'clave-de-prueba'})
@@ -48,6 +52,13 @@ class LlamarClaudeTests(TestCase):
         self.assertEqual(uso.coste_estimado, Decimal('0.0035'))
         self.assertEqual((uso.usuario, uso.obra, uso.exito), (self.usuario, self.obra, True))
 
+    def test_registra_y_cobra_la_cache(self):
+        # Haiku: 100 + 1000 × 1,25 + 10000 × 0,1 = 2350 de entrada a 1 $/M, más 50 de salida a 5 $/M.
+        self._llamar(self._cliente(_respuesta(entrada=100, salida=50, escritura=1000, lectura=10000)))
+        uso = UsoIA.objects.get()
+        self.assertEqual((uso.tokens_cache_escritura, uso.tokens_cache_lectura), (1000, 10000))
+        self.assertEqual(uso.coste_estimado, Decimal('0.0026'))
+
     def test_un_fallo_de_la_api_se_registra_y_se_propaga(self):
         with self.assertRaises(ValueError):
             self._llamar(self._cliente(error=ValueError('caída')))
@@ -73,6 +84,9 @@ class ConfiguracionTests(TestCase):
         with self.assertRaises(IANoConfigurada):
             llamar_claude(UsoIA.FUNCION_TRADUCCION, **PARAMETROS)
         self.assertFalse(UsoIA.objects.exists())
+
+    def test_precio_de_sonnet(self):
+        self.assertEqual(coste_estimado('claude-sonnet-5-5', 1_000_000, 1_000_000), Decimal('12'))
 
     @override_settings(IA_PRECIOS={'modelo-caro': (Decimal('10'), Decimal('20'))})
     def test_settings_amplia_la_tabla_de_precios(self):
