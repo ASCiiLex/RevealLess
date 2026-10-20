@@ -2,6 +2,9 @@ import logging
 import os
 import re
 
+from ia.cliente import llamar_claude
+from ia.models import UsoIA
+
 logger = logging.getLogger(__name__)
 
 CONFIANZA_MINIMA = 0.6
@@ -93,11 +96,14 @@ def es_nombre_generico(unidad):
     return bool(NOMBRE_GENERICO.match(unidad.nombre.strip()))
 
 
-def proponer_clasificacion(texto, obra, referencia=None, timeout=TIMEOUT_PUBLICAR):
+def proponer_clasificacion(
+    texto, obra, referencia=None, timeout=TIMEOUT_PUBLICAR, usuario=None, funcion=UsoIA.FUNCION_CLASIFICACION,
+):
     """Punto único de entrada a la IA de clasificación. Nunca lanza: cualquier fallo devuelve una
-    sugerencia vacía y quien llama cae al fallback sin bloquear la publicación."""
+    sugerencia vacía y quien llama cae al fallback sin bloquear la publicación.
+    usuario y funcion solo sirven para el registro de uso (al publicar o al pedir sugerencia)."""
     try:
-        return _llamar_api(texto, obra, referencia, timeout)
+        return _llamar_api(texto, obra, referencia, timeout, usuario, funcion)
     except Exception:
         logger.exception('Fallo al llamar a la API de IA de clasificación')
         return SugerenciaIA()
@@ -128,12 +134,7 @@ def _candidatas(unidades):
     return utiles or unidades
 
 
-def _llamar_api(texto, obra, referencia, timeout):
-    api_key = os.environ.get('ANTHROPIC_API_KEY')
-    if not api_key:
-        raise RuntimeError('ANTHROPIC_API_KEY no configurada.')
-
-    import anthropic
+def _llamar_api(texto, obra, referencia, timeout, usuario, funcion):
     from .models import UnidadNarrativa
 
     unidades = list(
@@ -157,8 +158,11 @@ def _llamar_api(texto, obra, referencia, timeout):
     )
 
     modelo = os.environ.get('ANTHROPIC_MODEL') or MODELO_IA
-    client = anthropic.Anthropic(api_key=api_key, timeout=timeout)
-    response = client.messages.create(
+    response = llamar_claude(
+        funcion,
+        usuario=usuario,
+        obra=obra,
+        timeout=timeout,
         model=modelo,
         system=SYSTEM_PROMPT,
         tools=[HERRAMIENTA],

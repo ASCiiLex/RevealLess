@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "rest_framework",
 
     'core',
+    'ia',
 
     'profiles',
     'posts',

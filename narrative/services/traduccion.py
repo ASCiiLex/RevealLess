@@ -1,8 +1,9 @@
 """Traducción al español de textos del catálogo con Haiku (tool_use → JSON validado por id)."""
 
 import json
-import os
 
+from ia.cliente import IANoConfigurada, llamar_claude
+from ia.models import UsoIA
 from ..ai_assistant import MODELO_IA
 
 TIMEOUT_SEGUNDOS = 90
@@ -58,21 +59,20 @@ def extraer_traducciones(entrada, ids_validos):
     return resultado
 
 
-def traducir_textos(textos):
-    """{id: texto} → {id: traducción}. Lanza ErrorTraduccion ante cualquier fallo de la API."""
+def traducir_textos(textos, obra=None):
+    """{id: texto} → {id: traducción}. Lanza ErrorTraduccion ante cualquier fallo de la API.
+    obra: solo para el registro de uso, cuando el lote es de una sola obra."""
     if not textos:
         return {}
-
-    api_key = os.environ.get('ANTHROPIC_API_KEY')
-    if not api_key:
-        raise ErrorTraduccion('ANTHROPIC_API_KEY no configurada.')
 
     import anthropic
 
     entrada = [{'id': id_, 'texto': texto} for id_, texto in textos.items()]
     try:
-        client = anthropic.Anthropic(api_key=api_key, timeout=TIMEOUT_SEGUNDOS)
-        response = client.messages.create(
+        response = llamar_claude(
+            UsoIA.FUNCION_TRADUCCION,
+            obra=obra,
+            timeout=TIMEOUT_SEGUNDOS,
             model=MODELO_IA,
             max_tokens=MAX_TOKENS,
             system=SYSTEM_PROMPT,
@@ -83,7 +83,7 @@ def traducir_textos(textos):
                 'content': 'Traduce estos textos:\n' + json.dumps(entrada, ensure_ascii=False),
             }],
         )
-    except anthropic.APIError as e:
+    except (IANoConfigurada, anthropic.APIError) as e:
         raise ErrorTraduccion(str(e)) from e
 
     bloque = next((b for b in response.content if b.type == 'tool_use'), None)

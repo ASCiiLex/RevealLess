@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from ia.models import UsoIA
 from narrative.ai_assistant import TIMEOUT_SUGERENCIA, etiqueta_unidad, proponer_clasificacion
 from narrative.models import Obra, ProgresoUsuario, UnidadNarrativa
 from .comun import error_400, frontera_minima, frontera_sin_previa_cerrada
@@ -45,7 +46,10 @@ class SugerirFronteraAPIView(APIView):
             if referencia_id.isdigit() else None
         )
 
-        sugerencia = proponer_clasificacion(texto, obra, referencia, timeout=TIMEOUT_SUGERENCIA)
+        sugerencia = proponer_clasificacion(
+            texto, obra, referencia, timeout=TIMEOUT_SUGERENCIA,
+            usuario=request.user, funcion=UsoIA.FUNCION_SUGERENCIA,
+        )
         frontera = frontera_sin_previa_cerrada(frontera_minima(sugerencia.frontera_spoiler, referencia))
         return Response({
             'frontera': _unidad_json(frontera),

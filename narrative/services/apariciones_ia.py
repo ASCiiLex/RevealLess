@@ -2,8 +2,9 @@
 primera aparición entre las unidades reales de una obra. Siempre pendiente de revisión."""
 
 import json
-import os
 
+from ia.cliente import IANoConfigurada, llamar_claude
+from ia.models import UsoIA
 from ..ai_assistant import MODELO_IA
 
 TIMEOUT_SEGUNDOS = 120
@@ -70,16 +71,14 @@ class ErrorApariciones(Exception):
     pass
 
 
-def _llamar(system, tool, contenido):
-    api_key = os.environ.get('ANTHROPIC_API_KEY')
-    if not api_key:
-        raise ErrorApariciones('ANTHROPIC_API_KEY no configurada.')
-
+def _llamar(funcion, obra, system, tool, contenido):
     import anthropic
 
     try:
-        client = anthropic.Anthropic(api_key=api_key, timeout=TIMEOUT_SEGUNDOS)
-        response = client.messages.create(
+        response = llamar_claude(
+            funcion,
+            obra=obra,
+            timeout=TIMEOUT_SEGUNDOS,
             model=MODELO_IA,
             max_tokens=MAX_TOKENS,
             system=system,
@@ -87,7 +86,7 @@ def _llamar(system, tool, contenido):
             tool_choice={'type': 'tool', 'name': tool['name']},
             messages=[{'role': 'user', 'content': contenido}],
         )
-    except anthropic.APIError as e:
+    except (IANoConfigurada, anthropic.APIError) as e:
         raise ErrorApariciones(str(e)) from e
 
     bloque = next((b for b in response.content if b.type == 'tool_use'), None)
@@ -150,7 +149,8 @@ def proponer_personajes(obra, conocidos, maximo):
         f'Máximo de personajes nuevos: {maximo}.\n'
         f'Ya conocidos: {json.dumps(sorted(conocidos), ensure_ascii=False)}'
     )
-    return extraer_personajes(_llamar(SYSTEM_PERSONAJES, TOOL_PERSONAJES, contenido), conocidos, maximo)
+    entrada = _llamar(UsoIA.FUNCION_PERSONAJES, obra, SYSTEM_PERSONAJES, TOOL_PERSONAJES, contenido)
+    return extraer_personajes(entrada, conocidos, maximo)
 
 
 def proponer_primeras_apariciones(obra, personajes, unidades):
@@ -164,5 +164,5 @@ def proponer_primeras_apariciones(obra, personajes, unidades):
         f'Unidades narrativas, en orden de publicación:\n{arbol_como_texto(unidades)}\n\n'
         f'Personajes:\n{json.dumps(lista, ensure_ascii=False)}'
     )
-    entrada = _llamar(SYSTEM_APARICIONES, TOOL_APARICIONES, contenido)
+    entrada = _llamar(UsoIA.FUNCION_APARICIONES, obra, SYSTEM_APARICIONES, TOOL_APARICIONES, contenido)
     return extraer_propuestas(entrada, set(personajes), {u.id for u in unidades})

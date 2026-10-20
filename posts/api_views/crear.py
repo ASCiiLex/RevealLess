@@ -80,7 +80,7 @@ def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None
         return
 
     sugerencia = (
-        proponer_clasificacion(post.text, obra, post.referencia_narrativa)
+        proponer_clasificacion(post.text, obra, post.referencia_narrativa, usuario=post.author)
         if request is None or _ia_disponible(request) else None
     )
     if sugerencia and sugerencia.es_utilizable:
