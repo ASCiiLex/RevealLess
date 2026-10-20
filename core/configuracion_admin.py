@@ -34,6 +34,8 @@ NAVEGACION_ADMIN = [
         'title': 'Pendientes de revisar',
         'separator': True,
         'items': [
+            _item('Solicitudes de obra', 'library_add', 'narrative_solicitudobra', PENDIENTE,
+                  'solicitudes_obra_pendientes'),
             _item('Solicitudes de tema', 'lightbulb', 'narrative_solicitudtema', PENDIENTE,
                   'solicitudes_tema_pendientes'),
             _item('Solicitudes de personaje', 'person_add', 'narrative_solicitudpersonaje', PENDIENTE,
@@ -86,6 +88,14 @@ NAVEGACION_ADMIN = [
             _item('Mensajes', 'mail', 'messages_app_message'),
             _item('Notificaciones', 'notifications', 'notifications_notification'),
             _item('Publicaciones guardadas', 'bookmark', 'saved_posts_savedpost'),
+        ],
+    },
+    {
+        'title': 'IA',
+        'separator': True,
+        'collapsible': True,
+        'items': [
+            _item('Usos de IA', 'smart_toy', 'ia_usoia'),
         ],
     },
     {

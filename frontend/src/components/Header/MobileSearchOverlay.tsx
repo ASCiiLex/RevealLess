@@ -24,6 +24,11 @@ export default function MobileSearchOverlay({ onClose }: Props) {
     return () => clearTimeout(id)
   }, [query])
 
+  function limpiarBusqueda() {
+    setQuery('')
+    setResultado(null)
+  }
+
   return (
     <div className={`container ${styles.overlay}`}>
       <div className={styles.row}>
@@ -44,7 +49,11 @@ export default function MobileSearchOverlay({ onClose }: Props) {
         <SearchResults resultado={resultado} onSugerirObra={() => setSugerirObra(query.trim())} />
       )}
       {sugerirObra !== null && (
-        <SugerirObraModal tituloInicial={sugerirObra} onClose={() => setSugerirObra(null)} />
+        <SugerirObraModal
+          tituloInicial={sugerirObra}
+          onClose={() => setSugerirObra(null)}
+          onEnviada={limpiarBusqueda}
+        />
       )}
     </div>
   )

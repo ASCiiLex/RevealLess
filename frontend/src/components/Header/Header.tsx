@@ -75,6 +75,11 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  function limpiarBusqueda() {
+    setQuery('')
+    setResultado(null)
+  }
+
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
@@ -134,7 +139,11 @@ export default function Header() {
       )}
 
       {sugerirObra !== null && (
-        <SugerirObraModal tituloInicial={sugerirObra} onClose={() => setSugerirObra(null)} />
+        <SugerirObraModal
+          tituloInicial={sugerirObra}
+          onClose={() => setSugerirObra(null)}
+          onEnviada={limpiarBusqueda}
+        />
       )}
     </header>
   )

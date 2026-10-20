@@ -194,7 +194,11 @@ export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, on
       )}
 
       {sugerirObra !== null && (
-        <SugerirObraModal tituloInicial={sugerirObra} onClose={() => setSugerirObra(null)} />
+        <SugerirObraModal
+          tituloInicial={sugerirObra}
+          onClose={() => setSugerirObra(null)}
+          onEnviada={() => setQuery('')}
+        />
       )}
     </div>
   )
