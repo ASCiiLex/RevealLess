@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import styles from './SearchResults.module.css'
 import type {
+  ArcoBusqueda,
   CategoriaBusqueda,
   HashtagBusqueda,
   ResultadoBusqueda,
   TemaBusqueda,
   UsuarioBusqueda,
 } from '../../api/buscar'
-import { crearSuscripcion, eliminarSuscripcion } from '../../api/suscripciones'
+import { crearSuscripcion, eliminarSuscripcion, type Suscripcion } from '../../api/suscripciones'
 import type { LomoObra } from '../Carousel/Lomo'
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 export default function SearchResults({ resultado }: Props) {
   const sinResultados =
     resultado.obras.length === 0 &&
+    resultado.arcos.length === 0 &&
     resultado.categorias.length === 0 &&
     resultado.temas.length === 0 &&
     resultado.usuarios.length === 0 &&
@@ -37,6 +39,15 @@ export default function SearchResults({ resultado }: Props) {
           <div className={styles.groupLabel}>Obras</div>
           {resultado.obras.map((obra) => (
             <ObraRow key={obra.id} obra={obra} />
+          ))}
+        </div>
+      )}
+
+      {resultado.arcos.length > 0 && (
+        <div>
+          <div className={styles.groupLabel}>Arcos y temporadas</div>
+          {resultado.arcos.map((arco) => (
+            <ArcoRow key={arco.id} arco={arco} />
           ))}
         </div>
       )}
@@ -80,13 +91,13 @@ export default function SearchResults({ resultado }: Props) {
   )
 }
 
-// Enlace y botón hermanos: un <button> dentro de un <a> no es HTML válido.
-function ObraRow({ obra }: { obra: LomoObra }) {
-  const [siguiendo, setSiguiendo] = useState(obra.suscrito)
-  const [suscripcionId, setSuscripcionId] = useState(obra.suscripcion_id)
+// Seguir / dejar de seguir común a obras, arcos y temas del buscador.
+function useSeguimiento(suscrito: boolean, suscripcionInicial: number | null, crear: () => Promise<Suscripcion>) {
+  const [siguiendo, setSiguiendo] = useState(suscrito)
+  const [suscripcionId, setSuscripcionId] = useState(suscripcionInicial)
   const [cargando, setCargando] = useState(false)
 
-  async function handleToggle() {
+  async function alternar() {
     if (cargando) return
     setCargando(true)
     try {
@@ -97,7 +108,7 @@ function ObraRow({ obra }: { obra: LomoObra }) {
         setSiguiendo(false)
         setSuscripcionId(null)
       } else {
-        const suscripcion = await crearSuscripcion(obra.slug)
+        const suscripcion = await crear()
         setSiguiendo(true)
         setSuscripcionId(suscripcion.id)
       }
@@ -106,19 +117,53 @@ function ObraRow({ obra }: { obra: LomoObra }) {
     }
   }
 
+  return { siguiendo, cargando, alternar }
+}
+
+// Enlace y botón hermanos: un <button> dentro de un <a> no es HTML válido.
+function BotonSeguir({ siguiendo, cargando, onClick }: { siguiendo: boolean; cargando: boolean; onClick: () => void }) {
+  return (
+    <button
+      className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
+      onClick={onClick}
+      disabled={cargando}
+    >
+      {siguiendo ? 'Siguiendo' : 'Seguir'}
+    </button>
+  )
+}
+
+function ObraRow({ obra }: { obra: LomoObra }) {
+  const { siguiendo, cargando, alternar } = useSeguimiento(
+    obra.suscrito, obra.suscripcion_id, () => crearSuscripcion(obra.slug),
+  )
+
   return (
     <div className={styles.row}>
       <a className={styles.rowMainLink} href={`/narrative/obra/${obra.slug}/`}>
         <img className={styles.thumb} src={obra.imagen_url} alt="" loading="lazy" decoding="async" />
         <span className={styles.titulo}>{obra.titulo}</span>
       </a>
-      <button
-        className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
-        onClick={handleToggle}
-        disabled={cargando}
-      >
-        {siguiendo ? 'Siguiendo' : 'Seguir'}
-      </button>
+      <BotonSeguir siguiendo={siguiendo} cargando={cargando} onClick={alternar} />
+    </div>
+  )
+}
+
+function ArcoRow({ arco }: { arco: ArcoBusqueda }) {
+  const { siguiendo, cargando, alternar } = useSeguimiento(
+    arco.suscrito, arco.suscripcion_id, () => crearSuscripcion(arco.obra_slug, { unidadId: arco.id }),
+  )
+  const contexto = arco.padre_nombre ? `${arco.obra_titulo} · ${arco.padre_nombre}` : arco.obra_titulo
+
+  return (
+    <div className={styles.row}>
+      <a className={styles.rowMainLink} href={`/feed/?unidad=${arco.id}`}>
+        <span>
+          <span className={styles.titulo}>{arco.nombre}</span>
+          <span className={styles.subtitulo}>{contexto}</span>
+        </span>
+      </a>
+      <BotonSeguir siguiendo={siguiendo} cargando={cargando} onClick={alternar} />
     </div>
   )
 }
@@ -138,29 +183,9 @@ function CategoriaRow({ categoria }: { categoria: CategoriaBusqueda }) {
 }
 
 function TemaRow({ tema }: { tema: TemaBusqueda }) {
-  const [siguiendo, setSiguiendo] = useState(tema.suscrito)
-  const [suscripcionId, setSuscripcionId] = useState(tema.suscripcion_id)
-  const [cargando, setCargando] = useState(false)
-
-  async function handleToggle() {
-    if (cargando) return
-    setCargando(true)
-    try {
-      if (siguiendo) {
-        if (suscripcionId !== null) {
-          await eliminarSuscripcion(suscripcionId)
-        }
-        setSiguiendo(false)
-        setSuscripcionId(null)
-      } else {
-        const suscripcion = await crearSuscripcion(tema.obra_slug, { temaId: tema.id })
-        setSiguiendo(true)
-        setSuscripcionId(suscripcion.id)
-      }
-    } finally {
-      setCargando(false)
-    }
-  }
+  const { siguiendo, cargando, alternar } = useSeguimiento(
+    tema.suscrito, tema.suscripcion_id, () => crearSuscripcion(tema.obra_slug, { temaId: tema.id }),
+  )
 
   return (
     <div className={styles.row}>
@@ -170,13 +195,7 @@ function TemaRow({ tema }: { tema: TemaBusqueda }) {
           <span className={styles.subtitulo}>{tema.obra_titulo}</span>
         </span>
       </a>
-      <button
-        className={`${styles.followButton} ${siguiendo ? styles.followButtonActive : ''}`}
-        onClick={handleToggle}
-        disabled={cargando}
-      >
-        {siguiendo ? 'Siguiendo' : 'Seguir'}
-      </button>
+      <BotonSeguir siguiendo={siguiendo} cargando={cargando} onClick={alternar} />
     </div>
   )
 }

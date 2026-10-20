@@ -14,7 +14,7 @@ from .landings import (
     CategoriaLandingAPIView,
     PersonajeLandingAPIView,
 )
-from .busqueda import BuscarAPIView
+from .busqueda import ArcoAPIView, BuscarAPIView
 from .solicitudes import SolicitudTemaListCreateAPIView
 
 __all__ = [
@@ -31,6 +31,7 @@ __all__ = [
     'TemaLandingAPIView',
     'CategoriaLandingAPIView',
     'PersonajeLandingAPIView',
+    'ArcoAPIView',
     'BuscarAPIView',
     'SolicitudTemaListCreateAPIView',
 ]

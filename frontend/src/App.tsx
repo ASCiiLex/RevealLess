@@ -6,17 +6,15 @@ import Feed from './components/Feed/Feed'
 import BottomNav from './components/BottomNav/BottomNav'
 import { CatalogViewProvider } from './context/CatalogViewContext'
 
+const FILTROS_EXTERNOS = ['obra', 'hashtag', 'tema', 'personaje', 'unidad'] as const
+
 export default function App() {
   const filtroExterno = useMemo(() => {
     const params = new URLSearchParams(window.location.search)
-    const obra = params.get('obra')
-    const hashtag = params.get('hashtag')
-    const tema = params.get('tema')
-    const personaje = params.get('personaje')
-    if (obra) return { tipo: 'obra' as const, valor: obra }
-    if (hashtag) return { tipo: 'hashtag' as const, valor: hashtag }
-    if (tema) return { tipo: 'tema' as const, valor: tema }
-    if (personaje) return { tipo: 'personaje' as const, valor: personaje }
+    for (const tipo of FILTROS_EXTERNOS) {
+      const valor = params.get(tipo)
+      if (valor) return { tipo, valor }
+    }
     return null
   }, [])
   // Sube al seguir/dejar de seguir desde la estantería: el feed se vuelve a pedir.

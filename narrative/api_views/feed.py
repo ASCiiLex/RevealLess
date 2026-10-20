@@ -11,8 +11,9 @@ from subscriptions.services import (
     filtro_posts_silenciados,
     filtro_posts_suscripciones,
     q_posts_de_personaje,
+    q_posts_de_unidad,
 )
-from ..models import TemaTransversal
+from ..models import TemaTransversal, UnidadNarrativa
 from ..serializers import PostSerializer
 from ..services.personajes import ids_con_identidades
 from .comun import entero_o_none, ids_familia
@@ -90,6 +91,11 @@ class FeedAPIView(generics.ListAPIView):
         if personaje_id is not None:
             # Incluye sus otras identidades ya conocidas por el lector (Usopp → también Sogeking).
             base = base.filter(q_posts_de_personaje(ids_con_identidades(personaje_id, user)))
+
+        unidad_id = entero_o_none(params.get('unidad'), 'unidad')
+        if unidad_id is not None:
+            # Mismo alcance que la suscripción a una unidad; visible_for sigue decidiendo qué se lee.
+            base = base.filter(q_posts_de_unidad(get_object_or_404(UnidadNarrativa, id=unidad_id)))
 
         return base.values('id')
 

@@ -77,6 +77,7 @@ export interface FetchFeedOptions {
   hashtag?: string
   temaId?: number
   personajeId?: number
+  unidadId?: number
   vista?: VistaFeed
 }
 
@@ -93,6 +94,7 @@ export function fetchFeed(opciones: FetchFeedOptions = {}): Promise<PaginaFeed> 
   if (opciones.hashtag) params.set('hashtag', opciones.hashtag)
   if (opciones.temaId) params.set('tema', String(opciones.temaId))
   if (opciones.personajeId) params.set('personaje', String(opciones.personajeId))
+  if (opciones.unidadId) params.set('unidad', String(opciones.unidadId))
   const query = params.toString()
   return api.get<PaginaFeed>(`/narrative/api/feed/${query ? `?${query}` : ''}`)
 }

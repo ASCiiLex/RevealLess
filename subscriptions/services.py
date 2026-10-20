@@ -62,6 +62,16 @@ def q_posts_de_personaje(personaje_ids):
     return Q(personajes__in=ids)
 
 
+def q_posts_de_unidad(unidad):
+    """Posts anclados dentro del rango de una unidad (incluye todo lo que cuelga de ella).
+    Compartido por la suscripción y el filtro ?unidad= del feed."""
+    return Q(
+        obra_id=unidad.obra_id,
+        referencia_narrativa__orden_inicio__gte=unidad.orden_inicio,
+        referencia_narrativa__orden_fin__lte=unidad.orden_fin,
+    )
+
+
 def _query_para_suscripcion(suscripcion):
     """Q() con el alcance de UNA suscripción, sin decidir todavía si el
     resultado es para incluir (suscripciones activas) o excluir
@@ -76,11 +86,7 @@ def _query_para_suscripcion(suscripcion):
 
         return q_posts_de_personaje(ids_con_identidades(suscripcion.personaje_id, suscripcion.usuario))
     if suscripcion.unidad_id:
-        return Q(
-            obra_id=suscripcion.obra_id,
-            referencia_narrativa__orden_inicio__gte=suscripcion.unidad.orden_inicio,
-            referencia_narrativa__orden_fin__lte=suscripcion.unidad.orden_fin,
-        )
+        return q_posts_de_unidad(suscripcion.unidad)
     if suscripcion.tema_id:
         return Q(obra_id=suscripcion.obra_id, temas_transversales=suscripcion.tema_id)
     return Q(obra_id=suscripcion.obra_id)
