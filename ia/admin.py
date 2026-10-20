@@ -10,7 +10,8 @@ class UsoIAAdmin(ModelAdmin):
 
     list_display = (
         'creado_en', 'funcion', 'modelo', 'usuario', 'obra', 'tokens_entrada',
-        'tokens_cache_lectura', 'tokens_salida', 'coste_estimado', 'exito', 'duracion_ms',
+        'tokens_cache_escritura', 'tokens_cache_lectura', 'tokens_salida',
+        'coste_estimado', 'exito', 'duracion_ms',
     )
     list_filter = ('funcion', 'modelo', 'exito')
     list_select_related = ('usuario', 'obra')
