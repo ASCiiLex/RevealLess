@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
 from narrative.services import actualizar_progreso
 from posts.models import Post
-from .models import SavedPost
+from ..models import SavedPost
 
 
 class EstadoGuardadoTests(TestCase):

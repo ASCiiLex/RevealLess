@@ -5,7 +5,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from .models import Message
+from ..models import Message
 
 
 class InboxListAPIViewTests(TestCase):

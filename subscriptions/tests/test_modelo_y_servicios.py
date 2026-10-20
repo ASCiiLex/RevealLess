@@ -4,8 +4,8 @@ from django.db import IntegrityError, transaction
 from django.test import TestCase
 
 from narrative.models import Obra, UnidadNarrativa, TemaTransversal
-from .models import Suscripcion
-from .services import crear_suscripcion, eliminar_suscripcion, marcar_visto
+from ..models import Suscripcion
+from ..services import crear_suscripcion, eliminar_suscripcion, marcar_visto
 
 
 class TemaTransversalTests(TestCase):

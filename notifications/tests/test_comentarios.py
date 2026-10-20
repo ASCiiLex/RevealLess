@@ -6,7 +6,7 @@ from comments.models import Comment
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa
 from narrative.services import actualizar_progreso
 from posts.models import Post
-from .models import Notification
+from ..models import Notification
 
 
 class NotificacionesComentariosTests(TestCase):

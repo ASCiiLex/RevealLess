@@ -4,7 +4,7 @@ from django.test import TestCase
 from narrative.models import Obra, UnidadNarrativa, ClasificacionNarrativa, TemaTransversal
 from narrative.services import actualizar_progreso
 from posts.models import Post
-from .services import crear_suscripcion, marcar_visto, posts_no_leidos_count
+from ..services import crear_suscripcion, marcar_visto, posts_no_leidos_count
 
 
 class PostsNoLeidosTests(TestCase):

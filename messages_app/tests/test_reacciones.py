@@ -5,8 +5,8 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from .models import Message, MessageReaction
-from .salas import sala_chat
+from ..models import Message, MessageReaction
+from ..salas import sala_chat
 
 
 class ReaccionMensajeTests(TestCase):

@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from comments.models import Comment
 from narrative.models import ClasificacionNarrativa, Obra, UnidadNarrativa
 from posts.models import Post
-from .models import Notification
+from ..models import Notification
 
 
 class NotificationListAPIViewTests(TestCase):

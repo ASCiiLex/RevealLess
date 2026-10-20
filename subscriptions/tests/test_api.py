@@ -4,8 +4,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from narrative.models import Obra, UnidadNarrativa, TemaTransversal
-from .models import Suscripcion
-from .services import crear_suscripcion
+from ..models import Suscripcion
+from ..services import crear_suscripcion
 
 
 class SuscripcionListCreateAPIViewTests(TestCase):

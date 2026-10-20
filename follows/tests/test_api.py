@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from notifications.models import Notification
-from .models import Follow
+from ..models import Follow
 
 
 class FollowToggleAPIViewTests(TestCase):
