@@ -21,6 +21,7 @@ class SavedPostListAPIView(APIView):
             SavedPost.objects
             .filter(user=request.user, post__in=Post.objects.visible_for(request.user))
             .select_related('post', 'post__author')
+            .prefetch_related('post__imagenes')
             .order_by('-created_at')
         )
         return Response(SavedPostSerializer(saved, many=True).data)

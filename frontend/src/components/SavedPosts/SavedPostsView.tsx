@@ -26,7 +26,7 @@ export default function SavedPostsView() {
         <div className={styles.grid}>
           {guardados.map((item) => (
             <a key={item.id} className={styles.gridItem} href={`/posts/${item.post_id}/`}>
-              <PostMiniatura imagen={item.image_url} texto={item.text} />
+              <PostMiniatura imagenes={item.imagenes} disposicion={item.disposicion} texto={item.text} />
             </a>
           ))}
         </div>

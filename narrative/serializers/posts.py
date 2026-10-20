@@ -2,7 +2,7 @@ from django.db.models.query import QuerySet
 from rest_framework import serializers
 
 from core.reacciones import totales_agrupados, totales_de
-from posts.models import Post, PostImagen
+from posts.models import Post
 from ..services.personajes import presentacion_personaje
 from .unidades import UnidadNarrativaSerializer
 
@@ -68,23 +68,7 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.image_url
 
     def get_imagenes(self, obj):
-        """Lista única para pintar: la galería (con su encuadre) si existe; si no, la imagen simple."""
-        galeria = [
-            {
-                'url': i.image_url, 'etiqueta': i.etiqueta,
-                'enfoque_x': i.enfoque_x, 'enfoque_y': i.enfoque_y, 'zoom': i.zoom,
-            }
-            for i in obj.imagenes.all() if i.image_url
-        ]
-        if galeria:
-            return galeria
-        if not obj.image_url:
-            return []
-        return [{
-            'url': obj.image_url, 'etiqueta': '',
-            'enfoque_x': PostImagen.ENFOQUE_CENTRO, 'enfoque_y': PostImagen.ENFOQUE_CENTRO,
-            'zoom': PostImagen.ZOOM_BASE,
-        }]
+        return obj.imagenes_para_mostrar()
 
     def get_personajes_comparados(self, obj):
         """Nombre e imagen según la frontera del post: quien puede leerlo ya llegó ahí,

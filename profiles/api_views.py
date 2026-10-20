@@ -20,6 +20,7 @@ class ProfileDetailAPIView(APIView):
         posts_visibles = (
             profile_user.posts.all()
             .select_related('author', 'obra')
+            .prefetch_related('imagenes')
             .visible_for(request.user)
             .order_by('-created_at')
         )

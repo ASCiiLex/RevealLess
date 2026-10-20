@@ -59,7 +59,7 @@ export default function ProfileView({ username }: Props) {
         <div className={styles.grid}>
           {profile.posts.map((post) => (
             <a key={post.id} className={styles.gridItem} href={`/posts/${post.id}/`}>
-              <PostMiniatura imagen={post.image_url} texto={post.text} />
+              <PostMiniatura imagenes={post.imagenes} disposicion={post.disposicion} texto={post.text} />
             </a>
           ))}
         </div>

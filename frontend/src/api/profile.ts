@@ -1,9 +1,12 @@
 import { api } from './client'
+import type { ImagenPost } from './feed'
 
 export interface ProfilePost {
   id: number
-  image_url: string | null
   text: string
+  // Composición del post (galería con encuadre o imagen simple); vacía si no tiene fotos.
+  imagenes: ImagenPost[]
+  disposicion: string
 }
 
 export interface ProfileDetail {

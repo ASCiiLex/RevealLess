@@ -6,8 +6,9 @@ from .models import Profile
 
 class ProfilePostSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    image_url = serializers.CharField(allow_null=True)
     text = serializers.CharField()
+    imagenes = serializers.ListField(child=serializers.DictField())
+    disposicion = serializers.CharField(allow_blank=True)
 
 
 class ProfileDetailSerializer(serializers.Serializer):
@@ -27,8 +28,11 @@ class ProfileDetailSerializer(serializers.Serializer):
         return request.user.is_authenticated and request.user == obj['profile_user']
 
     def get_posts(self, obj):
-        # Sin foto, la miniatura del grid muestra el texto.
-        return [{'id': p.id, 'image_url': p.image_url, 'text': p.text} for p in obj['posts']]
+        # Composición del post para la miniatura; sin fotos, la miniatura muestra el texto.
+        return [
+            {'id': p.id, 'text': p.text, 'imagenes': p.imagenes_para_mostrar(), 'disposicion': p.disposicion}
+            for p in obj['posts']
+        ]
 
     def get_has_hidden_posts(self, obj):
         """True si el usuario tiene posts publicados que no aparecen en

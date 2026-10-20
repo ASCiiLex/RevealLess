@@ -190,6 +190,24 @@ class Post(ClasificacionNarrativa, models.Model):
             pass
         return None
 
+    def imagenes_para_mostrar(self):
+        """Lista única para pintar (feed, perfil, guardados): la galería con su encuadre si existe;
+        si no, la imagen simple. Al listar posts conviene prefetch_related('imagenes')."""
+        galeria = [
+            {
+                'url': i.image_url, 'etiqueta': i.etiqueta,
+                'enfoque_x': i.enfoque_x, 'enfoque_y': i.enfoque_y, 'zoom': i.zoom,
+            }
+            for i in self.imagenes.all() if i.image_url
+        ]
+        if galeria or not self.image_url:
+            return galeria
+        return [{
+            'url': self.image_url, 'etiqueta': '',
+            'enfoque_x': PostImagen.ENFOQUE_CENTRO, 'enfoque_y': PostImagen.ENFOQUE_CENTRO,
+            'zoom': PostImagen.ZOOM_BASE,
+        }]
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
