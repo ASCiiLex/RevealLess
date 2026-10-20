@@ -5,6 +5,7 @@ from .posts import PostSerializer
 from .obras import calcular_progreso_pct, ObraResumenSerializer, ObraLandingSerializer
 from .temas import TemaConSuscripcionSerializer, TemaLomoSerializer, SolicitudTemaSerializer
 from .personajes import PersonajeLomoSerializer
+from .solicitudes import SolicitudObraSerializer
 
 __all__ = [
     'UnidadNarrativaSerializer',
@@ -17,4 +18,5 @@ __all__ = [
     'TemaLomoSerializer',
     'SolicitudTemaSerializer',
     'PersonajeLomoSerializer',
+    'SolicitudObraSerializer',
 ]

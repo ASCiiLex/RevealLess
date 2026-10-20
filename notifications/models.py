@@ -25,6 +25,7 @@ class Notification(models.Model):
         verbose_name='Destinatario',
     )
 
+    # Un código de VERBOS_TEXTO o un texto ya redactado (sugerencias de obra).
     verb = models.CharField(max_length=255, verbose_name='Acción')
 
     target_type = models.CharField(
@@ -35,6 +36,7 @@ class Notification(models.Model):
             ('reply', 'Respuesta'),
             ('follow', 'Seguimiento'),
             ('message', 'Mensaje'),
+            ('obra', 'Obra'),
         ],
         verbose_name='Tipo de objetivo',
     )
@@ -131,5 +133,11 @@ class Notification(models.Model):
 
         if self.target_type == "message":
             return f"/mensajes/{self.actor.username}/"
+
+        if self.target_type == "obra":
+            # Sugerencia aprobada: a la obra. Rechazada (sin obra): al feed.
+            from narrative.models import Obra
+            slug = Obra.objects.filter(id=self.target_id).values_list('slug', flat=True).first() if self.target_id else None
+            return f"/narrative/obra/{slug}/" if slug else "/feed/"
 
         return "#"

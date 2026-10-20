@@ -4,6 +4,7 @@ import AvatarDropdown from './AvatarDropdown'
 import AvatarDrawer from './AvatarDrawer'
 import MobileSearchOverlay from './MobileSearchOverlay'
 import SearchResults from './SearchResults'
+import SugerirObraModal from '../SugerirObra/SugerirObraModal'
 import { fetchMe, type Me } from '../../api/me'
 import { buscar, type ResultadoBusqueda } from '../../api/buscar'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -17,6 +18,8 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [resultado, setResultado] = useState<ResultadoBusqueda | null>(null)
+  // Título con el que se abre el modal de sugerir obra; null = cerrado.
+  const [sugerirObra, setSugerirObra] = useState<string | null>(null)
   const isMobile = useIsMobile()
   const searchWrapperRef = useRef<HTMLDivElement>(null)
 
@@ -88,7 +91,9 @@ export default function Header() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          {resultado && <SearchResults resultado={resultado} />}
+          {resultado && (
+            <SearchResults resultado={resultado} onSugerirObra={() => setSugerirObra(query.trim())} />
+          )}
         </div>
 
         <div className={styles.right}>
@@ -126,6 +131,10 @@ export default function Header() {
 
       {me && isMobile && drawerOpen && (
         <AvatarDrawer me={me} onClose={() => setDrawerOpen(false)} />
+      )}
+
+      {sugerirObra !== null && (
+        <SugerirObraModal tituloInicial={sugerirObra} onClose={() => setSugerirObra(null)} />
       )}
     </header>
   )

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import styles from './SelectorObra.module.css'
+import SugerirObraEnlace from '../SugerirObra/SugerirObraEnlace'
+import SugerirObraModal from '../SugerirObra/SugerirObraModal'
 import { fetchObrasPublicar, type ObraPublicable, type TemaPublicable } from '../../api/publicar'
 
 export interface ObraSeleccionada {
@@ -32,6 +34,8 @@ export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, on
   const [query, setQuery] = useState('')
   const [abierto, setAbierto] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
+  // Título con el que se abre el modal de sugerir obra; null = cerrado.
+  const [sugerirObra, setSugerirObra] = useState<string | null>(null)
 
   useEffect(() => {
     fetchObrasPublicar()
@@ -179,7 +183,19 @@ export default function SelectorObra({ seleccion, onElegirObra, onElegirTema, on
         </p>
       )}
       {errorCarga && <p className={styles.hint}>No se pudo cargar tu biblioteca. Recarga la página.</p>}
-      {sinResultados && <p className={styles.hint}>Ninguna obra de tu biblioteca coincide con "{query}".</p>}
+      {sinResultados && (
+        <>
+          <p className={styles.hint}>
+            Ninguna obra de tu biblioteca coincide con "{query}". Si ya está en el catálogo, síguela desde el
+            buscador para poder publicar sobre ella.
+          </p>
+          <SugerirObraEnlace onClick={() => setSugerirObra(query.trim())} texto="¿No está en el catálogo? Sugiérela" />
+        </>
+      )}
+
+      {sugerirObra !== null && (
+        <SugerirObraModal tituloInicial={sugerirObra} onClose={() => setSugerirObra(null)} />
+      )}
     </div>
   )
 }

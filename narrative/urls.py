@@ -13,6 +13,7 @@ from .api_views import (
     TemaLandingAPIView,
     CategoriaLandingAPIView,
     PersonajeLandingAPIView,
+    SolicitudObraListCreateAPIView,
     SolicitudTemaListCreateAPIView,
     ArcoAPIView,
     BuscarAPIView,
@@ -43,5 +44,6 @@ urlpatterns = [
     path('api/personajes/<int:personaje_id>/', PersonajeLandingAPIView.as_view(), name='narrative_api_personaje_landing'),
     path('api/arcos/<int:unidad_id>/', ArcoAPIView.as_view(), name='narrative_api_arco'),
     path('api/solicitudes-tema/', SolicitudTemaListCreateAPIView.as_view(), name='narrative_api_solicitudes_tema'),
+    path('api/solicitudes-obra/', SolicitudObraListCreateAPIView.as_view(), name='narrative_api_solicitudes_obra'),
     path('api/buscar/', BuscarAPIView.as_view(), name='narrative_api_buscar'),
 ]

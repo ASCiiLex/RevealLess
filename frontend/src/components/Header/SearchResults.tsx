@@ -10,12 +10,15 @@ import type {
 } from '../../api/buscar'
 import { crearSuscripcion, eliminarSuscripcion, type Suscripcion } from '../../api/suscripciones'
 import type { LomoObra } from '../Carousel/Lomo'
+import SugerirObraEnlace from '../SugerirObra/SugerirObraEnlace'
 
 interface Props {
   resultado: ResultadoBusqueda
+  // Sin obras en los resultados: ofrece sugerir una al catálogo.
+  onSugerirObra?: () => void
 }
 
-export default function SearchResults({ resultado }: Props) {
+export default function SearchResults({ resultado, onSugerirObra }: Props) {
   const sinResultados =
     resultado.obras.length === 0 &&
     resultado.arcos.length === 0 &&
@@ -23,11 +26,13 @@ export default function SearchResults({ resultado }: Props) {
     resultado.temas.length === 0 &&
     resultado.usuarios.length === 0 &&
     resultado.hashtags.length === 0
+  const ofrecerSugerencia = onSugerirObra && resultado.obras.length === 0
 
   if (sinResultados) {
     return (
       <div className={styles.dropdown}>
         <p className={styles.empty}>Sin resultados.</p>
+        {ofrecerSugerencia && <SugerirObraEnlace onClick={onSugerirObra} />}
       </div>
     )
   }
@@ -87,6 +92,8 @@ export default function SearchResults({ resultado }: Props) {
           ))}
         </div>
       )}
+
+      {ofrecerSugerencia && <SugerirObraEnlace onClick={onSugerirObra} />}
     </div>
   )
 }

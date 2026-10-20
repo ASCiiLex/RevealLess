@@ -2,9 +2,10 @@ from django import forms
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 
-from ..models import SolicitudPersonaje, SolicitudTema
+from ..models import SolicitudObra, SolicitudPersonaje, SolicitudTema
 from ..services import aprobar_solicitud_tema, rechazar_solicitud_tema
 from ..services.personajes import aprobar_solicitud_personaje, rechazar_solicitud_personaje
+from ..services.solicitudes_obra import aprobar_solicitud_obra, rechazar_solicitud_obra
 from .comun import limitar_unidades_a_obra, relaciones_de
 
 
@@ -69,3 +70,27 @@ class SolicitudTemaAdmin(ModelAdmin):
     def rechazar_solicitudes(self, request, queryset):
         procesadas = sum(1 for s in queryset if rechazar_solicitud_tema(s))
         self.message_user(request, f'{procesadas} solicitud(es) rechazada(s).')
+
+
+@admin.register(SolicitudObra)
+class SolicitudObraAdmin(ModelAdmin):
+    list_display = ('titulo', 'tipo', 'usuario', 'estado', 'obra', 'enlace', 'creado_en', 'resuelto_en')
+    # Si ya existe con otro nombre, se vincula aquí antes de aprobar y no se crea otra.
+    list_editable = ('obra',)
+    list_filter = ('estado', 'tipo')
+    search_fields = ('titulo', 'usuario__username')
+    list_select_related = ('obra', 'usuario')
+    autocomplete_fields = ('obra', 'usuario')
+    readonly_fields = ('creado_en', 'resuelto_en')
+    actions = ['aprobar_solicitudes', 'rechazar_solicitudes']
+
+    @admin.action(description='Aprobar (crea la obra con su previo y avisa a quienes la pidieron)')
+    def aprobar_solicitudes(self, request, queryset):
+        obras = [aprobar_solicitud_obra(s, request.user) for s in queryset.select_related('obra')]
+        procesadas = sum(1 for obra in obras if obra is not None)
+        self.message_user(request, f'{procesadas} obra(s) añadida(s) al catálogo. Completa su estructura y portada.')
+
+    @admin.action(description='Rechazar (avisa a quienes la pidieron)')
+    def rechazar_solicitudes(self, request, queryset):
+        procesadas = sum(1 for s in queryset if rechazar_solicitud_obra(s, request.user))
+        self.message_user(request, f'{procesadas} sugerencia(s) rechazada(s).')

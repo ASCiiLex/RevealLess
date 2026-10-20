@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import styles from './MobileSearchOverlay.module.css'
 import SearchResults from './SearchResults'
+import SugerirObraModal from '../SugerirObra/SugerirObraModal'
 import { buscar, type ResultadoBusqueda } from '../../api/buscar'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 export default function MobileSearchOverlay({ onClose }: Props) {
   const [query, setQuery] = useState('')
   const [resultado, setResultado] = useState<ResultadoBusqueda | null>(null)
+  const [sugerirObra, setSugerirObra] = useState<string | null>(null)
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -38,7 +40,12 @@ export default function MobileSearchOverlay({ onClose }: Props) {
           ✕
         </button>
       </div>
-      {resultado && <SearchResults resultado={resultado} />}
+      {resultado && (
+        <SearchResults resultado={resultado} onSugerirObra={() => setSugerirObra(query.trim())} />
+      )}
+      {sugerirObra !== null && (
+        <SugerirObraModal tituloInicial={sugerirObra} onClose={() => setSugerirObra(null)} />
+      )}
     </div>
   )
 }

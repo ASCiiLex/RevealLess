@@ -19,6 +19,7 @@ from .personajes import (
     SolicitudPersonaje,
 )
 from .clasificacion import ClasificacionNarrativa
+from .solicitudes import SolicitudObra
 
 __all__ = [
     'Categoria',
@@ -36,4 +37,5 @@ __all__ = [
     'PropuestaAparicion',
     'SolicitudPersonaje',
     'ClasificacionNarrativa',
+    'SolicitudObra',
 ]
