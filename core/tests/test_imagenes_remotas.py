@@ -5,8 +5,8 @@ import pytest
 from django.core.exceptions import ValidationError
 from PIL import Image
 
-from core import imagenes_remotas
-from core.imagenes_remotas import descargar_imagen
+from core.imagenes import remotas as imagenes_remotas
+from core.imagenes.remotas import descargar_imagen
 
 
 def _png():

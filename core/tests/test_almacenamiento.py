@@ -2,7 +2,7 @@ import threading
 
 from django.test import SimpleTestCase
 
-from core.almacenamiento import TigrisStorage
+from core.imagenes.almacenamiento import TigrisStorage
 
 
 class TigrisStorageTests(SimpleTestCase):

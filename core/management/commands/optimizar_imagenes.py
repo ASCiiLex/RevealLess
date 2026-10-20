@@ -3,7 +3,7 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
-from core.imagenes import campos_imagen, optimizar_imagen
+from core.imagenes.optimizacion import campos_imagen, optimizar_imagen
 
 
 class Command(BaseCommand):

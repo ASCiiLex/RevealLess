@@ -4,7 +4,7 @@ import sys
 from dotenv import load_dotenv
 import dj_database_url
 
-from .configuracion_admin import UNFOLD  # noqa: F401 (Unfold lo lee de settings)
+from .panel.configuracion import UNFOLD  # noqa: F401 (Unfold lo lee de settings)
 
 load_dotenv()
 
@@ -113,7 +113,7 @@ MIDDLEWARE = [
 # Peticiones más lentas que el umbral quedan en los logs con sus consultas y su tiempo en BD.
 RENDIMIENTO_UMBRAL_MS = int(os.environ.get('RENDIMIENTO_UMBRAL_MS', '500'))
 if not _EN_TESTS:
-    MIDDLEWARE.insert(0, 'core.rendimiento.RegistroLentitudMiddleware')
+    MIDDLEWARE.insert(0, 'core.peticiones.rendimiento.RegistroLentitudMiddleware')
 
 # ==========================================================
 # URLS / TEMPLATES
@@ -206,7 +206,7 @@ _USAR_TIGRIS = bool(os.environ.get('AWS_STORAGE_BUCKET_NAME')) and not _EN_TESTS
 if _USAR_TIGRIS:
     _MEDIA_STORAGE = {
         # Subclase de S3Storage con la conexión compartida por proceso (ver core/almacenamiento.py).
-        'BACKEND': 'core.almacenamiento.TigrisStorage',
+        'BACKEND': 'core.imagenes.almacenamiento.TigrisStorage',
         'OPTIONS': {
             'bucket_name': os.environ['AWS_STORAGE_BUCKET_NAME'],
             'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
@@ -273,7 +273,7 @@ else:
 # ==========================================================
 
 # IP real del cliente tras el proxy de Render (X-Forwarded-For es falsificable).
-RATELIMIT_IP_META_KEY = 'core.red.ip_cliente'
+RATELIMIT_IP_META_KEY = 'core.peticiones.red.ip_cliente'
 
 # Llamadas a la IA por usuario al publicar sin frontera; superado, se usa el progreso del autor.
 IA_LIMITE_PUBLICAR = os.environ.get('IA_LIMITE_PUBLICAR', '20/h')
@@ -327,4 +327,4 @@ LOGGING = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Configuración del admin (Unfold): core/configuracion_admin.py
+# Configuración del admin (Unfold): core/panel/configuracion.py

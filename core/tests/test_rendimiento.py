@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
-from core.rendimiento import RegistroLentitudMiddleware
+from core.peticiones.rendimiento import RegistroLentitudMiddleware
 
 
 class RegistroLentitudTests(SimpleTestCase):
@@ -11,7 +11,7 @@ class RegistroLentitudTests(SimpleTestCase):
 
     @override_settings(RENDIMIENTO_UMBRAL_MS=0)
     def test_registra_las_peticiones_que_superan_el_umbral(self):
-        with self.assertLogs('core.rendimiento', level='WARNING') as registro:
+        with self.assertLogs('core.peticiones.rendimiento', level='WARNING') as registro:
             response = self.middleware(self.request)
         self.assertEqual(response.content, b'ok')
         self.assertIn('/narrative/api/feed/?page=1', registro.output[0])
@@ -19,5 +19,5 @@ class RegistroLentitudTests(SimpleTestCase):
 
     @override_settings(RENDIMIENTO_UMBRAL_MS=60000)
     def test_no_registra_las_rapidas(self):
-        with self.assertNoLogs('core.rendimiento', level='WARNING'):
+        with self.assertNoLogs('core.peticiones.rendimiento', level='WARNING'):
             self.middleware(self.request)

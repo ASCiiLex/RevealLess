@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.html import format_html
 
-from core.imagenes_remotas import descargar_imagen
+from core.imagenes.remotas import descargar_imagen
 
 # Cambios que alteran orden_inicio/orden_fin de la obra.
 CAMPOS_QUE_REORDENAN = {'orden_local', 'padre', 'orden_manual'}

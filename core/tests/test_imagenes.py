@@ -9,7 +9,7 @@ from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase, override_settings
 from PIL import Image
 
-from core.imagenes import LADO_MAXIMO, optimizar_imagen
+from core.imagenes.optimizacion import LADO_MAXIMO, optimizar_imagen
 from narrative.models import ClasificacionNarrativa, Obra, UnidadNarrativa
 from posts.models import Post
 

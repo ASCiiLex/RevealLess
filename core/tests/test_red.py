@@ -1,6 +1,6 @@
 from django.test import RequestFactory, SimpleTestCase
 
-from core.red import ip_cliente
+from core.peticiones.red import ip_cliente
 
 
 class IpClienteTests(SimpleTestCase):

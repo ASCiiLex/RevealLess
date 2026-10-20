@@ -14,7 +14,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from PIL import Image
 
-from .validators import MAX_IMAGE_SIZE_MB
+from core.validators import MAX_IMAGE_SIZE_MB
 
 TIPOS_PERMITIDOS = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}
 MAX_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024

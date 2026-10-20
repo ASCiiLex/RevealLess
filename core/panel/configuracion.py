@@ -14,7 +14,7 @@ def _admin_url(modelo, filtro=''):
 def _item(titulo, icono, modelo, filtro='', badge=None):
     item = {'title': titulo, 'icon': icono, 'link': _admin_url(modelo, filtro)}
     if badge:
-        item['badge'] = f'core.badges.{badge}'
+        item['badge'] = f'core.panel.badges.{badge}'
     return item
 
 
@@ -122,7 +122,7 @@ UNFOLD = {
         "show_all_applications": True,
         "navigation": NAVEGACION_ADMIN,
     },
-    "DASHBOARD_CALLBACK": "core.dashboard.dashboard_callback",
+    "DASHBOARD_CALLBACK": "core.panel.dashboard.dashboard_callback",
     # Lambda: static() se resuelve por petición, cuando el storage ya está listo.
     "SCRIPTS": [
         lambda request: static("js/admin_busqueda_vivo.js"),
