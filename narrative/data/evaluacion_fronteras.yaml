@@ -1,0 +1,79 @@
+# Casos para medir la IA de fronteras: python manage.py evaluar_fronteras <este archivo> --modelo <modelo>
+# Cada caso es una llamada real a la API por modelo evaluado.
+#
+# obra:       slug de la obra.
+# texto:      lo que escribiría el usuario.
+# referencia: (opcional) la parte que indicaría el autor.
+# esperada:   la frontera correcta, es decir, lo que hay que haber visto para leerlo sin spoiler.
+# Unidades por nombre exacto, «Padre · Nombre» si el nombre se repite, o por id.
+
+# --- El Señor de los Anillos (Películas) ---
+- obra: senor-de-los-anillos-pelicula
+  texto: "Qué escena la de Gandalf en el puente de Khazad-dûm frente al Balrog"
+  esperada: 2467
+
+- obra: senor-de-los-anillos-pelicula
+  texto: "Boromir cayendo mientras defiende a Merry y Pippin me sigue rompiendo"
+  esperada: 2467
+
+- obra: senor-de-los-anillos-pelicula
+  texto: "Me encanta toda la parte de la Comarca, la música es preciosa"
+  referencia: 2467
+  esperada: 2467                     # sin revelación: no debe subir
+
+- obra: senor-de-los-anillos-pelicula
+  texto: "Cuando Gandalf vuelve como Gandalf el Blanco se me pusieron los pelos de punta"
+  referencia: 2467
+  esperada: 2468                     # la revelación va más allá de la referencia
+
+- obra: senor-de-los-anillos-pelicula
+  texto: "Aragorn coronado rey de Gondor y todos se inclinan ante los hobbits"
+  esperada: 2469
+
+# --- Star Wars: Películas (orden de estreno: IV, V, VI, I, II, III...) ---
+- obra: star-wars-peliculas
+  texto: "Obi-Wan se deja vencer por Vader en la Estrella de la Muerte"
+  esperada: 5006
+
+- obra: star-wars-peliculas
+  texto: "Yo soy tu padre. Nadie se lo esperaba en su momento"
+  esperada: 5007
+
+- obra: star-wars-peliculas
+  texto: "Que Leia resultara ser la hermana de Luke explica mucho"
+  esperada: 5008
+
+- obra: star-wars-peliculas
+  texto: "El momento en que Anakin acaba convertido en Darth Vader en Mustafar"
+  esperada: 5011
+
+# --- Harry Potter (Libros): capítulo concreto de la revelación ---
+- obra: harry-potter-libro
+  texto: "Así que el traidor nunca fue Sirius sino Peter Pettigrew"
+  esperada: 5774
+- obra: harry-potter-libro
+  texto: "Snape matando a Dumbledore en la torre de Astronomía, todavía no lo supero"
+  esperada: 5880                     # El misterio del príncipe, capítulo 27
+
+# --- Juego de Tronos (Serie) ---
+- obra: got-serie
+  texto: "No pensaba que se atrevieran a ejecutar a Ned Stark"
+  esperada: 6547                     # Temporada 1 · Baelor
+
+- obra: got-serie
+  texto: "La Boda Roja es lo más duro que he visto en una serie"
+  esperada: 6569                     # Temporada 3 · Las lluvias de Castamere
+
+# --- One Piece ---
+- obra: one-piece-anime
+  texto: "Robin gritando que quiere vivir, el mejor momento de toda la serie"
+  esperada: 1563                     # Arco de Enies Lobby · Episodio 278
+
+- obra: one-piece-anime
+  texto: "La muerte de Ace protegiendo a Luffy en Marineford"
+  referencia: 50                     # Arco de Marineford
+  esperada: 1765                     # Episodio 483: revelación dentro del arco de referencia
+
+- obra: one-piece-manga
+  texto: "La muerte de Ace protegiendo a Luffy"
+  esperada: 679                      # Arco de Marineford · Capítulo 574

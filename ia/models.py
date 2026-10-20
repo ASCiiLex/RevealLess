@@ -11,12 +11,14 @@ class UsoIA(models.Model):
     FUNCION_PERSONAJES = 'personajes'
     FUNCION_APARICIONES = 'apariciones'
     FUNCION_TRADUCCION = 'traduccion'
+    FUNCION_EVALUACION = 'evaluacion'
     FUNCION_CHOICES = [
         (FUNCION_CLASIFICACION, 'Frontera al publicar'),
         (FUNCION_SUGERENCIA, 'Sugerencia de frontera'),
         (FUNCION_PERSONAJES, 'Propuesta de personajes'),
         (FUNCION_APARICIONES, 'Primeras apariciones'),
         (FUNCION_TRADUCCION, 'Traducción del catálogo'),
+        (FUNCION_EVALUACION, 'Evaluación de fronteras'),
     ]
 
     creado_en = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Fecha')

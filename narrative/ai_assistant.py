@@ -97,13 +97,14 @@ def es_nombre_generico(unidad):
 
 
 def proponer_clasificacion(
-    texto, obra, referencia=None, timeout=TIMEOUT_PUBLICAR, usuario=None, funcion=UsoIA.FUNCION_CLASIFICACION,
+    texto, obra, referencia=None, timeout=TIMEOUT_PUBLICAR, usuario=None,
+    funcion=UsoIA.FUNCION_CLASIFICACION, modelo=None,
 ):
     """Punto único de entrada a la IA de clasificación. Nunca lanza: cualquier fallo devuelve una
     sugerencia vacía y quien llama cae al fallback sin bloquear la publicación.
-    usuario y funcion solo sirven para el registro de uso (al publicar o al pedir sugerencia)."""
+    usuario y funcion: registro de uso. modelo: solo para evaluar; por defecto ANTHROPIC_MODEL o MODELO_IA."""
     try:
-        return _llamar_api(texto, obra, referencia, timeout, usuario, funcion)
+        return _llamar_api(texto, obra, referencia, timeout, usuario, funcion, modelo)
     except Exception:
         logger.exception('Fallo al llamar a la API de IA de clasificación')
         return SugerenciaIA()
@@ -134,7 +135,7 @@ def _candidatas(unidades):
     return utiles or unidades
 
 
-def _llamar_api(texto, obra, referencia, timeout, usuario, funcion):
+def _llamar_api(texto, obra, referencia, timeout, usuario, funcion, modelo):
     from .models import UnidadNarrativa
 
     unidades = list(
@@ -157,7 +158,7 @@ def _llamar_api(texto, obra, referencia, timeout, usuario, funcion):
         f'Texto de la publicación:\n"""{texto}"""'
     )
 
-    modelo = os.environ.get('ANTHROPIC_MODEL') or MODELO_IA
+    modelo = modelo or os.environ.get('ANTHROPIC_MODEL') or MODELO_IA
     response = llamar_claude(
         funcion,
         usuario=usuario,
