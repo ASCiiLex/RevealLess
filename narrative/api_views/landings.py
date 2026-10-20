@@ -71,7 +71,7 @@ def _identidad(personaje, progreso):
 
 
 class ObraLandingAPIView(APIView):
-    """Sinopsis, categorías, progreso, suscriptores, temas, obras relacionadas y personajes ya conocidos."""
+    """Sinopsis, categorías, progreso, suscriptores, temas visibles, obras relacionadas y personajes ya conocidos."""
 
     permission_classes = [IsAuthenticated]
 
@@ -88,6 +88,7 @@ class ObraLandingAPIView(APIView):
             'longitud_total': obra.longitud_total,
             'total_suscriptores': _total_suscriptores(obra=obra),
             'suscripcion_id_por_tema': suscripcion_id_por_tema(request.user),
+            'temas_visibles': TemaTransversal.objects.visibles_para(request.user).filter(obra=obra).order_by('nombre'),
             'personajes_visibles': ordenar_por_relevancia(
                 personajes_visibles(obra, progreso), obra, request.user,
             ),
@@ -100,17 +101,15 @@ class ObraLandingAPIView(APIView):
 
 class TemaLandingAPIView(APIView):
     """Agrupa por nombre los temas de la misma franquicia en tiempo de consulta.
-    'Seguir' actúa siempre sobre el TemaTransversal concreto de la URL."""
+    'Seguir' actúa siempre sobre el TemaTransversal concreto de la URL.
+    404 si aún no es visible, igual que si no existiera: la URL directa no debe revelar su nombre."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, tema_id):
-        tema = get_object_or_404(TemaTransversal.objects.select_related('obra'), id=tema_id)
-        temas_grupo = list(
-            TemaTransversal.objects
-            .filter(nombre=tema.nombre, obra_id__in=ids_familia(tema.obra))
-            .select_related('obra')
-        )
+        visibles = TemaTransversal.objects.visibles_para(request.user).select_related('obra')
+        tema = get_object_or_404(visibles, id=tema_id)
+        temas_grupo = list(visibles.filter(nombre=tema.nombre, obra_id__in=ids_familia(tema.obra)))
 
         suscripcion = Suscripcion.objects.filter(usuario=request.user, tema__in=temas_grupo).first()
 

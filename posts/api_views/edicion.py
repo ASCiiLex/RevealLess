@@ -18,6 +18,7 @@ from .comun import (
     ERROR_TEMA_OTRA_OBRA,
     error_400,
     frontera_minima,
+    frontera_minima_temas,
     previa_cerrada,
     tema_de_otra_obra,
 )
@@ -33,7 +34,7 @@ CAMPOS_QUE_REETIQUETAN = {'text', 'frontera_spoiler', 'referencia_narrativa', 'o
 class PostUpdateAPIView(APIView):
     """Solo el autor edita. Sin IA ni detección de referencia cruzada:
     una frontera enviada se marca ORIGEN_EXPLICITO; si no se envía, no se toca.
-    En ambos casos nunca queda por debajo de la parte de la que habla el post,
+    En ambos casos nunca queda por debajo de su parte ni de sus temas,
     y no se puede pasar a un previo ya estrenado (los que ya lo tenían lo conservan)."""
 
     permission_classes = [IsAuthenticated]
@@ -69,7 +70,10 @@ class PostUpdateAPIView(APIView):
         if 'frontera_spoiler' in datos:
             post.frontera_spoiler = datos['frontera_spoiler']
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
-        post.frontera_spoiler = frontera_minima(post.frontera_spoiler, post.referencia_narrativa)
+        temas = [tema] if tema_provisto else list(post.temas_transversales.all())
+        post.frontera_spoiler = frontera_minima_temas(
+            frontera_minima(post.frontera_spoiler, post.referencia_narrativa), temas,
+        )
 
         # Se valida el estado resultante: la edición puede tocar solo uno de los dos campos.
         if bool(post.obra_cruzada_id) != bool(post.frontera_cruzada_id):

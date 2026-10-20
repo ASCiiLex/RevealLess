@@ -101,7 +101,7 @@ def buscar_arcos(user, q, limite):
 
 
 class BuscarAPIView(APIView):
-    """Descubre qué seguir: obras, arcos ya empezados, categorías, temas, usuarios y hashtags.
+    """Descubre qué seguir: obras, arcos ya empezados, categorías, temas visibles, usuarios y hashtags.
     Sin publicaciones: el contenido se lee en el feed, con su filtro anti-spoiler."""
 
     permission_classes = [IsAuthenticated]
@@ -129,7 +129,10 @@ class BuscarAPIView(APIView):
             .annotate(total_obras=Count('obras'))
             .order_by('nombre')[:limite]
         )
-        temas = TemaTransversal.objects.filter(nombre__icontains=q).select_related('obra')[:limite]
+        temas = (
+            TemaTransversal.objects.visibles_para(request.user)
+            .filter(nombre__icontains=q).select_related('obra')[:limite]
+        )
         usuarios = (
             User.objects.filter(username__icontains=q)
             .select_related('profile').order_by('username')[:limite]

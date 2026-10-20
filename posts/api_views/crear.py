@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from narrative.ai_assistant import proponer_clasificacion
-from narrative.models import Obra, ProgresoUsuario, ClasificacionNarrativa
+from narrative.models import ClasificacionNarrativa, Obra, ProgresoUsuario, TemaTransversal
 from narrative.serializers import PostSerializer
 from narrative.services import (
     actualizar_progreso,
@@ -38,6 +38,7 @@ from .comun import (
     ERROR_TEMA_OTRA_OBRA,
     error_400,
     frontera_minima,
+    frontera_minima_temas,
     frontera_sin_previa_cerrada,
     previa_cerrada,
     tema_de_otra_obra,
@@ -152,7 +153,12 @@ class PostCreateAPIView(APIView):
         tema = datos.get('tema')
         if tema_de_otra_obra(tema, obra.id):
             return error_400(ERROR_TEMA_OTRA_OBRA)
-        tema_propuesto = (datos.get('tema_propuesto') or '').strip()
+        tema_propuesto = ' '.join((datos.get('tema_propuesto') or '').split())[:150]
+        # Un nombre propuesto que ya existe se asigna como elegido: así también cuenta para la frontera.
+        if not tema and tema_propuesto:
+            tema = TemaTransversal.objects.filter(obra=obra, nombre__iexact=tema_propuesto).first()
+            if tema:
+                tema_propuesto = ''
         referencia = datos.get('referencia_narrativa')
         frontera_explicita = datos.get('frontera_spoiler')
         # La parte es contexto; la visibilidad la decide la frontera. Con solo frontera, el post va sin parte.
@@ -241,9 +247,10 @@ class PostCreateAPIView(APIView):
             request=request,
         )
         _cubrir_personajes_comparados(post, comparados)
-        post.frontera_spoiler = frontera_sin_previa_cerrada(
-            frontera_minima(post.frontera_spoiler, post.referencia_narrativa)
-        )
+        # Mínimos por contexto (parte y tema) y, al final, nunca un previo ya cerrado.
+        frontera = frontera_minima(post.frontera_spoiler, post.referencia_narrativa)
+        frontera = frontera_minima_temas(frontera, [tema])
+        post.frontera_spoiler = frontera_sin_previa_cerrada(frontera)
 
         galeria = [
             PostImagen(

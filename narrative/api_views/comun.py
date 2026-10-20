@@ -36,10 +36,11 @@ def obra_basica(obra):
     return {'id': obra.id, 'titulo': obra.titulo, 'slug': obra.slug}
 
 
-def temas_planos(obra):
+def temas_planos(obra, user):
+    """Temas de la obra que el usuario ya puede ver nombrados."""
     return [
         {'id': t.id, 'nombre': t.nombre}
-        for t in TemaTransversal.objects.filter(obra=obra).order_by('nombre')
+        for t in TemaTransversal.objects.visibles_para(user).filter(obra=obra).order_by('nombre')
     ]
 
 
@@ -69,8 +70,8 @@ def suscripcion_id_por_tema(user):
 
 
 def temas_suscritos_serializados(user):
-    """Temas a los que el usuario está suscrito individualmente,
-    listos para mostrarse como lomos en el carrusel de Biblioteca."""
+    """Temas a los que el usuario está suscrito individualmente, listos para mostrarse como
+    lomos en el carrusel de Biblioteca. Solo los visibles: tras retroceder, se ocultan."""
     from ..serializers import TemaLomoSerializer
 
     filas = list(
@@ -83,7 +84,11 @@ def temas_suscritos_serializados(user):
         'suscripcion_id_por_tema': {tema_id: suscripcion_id for tema_id, suscripcion_id, _ in filas},
         'ids_temas_silenciados': {tema_id for tema_id, _, activa in filas if not activa},
     }
-    temas = TemaTransversal.objects.filter(id__in=contexto['suscripcion_id_por_tema']).select_related('obra')
+    temas = (
+        TemaTransversal.objects.visibles_para(user)
+        .filter(id__in=contexto['suscripcion_id_por_tema'])
+        .select_related('obra')
+    )
     return TemaLomoSerializer(temas, many=True, context=contexto).data
 
 

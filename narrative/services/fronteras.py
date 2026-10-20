@@ -49,3 +49,15 @@ def frontera_minima(frontera, referencia):
     if hoja and frontera.orden_frontera < hoja.orden_frontera:
         return hoja
     return frontera
+
+
+def frontera_minima_temas(frontera, temas):
+    """La etiqueta de un tema muestra su nombre: el post no se lee antes de la primera
+    unidad de sus minihistorias (los temáticos sin unidades no exigen nada)."""
+    for tema in temas:
+        if not frontera or tema is None:
+            continue
+        primera = tema.unidades.order_by('orden_fin').first()
+        if primera and frontera.orden_frontera < primera.orden_frontera:
+            frontera = primera
+    return frontera

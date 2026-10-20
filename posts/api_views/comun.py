@@ -1,7 +1,12 @@
 from rest_framework import status
 from rest_framework.response import Response
 
-from narrative.services.fronteras import frontera_minima, frontera_sin_previa_cerrada, previa_cerrada
+from narrative.services.fronteras import (
+    frontera_minima,
+    frontera_minima_temas,
+    frontera_sin_previa_cerrada,
+    previa_cerrada,
+)
 
 ERROR_CRUZADA_INCOMPLETA = 'Indica la obra cruzada y su frontera juntas, o ninguna de las dos.'
 ERROR_CRUZADA_SIN_FRONTERA = {
@@ -18,7 +23,10 @@ ERROR_NUMERO_COMPARADOS = {'personajes_comparados': ['Una comparativa necesita d
 ERROR_COMPARADO_AJENO = {'personajes_comparados': ['Cada personaje debe pertenecer a la obra o a la obra comparada.']}
 ERROR_MODO_CRUCE = {'modo_cruce': ['La misma escena solo vale entre adaptaciones de una misma historia.']}
 
-__all__ = ['error_400', 'frontera_minima', 'frontera_sin_previa_cerrada', 'previa_cerrada', 'tema_de_otra_obra']
+__all__ = [
+    'error_400', 'frontera_minima', 'frontera_minima_temas', 'frontera_sin_previa_cerrada',
+    'previa_cerrada', 'tema_de_otra_obra',
+]
 
 
 def error_400(detail):

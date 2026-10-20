@@ -90,6 +90,7 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         return self.context.get('total_suscriptores', 0)
 
     def get_temas(self, obj):
+        # La vista ya filtra por visibilidad: aquí no se listan temas por su cuenta.
         suscripcion_id_por_tema = self.context.get('suscripcion_id_por_tema', {})
         return TemaConSuscripcionSerializer([
             {
@@ -98,7 +99,7 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
                 'suscrito': t.id in suscripcion_id_por_tema,
                 'suscripcion_id': suscripcion_id_por_tema.get(t.id),
             }
-            for t in obj.temas_transversales.all().order_by('nombre')
+            for t in self.context.get('temas_visibles', [])
         ], many=True).data
 
     def get_categorias_detalle(self, obj):

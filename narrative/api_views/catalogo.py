@@ -64,7 +64,7 @@ class CatalogoObrasAPIView(APIView):
 
 
 class ObrasPublicarAPIView(APIView):
-    """Selector de publicar: solo obras de la biblioteca del usuario y sus temas.
+    """Selector de publicar: solo obras de la biblioteca del usuario y sus temas visibles.
     adapta_a_id permite saber en cliente si dos obras cuentan la misma historia."""
 
     permission_classes = [IsAuthenticated]
@@ -72,7 +72,10 @@ class ObrasPublicarAPIView(APIView):
     def get(self, request):
         ids = ids_biblioteca(request.user)
         obras = Obra.objects.filter(id__in=ids).order_by('titulo')
-        temas = TemaTransversal.objects.filter(obra_id__in=ids).select_related('obra').order_by('nombre')
+        temas = (
+            TemaTransversal.objects.visibles_para(request.user)
+            .filter(obra_id__in=ids).select_related('obra').order_by('nombre')
+        )
 
         return Response({
             'obras': [
@@ -149,7 +152,7 @@ class ObraDetalleAPIView(APIView):
         return Response({
             'obra': obra_basica(obra),
             'unidades': UnidadNarrativaSerializer(unidades, many=True).data,
-            'temas': temas_planos(obra),
+            'temas': temas_planos(obra, request.user),
             'obras_relacionadas': [obra_basica(o) for o in obra.obras_relacionadas()],
         })
 
@@ -176,10 +179,10 @@ class UnidadesBuscarAPIView(APIView):
 
 
 class ObraContextoPublicarAPIView(APIView):
-    """Versión ligera para publicar: solo temas, sin unidades."""
+    """Versión ligera para publicar: solo temas visibles, sin unidades."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, obra_slug):
         obra = get_object_or_404(Obra, slug=obra_slug)
-        return Response({'obra': obra_basica(obra), 'temas': temas_planos(obra)})
+        return Response({'obra': obra_basica(obra), 'temas': temas_planos(obra, request.user)})

@@ -1,14 +1,30 @@
 from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.db.models import F, IntegerField, Min, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 
 from core.validators import validate_image_size
 
 from .catalogo import Obra, UnidadNarrativa
+from .progreso import ProgresoUsuario
 
 
 def tema_image_path(instance, filename):
     return f'narrative/temas/{instance.obra.slug}/{filename}'
+
+
+class TemaQuerySet(models.QuerySet):
+    def visibles_para(self, user):
+        """Temáticos sin unidades, o minihistorias cuya primera unidad ya alcanzó el lector:
+        el nombre de una minihistoria futura ya es un spoiler."""
+        progreso = ProgresoUsuario.objects.filter(
+            usuario=user, obra=OuterRef('obra'),
+        ).values('orden_absoluto')[:1]
+        return self.annotate(
+            primera_unidad=Min('unidades__orden_fin'),
+            progreso_lector=Coalesce(Subquery(progreso, output_field=IntegerField()), Value(-1)),
+        ).filter(Q(primera_unidad__isnull=True) | Q(primera_unidad__lte=F('progreso_lector')))
 
 
 class TemaTransversal(models.Model):
@@ -16,6 +32,8 @@ class TemaTransversal(models.Model):
     'Frutas del diablo'), o minihistoria publicada dentro de capítulos
     existentes. Etiqueta de agrupación y suscripción: no participa en
     frontera_orden. Vive en narrative porque es propiedad de la obra."""
+
+    objects = TemaQuerySet.as_manager()
 
     TIPO_TEMATICO = 'tematico'
     TIPO_MINIHISTORIA = 'minihistoria'
