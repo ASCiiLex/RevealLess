@@ -1,4 +1,5 @@
 import hashlib
+import posixpath
 import threading
 
 from django.core.cache import cache
@@ -7,10 +8,23 @@ from storages.backends.s3 import S3Storage
 # La firma dura 6 h (querystring_expire): reutilizada 5 h, a cualquier URL servida le queda al menos 1 h.
 VIDA_URL_REUTILIZADA = 5 * 60 * 60
 CACHE_CONTROL = 'private, max-age=21600'
+# Tipo forzado en la respuesta: corrige las imágenes que se subieron como octet-stream.
+TIPOS_IMAGEN = {
+    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp',
+}
 
 
 def _clave_url(nombre):
-    return 'tigris-url:' + hashlib.sha256(nombre.encode()).hexdigest()
+    # v2: las URLs guardadas antes no llevaban el tipo de contenido.
+    return 'tigris-url-v2:' + hashlib.sha256(nombre.encode()).hexdigest()
+
+
+def parametros_respuesta(nombre):
+    parametros = {'ResponseCacheControl': CACHE_CONTROL}
+    tipo = TIPOS_IMAGEN.get(posixpath.splitext(nombre)[1].lower())
+    if tipo:
+        parametros['ResponseContentType'] = tipo
+    return parametros
 
 
 class TigrisStorage(S3Storage):
@@ -39,8 +53,8 @@ class TigrisStorage(S3Storage):
         clave = _clave_url(name)
         url = cache.get(clave)
         if url is None:
-            # Cache-Control en la respuesta firmada: vale también para imágenes subidas sin esa cabecera.
-            url = super().url(name, parameters={'ResponseCacheControl': CACHE_CONTROL})
+            # Cabeceras forzadas en la respuesta firmada: valen también para lo ya subido.
+            url = super().url(name, parameters=parametros_respuesta(name))
             cache.set(clave, url, VIDA_URL_REUTILIZADA)
         return url
 
