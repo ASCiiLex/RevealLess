@@ -130,6 +130,9 @@ class Command(BaseCommand):
     def _obra(self, datos):
         slug = datos['slug']
         if not Obra.objects.filter(slug=slug).exists():
+            # Las obras que solo existen en un entorno (p. ej. sugeridas y aprobadas en local) se crean aquí.
+            if not datos.get('titulo'):
+                raise CommandError(f'La obra «{slug}» no existe y no tiene «titulo» para crearla.')
             argumentos = ['--slug', slug, '--titulo', datos['titulo'], '--tipo', datos.get('tipo', Obra.TIPO_SERIE)]
             for categoria in datos.get('categorias', []):
                 argumentos += ['--categoria', categoria]

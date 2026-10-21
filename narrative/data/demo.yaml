@@ -7,6 +7,7 @@
 # God Valley, no las escenas); usuariodemo2 va al día con el manga (ve también las escenas).
 # Ninguna debe seguir a alexuser ni estar suscrita a estas obras: así todo sale en Descubrir.
 #
+# Obras: si no existen se crean con titulo/tipo/categorias; si ya existen, solo se completan.
 # Unidades: por nombre exacto, «Padre · Nombre» si se repite, {tipo, orden_local} o id.
 # Emociones: claves de ClasificacionNarrativa.EMOCION_CHOICES (me_entusiasma, me_emociona...).
 
@@ -28,8 +29,13 @@ obras:
     sinopsis: "Adaptación en imagen real de Netflix de las aventuras de Luffy y su tripulación."
     estructura: one_piece_live_action_estructura.yaml
 
+  # En local nació de una sugerencia aprobada; donde no exista, se crea con este título.
   - slug: solo-leveling
+    titulo: Solo Leveling
+    sin_sufijo: true
+    tipo: serie
     categorias: [Anime]
+    sinopsis: "Sung Jinwoo, el cazador más débil, recibe un poder que le permite subir de nivel sin límite."
     estructura: solo_leveling_estructura.yaml
 
   - slug: kimetsu-no-yaiba-anime
@@ -51,7 +57,7 @@ previos:
   - {obra: mcu-peliculas, antes_de: "Vengadores: Doomsday", fecha: 2026-12-18}
   - {obra: mcu-peliculas, antes_de: "Vengadores: Secret Wars", fecha: 2027-12-17}
   - {obra: one-piece-anime, antes_de: "One Piece Film: God Valley"}
-  # El previo genérico creado al aprobar la sugerencia pasa a ser el de la temporada 3.
+  # Si la obra tenía el previo genérico de una sugerencia aprobada, pasa a ser el de la temporada 3.
   - {obra: solo-leveling, antes_de: "Temporada 3", reubicar_previo_inicial: true}
   - {obra: one-piece-live-action, antes_de: "Temporada 3: The Battle of Alabasta"}
   - {obra: kimetsu-no-yaiba-anime, antes_de: "Castillo Infinito – Parte 2"}
@@ -90,7 +96,7 @@ publicaciones:
     video: https://www.youtube.com/watch?v=daO54-Yeeiw
     emocion: me_entusiasma
 
-  # Ya publicada a mano: se reconoce por el texto y no se duplica.
+  # En local ya estaba publicada a mano: se reconoce por el texto y no se duplica.
   - autor: alexuser
     obra: solo-leveling
     texto: "Vídeo conceptual de la Tercera temporada"
