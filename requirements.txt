@@ -24,4 +24,4 @@ requests==2.32.3
 pytest==9.1.1
 pytest-django==4.14.0
 pytest-sugar==1.1.1
-pytest-env==1.7.1
+pytest-env==1.7.1PyYAML==6.0.3
