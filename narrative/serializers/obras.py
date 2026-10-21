@@ -80,6 +80,10 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
             'obras_relacionadas', 'personajes', 'grupos_relevancia',
         ]
 
+    def get_imagen_url(self, obj):
+        # Cabecera de la landing: se pinta grande, con el original.
+        return obj.image_url
+
     def get_progreso_pct(self, obj):
         progreso = self.context.get('progreso')
         if not progreso:

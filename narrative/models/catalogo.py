@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import Case, F, Q, Value, When
 from django.db.models.functions import Greatest
 
+from core.imagenes.miniaturas import url_miniatura
 from core.validators import validate_image_size
 
 from .orden import recalcular_orden
@@ -112,13 +113,22 @@ class Obra(models.Model):
         return self.titulo
 
     @property
+    def imagen_por_defecto(self):
+        return self.IMAGEN_POR_DEFECTO.get(self.tipo, self.IMAGEN_POR_DEFECTO_GENERICA)
+
+    @property
     def image_url(self):
         try:
             if self.imagen and hasattr(self.imagen, 'url'):
                 return self.imagen.url
         except ValueError:
             pass
-        return self.IMAGEN_POR_DEFECTO.get(self.tipo, self.IMAGEN_POR_DEFECTO_GENERICA)
+        return self.imagen_por_defecto
+
+    @property
+    def miniatura_url(self):
+        """Para lo que se pinta pequeño (lomos, selectores): versión de 400 px."""
+        return url_miniatura(self.imagen) or self.imagen_por_defecto
 
     def obras_relacionadas(self):
         """Origen, adaptaciones, hermanas (otras adaptaciones del mismo origen)

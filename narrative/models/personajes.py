@@ -4,6 +4,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
 
+from core.imagenes.miniaturas import url_miniatura
 from core.validators import validate_image_size
 
 from .catalogo import Obra, UnidadNarrativa
@@ -12,6 +13,7 @@ IMAGEN_VALIDATORS = [
     FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
     validate_image_size,
 ]
+IMAGEN_PERSONAJE_POR_DEFECTO = '/static/img/default_personaje.jpg'
 
 
 def personaje_image_path(instance, filename):
@@ -88,7 +90,12 @@ class Personaje(models.Model):
                 return self.imagen.url
         except ValueError:
             pass
-        return '/static/img/default_personaje.jpg'
+        return IMAGEN_PERSONAJE_POR_DEFECTO
+
+    @property
+    def miniatura_url(self):
+        """Versión de 400 px: lomos, comparativas, selectores y landing."""
+        return url_miniatura(self.imagen) or IMAGEN_PERSONAJE_POR_DEFECTO
 
 
 class RelevanciaPersonaje(models.Model):

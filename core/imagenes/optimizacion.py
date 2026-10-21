@@ -5,6 +5,8 @@ from django.core.files.base import ContentFile
 from django.db.models import ImageField
 from PIL import Image, ImageOps
 
+from .miniaturas import guardar_miniatura
+
 LADO_MAXIMO = 1600
 # Por debajo de este peso (y del lado máximo) no se toca: recomprimir degradaría sin ganar nada.
 PESO_MINIMO = 300 * 1024
@@ -52,16 +54,33 @@ def campos_imagen(modelo):
 
 
 def optimizar_al_guardar(sender, instance, raw=False, **kwargs):
-    """pre_save de cualquier modelo: optimiza las imágenes recién asignadas antes de subirlas."""
+    """pre_save de cualquier modelo: optimiza las imágenes recién asignadas antes de subirlas
+    y deja sus bytes para la miniatura, que se crea cuando ya tienen nombre definitivo."""
     if raw:
         return
+    pendientes = []
     for campo in campos_imagen(sender):
         archivo = getattr(instance, campo.attname)
         if not archivo or getattr(archivo, '_committed', True):
             continue
         archivo.seek(0)
-        optimizada = optimizar_imagen(archivo.read())
+        datos = archivo.read()
+        optimizada = optimizar_imagen(datos)
         if optimizada is None:
             archivo.seek(0)
-            continue
-        setattr(instance, campo.attname, ContentFile(optimizada, name=archivo.name))
+        else:
+            setattr(instance, campo.attname, ContentFile(optimizada, name=archivo.name))
+            datos = optimizada
+        pendientes.append((campo.attname, datos))
+    if pendientes:
+        instance._miniaturas_pendientes = pendientes
+
+
+def miniaturas_al_guardar(sender, instance, raw=False, **kwargs):
+    """post_save: miniatura de cada imagen recién subida, con los bytes que ya estaban en memoria."""
+    pendientes = instance.__dict__.pop('_miniaturas_pendientes', None)
+    if raw or not pendientes:
+        return
+    for attname, datos in pendientes:
+        archivo = getattr(instance, attname)
+        guardar_miniatura(archivo.storage, archivo.name, datos)

@@ -93,9 +93,9 @@ class Notification(models.Model):
 
     @property
     def avatar(self):
-        if hasattr(self.actor, "profile") and self.actor.profile.image:
-            return self.actor.profile.image.url
-        return "/static/img/default_profile.jpg"
+        # Miniatura del avatar, igual que en el resto de la web.
+        perfil = getattr(self.actor, 'profile', None)
+        return perfil.image_url if perfil else "/static/img/default_profile.jpg"
 
     @property
     def _related_post(self):

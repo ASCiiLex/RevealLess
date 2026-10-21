@@ -3,10 +3,16 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+from core.imagenes.miniaturas import url_miniatura
 from core.validators import validate_image_size
+
+AVATAR_POR_DEFECTO = '/static/img/default_profile.jpg'
+
 
 def profile_image_path(instance, filename):
     return f'profiles/{instance.user.username}/{filename}'
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Usuario')
@@ -32,12 +38,9 @@ class Profile(models.Model):
 
     @property
     def image_url(self):
-        if self.image and hasattr(self.image, "url"):
-            try:
-                return self.image.url
-            except ValueError:
-                pass
-        return "/static/img/default_profile.jpg"
+        """Miniatura: el avatar siempre se pinta pequeño."""
+        return url_miniatura(self.image) or AVATAR_POR_DEFECTO
+
 
 @receiver(post_save, sender=User)
 def ensure_user_profile(sender, instance, created, **kwargs):

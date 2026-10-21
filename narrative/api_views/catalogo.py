@@ -79,7 +79,7 @@ class ObrasPublicarAPIView(APIView):
 
         return Response({
             'obras': [
-                {**obra_basica(o), 'imagen_url': o.image_url, 'adapta_a_id': o.adapta_a_id}
+                {**obra_basica(o), 'imagen_url': o.miniatura_url, 'adapta_a_id': o.adapta_a_id}
                 for o in obras
             ],
             'temas': [

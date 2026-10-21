@@ -13,7 +13,7 @@ class ObraMiniSerializer(serializers.ModelSerializer):
         fields = ['id', 'titulo', 'slug', 'imagen_url']
 
     def get_imagen_url(self, obj):
-        return obj.image_url
+        return obj.miniatura_url
 
 
 class UnidadMiniSerializer(serializers.ModelSerializer):

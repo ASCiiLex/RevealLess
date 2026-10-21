@@ -4,6 +4,8 @@ nota, nombres buscables, nivel de relevancia y orden del carrusel."""
 from collections import Counter
 from datetime import date
 
+from core.imagenes.miniaturas import url_miniatura
+
 from ...models import ProgresoUsuario, RelevanciaPersonaje
 
 # Un post visible pesa como dos apariciones: refleja interés real, no solo presencia.
@@ -24,8 +26,8 @@ def _superada(etapa, progreso):
 
 
 def presentacion_personaje(personaje, progreso, obra_id=None):
-    """Nombre, imagen y nota que puede ver el lector. Acumula las etapas cuya unidad
-    ya terminó; cada campo vacío hereda el anterior. Con obra_id solo cuentan las
+    """Nombre, imagen (miniatura) y nota que puede ver el lector. Acumula las etapas cuya
+    unidad ya terminó; cada campo vacío hereda el anterior. Con obra_id solo cuentan las
     etapas de esa obra; sin él, todas, por fecha de su unidad.
     Conviene prefetch_related('etapas__visible_tras')."""
     etapas = [
@@ -37,12 +39,12 @@ def presentacion_personaje(personaje, progreso, obra_id=None):
     else:
         etapas.sort(key=lambda e: e.visible_tras.orden_fin)
 
-    datos = {'nombre': personaje.nombre, 'imagen_url': personaje.image_url, 'nota': None}
+    datos = {'nombre': personaje.nombre, 'imagen_url': personaje.miniatura_url, 'nota': None}
     for etapa in etapas:
         if etapa.alias:
             datos['nombre'] = etapa.alias
         if etapa.imagen:
-            datos['imagen_url'] = etapa.imagen.url
+            datos['imagen_url'] = url_miniatura(etapa.imagen) or datos['imagen_url']
         if etapa.nota:
             datos['nota'] = etapa.nota
     return datos

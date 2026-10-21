@@ -28,9 +28,12 @@ class ProfileDetailSerializer(serializers.Serializer):
         return request.user.is_authenticated and request.user == obj['profile_user']
 
     def get_posts(self, obj):
-        # Composición del post para la miniatura; sin fotos, la miniatura muestra el texto.
+        # Composición del post en miniaturas para la tesela; sin fotos, la tesela muestra el texto.
         return [
-            {'id': p.id, 'text': p.text, 'imagenes': p.imagenes_para_mostrar(), 'disposicion': p.disposicion}
+            {
+                'id': p.id, 'text': p.text,
+                'imagenes': p.imagenes_para_mostrar(miniaturas=True), 'disposicion': p.disposicion,
+            }
             for p in obj['posts']
         ]
 

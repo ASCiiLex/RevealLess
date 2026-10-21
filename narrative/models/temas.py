@@ -4,10 +4,13 @@ from django.db import models
 from django.db.models import F, IntegerField, Min, OuterRef, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 
+from core.imagenes.miniaturas import url_miniatura
 from core.validators import validate_image_size
 
 from .catalogo import Obra, UnidadNarrativa
 from .progreso import ProgresoUsuario
+
+IMAGEN_TEMA_POR_DEFECTO = '/static/img/default_tema.jpg'
 
 
 def tema_image_path(instance, filename):
@@ -81,7 +84,12 @@ class TemaTransversal(models.Model):
                 return self.imagen.url
         except ValueError:
             pass
-        return '/static/img/default_tema.jpg'
+        return IMAGEN_TEMA_POR_DEFECTO
+
+    @property
+    def miniatura_url(self):
+        """Para el lomo del carrusel: versión de 400 px."""
+        return url_miniatura(self.imagen) or IMAGEN_TEMA_POR_DEFECTO
 
 
 class SolicitudTema(models.Model):

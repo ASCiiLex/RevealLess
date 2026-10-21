@@ -3,6 +3,7 @@ from django.core.validators import FileExtensionValidator, MaxValueValidator, Mi
 from django.db import models
 from django.contrib.auth.models import User
 from narrative.models import ClasificacionNarrativa
+from core.imagenes.miniaturas import url_miniatura
 from core.validators import validate_image_size
 from .managers import MODO_CRUCE_COMPARATIVA, MODO_CRUCE_MISMA_ESCENA, PostQuerySet
 
@@ -190,12 +191,17 @@ class Post(ClasificacionNarrativa, models.Model):
             pass
         return None
 
-    def imagenes_para_mostrar(self):
-        """Lista única para pintar (feed, perfil, guardados): la galería con su encuadre si existe;
-        si no, la imagen simple. Al listar posts conviene prefetch_related('imagenes')."""
+    @property
+    def miniatura_url(self):
+        return url_miniatura(self.image)
+
+    def imagenes_para_mostrar(self, miniaturas=False):
+        """Lista única para pintar: la galería con su encuadre si existe; si no, la imagen simple.
+        miniaturas=True para las teselas (perfil, guardados). Al listar posts conviene
+        prefetch_related('imagenes')."""
         galeria = [
             {
-                'url': i.image_url, 'etiqueta': i.etiqueta,
+                'url': i.miniatura_url if miniaturas else i.image_url, 'etiqueta': i.etiqueta,
                 'enfoque_x': i.enfoque_x, 'enfoque_y': i.enfoque_y, 'zoom': i.zoom,
             }
             for i in self.imagenes.all() if i.image_url
@@ -203,7 +209,7 @@ class Post(ClasificacionNarrativa, models.Model):
         if galeria or not self.image_url:
             return galeria
         return [{
-            'url': self.image_url, 'etiqueta': '',
+            'url': self.miniatura_url if miniaturas else self.image_url, 'etiqueta': '',
             'enfoque_x': PostImagen.ENFOQUE_CENTRO, 'enfoque_y': PostImagen.ENFOQUE_CENTRO,
             'zoom': PostImagen.ZOOM_BASE,
         }]
@@ -274,6 +280,10 @@ class PostImagen(models.Model):
         except ValueError:
             pass
         return None
+
+    @property
+    def miniatura_url(self):
+        return url_miniatura(self.imagen)
 
 
 class PersonajeComparado(models.Model):

@@ -193,7 +193,7 @@ class PersonajeLandingAPIView(APIView):
             'identidad_de': identidad_de,
             'otras_identidades': [_identidad(a, progreso) for a in identidades_conocidas(personaje, progreso)],
             'obras': [
-                {'id': o.id, 'titulo': o.titulo, 'slug': o.slug, 'imagen_url': o.image_url}
+                {'id': o.id, 'titulo': o.titulo, 'slug': o.slug, 'imagen_url': o.miniatura_url}
                 for o in obras
             ],
             'suscripcion_id': suscripcion.id if suscripcion else None,

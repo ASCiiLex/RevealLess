@@ -4,7 +4,8 @@ from ..models import SolicitudTema
 
 
 class CarruselMixin(serializers.Serializer):
-    """Campos comunes a todo lo que se muestra como lomo en el carrusel (obras, temas y personajes)."""
+    """Campos comunes a todo lo que se muestra como lomo en el carrusel (obras, temas y personajes).
+    La imagen es la miniatura: el lomo se pinta pequeño."""
 
     imagen_url = serializers.SerializerMethodField()
     suscrito = serializers.SerializerMethodField()
@@ -12,7 +13,7 @@ class CarruselMixin(serializers.Serializer):
     silenciada = serializers.SerializerMethodField()
 
     def get_imagen_url(self, obj):
-        return obj.image_url
+        return obj.miniatura_url
 
 
 class TemaConSuscripcionSerializer(serializers.Serializer):
