@@ -53,6 +53,8 @@ class Post(ClasificacionNarrativa, models.Model):
     MAX_IMAGENES = 4
     MIN_COMPARADOS = 2
     MAX_COMPARADOS = 4
+    # Medidas que la optimización guarda al subir (core.imagenes.optimizacion).
+    DIMENSIONES_IMAGEN = {'image': ('imagen_ancho', 'imagen_alto')}
 
     MODO_COMPARATIVA = MODO_CRUCE_COMPARATIVA
     MODO_MISMA_ESCENA = MODO_CRUCE_MISMA_ESCENA
@@ -94,6 +96,9 @@ class Post(ClasificacionNarrativa, models.Model):
         ],
         verbose_name='Imagen',
     )
+    # Medidas visibles de la imagen única: la tarjeta reserva su proporción exacta antes de cargarla.
+    imagen_ancho = models.PositiveIntegerField(null=True, blank=True, editable=False, verbose_name='Ancho de la imagen')
+    imagen_alto = models.PositiveIntegerField(null=True, blank=True, editable=False, verbose_name='Alto de la imagen')
     disposicion = models.CharField(
         max_length=20, choices=DISPOSICION_CHOICES, blank=True, default=DISPOSICION_AUTO,
         verbose_name='Disposición de la galería',

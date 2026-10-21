@@ -35,9 +35,9 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = [
             'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'obra_cruzada', 'modo_cruce',
-            'temas', 'text', 'imagen', 'imagenes', 'disposicion', 'personajes_comparados',
-            'referencia_narrativa', 'frontera_spoiler', 'frontera_cruzada', 'nivel_spoiler',
-            'emocion_autor', 'created_at',
+            'temas', 'text', 'imagen', 'imagen_ancho', 'imagen_alto', 'imagenes', 'disposicion',
+            'personajes_comparados', 'referencia_narrativa', 'frontera_spoiler', 'frontera_cruzada',
+            'nivel_spoiler', 'emocion_autor', 'created_at',
             'likes_count', 'comments_count', 'reacciones_totales', 'user_reaction', 'is_own_post', 'is_saved',
         ]
 

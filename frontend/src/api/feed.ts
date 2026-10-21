@@ -45,6 +45,9 @@ export interface FeedPost {
   temas?: TemaPost[]
   text: string
   imagen: string | null
+  // Medidas visibles de la imagen única; null en fotos que no se pudieron medir.
+  imagen_ancho?: number | null
+  imagen_alto?: number | null
   imagenes?: ImagenPost[]
   disposicion?: string
   personajes_comparados?: PersonajeComparado[]

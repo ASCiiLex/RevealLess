@@ -12,10 +12,17 @@ interface Props {
   post: FeedPost
 }
 
+// Proporción de reserva para fotos sin medidas guardadas.
+const ANCHO_POR_DEFECTO = 900
+const ALTO_POR_DEFECTO = 600
+
 export default function PostCard({ post }: Props) {
   const imagenes = post.imagenes ?? []
   // Una galería tiene controles propios (deslizador): va fuera del enlace al detalle.
   const esGaleria = imagenes.length > 1
+  const medida = post.imagen_ancho && post.imagen_alto
+    ? { ancho: post.imagen_ancho, alto: post.imagen_alto }
+    : null
 
   return (
     <article className={styles.post} style={emocionHaloStyle(post.emocion_autor)}>
@@ -59,13 +66,14 @@ export default function PostCard({ post }: Props) {
       <a className={styles.textLink} href={`/posts/${post.id}/`}>
         <p className={styles.text}>{post.text}</p>
         {!esGaleria && post.imagen && (
-          // Proporción de referencia mientras carga; al llegar manda la real (height: auto en el CSS).
+          // Con medidas, el hueco tiene la proporción exacta antes de cargar: el feed no salta.
           <img
             className={styles.image}
             src={post.imagen}
             alt=""
-            width={900}
-            height={600}
+            width={medida?.ancho ?? ANCHO_POR_DEFECTO}
+            height={medida?.alto ?? ALTO_POR_DEFECTO}
+            style={medida ? { aspectRatio: `${medida.ancho} / ${medida.alto}` } : undefined}
             loading="lazy"
             decoding="async"
           />

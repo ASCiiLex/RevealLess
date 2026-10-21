@@ -13,6 +13,9 @@ PESO_MINIMO = 300 * 1024
 CALIDAD = 82
 # MPO: JPEG de varias capas que generan algunos móviles.
 FORMATOS = {'JPEG': 'JPEG', 'MPO': 'JPEG', 'PNG': 'PNG', 'WEBP': 'WEBP'}
+# Orientaciones EXIF que giran 90°: el navegador la muestra con ancho y alto intercambiados.
+ORIENTACIONES_GIRADAS = {5, 6, 7, 8}
+ETIQUETA_ORIENTACION = 0x0112
 
 
 def optimizar_imagen(datos):
@@ -48,6 +51,18 @@ def optimizar_imagen(datos):
     return resultado if len(resultado) < len(datos) else None
 
 
+def medir_imagen(datos):
+    """(ancho, alto) tal como se ve (orientación EXIF aplicada), o None si no es una imagen."""
+    try:
+        imagen = Image.open(BytesIO(datos))
+        ancho, alto = imagen.size
+        if imagen.getexif().get(ETIQUETA_ORIENTACION) in ORIENTACIONES_GIRADAS:
+            return alto, ancho
+        return ancho, alto
+    except (OSError, ValueError, Image.DecompressionBombError):
+        return None
+
+
 @lru_cache(maxsize=None)
 def campos_imagen(modelo):
     return tuple(f for f in modelo._meta.concrete_fields if isinstance(f, ImageField))
@@ -55,9 +70,11 @@ def campos_imagen(modelo):
 
 def optimizar_al_guardar(sender, instance, raw=False, **kwargs):
     """pre_save de cualquier modelo: optimiza las imágenes recién asignadas antes de subirlas
-    y deja sus bytes para las variantes, que se crean cuando ya tienen nombre definitivo."""
+    y deja sus bytes para las variantes, que se crean cuando ya tienen nombre definitivo.
+    Si el modelo declara DIMENSIONES_IMAGEN ({campo: (campo_ancho, campo_alto)}), guarda también sus medidas."""
     if raw:
         return
+    dimensiones = getattr(sender, 'DIMENSIONES_IMAGEN', {})
     pendientes = []
     for campo in campos_imagen(sender):
         archivo = getattr(instance, campo.attname)
@@ -72,6 +89,12 @@ def optimizar_al_guardar(sender, instance, raw=False, **kwargs):
             setattr(instance, campo.attname, ContentFile(optimizada, name=archivo.name))
             datos = optimizada
         pendientes.append((campo.attname, datos))
+
+        if campo.attname in dimensiones:
+            medidas = medir_imagen(datos)
+            campo_ancho, campo_alto = dimensiones[campo.attname]
+            setattr(instance, campo_ancho, medidas[0] if medidas else None)
+            setattr(instance, campo_alto, medidas[1] if medidas else None)
     if pendientes:
         instance._miniaturas_pendientes = pendientes
 
