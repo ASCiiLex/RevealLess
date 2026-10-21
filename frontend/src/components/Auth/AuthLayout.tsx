@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import styles from './AuthLayout.module.css'
-import logo from '../../assets/brand/logo-sf-neg.png'
+import logo from '../../assets/brand/logo-sf-neg.webp'
 
 interface Props {
   titulo: string

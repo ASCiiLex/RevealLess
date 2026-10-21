@@ -10,7 +10,7 @@ import { buscar, type ResultadoBusqueda } from '../../api/buscar'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { useMessagesAlertSocket } from '../../hooks/useMessagesAlertSocket'
 import { useNotificationSocket } from '../../hooks/useNotificationSocket'
-import logo from '../../assets/brand/logo-sf-ss.png'
+import logo from '../../assets/brand/logo-sf-ss.webp'
 
 export default function Header() {
   const [me, setMe] = useState<Me | null>(null)
