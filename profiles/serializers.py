@@ -32,7 +32,7 @@ class ProfileDetailSerializer(serializers.Serializer):
         return [
             {
                 'id': p.id, 'text': p.text,
-                'imagenes': p.imagenes_para_mostrar(miniaturas=True), 'disposicion': p.disposicion,
+                'imagenes': p.imagenes_para_mostrar(variante='min'), 'disposicion': p.disposicion,
             }
             for p in obj['posts']
         ]

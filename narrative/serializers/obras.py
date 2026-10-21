@@ -2,6 +2,7 @@ import math
 
 from rest_framework import serializers
 
+from core.imagenes.miniaturas import url_variante
 from ..models import Obra, RelevanciaPersonaje
 from ..services.personajes import presentacion_personaje
 from .temas import CarruselMixin, TemaConSuscripcionSerializer
@@ -81,8 +82,8 @@ class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         ]
 
     def get_imagen_url(self, obj):
-        # Cabecera de la landing: se pinta grande, con el original.
-        return obj.image_url
+        # Cabecera de la landing: se pinta grande, con la variante de 900 px.
+        return url_variante(obj.imagen, 'med') or obj.imagen_por_defecto
 
     def get_progreso_pct(self, obj):
         progreso = self.context.get('progreso')

@@ -14,4 +14,4 @@ class SavedPostSerializer(serializers.ModelSerializer):
         fields = ['id', 'post_id', 'text', 'imagenes', 'disposicion', 'created_at']
 
     def get_imagenes(self, obj):
-        return obj.post.imagenes_para_mostrar(miniaturas=True)
+        return obj.post.imagenes_para_mostrar(variante='min')

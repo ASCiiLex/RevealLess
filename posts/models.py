@@ -3,7 +3,7 @@ from django.core.validators import FileExtensionValidator, MaxValueValidator, Mi
 from django.db import models
 from django.contrib.auth.models import User
 from narrative.models import ClasificacionNarrativa
-from core.imagenes.miniaturas import url_miniatura
+from core.imagenes.miniaturas import url_miniatura, url_variante
 from core.validators import validate_image_size
 from .managers import MODO_CRUCE_COMPARATIVA, MODO_CRUCE_MISMA_ESCENA, PostQuerySet
 
@@ -195,13 +195,20 @@ class Post(ClasificacionNarrativa, models.Model):
     def miniatura_url(self):
         return url_miniatura(self.image)
 
-    def imagenes_para_mostrar(self, miniaturas=False):
+    @property
+    def media_url(self):
+        return url_variante(self.image, 'med')
+
+    def imagenes_para_mostrar(self, variante=None):
         """Lista única para pintar: la galería con su encuadre si existe; si no, la imagen simple.
-        miniaturas=True para las teselas (perfil, guardados). Al listar posts conviene
-        prefetch_related('imagenes')."""
+        variante: None (original), 'med' (feed y detalle) o 'min' (teselas de perfil y guardados).
+        Al listar posts conviene prefetch_related('imagenes')."""
+        def url(archivo, original):
+            return url_variante(archivo, variante) if variante else original
+
         galeria = [
             {
-                'url': i.miniatura_url if miniaturas else i.image_url, 'etiqueta': i.etiqueta,
+                'url': url(i.imagen, i.image_url), 'etiqueta': i.etiqueta,
                 'enfoque_x': i.enfoque_x, 'enfoque_y': i.enfoque_y, 'zoom': i.zoom,
             }
             for i in self.imagenes.all() if i.image_url
@@ -209,7 +216,7 @@ class Post(ClasificacionNarrativa, models.Model):
         if galeria or not self.image_url:
             return galeria
         return [{
-            'url': self.miniatura_url if miniaturas else self.image_url, 'etiqueta': '',
+            'url': url(self.image, self.image_url), 'etiqueta': '',
             'enfoque_x': PostImagen.ENFOQUE_CENTRO, 'enfoque_y': PostImagen.ENFOQUE_CENTRO,
             'zoom': PostImagen.ZOOM_BASE,
         }]

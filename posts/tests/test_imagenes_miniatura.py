@@ -52,9 +52,14 @@ class ImagenesMiniaturaTests(TestCase):
 
     def test_con_miniaturas_usa_la_version_reducida(self):
         imagenes_galeria = self._galeria()
-        urls = [i['url'] for i in self.post.imagenes_para_mostrar(miniaturas=True)]
+        urls = [i['url'] for i in self.post.imagenes_para_mostrar(variante='min')]
         self.assertEqual(urls, [i.miniatura_url for i in imagenes_galeria])
         self.assertTrue(all(url.endswith('.min.webp') for url in urls))
+
+    def test_el_feed_usa_la_variante_media(self):
+        self._galeria()
+        urls = [i['url'] for i in self.post.imagenes_para_mostrar(variante='med')]
+        self.assertTrue(all(url.endswith('.med.webp') for url in urls))
 
     def test_el_perfil_devuelve_la_composicion_en_miniaturas(self):
         imagenes_galeria = self._galeria()

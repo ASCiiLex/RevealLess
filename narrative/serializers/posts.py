@@ -7,6 +7,8 @@ from ..services.personajes import presentacion_personaje
 from .unidades import UnidadNarrativaSerializer
 
 AVATAR_POR_DEFECTO = '/static/img/default_profile.jpg'
+# Feed y detalle: versión de 900 px, nítida a ese tamaño y mucho más ligera que el original.
+VARIANTE_FEED = 'med'
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -65,10 +67,10 @@ class PostSerializer(serializers.ModelSerializer):
         return [{'id': t.id, 'nombre': t.nombre} for t in obj.temas_transversales.all()]
 
     def get_imagen(self, obj):
-        return obj.image_url
+        return obj.media_url
 
     def get_imagenes(self, obj):
-        return obj.imagenes_para_mostrar()
+        return obj.imagenes_para_mostrar(variante=VARIANTE_FEED)
 
     def get_personajes_comparados(self, obj):
         """Nombre e imagen según la frontera del post: quien puede leerlo ya llegó ahí,

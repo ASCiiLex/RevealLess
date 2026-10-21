@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from django.db.models import ImageField
 from PIL import Image, ImageOps
 
-from .miniaturas import guardar_miniatura
+from .miniaturas import guardar_variantes
 
 LADO_MAXIMO = 1600
 # Por debajo de este peso (y del lado máximo) no se toca: recomprimir degradaría sin ganar nada.
@@ -55,7 +55,7 @@ def campos_imagen(modelo):
 
 def optimizar_al_guardar(sender, instance, raw=False, **kwargs):
     """pre_save de cualquier modelo: optimiza las imágenes recién asignadas antes de subirlas
-    y deja sus bytes para la miniatura, que se crea cuando ya tienen nombre definitivo."""
+    y deja sus bytes para las variantes, que se crean cuando ya tienen nombre definitivo."""
     if raw:
         return
     pendientes = []
@@ -77,10 +77,10 @@ def optimizar_al_guardar(sender, instance, raw=False, **kwargs):
 
 
 def miniaturas_al_guardar(sender, instance, raw=False, **kwargs):
-    """post_save: miniatura de cada imagen recién subida, con los bytes que ya estaban en memoria."""
+    """post_save: variantes de cada imagen recién subida, con los bytes que ya estaban en memoria."""
     pendientes = instance.__dict__.pop('_miniaturas_pendientes', None)
     if raw or not pendientes:
         return
     for attname, datos in pendientes:
         archivo = getattr(instance, attname)
-        guardar_miniatura(archivo.storage, archivo.name, datos)
+        guardar_variantes(archivo.storage, archivo.name, datos)
