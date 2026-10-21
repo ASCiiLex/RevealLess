@@ -89,6 +89,8 @@ export default function Header() {
 
         <div className={styles.searchWrapper} ref={searchWrapperRef}>
           <input
+            id="buscador-cabecera"
+            name="q"
             className={styles.search}
             type="search"
             placeholder="Buscar obras, categorías, temas..."

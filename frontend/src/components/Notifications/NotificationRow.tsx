@@ -8,7 +8,7 @@ interface Props {
 export default function NotificationRow({ item }: Props) {
   return (
     <a className={`${styles.row} ${!item.seen ? styles.rowUnseen : ''}`} href={item.url}>
-      <img className={styles.avatar} src={item.avatar} alt="" loading="lazy" decoding="async" />
+      <img className={styles.avatar} src={item.avatar} alt="" width={40} height={40} loading="lazy" decoding="async" />
       <div>
         <div className={styles.text}>
           <strong>@{item.actor}</strong> {item.verb}

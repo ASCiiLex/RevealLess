@@ -18,6 +18,9 @@ interface Props {
   onSugerirObra?: () => void
 }
 
+// Miniaturas del desplegable (mismo tamaño que en el CSS).
+const LADO_MINIATURA = 28
+
 export default function SearchResults({ resultado, onSugerirObra }: Props) {
   const sinResultados =
     resultado.obras.length === 0 &&
@@ -148,7 +151,15 @@ function ObraRow({ obra }: { obra: LomoObra }) {
   return (
     <div className={styles.row}>
       <a className={styles.rowMainLink} href={`/narrative/obra/${obra.slug}/`}>
-        <img className={styles.thumb} src={obra.imagen_url} alt="" loading="lazy" decoding="async" />
+        <img
+          className={styles.thumb}
+          src={obra.imagen_url}
+          alt=""
+          width={LADO_MINIATURA}
+          height={LADO_MINIATURA}
+          loading="lazy"
+          decoding="async"
+        />
         <span className={styles.titulo}>{obra.titulo}</span>
       </a>
       <BotonSeguir siguiendo={siguiendo} cargando={cargando} onClick={alternar} />
@@ -210,7 +221,15 @@ function TemaRow({ tema }: { tema: TemaBusqueda }) {
 function UsuarioRow({ usuario }: { usuario: UsuarioBusqueda }) {
   return (
     <a className={styles.rowLink} href={`/perfil/${usuario.username}/`}>
-      <img className={styles.avatarThumb} src={usuario.avatar_url} alt="" loading="lazy" decoding="async" />
+      <img
+        className={styles.avatarThumb}
+        src={usuario.avatar_url}
+        alt=""
+        width={LADO_MINIATURA}
+        height={LADO_MINIATURA}
+        loading="lazy"
+        decoding="async"
+      />
       <span className={styles.titulo}>@{usuario.username}</span>
     </a>
   )

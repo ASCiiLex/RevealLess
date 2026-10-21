@@ -33,6 +33,8 @@ export default function MobileSearchOverlay({ onClose }: Props) {
     <div className={`container ${styles.overlay}`}>
       <div className={styles.row}>
         <input
+          id="buscador-movil"
+          name="q"
           className={styles.input}
           type="search"
           placeholder="Buscar obras, categorías, temas..."

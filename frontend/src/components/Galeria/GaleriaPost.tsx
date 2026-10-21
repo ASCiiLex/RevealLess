@@ -17,6 +17,9 @@ interface Props {
 export const MAX_IMAGENES = 4
 export const ZOOM_BASE = 100
 export const ZOOM_MAXIMO = 300
+// Dimensiones de referencia: reservan el hueco antes de cargar; el tamaño real lo fija el CSS.
+const ANCHO_REFERENCIA = 900
+const ALTO_REFERENCIA = 600
 
 // Mismas claves que Post.DISPOSICIONES_POR_NUMERO; la primera es la de por defecto.
 export const DISPOSICIONES: Record<number, { valor: string; etiqueta: string }[]> = {
@@ -62,6 +65,8 @@ function Deslizador({ antes, despues }: { antes: ImagenGaleria; despues: ImagenG
           className={styles.capa}
           src={despues.url}
           alt={despues.etiqueta}
+          width={ANCHO_REFERENCIA}
+          height={ALTO_REFERENCIA}
           loading="lazy"
           decoding="async"
           style={estiloEncuadre(despues)}
@@ -73,6 +78,8 @@ function Deslizador({ antes, despues }: { antes: ImagenGaleria; despues: ImagenG
           className={styles.capa}
           src={antes.url}
           alt={antes.etiqueta}
+          width={ANCHO_REFERENCIA}
+          height={ALTO_REFERENCIA}
           loading="lazy"
           decoding="async"
           style={estiloEncuadre(antes)}
@@ -102,6 +109,8 @@ export default function GaleriaPost({ imagenes, disposicion }: Props) {
         className={styles.unica}
         src={imagenes[0].url}
         alt={imagenes[0].etiqueta}
+        width={ANCHO_REFERENCIA}
+        height={ALTO_REFERENCIA}
         loading="lazy"
         decoding="async"
       />
@@ -120,7 +129,15 @@ export default function GaleriaPost({ imagenes, disposicion }: Props) {
           // La destacada ocupa todas las filas de la columna izquierda.
           style={tipo === 'destacada' && i === 0 ? { gridRow: `span ${imagenes.length - 1}` } : undefined}
         >
-          <img src={img.url} alt={img.etiqueta} loading="lazy" decoding="async" style={estiloEncuadre(img)} />
+          <img
+            src={img.url}
+            alt={img.etiqueta}
+            width={ANCHO_REFERENCIA}
+            height={ALTO_REFERENCIA}
+            loading="lazy"
+            decoding="async"
+            style={estiloEncuadre(img)}
+          />
           {img.etiqueta && <figcaption className={styles.etiqueta}>{img.etiqueta}</figcaption>}
         </figure>
       ))}

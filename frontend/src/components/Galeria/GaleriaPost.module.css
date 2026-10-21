@@ -1,5 +1,7 @@
+/* height: auto: los atributos width/height solo reservan la proporción mientras carga. */
 .unica {
   width: 100%;
+  height: auto;
   border-radius: var(--radius);
   display: block;
   margin-bottom: 12px;

@@ -7,6 +7,9 @@ interface Props {
   texto: string
 }
 
+// Tamaño de la miniatura servida: reserva el hueco antes de cargar; la tesela la ajusta el CSS.
+const LADO_MINIATURA = 400
+
 // Tesela de grid (perfil, guardados): la composición del post, estática; sin fotos, el arranque del texto.
 export default function PostMiniatura({ imagenes, disposicion, texto }: Props) {
   if (imagenes.length === 0) {
@@ -23,6 +26,8 @@ export default function PostMiniatura({ imagenes, disposicion, texto }: Props) {
         className={styles.imagen}
         src={imagenes[0].url}
         alt=""
+        width={LADO_MINIATURA}
+        height={LADO_MINIATURA}
         loading="lazy"
         decoding="async"
         style={estiloEncuadre(imagenes[0])}
@@ -43,7 +48,15 @@ export default function PostMiniatura({ imagenes, disposicion, texto }: Props) {
           // La destacada ocupa todas las filas de la columna izquierda.
           style={clase === 'destacada' && i === 0 ? { gridRow: `span ${imagenes.length - 1}` } : undefined}
         >
-          <img src={img.url} alt="" loading="lazy" decoding="async" style={estiloEncuadre(img)} />
+          <img
+            src={img.url}
+            alt=""
+            width={LADO_MINIATURA}
+            height={LADO_MINIATURA}
+            loading="lazy"
+            decoding="async"
+            style={estiloEncuadre(img)}
+          />
         </div>
       ))}
     </div>

@@ -86,6 +86,7 @@ export default function SugerirObraModal({ tituloInicial = '', onClose, onEnviad
               <label className={styles.campo}>
                 <span className={styles.etiqueta}>Título</span>
                 <input
+                  name="titulo"
                   className={styles.entrada}
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
@@ -97,7 +98,12 @@ export default function SugerirObraModal({ tituloInicial = '', onClose, onEnviad
 
               <label className={styles.campo}>
                 <span className={styles.etiqueta}>Tipo</span>
-                <select className={styles.entrada} value={tipo} onChange={(e) => setTipo(e.target.value as TipoObra)}>
+                <select
+                  name="tipo"
+                  className={styles.entrada}
+                  value={tipo}
+                  onChange={(e) => setTipo(e.target.value as TipoObra)}
+                >
                   {TIPOS_OBRA.map((t) => (
                     <option key={t.valor} value={t.valor}>{t.etiqueta}</option>
                   ))}
@@ -107,6 +113,7 @@ export default function SugerirObraModal({ tituloInicial = '', onClose, onEnviad
               <label className={styles.campo}>
                 <span className={styles.etiqueta}>Enlace de referencia (opcional)</span>
                 <input
+                  name="enlace"
                   className={styles.entrada}
                   type="url"
                   placeholder="Ficha en MyAnimeList, IMDb, Goodreads…"
@@ -118,6 +125,7 @@ export default function SugerirObraModal({ tituloInicial = '', onClose, onEnviad
               <label className={styles.campo}>
                 <span className={styles.etiqueta}>Comentario (opcional)</span>
                 <textarea
+                  name="comentario"
                   className={styles.entrada}
                   rows={3}
                   maxLength={300}

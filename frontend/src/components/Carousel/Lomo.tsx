@@ -43,6 +43,10 @@ const PRESENTACION: Record<EstadoSeguimiento, { texto: string; accion: string }>
   silenciada: { texto: 'Silenciada', accion: 'Dejar de seguir' },
 }
 
+// Tamaño del lomo en escritorio: reserva el hueco antes de cargar; el CSS lo ajusta en móvil.
+const ANCHO_LOMO = 130
+const ALTO_LOMO = 190
+
 function estadoInicial(obra: LomoObra): EstadoSeguimiento {
   if (obra.silenciada) return 'silenciada'
   return obra.suscrito ? 'activa' : 'ninguno'
@@ -142,7 +146,15 @@ export default function Lomo({ obra, activa, onSelect, mostrarProgreso, onCambio
           )}
 
           {/* Las portadas fuera de la parte visible del carrusel se descargan al acercarse. */}
-          <img className={styles.image} src={obra.imagen_url} alt="" loading="lazy" decoding="async" />
+          <img
+            className={styles.image}
+            src={obra.imagen_url}
+            alt=""
+            width={ANCHO_LOMO}
+            height={ALTO_LOMO}
+            loading="lazy"
+            decoding="async"
+          />
           <div className={styles.overlay} />
           <span className={styles.title}>{obra.titulo}</span>
         </button>

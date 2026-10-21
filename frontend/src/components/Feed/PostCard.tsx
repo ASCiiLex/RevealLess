@@ -59,7 +59,16 @@ export default function PostCard({ post }: Props) {
       <a className={styles.textLink} href={`/posts/${post.id}/`}>
         <p className={styles.text}>{post.text}</p>
         {!esGaleria && post.imagen && (
-          <img className={styles.image} src={post.imagen} alt="" loading="lazy" decoding="async" />
+          // Proporción de referencia mientras carga; al llegar manda la real (height: auto en el CSS).
+          <img
+            className={styles.image}
+            src={post.imagen}
+            alt=""
+            width={900}
+            height={600}
+            loading="lazy"
+            decoding="async"
+          />
         )}
       </a>
 

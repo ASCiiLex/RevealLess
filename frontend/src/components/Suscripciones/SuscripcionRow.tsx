@@ -51,6 +51,8 @@ export default function SuscripcionRow({ suscripcion, onRemove }: Props) {
           className={`${styles.thumb} ${retrato ? styles.thumbRetrato : ''}`}
           src={imagen}
           alt=""
+          width={retrato ? 30 : 40}
+          height={40}
           loading="lazy"
           decoding="async"
         />

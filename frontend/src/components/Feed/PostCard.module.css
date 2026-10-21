@@ -79,8 +79,10 @@
   max-width: var(--max-line);
 }
 
+/* height: auto: los atributos width/height solo reservan la proporción mientras carga. */
 .image {
   width: 100%;
+  height: auto;
   border-radius: var(--radius);
   display: block;
   margin-bottom: 12px;
