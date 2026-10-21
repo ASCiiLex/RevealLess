@@ -1,0 +1,135 @@
+# Contenido de demo para la defensa: python manage.py cargar_demo
+# Idempotente: se puede ejecutar varias veces sin duplicar nada.
+#   --rehacer        borra y vuelve a crear las publicaciones de demo (tras cambiar una imagen o un texto)
+#   --sin-progresos  no toca el progreso de las cuentas de demo
+#
+# Cuentas: alexuser publica. usuariodemo1 solo sigue el anime de One Piece (ve el cartel de
+# God Valley, no las escenas); usuariodemo2 va al día con el manga (ve también las escenas).
+# Ninguna debe seguir a alexuser ni estar suscrita a estas obras: así todo sale en Descubrir.
+#
+# Unidades: por nombre exacto, «Padre · Nombre» si se repite, {tipo, orden_local} o id.
+# Emociones: claves de ClasificacionNarrativa.EMOCION_CHOICES (me_entusiasma, me_emociona...).
+
+obras:
+  - slug: the-one-piece-anime
+    titulo: The One Piece
+    tipo: serie
+    categorias: [Anime, One Piece]
+    adapta_a: one-piece-manga
+    sinopsis: "Nueva adaptación animada del manga de Eiichiro Oda desde el principio, producida por WIT Studio para Netflix."
+    previo_inicial: true
+
+  - slug: one-piece-live-action
+    titulo: One Piece (Live Action)
+    sin_sufijo: true
+    tipo: serie
+    categorias: [Series, One Piece]
+    adapta_a: one-piece-manga
+    sinopsis: "Adaptación en imagen real de Netflix de las aventuras de Luffy y su tripulación."
+    estructura: one_piece_live_action_estructura.yaml
+
+  - slug: solo-leveling
+    categorias: [Anime]
+    estructura: solo_leveling_estructura.yaml
+
+  - slug: kimetsu-no-yaiba-anime
+    titulo: Kimetsu no Yaiba
+    tipo: serie
+    categorias: [Anime]
+    sinopsis: "Tanjiro se une a los cazadores de demonios para devolver la humanidad a su hermana Nezuko."
+    estructura: kimetsu_anime_estructura.yaml
+
+# Unidades que se añaden a obras ya estructuradas.
+unidades:
+  - obra: one-piece-anime
+    padre: Saga final
+    tipo: pelicula
+    orden_local: 4          # justo después del Arco de Elbaph (3)
+    nombre: "One Piece Film: God Valley"
+
+previos:
+  - {obra: mcu-peliculas, antes_de: "Vengadores: Doomsday", fecha: 2026-12-18}
+  - {obra: mcu-peliculas, antes_de: "Vengadores: Secret Wars", fecha: 2027-12-17}
+  - {obra: one-piece-anime, antes_de: "One Piece Film: God Valley"}
+  # El previo genérico creado al aprobar la sugerencia pasa a ser el de la temporada 3.
+  - {obra: solo-leveling, antes_de: "Temporada 3", reubicar_previo_inicial: true}
+  - {obra: one-piece-live-action, antes_de: "Temporada 3: The Battle of Alabasta"}
+  - {obra: kimetsu-no-yaiba-anime, antes_de: "Castillo Infinito – Parte 2"}
+
+# hasta_previo_de: justo antes del previo (lo ve). previo: true: en el previo de una obra nueva.
+progresos:
+  - {usuario: usuariodemo1, obra: one-piece-anime, hasta_previo_de: "One Piece Film: God Valley"}
+  - {usuario: usuariodemo1, obra: one-piece-manga, unidad: {tipo: capitulo, orden_local: 1158}}
+  - {usuario: usuariodemo1, obra: the-one-piece-anime, previo: true}
+  - {usuario: usuariodemo1, obra: one-piece-live-action, hasta_previo_de: "Temporada 3: The Battle of Alabasta"}
+  - {usuario: usuariodemo1, obra: mcu-peliculas, hasta_previo_de: "Vengadores: Doomsday"}
+  - {usuario: usuariodemo1, obra: solo-leveling, hasta_previo_de: "Temporada 3"}
+  - {usuario: usuariodemo1, obra: kimetsu-no-yaiba-anime, hasta_previo_de: "Castillo Infinito – Parte 2"}
+
+  - {usuario: usuariodemo2, obra: one-piece-anime, hasta_previo_de: "One Piece Film: God Valley"}
+  - {usuario: usuariodemo2, obra: one-piece-manga, unidad: {tipo: capitulo, orden_local: 1196}}
+  - {usuario: usuariodemo2, obra: the-one-piece-anime, previo: true}
+  - {usuario: usuariodemo2, obra: one-piece-live-action, hasta_previo_de: "Temporada 3: The Battle of Alabasta"}
+  - {usuario: usuariodemo2, obra: mcu-peliculas, hasta_previo_de: "Vengadores: Doomsday"}
+  - {usuario: usuariodemo2, obra: solo-leveling, hasta_previo_de: "Temporada 3"}
+  - {usuario: usuariodemo2, obra: kimetsu-no-yaiba-anime, hasta_previo_de: "Castillo Infinito – Parte 2"}
+
+# frontera: {previo_de: unidad} | {previo: true} | {unidad: ...}. La referencia es la misma unidad.
+publicaciones:
+  - autor: alexuser
+    obra: mcu-peliculas
+    texto: "¡Ya está aquí el tráiler de Vengadores: Doomsday! Diciembre no llega nunca. #MCU #Doomsday"
+    frontera: {previo_de: "Vengadores: Doomsday"}
+    video: https://www.youtube.com/watch?v=lAr_uspgHm8
+    emocion: me_entusiasma
+
+  - autor: alexuser
+    obra: the-one-piece-anime
+    texto: "Primer teaser de The One Piece, el remake de WIT Studio desde el East Blue. ¿Lo veréis aunque ya os sepáis la historia? #OnePiece"
+    frontera: {previo: true}
+    video: https://www.youtube.com/watch?v=daO54-Yeeiw
+    emocion: me_entusiasma
+
+  # Ya publicada a mano: se reconoce por el texto y no se duplica.
+  - autor: alexuser
+    obra: solo-leveling
+    texto: "Vídeo conceptual de la Tercera temporada"
+    frontera: {previo_de: "Temporada 3"}
+    video: https://www.youtube.com/watch?v=J4XD23c8Of8
+
+  - autor: alexuser
+    obra: one-piece-live-action
+    texto: "Confirmada la tercera temporada: The Battle of Alabasta llega en 2027. ¡Con ganas de ver el desierto en imagen real! #OnePiece"
+    frontera: {previo_de: "Temporada 3: The Battle of Alabasta"}
+    emocion: me_entusiasma
+
+  - autor: alexuser
+    obra: one-piece-anime
+    texto: "Cartel oficial de One Piece Film: God Valley. Verano de 2027 en los cines japoneses. #OnePiece #GodValley"
+    frontera: {previo_de: "One Piece Film: God Valley"}
+    imagen: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwFNSDpXItycR0BKFVr9SHXSVGa1uUNp-zyQ9JPm4a5A&s=10
+    emocion: me_entusiasma
+
+  # Escenas de la película: las ve quien la haya visto o quien haya leído el flashback del manga.
+  - autor: alexuser
+    obra: one-piece-anime
+    texto: "Ver God Valley en pantalla grande va a ser historia: Roger y Garp codo con codo contra Rocks. #GodValley"
+    frontera: {unidad: "One Piece Film: God Valley"}
+    cruzada: {obra: one-piece-manga, frontera: {tipo: capitulo, orden_local: 1166}, modo: misma_escena}
+    imagen: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrqBenxIoZksA0bgqavtIS-Feg0cavE6vdJVYqyD74eQ&s=10
+    emocion: me_emociona
+
+  - autor: alexuser
+    obra: one-piece-anime
+    texto: "Si la película hace justicia a esta escena del manga, el cine se viene abajo. #GodValley"
+    frontera: {unidad: "One Piece Film: God Valley"}
+    cruzada: {obra: one-piece-manga, frontera: {tipo: capitulo, orden_local: 1166}, modo: misma_escena}
+    imagen: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtzJS7eTKOX3Q8HpYWMfp65QgyNR3r7stFiVU2v78DSA&s=10
+    emocion: me_emociona
+
+  - autor: alexuser
+    obra: kimetsu-no-yaiba-anime
+    texto: "Contando los días para la segunda parte del Castillo Infinito. #KimetsuNoYaiba"
+    frontera: {previo_de: "Castillo Infinito – Parte 2"}
+    imagen: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_EFHvFzN5TbUNghJL41fvEpSgjA09RnPnke7vPYg2zg&s=10
+    emocion: me_entusiasma

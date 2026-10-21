@@ -1,0 +1,10 @@
+# Curación de estructura — Solo Leveling (Anime).
+# Obra creada al aprobar la sugerencia de un usuario; cargar_demo le añade el ExternalId manual.
+# Episodios con numeración continua entre temporadas (1-12 y 13-25).
+obra_external_id: {source: manual, external_id: solo-leveling}
+
+nodos:
+  - {tipo: temporada, nombre: "Temporada 1", orden_local: 1, fecha: "2024-01-07", vincular_episodios: [1, 12]}
+  - {tipo: temporada, nombre: "Temporada 2: Arise from the Shadow", orden_local: 2, fecha: "2025-01-05", vincular_episodios: [13, 25]}
+  # Sin fecha: D&C Media la sitúa entre 2027 y 2028, sin anuncio oficial.
+  - {tipo: temporada, nombre: "Temporada 3", orden_local: 3}

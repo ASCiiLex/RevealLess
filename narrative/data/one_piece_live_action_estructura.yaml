@@ -1,0 +1,9 @@
+# Curación de estructura — One Piece (Live Action, Netflix). Obra creada con crear_obra_manual.
+# Episodios con numeración continua entre temporadas (1-8 y 9-16).
+obra_external_id: {source: manual, external_id: one-piece-live-action}
+
+nodos:
+  - {tipo: temporada, nombre: "Temporada 1", orden_local: 1, fecha: "2023-08-31", vincular_episodios: [1, 8]}
+  - {tipo: temporada, nombre: "Temporada 2: Into the Grand Line", orden_local: 2, fecha: "2026-03-10", vincular_episodios: [9, 16]}
+  # Sin fecha: Netflix la anuncia para 2027 sin día concreto.
+  - {tipo: temporada, nombre: "Temporada 3: The Battle of Alabasta", orden_local: 3}

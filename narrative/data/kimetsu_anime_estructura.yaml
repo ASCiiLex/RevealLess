@@ -1,0 +1,14 @@
+# Curación de estructura — Kimetsu no Yaiba (Anime). Obra creada con crear_obra_manual.
+# Todo como serie de episodios, con numeración continua (el Tren Infinito, en su versión de serie).
+# Después, las películas del Castillo Infinito.
+obra_external_id: {source: manual, external_id: kimetsu-no-yaiba-anime}
+
+nodos:
+  - {tipo: temporada, nombre: "Temporada 1", orden_local: 1, fecha: "2019-04-06", vincular_episodios: [1, 26]}
+  - {tipo: arco, nombre: "Arco del Tren Infinito", orden_local: 2, fecha: "2021-10-10", vincular_episodios: [27, 33]}
+  - {tipo: arco, nombre: "Arco del Distrito Rojo", orden_local: 3, fecha: "2021-12-05", vincular_episodios: [34, 44]}
+  - {tipo: arco, nombre: "Arco de la Aldea de los Herreros", orden_local: 4, fecha: "2023-04-09", vincular_episodios: [45, 55]}
+  - {tipo: arco, nombre: "Arco del Entrenamiento de los Pilares", orden_local: 5, fecha: "2024-05-12", vincular_episodios: [56, 63]}
+  - {tipo: pelicula, nombre: "Castillo Infinito – Parte 1", orden_local: 6, fecha: "2025-07-18"}
+  # Sin fecha: en producción, prevista para 2027.
+  - {tipo: pelicula, nombre: "Castillo Infinito – Parte 2", orden_local: 7}
