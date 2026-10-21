@@ -91,6 +91,8 @@ export interface DatosPost {
   enfoquesY?: number[]
   zooms?: number[]
   disposicion?: string
+  // Enlace de YouTube: excluyente con las imágenes.
+  videoUrl?: string
   // Parte, tema o frontera: al menos uno de los tres.
   referenciaNarrativaId?: number | null
   fronteraSpoilerId?: number | null
@@ -168,13 +170,19 @@ function interpretarConflicto(body: CuerpoConflicto, obraSlug: string): Resultad
 }
 
 // desde: obra desde la que se publica, para pedir la frontera de la obra cruzada sin progreso en ella.
+// videoUrl: la IA tiene en cuenta también el título y el canal del vídeo.
 export async function sugerirFrontera(
-  obraSlug: string, texto: string, referenciaId: number | null, desde: string | null = null,
+  obraSlug: string,
+  texto: string,
+  referenciaId: number | null,
+  desde: string | null = null,
+  videoUrl: string | null = null,
 ): Promise<SugerenciaFrontera> {
   const response = await enviarFormData(`/posts/api/sugerir-frontera/${obraSlug}/`, 'POST', construirFormData({
     text: texto,
     referencia_narrativa: referenciaId,
     desde,
+    video_url: videoUrl,
   }))
   const body = await response.json().catch(() => null)
   if (!response.ok) throw new ApiError(response.status, body)
@@ -191,6 +199,7 @@ export async function crearPost(obraSlug: string, datos: DatosPost): Promise<Pos
     enfoques_y: datos.enfoquesY,
     zooms: datos.zooms,
     disposicion: datos.disposicion,
+    video_url: datos.videoUrl,
     referencia_narrativa: datos.referenciaNarrativaId,
     frontera_spoiler: datos.fronteraSpoilerId,
     frontera_sugerida_ia: datos.fronteraSugeridaIaId,

@@ -6,6 +6,7 @@ from .models import Post, PostImagen
 EMOCION_CHOICES = [c[0] for c in ClasificacionNarrativa.EMOCION_CHOICES]
 DISPOSICIONES = [c[0] for c in Post.DISPOSICION_CHOICES]
 MODOS_CRUCE = [c[0] for c in Post.MODO_CRUCE_CHOICES]
+MAX_URL_VIDEO = 300
 
 
 def _lista_enteros(minimo, maximo):
@@ -31,6 +32,8 @@ class PostCreateSerializer(serializers.Serializer):
     enfoques_y = _lista_enteros(0, 100)
     zooms = _lista_enteros(PostImagen.ZOOM_BASE, PostImagen.ZOOM_MAXIMO)
     disposicion = serializers.ChoiceField(choices=DISPOSICIONES, required=False, allow_blank=True)
+    # Enlace de YouTube; se valida y resuelve en la vista (necesita consultar YouTube).
+    video_url = serializers.CharField(max_length=MAX_URL_VIDEO, required=False, allow_blank=True)
     personajes_comparados = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=Personaje.objects.all()),
         required=False,
@@ -85,6 +88,9 @@ class PostUpdateSerializer(serializers.Serializer):
     image = serializers.ImageField(required=False, allow_null=True)
     # La imagen es opcional: el autor puede retirarla. Una imagen nueva tiene prioridad.
     quitar_imagen = serializers.BooleanField(required=False, default=False)
+    # Un enlace nuevo sustituye al vídeo actual; quitar_video lo retira.
+    video_url = serializers.CharField(max_length=MAX_URL_VIDEO, required=False, allow_blank=True)
+    quitar_video = serializers.BooleanField(required=False, default=False)
     referencia_narrativa = serializers.PrimaryKeyRelatedField(
         queryset=UnidadNarrativa.objects.all(), required=False
     )

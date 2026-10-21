@@ -11,12 +11,15 @@ from narrative.serializers import PostSerializer
 from narrative.services.etiquetado import etiquetar_personajes
 from ..models import Post
 from ..serializers import PostUpdateSerializer
+from ..videos import VideoNoValido, aplicar_video, quitar_video, resolver_video
 from .comun import (
     ERROR_CRUZADA_INCOMPLETA,
     ERROR_PREVIA_CERRADA,
     ERROR_PREVIA_CERRADA_CRUZADA,
     ERROR_TEMA_OTRA_OBRA,
+    ERROR_VIDEO_E_IMAGENES,
     error_400,
+    error_video,
     frontera_minima,
     frontera_minima_temas,
     previa_cerrada,
@@ -31,11 +34,20 @@ CAMPOS_EDITABLES = (
 CAMPOS_QUE_REETIQUETAN = {'text', 'frontera_spoiler', 'referencia_narrativa', 'obra_cruzada', 'frontera_cruzada'}
 
 
+def _tendra_imagen(post, datos):
+    if datos.get('image'):
+        return True
+    if post.image and not datos.get('quitar_imagen'):
+        return True
+    return post.imagenes.exists()
+
+
 class PostUpdateAPIView(APIView):
     """Solo el autor edita. Sin IA ni detección de referencia cruzada:
     una frontera enviada se marca ORIGEN_EXPLICITO; si no se envía, no se toca.
     En ambos casos nunca queda por debajo de su parte ni de sus temas,
-    y no se puede pasar a un previo ya estrenado (los que ya lo tenían lo conservan)."""
+    y no se puede pasar a un previo ya estrenado (los que ya lo tenían lo conservan).
+    Cambiar el vídeo tampoco consulta a la IA: si revela más, la frontera la sube el autor."""
 
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -62,11 +74,27 @@ class PostUpdateAPIView(APIView):
         if previa_cerrada(datos.get('frontera_cruzada')):
             return error_400(ERROR_PREVIA_CERRADA_CRUZADA)
 
+        # Vídeo e imágenes se excluyen: se comprueba el estado resultante antes de tocar nada.
+        video_url = (datos.get('video_url') or '').strip()
+        tendra_video = bool(video_url) or (bool(post.video_youtube_id) and not datos.get('quitar_video'))
+        if tendra_video and _tendra_imagen(post, datos):
+            return error_400(ERROR_VIDEO_E_IMAGENES)
+        video = None
+        if video_url:
+            try:
+                video = resolver_video(video_url)
+            except VideoNoValido as exc:
+                return error_video(exc)
+
         for campo in CAMPOS_EDITABLES:
             if campo in datos:
                 setattr(post, campo, datos[campo])
         if datos.get('quitar_imagen') and not datos.get('image'):
             post.image = None
+        if video:
+            aplicar_video(post, video)
+        elif datos.get('quitar_video'):
+            quitar_video(post)
         if 'frontera_spoiler' in datos:
             post.frontera_spoiler = datos['frontera_spoiler']
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO

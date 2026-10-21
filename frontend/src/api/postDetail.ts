@@ -23,6 +23,9 @@ export async function updatePost(
     text?: string
     image?: File | null
     quitarImagen?: boolean
+    // Enlace nuevo: sustituye al vídeo actual. quitarVideo lo retira.
+    videoUrl?: string
+    quitarVideo?: boolean
     referenciaNarrativaId?: number
     fronteraSpoilerId?: number | null
     nivelSpoiler?: string
@@ -34,6 +37,8 @@ export async function updatePost(
     image: datos.image,
     // Solo se envía cuando hay que retirar la imagen actual.
     quitar_imagen: datos.quitarImagen ? 'true' : undefined,
+    video_url: datos.videoUrl,
+    quitar_video: datos.quitarVideo ? 'true' : undefined,
     referencia_narrativa: datos.referenciaNarrativaId,
     frontera_spoiler: datos.fronteraSpoilerId,
     nivel_spoiler: datos.nivelSpoiler,

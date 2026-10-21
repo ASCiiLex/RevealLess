@@ -5,7 +5,7 @@ from .models import SavedPost
 class SavedPostSerializer(serializers.ModelSerializer):
     post_id = serializers.IntegerField(source='post.id', read_only=True)
     text = serializers.CharField(source='post.text', read_only=True)
-    # Composición del post en miniaturas para la tesela; sin fotos, la tesela muestra el texto.
+    # Composición del post (o portada del vídeo) en miniaturas; sin nada, la tesela muestra el texto.
     imagenes = serializers.SerializerMethodField()
     disposicion = serializers.CharField(source='post.disposicion', read_only=True)
 
@@ -14,4 +14,4 @@ class SavedPostSerializer(serializers.ModelSerializer):
         fields = ['id', 'post_id', 'text', 'imagenes', 'disposicion', 'created_at']
 
     def get_imagenes(self, obj):
-        return obj.post.imagenes_para_mostrar(variante='min')
+        return obj.post.imagenes_para_tesela()

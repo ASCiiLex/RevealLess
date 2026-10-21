@@ -24,6 +24,7 @@ from narrative.services.etiquetado import etiquetar_personajes
 from narrative.services.personajes import proponer_personaje
 from ..models import PersonajeComparado, Post, PostImagen, misma_historia
 from ..serializers import PostCreateSerializer
+from ..videos import VideoNoValido, aplicar_video, resolver_video, texto_con_video
 from .comun import (
     ERROR_COMPARADO_AJENO,
     ERROR_CRUZADA_INCOMPLETA,
@@ -36,7 +37,9 @@ from .comun import (
     ERROR_PREVIA_CERRADA_CRUZADA,
     ERROR_SIN_REFERENCIA,
     ERROR_TEMA_OTRA_OBRA,
+    ERROR_VIDEO_E_IMAGENES,
     error_400,
+    error_video,
     frontera_minima,
     frontera_minima_temas,
     frontera_sin_previa_cerrada,
@@ -68,7 +71,8 @@ def _ia_disponible(request):
 
 def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None, confianza=None, request=None):
     """Prioridad: elegida por el autor (origen IA si acepta tal cual la propuesta previa)
-    > propuesta IA al publicar (si queda cupo) > fallback al progreso actual."""
+    > propuesta IA al publicar (si queda cupo) > fallback al progreso actual.
+    La IA recibe también el título y el canal del vídeo, si lo hay."""
     if frontera_explicita:
         post.frontera_spoiler = frontera_explicita
         if sugerida_id == frontera_explicita.id:
@@ -79,8 +83,9 @@ def _asignar_frontera(post, obra, progreso, frontera_explicita, sugerida_id=None
             post.frontera_origen = ClasificacionNarrativa.ORIGEN_EXPLICITO
         return
 
+    texto = texto_con_video(post.text, post.video_titulo, post.video_canal)
     sugerencia = (
-        proponer_clasificacion(post.text, obra, post.referencia_narrativa, usuario=post.author)
+        proponer_clasificacion(texto, obra, post.referencia_narrativa, usuario=post.author)
         if request is None or _ia_disponible(request) else None
     )
     if sugerencia and sugerencia.es_utilizable:
@@ -174,6 +179,9 @@ class PostCreateAPIView(APIView):
         imagenes = list(datos.get('imagenes') or [])
         if imagen_unica and imagenes:
             return error_400(ERROR_IMAGEN_Y_GALERIA)
+        video_url = (datos.get('video_url') or '').strip()
+        if video_url and (imagen_unica or imagenes):
+            return error_400(ERROR_VIDEO_E_IMAGENES)
         if len(imagenes) == 1:
             imagen_unica, imagenes = imagenes[0], []
         disposicion = datos.get('disposicion') or Post.DISPOSICION_AUTO
@@ -185,6 +193,13 @@ class PostCreateAPIView(APIView):
         enfoques_x = list(datos.get('enfoques_x') or [])
         enfoques_y = list(datos.get('enfoques_y') or [])
         zooms = list(datos.get('zooms') or [])
+
+        video = None
+        if video_url:
+            try:
+                video = resolver_video(video_url)
+            except VideoNoValido as exc:
+                return error_video(exc)
 
         comparados = list(dict.fromkeys(datos.get('personajes_comparados') or []))
         propuestos = _nombres_limpios(datos.get('personajes_propuestos') or [])
@@ -202,7 +217,8 @@ class PostCreateAPIView(APIView):
             return error_400(ERROR_CRUZADA_SIN_FRONTERA)
 
         if not obra_cruzada and not datos.get('descartar_referencia_cruzada'):
-            detecciones = detectar_posibles_referencias_cruzadas(datos['text'], obra)
+            texto_deteccion = texto_con_video(datos['text'], *((video['titulo'], video['canal']) if video else ()))
+            detecciones = detectar_posibles_referencias_cruzadas(texto_deteccion, obra)
             if detecciones:
                 return Response({
                     'detail': 'referencia_cruzada_detectada',
@@ -239,6 +255,8 @@ class PostCreateAPIView(APIView):
             frontera_cruzada=frontera_cruzada,
             modo_cruce=modo_cruce,
         )
+        if video:
+            aplicar_video(post, video)
         # frontera_sugerida_ia: la propuesta vista antes de publicar; si coincide con la elegida, origen IA.
         _asignar_frontera(
             post, obra, progreso, frontera_explicita,

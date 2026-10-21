@@ -9,11 +9,24 @@ from rest_framework.views import APIView
 from ia.models import UsoIA
 from narrative.ai_assistant import TIMEOUT_SUGERENCIA, etiqueta_unidad, proponer_clasificacion
 from narrative.models import Obra, ProgresoUsuario, UnidadNarrativa
+from ..videos import VideoNoValido, resolver_video, texto_con_video
 from .comun import error_400, frontera_minima, frontera_sin_previa_cerrada
 
 
 def _unidad_json(unidad):
     return {'id': unidad.id, 'etiqueta': etiqueta_unidad(unidad)} if unidad else None
+
+
+def _texto_para_ia(texto, video_url):
+    """Con vídeo, la IA ve también su título y canal. Un enlace no válido no impide sugerir:
+    el error se le muestra al autor al publicar."""
+    if not video_url:
+        return texto
+    try:
+        video = resolver_video(video_url)
+    except VideoNoValido:
+        return texto
+    return texto_con_video(texto, video['titulo'], video['canal'])
 
 
 # Cada llamada cuesta tokens de la API: límite por usuario.
@@ -47,7 +60,8 @@ class SugerirFronteraAPIView(APIView):
         )
 
         sugerencia = proponer_clasificacion(
-            texto, obra, referencia, timeout=TIMEOUT_SUGERENCIA,
+            _texto_para_ia(texto, (request.data.get('video_url') or '').strip()),
+            obra, referencia, timeout=TIMEOUT_SUGERENCIA,
             usuario=request.user, funcion=UsoIA.FUNCION_SUGERENCIA,
         )
         frontera = frontera_sin_previa_cerrada(frontera_minima(sugerencia.frontera_spoiler, referencia))

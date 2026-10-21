@@ -9,6 +9,7 @@ import LinkedText from '../Text/LinkedText'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import GaleriaPost from '../Galeria/GaleriaPost'
+import ReproductorVideo from '../Video/ReproductorVideo'
 import VersusPersonajes from '../Comparativa/VersusPersonajes'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
 import { fetchPostDetail, type PostDetail } from '../../api/postDetail'
@@ -104,7 +105,9 @@ export default function PostDetailView({ postId }: Props) {
 
         <p className={styles.text}><LinkedText text={post.text} /></p>
 
-        <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />
+        {post.video
+          ? <ReproductorVideo video={post.video} />
+          : <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />}
 
         <PostActions
           postId={post.id}

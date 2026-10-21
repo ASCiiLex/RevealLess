@@ -4,6 +4,7 @@ import SaveButton from './SaveButton'
 import NarrativeLabel from '../NarrativeLabel/NarrativeLabel'
 import EmocionBadge from '../Emociones/EmocionBadge'
 import GaleriaPost from '../Galeria/GaleriaPost'
+import ReproductorVideo from '../Video/ReproductorVideo'
 import VersusPersonajes from '../Comparativa/VersusPersonajes'
 import { emocionHaloStyle } from '../../utils/emocionHalo'
 import type { FeedPost } from '../../api/feed'
@@ -18,8 +19,9 @@ const ALTO_POR_DEFECTO = 600
 
 export default function PostCard({ post }: Props) {
   const imagenes = post.imagenes ?? []
-  // Una galería tiene controles propios (deslizador): va fuera del enlace al detalle.
+  // Galería y vídeo tienen controles propios: van fuera del enlace al detalle.
   const esGaleria = imagenes.length > 1
+  const video = post.video ?? null
   const medida = post.imagen_ancho && post.imagen_alto
     ? { ancho: post.imagen_ancho, alto: post.imagen_alto }
     : null
@@ -65,7 +67,7 @@ export default function PostCard({ post }: Props) {
 
       <a className={styles.textLink} href={`/posts/${post.id}/`}>
         <p className={styles.text}>{post.text}</p>
-        {!esGaleria && post.imagen && (
+        {!video && !esGaleria && post.imagen && (
           // Con medidas, el hueco tiene la proporción exacta antes de cargar: el feed no salta.
           <img
             className={styles.image}
@@ -80,7 +82,8 @@ export default function PostCard({ post }: Props) {
         )}
       </a>
 
-      {esGaleria && <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />}
+      {video && <ReproductorVideo video={video} />}
+      {!video && esGaleria && <GaleriaPost imagenes={imagenes} disposicion={post.disposicion} />}
 
       <PostActions
         postId={post.id}

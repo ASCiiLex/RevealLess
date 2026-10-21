@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import styles from './PasoPost.module.css'
 import CampoSeleccion from './CampoSeleccion'
+import CampoVideo, { enlaceYouTubeValido } from './CampoVideo'
 import EditorTexto from './EditorTexto'
 import GaleriaEditor from './GaleriaEditor'
 import SelectorParteTema, { type Seleccion } from './SelectorParteTema'
@@ -39,11 +40,13 @@ interface SugerenciaVista {
 }
 
 const AVISO_FALLO_IA = 'No se pudo consultar a la IA: elige la frontera o se usará tu progreso actual.'
+const PISTA_VIDEO_BLOQUEADO = 'Quita las imágenes para añadir un vídeo: un post lleva una cosa u otra.'
 
 export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPublicado, onProgresoRequerido }: Props) {
   const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
   const [texto, setTexto] = useState('')
   const [emocion, setEmocion] = useState<string | null>(null)
+  const [videoUrl, setVideoUrl] = useState('')
   const [parte, setParte] = useState<Seleccion>(SIN_SELECCION)
   // Id de la parte rellenada por la IA: mientras siga elegida, se avisa de que hay que comprobarla.
   const [parteDeIA, setParteDeIA] = useState<number | null>(null)
@@ -98,6 +101,9 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   )
 
   const activo = Boolean(obraSlug && contexto)
+  const videoLimpio = videoUrl.trim()
+  const hayImagenes = galeria.imagenes.length > 0
+  const videoValido = enlaceYouTubeValido(videoUrl)
 
   function handleTema(seleccion: Seleccion) {
     setTema(seleccion)
@@ -114,7 +120,9 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     setSugiriendo(true)
     setAvisoIA(null)
     try {
-      const resultado = await sugerirFrontera(obraSlug, texto, parte.id)
+      const resultado = await sugerirFrontera(
+        obraSlug, texto, parte.id, null, videoValido && videoLimpio ? videoLimpio : null,
+      )
       if (!resultado.frontera) {
         setSugerencia(null)
         setAvisoIA(AVISO_FALLO_IA)
@@ -176,6 +184,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
         temaId: tema.id,
         temaPropuesto: tema.id ? undefined : temaPropuesto ?? undefined,
         nuevoProgresoId: nuevoProgreso.id,
+        videoUrl: videoLimpio || undefined,
         ...ajustesEnvio,
         // La comparativa explícita prevalece sobre lo elegido en el aviso de detección.
         ...datosExtra(galeria.imagenes, galeria.disposicion, comparativa, parteOtra, personajes),
@@ -246,6 +255,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
               onEmocionChange={setEmocion}
               numImagenes={galeria.imagenes.length}
               onAnadirImagenes={galeria.anadir}
+              imagenesBloqueadas={Boolean(videoLimpio)}
             />
             <GaleriaEditor
               imagenes={galeria.imagenes}
@@ -254,6 +264,13 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
               onEtiqueta={galeria.cambiarEtiqueta}
               onEncuadre={galeria.cambiarEncuadre}
               onQuitar={galeria.quitar}
+            />
+            <CampoVideo
+              id="video"
+              valor={videoUrl}
+              onChange={setVideoUrl}
+              deshabilitado={hayImagenes}
+              pista={hayImagenes ? PISTA_VIDEO_BLOQUEADO : undefined}
             />
           </div>
 
@@ -334,7 +351,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
           <button
             className={styles.submit}
             type="submit"
-            disabled={enviando || !hayAncla || comparativaIncompleta}
+            disabled={enviando || !hayAncla || comparativaIncompleta || !videoValido}
           >
             {enviando ? 'Publicando...' : 'Publicar'}
           </button>

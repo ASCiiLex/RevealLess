@@ -1,6 +1,7 @@
 from django.db.models.query import QuerySet
 from rest_framework import serializers
 
+from core.imagenes.miniaturas import url_variante
 from core.reacciones import totales_agrupados, totales_de
 from posts.models import Post
 from ..services.personajes import presentacion_personaje
@@ -20,6 +21,7 @@ class PostSerializer(serializers.ModelSerializer):
     temas = serializers.SerializerMethodField()
     imagen = serializers.SerializerMethodField()
     imagenes = serializers.SerializerMethodField()
+    video = serializers.SerializerMethodField()
     personajes_comparados = serializers.SerializerMethodField()
     referencia_narrativa = UnidadNarrativaSerializer(read_only=True)
     frontera_spoiler = UnidadNarrativaSerializer(read_only=True)
@@ -35,7 +37,7 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = [
             'id', 'autor', 'autor_avatar', 'obra_titulo', 'obra_slug', 'obra_cruzada', 'modo_cruce',
-            'temas', 'text', 'imagen', 'imagen_ancho', 'imagen_alto', 'imagenes', 'disposicion',
+            'temas', 'text', 'imagen', 'imagen_ancho', 'imagen_alto', 'imagenes', 'disposicion', 'video',
             'personajes_comparados', 'referencia_narrativa', 'frontera_spoiler', 'frontera_cruzada',
             'nivel_spoiler', 'emocion_autor', 'created_at',
             'likes_count', 'comments_count', 'reacciones_totales', 'user_reaction', 'is_own_post', 'is_saved',
@@ -71,6 +73,17 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_imagenes(self, obj):
         return obj.imagenes_para_mostrar(variante=VARIANTE_FEED)
+
+    def get_video(self, obj):
+        # Portada propia (variante de 900 px): antes de pulsar «play» no se pide nada a YouTube.
+        if not obj.video_youtube_id:
+            return None
+        return {
+            'id': obj.video_youtube_id,
+            'titulo': obj.video_titulo,
+            'canal': obj.video_canal,
+            'portada': url_variante(obj.video_portada, 'med'),
+        }
 
     def get_personajes_comparados(self, obj):
         """Nombre e imagen según la frontera del post: quien puede leerlo ya llegó ahí,

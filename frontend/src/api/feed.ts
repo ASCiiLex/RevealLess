@@ -20,6 +20,14 @@ export interface ImagenPost {
   zoom?: number
 }
 
+// Vídeo de YouTube (v1). La portada es una imagen propia: no se pide nada a YouTube hasta pulsar «play».
+export interface VideoPost {
+  id: string
+  titulo: string
+  canal: string
+  portada: string | null
+}
+
 export interface PersonajeComparado {
   // null mientras es una propuesta pendiente de revisión.
   id: number | null
@@ -50,6 +58,7 @@ export interface FeedPost {
   imagen_alto?: number | null
   imagenes?: ImagenPost[]
   disposicion?: string
+  video?: VideoPost | null
   personajes_comparados?: PersonajeComparado[]
   referencia_narrativa: (UnidadPost & { padre: number | null; padre_etiqueta: string | null }) | null
   frontera_spoiler: UnidadPost | null

@@ -3,6 +3,7 @@ import styles from './EdicionModal.module.css'
 import botones from '../../styles/botones.module.css'
 import EdicionModal from './EdicionModal'
 import CampoTextoEdicion from './CampoTextoEdicion'
+import CampoVideo, { enlaceYouTubeValido } from '../Publicar/CampoVideo'
 import { fetchObraDetalle, type ObraDetalle } from '../../api/suscripciones'
 import { updatePost } from '../../api/postDetail'
 import { useAvisoConfirmable } from '../../hooks/useAvisoConfirmable'
@@ -22,6 +23,19 @@ const NIVELES_SPOILER = [
 ]
 
 const ERROR_GUARDADO = 'No se pudo guardar la edición. Revisa los datos e inténtalo de nuevo.'
+// Editar no consulta a la IA: si el vídeo nuevo revela más, la frontera la sube el autor.
+const PISTA_VIDEO_EDICION = 'Solo YouTube. Si el vídeo revela más que el anterior, sube también la frontera.'
+
+// jsonOError lanza el cuerpo de la respuesta: el primer mensaje de campo, si lo hay.
+function mensajeEdicion(err: unknown): string {
+  const detalle = (err as { detail?: unknown } | null)?.detail
+  if (typeof detalle === 'string') return detalle
+  if (detalle && typeof detalle === 'object') {
+    const primero = Object.values(detalle)[0]
+    if (Array.isArray(primero) && typeof primero[0] === 'string') return primero[0]
+  }
+  return ERROR_GUARDADO
+}
 
 export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const [detalle, setDetalle] = useState<ObraDetalle | null>(null)
@@ -33,6 +47,8 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const [imagenNueva, setImagenNueva] = useState<File | null>(null)
   const [quitarImagen, setQuitarImagen] = useState(false)
   const [preview, setPreview] = useState<string | null>(post.imagen)
+  const [videoUrl, setVideoUrl] = useState('')
+  const [quitarVideo, setQuitarVideo] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
   const inputImagen = useRef<HTMLInputElement>(null)
@@ -42,6 +58,10 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
   const numGaleria = (post.imagenes ?? []).length > 1 ? (post.imagenes ?? []).length : 0
   // Post de tema sin parte: se puede seguir sin parte o anclarlo a una.
   const sinParteOriginal = post.referencia_narrativa === null
+  // Vídeo e imágenes se excluyen: cada sección se oculta si la otra está en uso.
+  const videoActual = post.video && !quitarVideo ? post.video : null
+  const conVideo = Boolean(videoActual || videoUrl.trim())
+  const conImagen = numGaleria > 0 || Boolean(preview)
 
   useEffect(() => {
     fetchObraDetalle(post.obra_slug).then(setDetalle)
@@ -85,20 +105,23 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
     }))
     if (bloqueado) return
 
+    const videoNuevo = videoUrl.trim()
     setGuardando(true)
     try {
       const actualizado = await updatePost(post.id, {
         text,
         image: imagenNueva ?? undefined,
         quitarImagen: quitarImagen && !imagenNueva,
+        videoUrl: videoNuevo || undefined,
+        quitarVideo: quitarVideo && !videoNuevo,
         referenciaNarrativaId: referenciaId ?? undefined,
         fronteraSpoilerId: fronteraId ?? undefined,
         nivelSpoiler,
         emocionAutor,
       })
       onGuardado(actualizado)
-    } catch {
-      setError(ERROR_GUARDADO)
+    } catch (err) {
+      setError(mensajeEdicion(err))
     } finally {
       setGuardando(false)
     }
@@ -115,7 +138,7 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
       aviso={aviso.aviso}
       onConfirmarAviso={aviso.confirmar}
       guardando={guardando}
-      puedeGuardar={text.trim().length > 0}
+      puedeGuardar={text.trim().length > 0 && enlaceYouTubeValido(videoUrl)}
       onGuardar={handleGuardar}
       onCancelar={onCancelar}
     >
@@ -128,7 +151,7 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
         onEmocionChange={setEmocionAutor}
       />
 
-      {numGaleria > 0 ? (
+      {!conVideo && (numGaleria > 0 ? (
         <div className={styles.field}>
           <span className={styles.label}>Imágenes</span>
           <p className={styles.warningBox}>
@@ -156,6 +179,29 @@ export default function EditPostForm({ post, onGuardado, onCancelar }: Props) {
               onChange={handleElegirImagen}
             />
           </div>
+        </div>
+      ))}
+
+      {!conImagen && (
+        <div className={styles.field}>
+          {videoActual && (
+            <>
+              <span className={styles.label}>Vídeo actual</span>
+              <div className={styles.imagenAcciones}>
+                <span>🎬 {videoActual.titulo}</span>
+                <button type="button" className={styles.confirmLink} onClick={() => setQuitarVideo(true)}>
+                  Quitar vídeo
+                </button>
+              </div>
+            </>
+          )}
+          <CampoVideo
+            id="edit-video"
+            etiqueta={videoActual ? 'Cambiar por otro vídeo (opcional)' : 'Vídeo de YouTube (opcional)'}
+            valor={videoUrl}
+            onChange={setVideoUrl}
+            pista={PISTA_VIDEO_EDICION}
+          />
         </div>
       )}
 

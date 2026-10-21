@@ -15,6 +15,8 @@ interface Props {
   onEmocionChange: (emocion: string | null) => void
   numImagenes: number
   onAnadirImagenes: (archivos: File[]) => void
+  // Con vídeo no se pueden añadir imágenes: un post lleva una cosa u otra.
+  imagenesBloqueadas?: boolean
 }
 
 // Deja que el clic en el popover o el dropdown llegue antes de cerrarlos.
@@ -22,7 +24,7 @@ const RETARDO_BLUR_MS = 150
 const TIPOS_IMAGEN = 'image/jpeg,image/png,image/webp'
 
 export default function EditorTexto({
-  id, texto, onTextoChange, emocion, onEmocionChange, numImagenes, onAnadirImagenes,
+  id, texto, onTextoChange, emocion, onEmocionChange, numImagenes, onAnadirImagenes, imagenesBloqueadas = false,
 }: Props) {
   const [emocionAbierta, setEmocionAbierta] = useState(false)
   const [hashtagsSugeridos, setHashtagsSugeridos] = useState<string[]>([])
@@ -100,7 +102,8 @@ export default function EditorTexto({
           type="button"
           className={styles.chip}
           onClick={() => fileInputRef.current?.click()}
-          disabled={completo}
+          disabled={completo || imagenesBloqueadas}
+          title={imagenesBloqueadas ? 'Quita el vídeo para añadir imágenes' : undefined}
         >
           {numImagenes === 0 ? '📷 Añadir imágenes' : `📷 Imágenes ${numImagenes}/${MAX_IMAGENES}`}
         </button>

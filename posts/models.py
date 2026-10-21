@@ -16,6 +16,10 @@ def post_galeria_path(instance, filename):
     return f'posts/{instance.post.author.username}/galeria/{filename}'
 
 
+def post_video_path(instance, filename):
+    return f'posts/{instance.author.username}/video/{filename}'
+
+
 def misma_historia(a, b):
     """Adaptaciones directas o hermanas (mismo origen): cuentan las mismas escenas."""
     return (
@@ -102,6 +106,13 @@ class Post(ClasificacionNarrativa, models.Model):
     disposicion = models.CharField(
         max_length=20, choices=DISPOSICION_CHOICES, blank=True, default=DISPOSICION_AUTO,
         verbose_name='Disposición de la galería',
+    )
+    # Vídeo de YouTube (v1): solo el identificador; título y canal, del oEmbed. Excluyente con las imágenes.
+    video_youtube_id = models.CharField(max_length=11, blank=True, verbose_name='Vídeo de YouTube')
+    video_titulo = models.CharField(max_length=200, blank=True, verbose_name='Título del vídeo')
+    video_canal = models.CharField(max_length=150, blank=True, verbose_name='Canal del vídeo')
+    video_portada = models.ImageField(
+        upload_to=post_video_path, blank=True, null=True, verbose_name='Portada del vídeo',
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
@@ -222,6 +233,17 @@ class Post(ClasificacionNarrativa, models.Model):
             return galeria
         return [{
             'url': url(self.image, self.image_url), 'etiqueta': '',
+            'enfoque_x': PostImagen.ENFOQUE_CENTRO, 'enfoque_y': PostImagen.ENFOQUE_CENTRO,
+            'zoom': PostImagen.ZOOM_BASE,
+        }]
+
+    def imagenes_para_tesela(self):
+        """Teselas de perfil y guardados: la composición en miniaturas; sin fotos, la portada del vídeo."""
+        imagenes = self.imagenes_para_mostrar(variante='min')
+        if imagenes or not self.video_portada:
+            return imagenes
+        return [{
+            'url': url_miniatura(self.video_portada), 'etiqueta': '',
             'enfoque_x': PostImagen.ENFOQUE_CENTRO, 'enfoque_y': PostImagen.ENFOQUE_CENTRO,
             'zoom': PostImagen.ZOOM_BASE,
         }]
