@@ -1,9 +1,10 @@
 import io
 from unittest.mock import patch
 
+import pytest
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import SimpleTestCase, TestCase
+from django.test import TestCase
 from PIL import Image
 from rest_framework.test import APIClient
 
@@ -16,6 +17,22 @@ from .utils import crear_obra
 ID = 'dQw4w9WgXcQ'
 VIDEO = {'titulo': 'Tráiler oficial', 'canal': 'Canal oficial'}
 
+URLS_ADMITIDAS = [
+    pytest.param(f'https://www.youtube.com/watch?v={ID}&t=10', id='watch-con-tiempo'),
+    pytest.param(f'https://youtu.be/{ID}', id='youtu-be'),
+    pytest.param(f'https://m.youtube.com/watch?v={ID}', id='movil'),
+    pytest.param(f'https://www.youtube.com/shorts/{ID}', id='shorts'),
+    pytest.param(f'https://www.youtube-nocookie.com/embed/{ID}', id='nocookie-embed'),
+]
+
+URLS_RECHAZADAS = [
+    pytest.param(f'https://vimeo.com/{ID}', id='vimeo'),
+    pytest.param(f'https://youtube.com.malicioso.com/watch?v={ID}', id='dominio-suplantado'),
+    pytest.param('javascript:alert(1)', id='javascript'),
+    pytest.param('https://www.youtube.com/watch?v=corto', id='id-corto'),
+    pytest.param('', id='vacio'),
+]
+
 
 def _png():
     buffer = io.BytesIO()
@@ -23,32 +40,20 @@ def _png():
     return SimpleUploadedFile('foto.png', buffer.getvalue(), content_type='image/png')
 
 
-class ExtraerIdTests(SimpleTestCase):
-    def test_formatos_admitidos(self):
-        for url in (
-            f'https://www.youtube.com/watch?v={ID}&t=10',
-            f'https://youtu.be/{ID}',
-            f'https://m.youtube.com/watch?v={ID}',
-            f'https://www.youtube.com/shorts/{ID}',
-            f'https://www.youtube-nocookie.com/embed/{ID}',
-        ):
-            with self.subTest(url=url):
-                self.assertEqual(extraer_id_youtube(url), ID)
+@pytest.mark.parametrize('url', URLS_ADMITIDAS)
+def test_extrae_id_de_formatos_admitidos(url):
+    assert extraer_id_youtube(url) == ID
 
-    def test_rechaza_lo_que_no_es_youtube(self):
-        for url in (
-            f'https://vimeo.com/{ID}',
-            f'https://youtube.com.malicioso.com/watch?v={ID}',
-            'javascript:alert(1)',
-            'https://www.youtube.com/watch?v=corto',
-            '',
-        ):
-            with self.subTest(url=url), self.assertRaises(VideoNoValido):
-                extraer_id_youtube(url)
 
-    def test_texto_para_la_ia_incluye_el_titulo(self):
-        self.assertIn('Tráiler oficial', texto_con_video('Mirad', 'Tráiler oficial', 'Canal'))
-        self.assertEqual(texto_con_video('Mirad'), 'Mirad')
+@pytest.mark.parametrize('url', URLS_RECHAZADAS)
+def test_rechaza_lo_que_no_es_youtube(url):
+    with pytest.raises(VideoNoValido):
+        extraer_id_youtube(url)
+
+
+def test_texto_para_la_ia_incluye_el_titulo():
+    assert 'Tráiler oficial' in texto_con_video('Mirad', 'Tráiler oficial', 'Canal')
+    assert texto_con_video('Mirad') == 'Mirad'
 
 
 @patch('posts.videos.descargar_portada', return_value=None)
