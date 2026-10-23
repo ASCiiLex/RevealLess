@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 from django_ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -8,7 +9,10 @@ from rest_framework.views import APIView
 
 from .serializers import LoginSerializer, RegisterSerializer
 
+# DRF solo comprueba CSRF si ya hay sesión. Login y registro son anónimos: se exige aquí (login CSRF).
 
+
+@method_decorator(csrf_protect, name='dispatch')
 @method_decorator(ratelimit(key='ip', rate='10/m', method='POST', block=True), name='post')
 class LoginAPIView(APIView):
     """Límite de 10/m por IP y mensaje genérico ante credenciales inválidas."""
@@ -35,6 +39,7 @@ class LoginAPIView(APIView):
         return Response({'username': user.username})
 
 
+@method_decorator(csrf_protect, name='dispatch')
 @method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
 class RegisterAPIView(APIView):
     """Límite de 5/m por IP. Crea el usuario (el Profile lo crea la señal

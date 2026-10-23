@@ -133,3 +133,40 @@ class RegisterAPIViewTests(TestCase):
     def test_registro_admite_username_de_30(self):
         response = self._registrar('a' * 30)
         self.assertEqual(response.status_code, 201)
+
+
+class CsrfLoginRegistroTests(TestCase):
+    """DRF no exige CSRF a las peticiones anónimas; el login y el registro sí."""
+
+    def setUp(self):
+        cache.clear()
+        self.client = APIClient(enforce_csrf_checks=True)
+        User.objects.create_user('csrf_test', password='ContraseñaSegura123')
+
+    def _token(self):
+        # La página de login fija la cookie csrftoken (ensure_csrf_cookie).
+        self.client.get(reverse('login'))
+        return self.client.cookies['csrftoken'].value
+
+    def test_login_sin_token_se_rechaza(self):
+        response = self.client.post(reverse('accounts_api_login'), {
+            'username': 'csrf_test', 'password': 'ContraseñaSegura123',
+        })
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_login_con_token_inicia_sesion(self):
+        response = self.client.post(reverse('accounts_api_login'), {
+            'username': 'csrf_test', 'password': 'ContraseñaSegura123',
+        }, HTTP_X_CSRFTOKEN=self._token())
+        self.assertEqual(response.status_code, 200)
+
+    def test_registro_sin_token_se_rechaza(self):
+        response = self.client.post(reverse('accounts_api_register'), {
+            'username': 'csrf_nuevo',
+            'email': 'csrf@example.com',
+            'password': 'ContraseñaSegura123',
+            'password2': 'ContraseñaSegura123',
+        })
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(User.objects.filter(username='csrf_nuevo').exists())
