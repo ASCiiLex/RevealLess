@@ -132,3 +132,16 @@ class BuscarUsuariosHashtagsAPIViewTests(TestCase):
 
         nombres = [h['name'] for h in self._buscar().data['hashtags']]
         self.assertEqual(nombres[0], 'popular')
+
+    def test_no_devuelve_hashtags_de_publicaciones_ocultas(self):
+        e2 = UnidadNarrativa.objects.create(obra=self.obra, tipo='episodio', nombre='E2', orden_local=2)
+        self.obra.recalcular_orden()
+        e2.refresh_from_db()
+        Post.objects.create(
+            author=self.otro_usuario, obra=self.obra, text='giro final #muereace',
+            referencia_narrativa=e2, frontera_spoiler=e2,
+            frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+        )
+
+        self.assertNotIn('muereace', [h['name'] for h in self._buscar(q='muere').data['hashtags']])
+        self.assertNotIn('muereace', [h['name'] for h in self._buscar().data['hashtags']])

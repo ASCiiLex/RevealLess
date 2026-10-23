@@ -5,6 +5,7 @@ from posts.models import Post
 from notifications.models import Notification
 from notifications.utils import send_ws_notification, extract_mentions, extract_hashtags
 from narrative.models import ClasificacionNarrativa
+from .herencia import aporta_hashtags
 from .managers import CommentQuerySet
 
 
@@ -93,7 +94,8 @@ class Comment(ClasificacionNarrativa, models.Model):
                 except User.DoesNotExist:
                     pass
 
-            tags = extract_hashtags(self.text)
+            # Los hashtags cuelgan del post y se ven con él: solo los aporta quien no va más allá.
+            tags = extract_hashtags(self.text) if aporta_hashtags(self) else []
             if tags:
                 from posts.models import Hashtag, PostHashtag
 

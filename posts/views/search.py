@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from django.db.models import Count, Q
+from django.db.models import Q
 
 from follows.models import Follow
 from ..models import Hashtag
@@ -38,7 +38,8 @@ def hashtags_search(request):
     results = []
 
     if q:
-        tags = Hashtag.objects.filter(name__istartswith=q).order_by('name')[:10]
+        # Solo de publicaciones visibles: el nombre también puede ser un spoiler.
+        tags = Hashtag.objects.visibles_para(request.user).filter(name__istartswith=q).order_by('name')[:10]
         results = [{'name': t.name} for t in tags]
 
     return JsonResponse({'results': results})
@@ -46,9 +47,7 @@ def hashtags_search(request):
 
 @login_required
 def suggested_hashtags(request):
-    tags = Hashtag.objects.annotate(
-        num_posts=Count('posts__post')
-    ).order_by('-num_posts')[:10]
+    tags = Hashtag.objects.visibles_para(request.user).order_by('-num_posts', 'name')[:10]
 
     return JsonResponse({
         'results': [t.name for t in tags]

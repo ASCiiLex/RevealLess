@@ -115,8 +115,11 @@ class BuscarAPIView(APIView):
         q = request.query_params.get('q', '').strip()
         limite = self.LIMITE_POR_TIPO
 
+        # Hashtags solo de publicaciones visibles: el nombre también puede ser un spoiler.
+        hashtags_visibles = Hashtag.objects.visibles_para(request.user)
+
         if len(q) < self.MIN_CARACTERES:
-            sugeridos = Hashtag.objects.annotate(num_posts=Count('posts')).order_by('-num_posts')[:limite]
+            sugeridos = hashtags_visibles.order_by('-num_posts', 'name')[:limite]
             return Response(_respuesta(hashtags=[{'name': h.name} for h in sugeridos]))
 
         ids_por_tema = suscripcion_id_por_tema(request.user)
@@ -137,7 +140,7 @@ class BuscarAPIView(APIView):
             User.objects.filter(username__icontains=q)
             .select_related('profile').order_by('username')[:limite]
         )
-        hashtags = Hashtag.objects.filter(name__icontains=q).order_by('name')[:limite]
+        hashtags = hashtags_visibles.filter(name__icontains=q).order_by('name')[:limite]
 
         return Response(_respuesta(
             obras=ObraResumenSerializer(

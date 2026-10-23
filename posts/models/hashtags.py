@@ -1,8 +1,23 @@
 from django.db import models
+from django.db.models import Count
+
+
+class HashtagQuerySet(models.QuerySet):
+    def visibles_para(self, user):
+        """Solo los de publicaciones que el usuario puede ver: el nombre también puede ser un spoiler.
+        num_posts cuenta solo esas publicaciones."""
+        from .post import Post  # post.py importa este módulo
+
+        return (
+            self.filter(posts__post__in=Post.objects.visible_for(user))
+            .annotate(num_posts=Count('posts', distinct=True))
+        )
 
 
 class Hashtag(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name='Nombre')
+
+    objects = HashtagQuerySet.as_manager()
 
     class Meta:
         ordering = ['name']

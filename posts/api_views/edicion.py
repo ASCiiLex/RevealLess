@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -6,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from comments.herencia import congelar_heredados, fronteras_de, se_rebaja
 from narrative.models import ClasificacionNarrativa
 from narrative.serializers import PostSerializer
 from narrative.services.etiquetado import etiquetar_personajes
@@ -47,7 +49,8 @@ class PostUpdateAPIView(APIView):
     una frontera enviada se marca ORIGEN_EXPLICITO; si no se envía, no se toca.
     En ambos casos nunca queda por debajo de su parte ni de sus temas,
     y no se puede pasar a un previo ya estrenado (los que ya lo tenían lo conservan).
-    Cambiar el vídeo tampoco consulta a la IA: si revela más, la frontera la sube el autor."""
+    Cambiar el vídeo tampoco consulta a la IA: si revela más, la frontera la sube el autor.
+    Si la frontera baja, los comentarios heredados ajenos conservan la anterior (comments/herencia.py)."""
 
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -64,6 +67,7 @@ class PostUpdateAPIView(APIView):
         entrada = PostUpdateSerializer(data=request.data, partial=True)
         entrada.is_valid(raise_exception=True)
         datos = entrada.validated_data
+        antes = fronteras_de(post)
 
         tema_provisto = 'tema' in datos
         tema = datos.get('tema')
@@ -112,7 +116,10 @@ class PostUpdateAPIView(APIView):
         except ValidationError as exc:
             return error_400(exc.message_dict)
 
-        post.save()
+        with transaction.atomic():
+            post.save()
+            if se_rebaja(post, antes):
+                congelar_heredados(post, antes)
         if tema_provisto:
             post.temas_transversales.set([tema] if tema else [])
         if CAMPOS_QUE_REETIQUETAN & set(datos):

@@ -3,7 +3,18 @@ from django.test import TestCase
 from django.urls import reverse
 
 from follows.models import Follow
-from ..models import Hashtag
+from narrative.models import ClasificacionNarrativa
+from narrative.services import actualizar_progreso
+from ..models import Post
+from .utils import crear_obra
+
+
+def _publicar(autor, obra, frontera, texto):
+    # Post.save() extrae los hashtags del texto.
+    return Post.objects.create(
+        author=autor, obra=obra, text=texto, referencia_narrativa=frontera, frontera_spoiler=frontera,
+        frontera_origen=ClasificacionNarrativa.ORIGEN_EXPLICITO,
+    )
 
 
 class MentionsSearchTests(TestCase):
@@ -62,33 +73,49 @@ class MentionsSearchTests(TestCase):
         self.assertEqual(usernames, ['menc_alfa', 'menc_zeta'])
 
 
-class HashtagsSearchTests(TestCase):
-    def setUp(self):
-        self.usuario = User.objects.create_user('hashtag_user', password='x')
-        Hashtag.objects.create(name='revealless')
-        Hashtag.objects.create(name='reveal')
+class HashtagsVisiblesMixin:
+    """Un usuario que va por el primer episodio y otro que publica en los dos."""
 
+    def setUp(self):
+        super().setUp()
+        self.usuario = User.objects.create_user('hashtag_user', password='x')
+        self.autor = User.objects.create_user('hashtag_autor', password='x')
+        self.obra, self.eps = crear_obra('serie-hashtags', 2)
+        actualizar_progreso(self.usuario, self.obra, self.eps[0])
+        self.client.force_login(self.usuario)
+
+
+class HashtagsSearchTests(HashtagsVisiblesMixin, TestCase):
     def test_requiere_autenticacion(self):
+        self.client.logout()
         response = self.client.get(reverse('hashtags_search'), {'q': 'rev'})
         self.assertEqual(response.status_code, 302)
 
     def test_devuelve_coincidencias_por_prefijo(self):
-        self.client.force_login(self.usuario)
+        _publicar(self.autor, self.obra, self.eps[0], 'sobre #revealless y #reveal')
         response = self.client.get(reverse('hashtags_search'), {'q': 'rev'})
         names = [r['name'] for r in response.json()['results']]
         self.assertEqual(set(names), {'revealless', 'reveal'})
 
+    def test_no_devuelve_hashtags_de_publicaciones_ocultas(self):
+        _publicar(self.autor, self.obra, self.eps[1], 'giro final #revelacion')
+        response = self.client.get(reverse('hashtags_search'), {'q': 'rev'})
+        self.assertEqual(response.json()['results'], [])
 
-class SuggestedHashtagsTests(TestCase):
-    def setUp(self):
-        self.usuario = User.objects.create_user('sugeridos_user', password='x')
 
+class SuggestedHashtagsTests(HashtagsVisiblesMixin, TestCase):
     def test_requiere_autenticacion(self):
+        self.client.logout()
         response = self.client.get(reverse('suggested_hashtags'))
         self.assertEqual(response.status_code, 302)
 
     def test_responde_200_autenticado(self):
-        self.client.force_login(self.usuario)
         response = self.client.get(reverse('suggested_hashtags'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.json())
+
+    def test_solo_sugiere_hashtags_de_publicaciones_visibles(self):
+        _publicar(self.autor, self.obra, self.eps[0], 'algo #visible')
+        _publicar(self.autor, self.obra, self.eps[1], 'giro final #oculto')
+        response = self.client.get(reverse('suggested_hashtags'))
+        self.assertEqual(response.json()['results'], ['visible'])
