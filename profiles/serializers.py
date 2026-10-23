@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from accounts.validators import USERNAME_MAX, validar_username
+
 from .models import Profile
 
 
@@ -47,7 +49,8 @@ class ProfileDetailSerializer(serializers.Serializer):
 
 
 class ProfileEditSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=150)
+    # Misma regla que en el registro (accounts.validators).
+    username = serializers.CharField(max_length=USERNAME_MAX, validators=[validar_username])
     email = serializers.EmailField()
 
     class Meta:

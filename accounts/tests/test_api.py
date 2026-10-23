@@ -37,6 +37,14 @@ class RegisterAPIViewTests(TestCase):
         cache.clear()
         self.client = APIClient()
 
+    def _registrar(self, username):
+        return self.client.post(reverse('accounts_api_register'), {
+            'username': username,
+            'email': 'regla@example.com',
+            'password': 'ContraseñaSegura123',
+            'password2': 'ContraseñaSegura123',
+        })
+
     def test_registro_correcto_crea_usuario(self):
         response = self.client.post(reverse('accounts_api_register'), {
             'username': 'nuevo_usuario',
@@ -104,4 +112,24 @@ class RegisterAPIViewTests(TestCase):
             'password': 'ContraseñaSegura123',
             'password2': 'ContraseñaSegura123',
         })
+        self.assertEqual(response.status_code, 201)
+
+    def test_registro_rechaza_username_con_espacios_o_acentos(self):
+        response = self._registrar('josé garcía')
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.filter(email='regla@example.com').exists())
+
+    def test_registro_rechaza_username_con_signos(self):
+        # El punto y la barra rompen la ruta del chat y la del perfil.
+        response = self._registrar('ana.garcia/1')
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.filter(email='regla@example.com').exists())
+
+    def test_registro_rechaza_username_de_mas_de_30(self):
+        response = self._registrar('a' * 31)
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.filter(email='regla@example.com').exists())
+
+    def test_registro_admite_username_de_30(self):
+        response = self._registrar('a' * 30)
         self.assertEqual(response.status_code, 201)

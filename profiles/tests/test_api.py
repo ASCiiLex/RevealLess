@@ -179,3 +179,21 @@ class ProfileEditAPIViewTests(TestCase):
             {'username': 'editor_perfil', 'email': 'editor@example.com', 'bio': 'Sin cambios de identidad'},
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_patch_rechaza_username_no_valido(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.patch(
+            reverse('profiles_api_edit'),
+            {'username': 'editor perfil', 'email': 'editor@example.com'},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.username, 'editor_perfil')
+
+    def test_patch_rechaza_username_de_mas_de_30(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.patch(
+            reverse('profiles_api_edit'),
+            {'username': 'a' * 31, 'email': 'editor@example.com'},
+        )
+        self.assertEqual(response.status_code, 400)

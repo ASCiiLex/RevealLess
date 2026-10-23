@@ -6,6 +6,8 @@ from rest_framework import serializers
 
 from core.validators import validate_image_size
 
+from .validators import USERNAME_MAX, validar_username
+
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -13,10 +15,10 @@ class LoginSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.Serializer):
-    """Validaciones de registro: contraseñas coinciden, robustez vía
-    validate_password y username/email únicos."""
+    """Validaciones de registro: nombre de usuario con la regla común, contraseñas que coinciden,
+    robustez vía validate_password y username/email únicos."""
 
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(max_length=USERNAME_MAX, validators=[validar_username])
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
