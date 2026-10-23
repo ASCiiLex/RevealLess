@@ -1,19 +1,17 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.contrib.auth.models import User
 from narrative.models import ClasificacionNarrativa
 from core.imagenes.miniaturas import url_miniatura, url_variante
 from core.validators import validate_image_size
-from .managers import MODO_CRUCE_COMPARATIVA, MODO_CRUCE_MISMA_ESCENA, PostQuerySet
+from ..managers import MODO_CRUCE_COMPARATIVA, MODO_CRUCE_MISMA_ESCENA, PostQuerySet
+from .galeria import PostImagen
+from .hashtags import Hashtag, PostHashtag
 
 
 def post_image_path(instance, filename):
     return f'posts/{instance.author.username}/{filename}'
-
-
-def post_galeria_path(instance, filename):
-    return f'posts/{instance.post.author.username}/galeria/{filename}'
 
 
 def post_video_path(instance, filename):
@@ -265,119 +263,3 @@ class Post(ClasificacionNarrativa, models.Model):
 
             self.is_processed = True
             super().save(update_fields=['is_processed'])
-
-
-class PostImagen(models.Model):
-    """Imagen de una galería (2 a 4 por post). La etiqueta se muestra sobre ella (ej. «Anime»).
-    El encuadre (punto de enfoque y zoom) se aplica al mostrarla: el original no se recorta."""
-
-    ENFOQUE_CENTRO = 50
-    ZOOM_BASE = 100
-    ZOOM_MAXIMO = 300
-
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='imagenes', verbose_name='Publicación')
-    imagen = models.ImageField(
-        upload_to=post_galeria_path,
-        validators=[
-            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
-            validate_image_size,
-        ],
-        verbose_name='Imagen',
-    )
-    etiqueta = models.CharField(max_length=40, blank=True, verbose_name='Etiqueta')
-    orden = models.PositiveSmallIntegerField(default=0, verbose_name='Orden')
-    # Porcentajes: 0 = borde izquierdo/superior, 100 = derecho/inferior.
-    enfoque_x = models.PositiveSmallIntegerField(
-        default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)], verbose_name='Enfoque horizontal (%)',
-    )
-    enfoque_y = models.PositiveSmallIntegerField(
-        default=ENFOQUE_CENTRO, validators=[MaxValueValidator(100)], verbose_name='Enfoque vertical (%)',
-    )
-    zoom = models.PositiveSmallIntegerField(
-        default=ZOOM_BASE, validators=[MinValueValidator(ZOOM_BASE), MaxValueValidator(ZOOM_MAXIMO)],
-        verbose_name='Zoom (%)',
-    )
-
-    class Meta:
-        ordering = ['orden']
-        verbose_name = 'Imagen de publicación'
-        verbose_name_plural = 'Imágenes de publicación'
-
-    def __str__(self):
-        return f'{self.post_id} · imagen {self.orden + 1}'
-
-    @property
-    def image_url(self):
-        try:
-            if self.imagen and hasattr(self.imagen, 'url'):
-                return self.imagen.url
-        except ValueError:
-            pass
-        return None
-
-    @property
-    def miniatura_url(self):
-        return url_miniatura(self.imagen)
-
-
-class PersonajeComparado(models.Model):
-    """Personaje de un «X vs Z». Sin personaje aún si está propuesto (solicitud pendiente)."""
-
-    post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name='comparaciones', verbose_name='Publicación',
-    )
-    personaje = models.ForeignKey(
-        'narrative.Personaje', on_delete=models.CASCADE, null=True, blank=True, related_name='comparaciones',
-        verbose_name='Personaje',
-    )
-    solicitud = models.ForeignKey(
-        'narrative.SolicitudPersonaje', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='comparaciones', verbose_name='Solicitud',
-    )
-    orden = models.PositiveSmallIntegerField(default=0, verbose_name='Orden')
-
-    class Meta:
-        ordering = ['orden']
-        verbose_name = 'Personaje comparado'
-        verbose_name_plural = 'Personajes comparados'
-        constraints = [
-            models.UniqueConstraint(fields=['post', 'personaje'], name='uniq_personaje_comparado_post'),
-        ]
-
-    def __str__(self):
-        return f'{self.post_id} · {self.personaje or self.solicitud}'
-
-
-class Hashtag(models.Model):
-    name = models.CharField(max_length=50, unique=True, verbose_name='Nombre')
-
-    class Meta:
-        ordering = ['name']
-        verbose_name = 'Hashtag'
-        verbose_name_plural = 'Hashtags'
-
-    def __str__(self):
-        return f"#{self.name}"
-
-
-class PostHashtag(models.Model):
-    post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name="post_hashtags",
-        verbose_name='Publicación',
-    )
-    hashtag = models.ForeignKey(
-        Hashtag,
-        on_delete=models.CASCADE,
-        related_name="posts",
-        verbose_name='Hashtag',
-    )
-
-    class Meta:
-        unique_together = ('post', 'hashtag')
-        verbose_name = 'Hashtag de publicación'
-        verbose_name_plural = 'Hashtags de publicación'
-
-    def __str__(self):
-        return f"{self.post.id} - #{self.hashtag.name}"
