@@ -7,13 +7,17 @@ import GaleriaEditor from './GaleriaEditor'
 import SelectorParteTema, { type Seleccion } from './SelectorParteTema'
 import PersonajesEnfrentados, { type PersonajeElegido } from './PersonajesEnfrentados'
 import type { EstadoComparativa } from './Comparativa'
-import { SIN_SELECCION, datosExtra, hayPersonajeDeOtraObra, mensajeDeError } from './pasoPostDatos'
+import {
+  SIN_SELECCION, comparativaIncompleta, datosExtra, hayPersonajeDeOtraObra, pistaFrontera, pistaParte,
+} from './pasoPostDatos'
+import { useContextoObra } from './useContextoObra'
+import { useEnvioPost } from './useEnvioPost'
 import { useGaleriaBorrador } from './useGaleriaBorrador'
 import { useParteOtra } from './useParteOtra'
+import { useSugerenciaIA } from './useSugerenciaIA'
 import AvisoIA from '../IA/AvisoIA'
 import ReferenciaCruzadaAviso from '../ReferenciaCruzada/ReferenciaCruzadaAviso'
-import { fetchObraContextoPublicar, buscarUnidades, type ObraContextoPublicar } from '../../api/suscripciones'
-import { crearPost, sugerirFrontera, type DeteccionCruzada, type ModoCruce } from '../../api/publicar'
+import { buscarUnidades } from '../../api/suscripciones'
 
 interface Props {
   // null = aún no hay obra elegida: el formulario se muestra desactivado.
@@ -24,68 +28,37 @@ interface Props {
   onProgresoRequerido: () => void
 }
 
-// Decisiones del usuario ante los 409: se acumulan para que un reenvío no pierda las anteriores.
-interface Ajustes {
-  confirmarSaltoProgreso?: boolean
-  obraCruzadaId?: number | null
-  fronteraCruzadaId?: number | null
-  modoCruce?: ModoCruce
-  descartarReferenciaCruzada?: boolean
-}
-
-interface SugerenciaVista {
-  id: number
-  confianza: number
-  fiable: boolean
-}
-
-const AVISO_FALLO_IA = 'No se pudo consultar a la IA: elige la frontera o se usará tu progreso actual.'
 const PISTA_VIDEO_BLOQUEADO = 'Quita las imágenes para añadir un vídeo: un post lleva una cosa u otra.'
 const ERROR_CONTEXTO = 'No se pudo cargar la obra. Recarga la página para publicar.'
 
 export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPublicado, onProgresoRequerido }: Props) {
-  const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
   const [texto, setTexto] = useState('')
   const [emocion, setEmocion] = useState<string | null>(null)
   const [videoUrl, setVideoUrl] = useState('')
   const [parte, setParte] = useState<Seleccion>(SIN_SELECCION)
-  // Id de la parte rellenada por la IA: mientras siga elegida, se avisa de que hay que comprobarla.
-  const [parteDeIA, setParteDeIA] = useState<number | null>(null)
   const [tema, setTema] = useState<Seleccion>({ id: temaIdInicial ?? null, label: null })
   // Tema escrito que no existe: se envía como propuesta (solicitud de tema).
   const [temaPropuesto, setTemaPropuesto] = useState<string | null>(null)
   const [personajes, setPersonajes] = useState<PersonajeElegido[]>([])
   const [frontera, setFrontera] = useState<Seleccion>(SIN_SELECCION)
-  const [sugerencia, setSugerencia] = useState<SugerenciaVista | null>(null)
-  const [sugiriendo, setSugiriendo] = useState(false)
-  const [avisoIA, setAvisoIA] = useState<string | null>(null)
   const [nuevoProgreso, setNuevoProgreso] = useState<Seleccion>(SIN_SELECCION)
-  const [ajustes, setAjustes] = useState<Ajustes>({})
-  const [avisoSalto, setAvisoSalto] = useState<string | null>(null)
-  const [detecciones, setDetecciones] = useState<DeteccionCruzada[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [enviando, setEnviando] = useState(false)
 
+  const videoLimpio = videoUrl.trim()
+  const videoValido = enlaceYouTubeValido(videoUrl)
+
+  const { contexto, fallo: falloContexto } = useContextoObra(obraSlug)
   const galeria = useGaleriaBorrador()
   const { parteOtra, otraSlug, elegir: elegirParteOtra, pista: pistaParteOtra, mismaEscena } =
     useParteOtra(comparativa, parte.label)
-
-  // Sin contexto el formulario sigue desactivado: un fallo se muestra y una respuesta de otra obra se descarta.
-  useEffect(() => {
-    setContexto(null)
-    if (!obraSlug) return
-    let vigente = true
-    fetchObraContextoPublicar(obraSlug)
-      .then((datos) => {
-        if (vigente) setContexto(datos)
-      })
-      .catch(() => {
-        if (vigente) setError(ERROR_CONTEXTO)
-      })
-    return () => {
-      vigente = false
-    }
-  }, [obraSlug])
+  const ia = useSugerenciaIA({
+    obraSlug,
+    texto,
+    parte,
+    frontera,
+    video: videoValido && videoLimpio ? videoLimpio : null,
+    onParte: setParte,
+    onFrontera: setFrontera,
+  })
 
   useEffect(() => {
     const inicial = contexto?.temas.find((t) => t.id === temaIdInicial)
@@ -115,9 +88,36 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   )
 
   const activo = Boolean(obraSlug && contexto)
-  const videoLimpio = videoUrl.trim()
   const hayImagenes = galeria.imagenes.length > 0
-  const videoValido = enlaceYouTubeValido(videoUrl)
+  // Basta con parte, tema o frontera: la parte es contexto, la visibilidad la decide la frontera.
+  const hayAncla = Boolean(parte.id || tema.id || temaPropuesto || frontera.id)
+  // Con un personaje de la otra obra, su parte es opcional: la frontera cruzada sale de su primera aparición.
+  const conPersonajeDeOtra = hayPersonajeDeOtraObra(personajes)
+  const incompleta = comparativaIncompleta(comparativa, parteOtra, personajes)
+  const otra = comparativa.activa ? comparativa.obra : null
+  const parteOtraOpcional = conPersonajeDeOtra && !parteOtra.id
+
+  const envio = useEnvioPost({
+    obraSlug,
+    listo: hayAncla,
+    construir: (ajustes) => ({
+      text: texto,
+      referenciaNarrativaId: parte.id,
+      fronteraSpoilerId: frontera.id,
+      fronteraSugeridaIaId: ia.sugerencia?.id ?? null,
+      iaConfianza: ia.sugerencia?.confianza ?? null,
+      emocionAutor: emocion,
+      temaId: tema.id,
+      temaPropuesto: tema.id ? undefined : temaPropuesto ?? undefined,
+      nuevoProgresoId: nuevoProgreso.id,
+      videoUrl: videoLimpio || undefined,
+      ...ajustes,
+      // La comparativa explícita prevalece sobre lo elegido en el aviso de detección.
+      ...datosExtra(galeria.imagenes, galeria.disposicion, comparativa, parteOtra, personajes),
+    }),
+    onPublicado,
+    onProgresoRequerido,
+  })
 
   function handleTema(seleccion: Seleccion) {
     setTema(seleccion)
@@ -129,120 +129,20 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
     setTemaPropuesto(nombre)
   }
 
-  async function pedirSugerencia() {
-    if (!obraSlug || !texto.trim() || sugiriendo) return
-    setSugiriendo(true)
-    setAvisoIA(null)
-    try {
-      const resultado = await sugerirFrontera(
-        obraSlug, texto, parte.id, null, videoValido && videoLimpio ? videoLimpio : null,
-      )
-      if (!resultado.frontera) {
-        setSugerencia(null)
-        setAvisoIA(AVISO_FALLO_IA)
-        return
-      }
-      // La parte solo se propone si el autor no la había elegido.
-      if (resultado.parte && !parte.id) {
-        setParte({ id: resultado.parte.id, label: resultado.parte.etiqueta })
-        setParteDeIA(resultado.parte.id)
-      }
-      setFrontera({ id: resultado.frontera.id, label: resultado.frontera.etiqueta })
-      setSugerencia({ id: resultado.frontera.id, confianza: resultado.confianza, fiable: resultado.fiable })
-    } catch {
-      setAvisoIA(AVISO_FALLO_IA)
-    } finally {
-      setSugiriendo(false)
-    }
-  }
-
-  const parteSugeridaVigente = parteDeIA !== null && parte.id === parteDeIA
-  const pistaParte = temaPropuesto
-    ? 'Si el tema ya existe en esta obra se asigna al publicar; si no, se revisará antes de crearlo.'
-    : parteSugeridaVigente
-      ? 'Parte propuesta por la IA: compruébala. Solo indica de qué habla; quién lo ve lo decide la frontera.'
-      : 'Opcional si indicas la frontera. Elegirla antes de sugerir ayuda a la IA a acertar.'
-
-  // «Certeza»: lo seguro que está el modelo del punto elegido, no lo protegido que está el post.
-  const sugerenciaVigente = sugerencia !== null && frontera.id === sugerencia.id
-  const certeza = sugerencia ? Math.round(sugerencia.confianza * 100) : 0
-  // Con propuesta de la IA vigente, la pista la sustituye el aviso destacado.
-  const pistaFrontera = sugerenciaVigente
-    ? ''
-    : frontera.id
-      ? 'Frontera elegida por ti. Nunca quedará por debajo de la parte de la que hablas.'
-      : 'Si no indicas ninguna, la IA la estimará al publicar; si no puede, se usa tu progreso actual.'
-
-  // Basta con parte, tema o frontera: la parte es contexto, la visibilidad la decide la frontera.
-  const hayAncla = Boolean(parte.id || tema.id || temaPropuesto || frontera.id)
-  // Con un personaje de la otra obra, su parte es opcional: la frontera cruzada sale de su primera aparición.
-  const conPersonajeDeOtra = hayPersonajeDeOtraObra(personajes)
-  const comparativaIncompleta =
-    comparativa.activa &&
-    ((comparativa.obra !== null && !parteOtra.id && !conPersonajeDeOtra) || personajes.length === 1)
-
-  async function enviar(ajustesEnvio: Ajustes) {
-    if (!obraSlug || !hayAncla || enviando) return
-    setError(null)
-    setAvisoSalto(null)
-    setEnviando(true)
-
-    try {
-      const resultado = await crearPost(obraSlug, {
-        text: texto,
-        referenciaNarrativaId: parte.id,
-        fronteraSpoilerId: frontera.id,
-        fronteraSugeridaIaId: sugerencia?.id ?? null,
-        iaConfianza: sugerencia?.confianza ?? null,
-        emocionAutor: emocion,
-        temaId: tema.id,
-        temaPropuesto: tema.id ? undefined : temaPropuesto ?? undefined,
-        nuevoProgresoId: nuevoProgreso.id,
-        videoUrl: videoLimpio || undefined,
-        ...ajustesEnvio,
-        // La comparativa explícita prevalece sobre lo elegido en el aviso de detección.
-        ...datosExtra(galeria.imagenes, galeria.disposicion, comparativa, parteOtra, personajes),
-      })
-
-      if ('progresoRequerido' in resultado) {
-        onProgresoRequerido()
-      } else if ('requiereConfirmacion' in resultado) {
-        setAvisoSalto(resultado.detail)
-      } else if ('referenciaCruzadaDetectada' in resultado) {
-        setDetecciones(resultado.detecciones)
-      } else {
-        onPublicado(resultado.id)
-      }
-    } catch (err) {
-      setError(mensajeDeError(err))
-    } finally {
-      setEnviando(false)
-    }
-  }
-
-  function enviarCon(nuevos: Ajustes) {
-    const combinados = { ...ajustes, ...nuevos }
-    setAjustes(combinados)
-    setDetecciones(null)
-    enviar(combinados)
-  }
-
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    enviar(ajustes)
+    envio.publicar()
   }
-
-  const otra = comparativa.activa ? comparativa.obra : null
-  const parteOtraOpcional = conPersonajeDeOtra && !parteOtra.id
 
   return (
     <>
       <form className={styles.form} onSubmit={handleSubmit}>
-        {error && <p className={styles.error}>{error}</p>}
-        {avisoSalto && (
+        {falloContexto && <p className={styles.error}>{ERROR_CONTEXTO}</p>}
+        {envio.error && <p className={styles.error}>{envio.error}</p>}
+        {envio.avisoSalto && (
           <p className={styles.error}>
-            {avisoSalto}{' '}
-            <button type="button" onClick={() => enviarCon({ confirmarSaltoProgreso: true })}>
+            {envio.avisoSalto}{' '}
+            <button type="button" onClick={() => envio.enviarCon({ confirmarSaltoProgreso: true })}>
               Confirmar y publicar
             </button>
           </p>
@@ -301,7 +201,7 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
               onTema={handleTema}
               onProponerTema={handleProponerTema}
             />
-            <span className={styles.hint}>{pistaParte}</span>
+            <span className={styles.hint}>{pistaParte(temaPropuesto, ia.parteVigente)}</span>
           </div>
 
           {otra && (
@@ -329,12 +229,12 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             <button
               type="button"
               className={styles.sugerir}
-              onClick={pedirSugerencia}
-              disabled={sugiriendo || !texto.trim()}
+              onClick={ia.pedir}
+              disabled={ia.sugiriendo || !texto.trim()}
             >
-              {sugiriendo ? 'Consultando a la IA…' : 'Sugerir frontera con IA'}
+              {ia.sugiriendo ? 'Consultando a la IA…' : 'Sugerir frontera con IA'}
             </button>
-            {avisoIA && <span className={styles.hint}>{avisoIA}</span>}
+            {ia.aviso && <span className={styles.hint}>{ia.aviso}</span>}
           </div>
 
           <CampoSeleccion
@@ -345,12 +245,10 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
             placeholder="Buscar unidad..."
             emptyLabel="Dejar que la IA la estime al publicar"
             buscar={buscarFronterasObra}
-            hint={pistaFrontera}
+            hint={pistaFrontera(ia.vigente, Boolean(frontera.id))}
           />
 
-          {sugerenciaVigente && (
-            <AvisoIA certeza={certeza} fiable={sugerencia.fiable} accion="publicar" />
-          )}
+          {ia.vigente && <AvisoIA certeza={ia.certeza} fiable={ia.fiable} accion="publicar" />}
 
           <CampoSeleccion
             id="nuevo-progreso"
@@ -365,24 +263,24 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
           <button
             className={styles.submit}
             type="submit"
-            disabled={enviando || !hayAncla || comparativaIncompleta || !videoValido}
+            disabled={envio.enviando || !hayAncla || incompleta || !videoValido}
           >
-            {enviando ? 'Publicando...' : 'Publicar'}
+            {envio.enviando ? 'Publicando...' : 'Publicar'}
           </button>
         </fieldset>
       </form>
 
-      {detecciones && (
+      {envio.detecciones && (
         <ReferenciaCruzadaAviso
-          detecciones={detecciones}
+          detecciones={envio.detecciones}
           fronteraNombre={frontera.label}
           texto={texto}
           obraPrincipalSlug={obraSlug}
           onConfirmar={(obraCruzadaId, fronteraCruzadaId, modoCruce) =>
-            enviarCon({ obraCruzadaId, fronteraCruzadaId, modoCruce })
+            envio.enviarCon({ obraCruzadaId, fronteraCruzadaId, modoCruce })
           }
-          onDescartar={() => enviarCon({ descartarReferenciaCruzada: true })}
-          onCancelar={() => setDetecciones(null)}
+          onDescartar={() => envio.enviarCon({ descartarReferenciaCruzada: true })}
+          onCancelar={envio.cerrarDetecciones}
         />
       )}
     </>
