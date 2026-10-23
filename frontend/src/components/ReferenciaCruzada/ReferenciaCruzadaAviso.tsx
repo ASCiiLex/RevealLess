@@ -46,35 +46,42 @@ export default function ReferenciaCruzadaAviso({
     if (!detectada) return
     let vigente = true
     setModo(detectada.mismaHistoria ? 'misma_escena' : 'comparativa')
+    // Al cambiar de obra no quedan unidades ni búsqueda de IA de la anterior.
+    setUnidades([])
     setFronteraId(null)
     setPropuesta(null)
+    setBuscandoIA(false)
 
-    fetchObraDetalle(detectada.obraSlug).then(async (d) => {
-      if (!vigente) return
-      setUnidades(d.unidades)
-      const buscado = fronteraNombre ? normalizar(nombreBase(fronteraNombre)) : null
-      const igual = buscado ? d.unidades.find((u) => normalizar(nombreBase(u.etiqueta)) === buscado) : undefined
-      if (igual) {
-        setFronteraId(igual.id)
-        setPropuesta({ origen: 'nombre' })
-        return
-      }
-      if (!texto?.trim() || !obraPrincipalSlug) return
-      setBuscandoIA(true)
-      try {
-        const r = await sugerirFrontera(detectada.obraSlug, texto, null, obraPrincipalSlug)
-        if (!vigente || !r.frontera) return
-        const sugerida = r.frontera
-        // La IA puede elegir una unidad que no esté en el desplegable (un arco): se añade.
-        setUnidades((prev) => (prev.some((u) => u.id === sugerida.id) ? prev : [...prev, sugerida]))
-        setFronteraId(sugerida.id)
-        setPropuesta({ origen: 'ia', certeza: Math.round(r.confianza * 100), fiable: r.fiable })
-      } catch {
-        // Sin propuesta: el autor elige a mano.
-      } finally {
-        if (vigente) setBuscandoIA(false)
-      }
-    })
+    fetchObraDetalle(detectada.obraSlug)
+      .then(async (d) => {
+        if (!vigente) return
+        setUnidades(d.unidades)
+        const buscado = fronteraNombre ? normalizar(nombreBase(fronteraNombre)) : null
+        const igual = buscado ? d.unidades.find((u) => normalizar(nombreBase(u.etiqueta)) === buscado) : undefined
+        if (igual) {
+          setFronteraId(igual.id)
+          setPropuesta({ origen: 'nombre' })
+          return
+        }
+        if (!texto?.trim() || !obraPrincipalSlug) return
+        setBuscandoIA(true)
+        try {
+          const r = await sugerirFrontera(detectada.obraSlug, texto, null, obraPrincipalSlug)
+          if (!vigente || !r.frontera) return
+          const sugerida = r.frontera
+          // La IA puede elegir una unidad que no esté en el desplegable (un arco): se añade.
+          setUnidades((prev) => (prev.some((u) => u.id === sugerida.id) ? prev : [...prev, sugerida]))
+          setFronteraId(sugerida.id)
+          setPropuesta({ origen: 'ia', certeza: Math.round(r.confianza * 100), fiable: r.fiable })
+        } catch {
+          // Sin propuesta: el autor elige a mano.
+        } finally {
+          if (vigente) setBuscandoIA(false)
+        }
+      })
+      .catch(() => {
+        // Sin unidades: el autor puede descartar o cancelar.
+      })
     return () => {
       vigente = false
     }

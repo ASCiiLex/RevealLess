@@ -41,6 +41,7 @@ interface SugerenciaVista {
 
 const AVISO_FALLO_IA = 'No se pudo consultar a la IA: elige la frontera o se usará tu progreso actual.'
 const PISTA_VIDEO_BLOQUEADO = 'Quita las imágenes para añadir un vídeo: un post lleva una cosa u otra.'
+const ERROR_CONTEXTO = 'No se pudo cargar la obra. Recarga la página para publicar.'
 
 export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPublicado, onProgresoRequerido }: Props) {
   const [contexto, setContexto] = useState<ObraContextoPublicar | null>(null)
@@ -69,8 +70,21 @@ export default function PasoPost({ obraSlug, temaIdInicial, comparativa, onPubli
   const { parteOtra, otraSlug, elegir: elegirParteOtra, pista: pistaParteOtra, mismaEscena } =
     useParteOtra(comparativa, parte.label)
 
+  // Sin contexto el formulario sigue desactivado: un fallo se muestra y una respuesta de otra obra se descarta.
   useEffect(() => {
-    if (obraSlug) fetchObraContextoPublicar(obraSlug).then(setContexto)
+    setContexto(null)
+    if (!obraSlug) return
+    let vigente = true
+    fetchObraContextoPublicar(obraSlug)
+      .then((datos) => {
+        if (vigente) setContexto(datos)
+      })
+      .catch(() => {
+        if (vigente) setError(ERROR_CONTEXTO)
+      })
+    return () => {
+      vigente = false
+    }
   }, [obraSlug])
 
   useEffect(() => {
