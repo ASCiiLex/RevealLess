@@ -31,8 +31,10 @@ class SaltoGrandeRequiereConfirmacion(Exception):
         self.orden_nuevo = orden_nuevo
         self.salto = orden_nuevo - orden_actual
         if self.salto < 0:
+            retroceso = -self.salto
+            posiciones = 'posición' if retroceso == 1 else 'posiciones'
             mensaje = (
-                f'Vas a retroceder {-self.salto} posiciones: '
+                f'Vas a retroceder {retroceso} {posiciones}: '
                 'lo que viene después volverá a ocultarse.'
             )
         else:
@@ -98,6 +100,12 @@ def actualizar_progreso(usuario, obra, nueva_unidad, confirmado=False, permitir_
     return progreso
 
 
+def _menciona(texto, termino):
+    """Término completo en el texto. Sin \\b: falla con títulos que empiezan o acaban
+    en signo, como «One Piece (Anime)»."""
+    return re.search(rf'(?<!\w){re.escape(termino)}(?!\w)', texto) is not None
+
+
 def detectar_posibles_referencias_cruzadas(texto, obra):
     """Detección heurística de menciones a una obra relacionada distinta
     de `obra`. No es infalible por diseño — el usuario siempre puede
@@ -105,8 +113,7 @@ def detectar_posibles_referencias_cruzadas(texto, obra):
     publicar. Dos fuentes de relación, cada una con su propio heurístico:
 
     - adapta_a (pool pequeño, normalmente 1 candidata): coincidencia por
-      palabra clave genérica del tipo de la obra relacionada (comportamiento
-      original, sin cambios).
+      palabra clave genérica del tipo de la obra relacionada.
     - Categoria compartida (pool potencialmente grande, ej. Marvel): una
       palabra genérica por tipo generaría ruido indiscriminado, así que se
       exige coincidencia por el título concreto de la obra candidata."""
@@ -123,13 +130,12 @@ def detectar_posibles_referencias_cruzadas(texto, obra):
 
     for relacionada in relacionadas_adapta:
         for palabra in TIPO_PALABRAS_CLAVE.get(relacionada.tipo, []):
-            if re.search(rf'\b{re.escape(palabra)}\b', texto_lower):
+            if _menciona(texto_lower, palabra):
                 detecciones.append({'obra': relacionada, 'palabra': palabra})
                 break
 
     for relacionada in relacionadas_categoria:
-        titulo_lower = relacionada.titulo.lower()
-        if re.search(rf'\b{re.escape(titulo_lower)}\b', texto_lower):
+        if _menciona(texto_lower, relacionada.titulo.lower()):
             detecciones.append({'obra': relacionada, 'palabra': relacionada.titulo})
 
     return detecciones
