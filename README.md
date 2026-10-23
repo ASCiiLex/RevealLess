@@ -42,7 +42,7 @@ Proyecto Final del Máster en Desarrollo Full Stack (Conquer Blocks). Parte de u
 | Backend | Django 5.2, Django REST Framework, Django Channels + Daphne (ASGI) |
 | Base de datos | PostgreSQL (psycopg 3 con pool de conexiones en producción) |
 | Frontend | React 18 + TypeScript + Vite 5, CSS Modules. React embebido por vista: cada página Django carga solo su *bundle* |
-| IA | Anthropic Claude Haiku 4.5 mediante `tool_use` (salida JSON estructurada) |
+| IA | Anthropic Claude mediante `tool_use` (salida JSON estructurada): Sonnet 5.5 para las fronteras y Haiku 4.5 para traducción y personajes |
 | Estáticos e imágenes | WhiteNoise; imágenes subidas en Tigris (S3) con URLs firmadas |
 | Seguridad | Cabeceras `SECURE_*`, CSRF, validación de entradas, `django-ratelimit`, validación de origen en WebSockets |
 | Tests | pytest + pytest-django |
@@ -97,9 +97,10 @@ cd frontend && npm install && cd ..
 | `SECRET_KEY` | Obligatoria en producción; sin ella la app no arranca |
 | `DATABASE_*` o `DATABASE_URL` | Conexión a PostgreSQL |
 | `ANTHROPIC_API_KEY` | Clave de la IA; sin ella, la frontera cae al progreso del autor |
-| `ANTHROPIC_MODEL` | Opcional: cambia el modelo de la clasificación |
+| `IA_MODELO_FRONTERAS` | Opcional: modelo de la IA de fronteras (por defecto `claude-sonnet-5-5`) |
 | `IA_LIMITE_PUBLICAR` | Opcional: llamadas a la IA por usuario al publicar (por defecto `20/h`) |
 | `RENDIMIENTO_UMBRAL_MS` | Opcional: peticiones más lentas que el umbral quedan en los logs (por defecto `500`) |
+| `REDIS_URL` | Opcional: capa de canales en Redis, necesaria con varias instancias; sin ella, en memoria |
 | `AWS_*` | Solo producción: bucket y credenciales de Tigris |
 | `DJANGO_ALLOWED_HOSTS` | Solo producción: dominios propios, separados por comas |
 
@@ -123,19 +124,47 @@ La app queda en `http://localhost:8000`. Daphne no recarga solo: reinícialo tra
 pytest
 ```
 
-Ningún test llama a la API real de la IA ni a servicios externos.
+Necesitan el PostgreSQL local en marcha: crean su propia base de datos de prueba y la borran al terminar. Ningún test llama a la API real de la IA ni a servicios externos.
 
-### Catálogo
+### Datos
 
-Las obras se cargan con comandos de gestión; las estructuras curadas a mano están en `narrative/data/*.yaml`.
+Para revisar la aplicación, lo más rápido es la demo desplegada; las cuentas de revisión se facilitan con la entrega. En local, la base de datos empieza vacía y el catálogo se carga obra a obra con comandos de gestión y las estructuras curadas de `narrative/data/`. Cada YAML indica en `obra_external_id` a qué obra se aplica.
+
+1. **Crear la obra.**
+   - Sin fuente externa (`source: manual`), con `crear_obra_manual`. El `--slug` tiene que coincidir con el `external_id` del YAML:
+
+     ```bash
+     python manage.py crear_obra_manual --slug mcu-peliculas --titulo "<Título>" --tipo pelicula --plural
+     ```
+
+   - Anime y manga anclados a MyAnimeList (`source: jikan`), con `importar_catalogo` (ver la tabla).
+2. **Aplicar su estructura** (partes, sagas, arcos y temas):
+
+   ```bash
+   python manage.py importar_estructura narrative/data/mcu_peliculas_estructura.yaml
+   ```
+
+   En obras en emisión, `--hasta-episodio` o `--hasta-capitulo` cierran los rangos abiertos, y `--fechas-volumen` aproxima la fecha de cada capítulo de manga.
+3. **Personajes** (opcional): `cargar_personajes` con los `personajes_*.yaml`.
+4. **Demo:** crea desde la web las cuentas que figuran en `narrative/data/demo.yaml`, carga las obras que usa y ejecuta:
+
+   ```bash
+   python manage.py cargar_demo
+   ```
 
 | Comando | Para qué |
 |---|---|
-| `importar_catalogo` | Metadatos y episodios desde Jikan (MyAnimeList) |
-| `crear_obra_manual` | Alta de una obra sin fuente externa |
-| `importar_estructura` | Aplica un YAML con el árbol de partes, sagas y arcos |
-| `importar_personajes` / `cargar_personajes` / `copiar_personajes` | Personajes desde Wikidata, YAML o entre adaptaciones |
+| `crear_obra_manual` | Alta de una obra sin fuente externa, preparada para `importar_estructura` |
+| `importar_catalogo` | Metadatos y episodios de anime y manga desde Jikan (MyAnimeList). Jikan es una API no oficial que ha fallado a menudo: si no responde, hay que reintentar |
+| `importar_estructura` | Aplica un YAML de curación: árbol de partes, sagas y arcos, y temas transversales |
 | `recalcular_orden` | Recalcula el orden narrativo de una obra |
+| `renumerar_parte` | Reinicia la numeración visible de los episodios de una parte sin tocar el orden interno |
+| `traducir_catalogo` | Traduce al español con la IA los textos del catálogo importados en inglés |
+| `importar_personajes` / `cargar_personajes` / `copiar_personajes` | Personajes desde Wikidata y la IA, desde YAML o entre adaptaciones |
+| `fusionar_personajes` | Une un personaje duplicado en otro (`--destino`, `--dry-run`) |
+| `etiquetar_posts` | Etiqueta con sus personajes las publicaciones ya existentes |
+| `evaluar_fronteras` | Banco de pruebas de la IA de fronteras con casos de respuesta conocida (llama a la API real) |
+| `cargar_demo` | Contenido de demo, idempotente (`--rehacer`, `--sin-progresos`) |
 
 Opciones de cada comando: `python manage.py help <comando>`.
 
@@ -198,10 +227,14 @@ Los volcados contienen los hashes de las contraseñas de los usuarios: se guarda
 
 ---
 
+## Uso de IA en el desarrollo
+
+Durante el desarrollo se usó Claude (Anthropic) como asistente: propuesta y revisión de código y de documentación, depuración y elaboración de tests. El diseño del dominio, las decisiones técnicas, la integración y la verificación de cada cambio son del autor. Seis commits llevan la línea `Co-Authored-By` de Claude, y por eso aparece entre los colaboradores del repositorio. Es independiente de la IA que usa la propia aplicación para proponer fronteras (sección *IA como asistente, no como oráculo*). El detalle está en la memoria técnica.
+
 ## Documentación
 
 La memoria técnica del proyecto (decisiones de diseño, seguridad, casos de uso y evolución) se entrega aparte del repositorio.
 
 ## Autor
 
-Desarrollado por **Álex** como Proyecto Final del Máster en Desarrollo Full Stack. Proyecto personal con fines educativos y de portfolio.
+Desarrollado por **ASCiiLex** como Proyecto Final del Máster en Desarrollo Full Stack. Proyecto personal con fines educativos y de portfolio.
