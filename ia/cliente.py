@@ -9,13 +9,15 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-# USD por millón de tokens (entrada, salida), por prefijo de modelo. settings.IA_PRECIOS lo amplía o sustituye.
+# USD por millón de tokens, por prefijo de modelo: (entrada, salida) o (entrada, salida, lectura de caché).
+# Sin lectura explícita se aplica FACTOR_CACHE_LECTURA. settings.IA_PRECIOS lo amplía o sustituye.
 # Comprobar en https://platform.claude.com/docs/en/about-claude/pricing al cambiar de modelo.
 PRECIOS_POR_DEFECTO = {
     'claude-haiku-4-5': (Decimal('1.00'), Decimal('5.00')),
-    'claude-sonnet-5-5': (Decimal('2.00'), Decimal('10.00')),
+    # Sonnet 5.5 cobra la lectura de caché a 0,05 veces la entrada, no a 0,1.
+    'claude-sonnet-5-5': (Decimal('2.00'), Decimal('10.00'), Decimal('0.10')),
 }
-# Caché de 5 minutos: escribir cuesta 1,25 veces la entrada y leer, una décima parte.
+# Caché de 5 minutos: escribir cuesta 1,25 veces la entrada; leer, por defecto, una décima parte.
 FACTOR_CACHE_ESCRITURA = Decimal('1.25')
 FACTOR_CACHE_LECTURA = Decimal('0.1')
 MILLON = Decimal(1_000_000)
@@ -31,14 +33,17 @@ def _precios():
 
 def coste_estimado(modelo, tokens_entrada, tokens_salida, cache_escritura=0, cache_lectura=0):
     """Coste en USD, o None si el modelo no tiene precio configurado (se guardan igual los tokens)."""
-    for prefijo, (precio_entrada, precio_salida) in _precios().items():
+    for prefijo, precios in _precios().items():
         if modelo.startswith(prefijo):
-            entrada = (
-                Decimal(tokens_entrada)
-                + Decimal(cache_escritura) * FACTOR_CACHE_ESCRITURA
-                + Decimal(cache_lectura) * FACTOR_CACHE_LECTURA
+            entrada, salida, *resto = (Decimal(str(p)) for p in precios)
+            lectura = resto[0] if resto else entrada * FACTOR_CACHE_LECTURA
+            total = (
+                Decimal(tokens_entrada) * entrada
+                + Decimal(cache_escritura) * entrada * FACTOR_CACHE_ESCRITURA
+                + Decimal(cache_lectura) * lectura
+                + Decimal(tokens_salida) * salida
             )
-            return (entrada * Decimal(str(precio_entrada)) + Decimal(tokens_salida) * Decimal(str(precio_salida))) / MILLON
+            return total / MILLON
     return None
 
 

@@ -88,6 +88,11 @@ class ConfiguracionTests(TestCase):
     def test_precio_de_sonnet(self):
         self.assertEqual(coste_estimado('claude-sonnet-5-5', 1_000_000, 1_000_000), Decimal('12'))
 
+    def test_sonnet_lee_la_cache_a_005(self):
+        # Sonnet 5.5: 1000 × 2 + 1000 × 2,50 + 10000 × 0,10 = 5500 $ por millón de tokens.
+        coste = coste_estimado('claude-sonnet-5-5', 1000, 0, cache_escritura=1000, cache_lectura=10000)
+        self.assertEqual(coste, Decimal('0.0055'))
+
     @override_settings(IA_PRECIOS={'modelo-caro': (Decimal('10'), Decimal('20'))})
     def test_settings_amplia_la_tabla_de_precios(self):
         self.assertEqual(coste_estimado('modelo-caro-v2', 1_000_000, 1_000_000), Decimal('30'))
