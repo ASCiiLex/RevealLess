@@ -6,6 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
+    # Sin grupo hasta que connect acepta: disconnect también llega tras un rechazo.
+    group = None
 
     async def connect(self):
         user = self.scope["user"]
@@ -26,10 +28,11 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         logger.info("Notification connect -> %s", self.group)
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.group,
-            self.channel_name
-        )
+        if self.group:
+            await self.channel_layer.group_discard(
+                self.group,
+                self.channel_name
+            )
         logger.info("Notification disconnect -> %s", self.group)
 
     async def new_notification(self, event):

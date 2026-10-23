@@ -3,9 +3,6 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
-
 from core.reacciones import totales_agrupados, totales_de
 from core.serializers import serializar_reactores
 from likes.models import PostReaction
@@ -49,22 +46,10 @@ def toggle_reaction_post(request):
             reaction.save()
 
     # La notificación la crea PostReaction.save() (con su propia dedupe) — no duplicar aquí.
+    # Sin tiempo real: solo las reacciones del chat lo tienen (memoria, 7.15).
 
     counts = _counts_por_reaccion(post)
     total = sum(counts.values())
-
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        "reactions",
-        {
-            "type": "reaction_update",
-            "data": {
-                "object_type": "post",
-                "id": post.id,
-                "count": total,
-            },
-        },
-    )
 
     return JsonResponse({
         'removed': removed,

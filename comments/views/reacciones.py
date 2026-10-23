@@ -1,5 +1,3 @@
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.http import JsonResponse
@@ -20,16 +18,6 @@ def _counts_por_reaccion(comment):
         if fila['reaction'] in counts:
             counts[fila['reaction']] = fila['n']
     return counts
-
-
-def _emitir_actualizacion(comment_id, total):
-    async_to_sync(get_channel_layer().group_send)(
-        'reactions',
-        {
-            'type': 'reaction_update',
-            'data': {'object_type': 'comment', 'id': comment_id, 'count': total},
-        },
-    )
 
 
 @login_required
@@ -55,10 +43,10 @@ def toggle_reaction_comment(request, comment_id):
             reaction.save()
 
     # La notificación la crea CommentReaction.save() — no duplicar aquí.
+    # Sin tiempo real: solo las reacciones del chat lo tienen (memoria, 7.15).
 
     counts = _counts_por_reaccion(comment)
     total = sum(counts.values())
-    _emitir_actualizacion(comment.id, total)
 
     return JsonResponse({
         'removed': removed,

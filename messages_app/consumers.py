@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    # Sin sala hasta que connect acepta: disconnect también llega tras un rechazo.
+    room_name = None
 
     async def connect(self):
         self.user = self.scope["user"]
@@ -32,19 +34,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
         logger.info("ChatConsumer connect %s -> %s", self.user.username, self.room_name)
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        if self.room_name:
+            await self.channel_layer.group_discard(self.room_name, self.channel_name)
         logger.info("ChatConsumer disconnect %s", self.user.username)
 
-    async def receive(self, text_data):
-        data = json.loads(text_data)
-        text = data.get("text", "").strip()
-        if not text:
+    async def receive(self, text_data=None, bytes_data=None):
+        # Solo JSON con un texto no vacío; lo demás se ignora sin cerrar la conexión.
+        try:
+            data = json.loads(text_data or '')
+        except json.JSONDecodeError:
+            return
+        texto = data.get("text") if isinstance(data, dict) else None
+        if not isinstance(texto, str) or not texto.strip():
             return
 
         message = await self.create_message(
             self.user.username,
             self.other_username,
-            text
+            texto.strip(),
         )
 
         payload = {
@@ -94,6 +101,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 class MessagesAlertConsumer(AsyncWebsocketConsumer):
+    group_name = None
 
     async def connect(self):
         user = self.scope["user"]
@@ -110,7 +118,8 @@ class MessagesAlertConsumer(AsyncWebsocketConsumer):
         logger.info("MessagesAlert connect -> %s", self.group_name)
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        if self.group_name:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
         logger.info("MessagesAlert disconnect -> %s", self.group_name)
 
     async def new_message_alert(self, event):
