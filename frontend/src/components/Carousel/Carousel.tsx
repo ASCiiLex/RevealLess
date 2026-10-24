@@ -4,9 +4,12 @@ import Lomo, { type LomoObra } from './Lomo'
 import CategoryChips, { type EstadoChip } from './CategoryChips'
 import { fetchCatalogoObras } from '../../api/obras'
 import { useCatalogView } from '../../context/CatalogViewContext'
+import { esMovil } from '../../utils/dispositivo'
 
 const CHIP_TEMAS = 'Temas'
 const CHIP_PERSONAJES = 'Personajes'
+// En móvil se desliza con el dedo; en cualquier otro equipo, flechas aunque la pantalla sea táctil.
+const CON_FLECHAS = !esMovil()
 
 type Filtros = Record<string, EstadoChip>
 
@@ -166,16 +169,18 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
       ) : (
         <div className={styles.shelfInterior}>
           <div className={styles.carousel}>
-            <button
-              type="button"
-              className={`${styles.arrow} ${styles.arrowLeft}`}
-              onClick={() => desplazar('left')}
-              aria-label="Desplazar obras hacia la izquierda"
-            >
-              ‹
-            </button>
+            {CON_FLECHAS && (
+              <button
+                type="button"
+                className={`${styles.arrow} ${styles.arrowLeft}`}
+                onClick={() => desplazar('left')}
+                aria-label="Desplazar obras hacia la izquierda"
+              >
+                ‹
+              </button>
+            )}
 
-            <div ref={trackRef} className={styles.track}>
+            <div ref={trackRef} className={`${styles.track} ${CON_FLECHAS ? styles.conFlechas : ''}`}>
               {listaFiltrada.map((lomo) => (
                 <Lomo
                   key={lomo.clave}
@@ -188,14 +193,16 @@ export default function Carousel({ onCambioSuscripcion }: Props) {
               ))}
             </div>
 
-            <button
-              type="button"
-              className={`${styles.arrow} ${styles.arrowRight}`}
-              onClick={() => desplazar('right')}
-              aria-label="Desplazar obras hacia la derecha"
-            >
-              ›
-            </button>
+            {CON_FLECHAS && (
+              <button
+                type="button"
+                className={`${styles.arrow} ${styles.arrowRight}`}
+                onClick={() => desplazar('right')}
+                aria-label="Desplazar obras hacia la derecha"
+              >
+                ›
+              </button>
+            )}
           </div>
         </div>
       )}

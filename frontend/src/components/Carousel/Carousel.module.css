@@ -91,18 +91,9 @@
     padding-left: 12px;
     padding-right: 12px;
   }
-}
 
-/* Flechas según el dispositivo, no el ancho: en táctil se desliza con el dedo. */
-@media (hover: none), (pointer: coarse) {
-  .arrow {
-    display: none;
-  }
-}
-
-/* Ventana estrecha con ratón: hueco para las flechas sin tapar los lomos. */
-@media (max-width: 767px) and (hover: hover) and (pointer: fine) {
-  .track {
+  /* Ventana estrecha con flechas (no móvil): hueco para ellas sin tapar los lomos. */
+  .track.conFlechas {
     padding-left: 48px;
     padding-right: 48px;
   }

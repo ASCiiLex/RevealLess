@@ -32,7 +32,7 @@
   mask-image: linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
 }
 
-/* Mismo lenguaje que las flechas del carrusel, en tamaño de chip. */
+/* Mismo lenguaje que las flechas del carrusel, en tamaño de chip. Solo fuera de móvil (CategoryChips.tsx). */
 .flecha {
   position: absolute;
   top: 50%;
@@ -141,11 +141,4 @@
   margin: 8px 0 0;
   font-size: 11px;
   color: var(--on-dark-soft);
-}
-
-/* En táctil se desliza con el dedo; el fundido basta como pista. Con ratón, flechas a cualquier ancho. */
-@media (hover: none), (pointer: coarse) {
-  .flecha {
-    display: none;
-  }
 }

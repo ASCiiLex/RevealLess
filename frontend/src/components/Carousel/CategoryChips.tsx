@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import styles from './CategoryChips.module.css'
+import { esMovil } from '../../utils/dispositivo'
 
 export type EstadoChip = 'o' | 'y'
 
@@ -17,6 +18,8 @@ const DESCRIPCION: Record<EstadoChip, string> = {
 
 // Fracción del ancho visible que avanza cada flecha.
 const PASO = 0.6
+// En móvil basta el fundido como pista; en cualquier otro equipo, flechas aunque la pantalla sea táctil.
+const CON_FLECHAS = !esMovil()
 
 // Cada pulsación cicla: inactivo → O → Y → inactivo. "Todo" limpia el filtro.
 export default function CategoryChips({ categorias, estados, onCiclar, onLimpiar }: Props) {
@@ -62,7 +65,7 @@ export default function CategoryChips({ categorias, estados, onCiclar, onLimpiar
   return (
     <div className={styles.contenedor}>
       <div className={styles.marco}>
-        {hayIzquierda && (
+        {CON_FLECHAS && hayIzquierda && (
           <button
             type="button"
             className={`${styles.flecha} ${styles.flechaIzquierda}`}
@@ -105,7 +108,7 @@ export default function CategoryChips({ categorias, estados, onCiclar, onLimpiar
           })}
         </div>
 
-        {hayDerecha && (
+        {CON_FLECHAS && hayDerecha && (
           <button
             type="button"
             className={`${styles.flecha} ${styles.flechaDerecha}`}
