@@ -1,6 +1,6 @@
 import unicodedata
 
-from django.db.models import Max, Min, OuterRef, Q, Subquery, Value
+from django.db.models import Min, OuterRef, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from ..models import Obra, Personaje, ProgresoUsuario, RelevanciaPersonaje, TemaTransversal, UnidadNarrativa
 from ..serializers import ObraResumenSerializer, UnidadNarrativaSerializer
 from ..services.fronteras import previa_cerrada
+from ..services.longitud import longitudes_principales
 from ..services.personajes import nombres_conocidos, presentacion_personaje
 from .comun import (
     contexto_suscripcion_obra,
@@ -40,10 +41,12 @@ class CatalogoObrasAPIView(APIView):
         )
         contexto_suscripcion = contexto_suscripcion_obra(request.user)
 
-        todas = Obra.objects.prefetch_related('categorias').annotate(
-            longitud_total=Max('unidades__orden_fin')
-        )
-        contexto = {'progreso_por_obra': progreso_por_obra, **contexto_suscripcion}
+        todas = Obra.objects.prefetch_related('categorias')
+        contexto = {
+            'progreso_por_obra': progreso_por_obra,
+            'longitudes': longitudes_principales(),
+            **contexto_suscripcion,
+        }
 
         biblioteca = ObraResumenSerializer(
             todas.filter(id__in=ids_biblioteca(request.user)), many=True, context=contexto,

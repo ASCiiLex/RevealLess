@@ -1,4 +1,4 @@
-from django.db.models import Count, Max, Min, Q
+from django.db.models import Count, Min, Q
 from django.http import Http404
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from subscriptions.models import Suscripcion
 from ..models import Categoria, Obra, Personaje, ProgresoUsuario, TemaTransversal
 from ..serializers import ObraLandingSerializer, ObraResumenSerializer
+from ..services.longitud import longitudes_principales
 from ..services.personajes import (
     identidad_conocida,
     identidades_conocidas,
@@ -76,16 +77,13 @@ class ObraLandingAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, obra_slug):
-        obra = get_object_or_404(
-            Obra.objects.prefetch_related('categorias').annotate(longitud_total=Max('unidades__orden_fin')),
-            slug=obra_slug,
-        )
+        obra = get_object_or_404(Obra.objects.prefetch_related('categorias'), slug=obra_slug)
         progreso = ProgresoUsuario.objects.filter(usuario=request.user, obra=obra).first()
 
         contexto = {
             **contexto_suscripcion_obra(request.user),
             'progreso': progreso,
-            'longitud_total': obra.longitud_total,
+            'longitud_total': longitudes_principales([obra.id]).get(obra.id),
             'total_suscriptores': _total_suscriptores(obra=obra),
             'suscripcion_id_por_tema': suscripcion_id_por_tema(request.user),
             'temas_visibles': TemaTransversal.objects.visibles_para(request.user).filter(obra=obra).order_by('nombre'),
@@ -134,13 +132,10 @@ class CategoriaLandingAPIView(APIView):
 
     def get(self, request, categoria_id):
         categoria = get_object_or_404(Categoria, id=categoria_id)
-        obras = (
-            categoria.obras.prefetch_related('categorias')
-            .annotate(longitud_total=Max('unidades__orden_fin'))
-            .order_by('titulo')
-        )
+        obras = list(categoria.obras.prefetch_related('categorias').order_by('titulo'))
         contexto = {
             'progreso_por_obra': progreso_por_obra(request.user),
+            'longitudes': longitudes_principales([o.id for o in obras]),
             **contexto_suscripcion_obra(request.user),
         }
         datos = ObraResumenSerializer(obras, many=True, context=contexto).data

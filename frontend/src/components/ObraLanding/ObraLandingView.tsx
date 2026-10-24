@@ -5,7 +5,7 @@ import { fetchObraLanding, type ObraLanding } from '../../api/obraLanding'
 import { crearSuscripcion, crearSuscripcionPersonaje, eliminarSuscripcion } from '../../api/suscripciones'
 import { fetchProgreso, actualizarProgreso, type ProgresoData } from '../../api/progreso'
 import { buildTree } from '../../utils/buildTree'
-import { calcularProgresoPct } from '../../utils/progresoPct'
+import { calcularProgresoPct, longitudPrincipal } from '../../utils/progresoPct'
 import UnidadNode from '../Progreso/UnidadNode'
 import ConfirmModal from '../Progreso/ConfirmModal'
 import ProgresoSlider from '../Progreso/ProgresoSlider'
@@ -81,8 +81,7 @@ export default function ObraLandingView({ obraSlug }: Props) {
 
     // Barra al instante; después se refresca la landing para los personajes ya desbloqueados.
     if (progresoData) {
-      const longitudTotal = Math.max(0, ...progresoData.unidades.map((u) => u.orden_fin))
-      const pct = calcularProgresoPct(resultado.orden_absoluto, longitudTotal)
+      const pct = calcularProgresoPct(resultado.orden_absoluto, longitudPrincipal(progresoData.unidades))
       setObra((prev) => (prev ? { ...prev, progreso_pct: pct } : prev))
     }
     fetchObraLanding(obraSlug).then(setObra)

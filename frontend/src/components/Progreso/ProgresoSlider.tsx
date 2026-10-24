@@ -1,6 +1,7 @@
 import { useId, useMemo, useRef, useState } from 'react'
 import styles from './ProgresoSlider.module.css'
 import type { UnidadNarrativa } from '../../api/progreso'
+import { TIPO_PREVIO, hojasDe, tipoPrincipal } from '../../utils/progresoPct'
 
 interface Props {
   unidades: UnidadNarrativa[]
@@ -10,8 +11,6 @@ interface Props {
 }
 
 const TECLAS_DESPLAZAMIENTO = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']
-// Mismo valor que UNIDAD_PREVIA_TIPO en narrative/services.
-const TIPO_PREVIO = 'previo'
 const MAX_COINCIDENCIAS = 5
 
 // Vacío o inválido cuenta como 1.
@@ -22,10 +21,15 @@ function cantidad(texto: string) {
 
 export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }: Props) {
   // Solo hojas: se avanza episodio a episodio (o capítulo), nunca por bloque.
-  const hojas = useMemo(() => {
-    const padres = new Set(unidades.map((u) => u.padre).filter((p): p is number => p !== null))
-    return unidades.filter((u) => !padres.has(u.id)).sort((a, b) => a.orden_inicio - b.orden_inicio)
-  }, [unidades])
+  const hojas = useMemo(() => hojasDe(unidades), [unidades])
+
+  // Solo se numeran las hojas del tipo principal (misma regla que el porcentaje):
+  // previos y películas intercaladas no cuentan. Un previo inicial es la posición 0.
+  const numeros = useMemo(() => {
+    const principal = tipoPrincipal(hojas)
+    let n = 0
+    return hojas.map((h, i) => (h.tipo === principal ? ++n : i === 0 && h.tipo === TIPO_PREVIO ? 0 : null))
+  }, [hojas])
 
   // Última hoja alcanzada; con progreso de bloque cae en la hoja anterior al bloque.
   const indiceActual = useMemo(() => {
@@ -50,20 +54,28 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
   if (hojas.length === 0) return null
 
   const ultimo = hojas.length - 1
-  // «Previo al estreno» es la posición 0: los episodios conservan su número real.
-  const desfase = hojas[0].tipo === TIPO_PREVIO ? 1 : 0
-  const total = hojas.length - desfase
+  const total = numeros.reduce<number>((max, n) => Math.max(max, n ?? 0), 0)
+  const minimo = numeros[0] === 0 ? 0 : 1
   const indice = valor ?? Math.max(indiceActual, 0)
   const hoja = hojas[indice]
   const posicion = hojas.length > 1 ? (indice / ultimo) * 100 : 0
 
-  // Opciones del campo numérico: primero el destino por posición (Enter),
+  // En una hoja sin número (previo o película intercalados) se muestra el de la última numerada.
+  function numeroAlcanzado(i: number) {
+    for (let k = i; k >= 0; k--) {
+      const n = numeros[k]
+      if (n !== null) return n
+    }
+    return 0
+  }
+
+  // Opciones del campo numérico: primero el destino por número (Enter),
   // después unidades cuyo nombre lleva ese número como palabra completa.
   const numero = parseInt(texto, 10)
   const opciones: number[] = []
   if (!Number.isNaN(numero)) {
-    const destino = Math.min(Math.max(numero, 1 - desfase), total) - 1 + desfase
-    opciones.push(destino)
+    const destino = numeros.indexOf(Math.min(Math.max(numero, minimo), total))
+    if (destino >= 0) opciones.push(destino)
     const patron = new RegExp(`\\b${numero}\\b`)
     for (let i = 0; i < hojas.length && opciones.length <= MAX_COINCIDENCIAS; i++) {
       if (i !== destino && patron.test(hojas[i].etiqueta)) opciones.push(i)
@@ -146,7 +158,7 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
         onMouseEnter={() => setActiva(k)}
         onClick={() => elegirOpcion(i)}
       >
-        {k === 0 && <span className={styles.sugerenciaPosicion}>Posición {i + 1 - desfase}</span>}
+        {k === 0 && <span className={styles.sugerenciaPosicion}>Posición {numeros[i]}</span>}
         {unidad.padre_etiqueta && <span className={styles.sugerenciaPadre}>{unidad.padre_etiqueta}</span>}
         <span className={styles.sugerenciaUnidad}>{unidad.etiqueta}</span>
       </button>
@@ -216,12 +228,12 @@ export default function ProgresoSlider({ unidades, ordenActual, pct, onCommit }:
             type="number"
             inputMode="numeric"
             className={`${styles.campo} ${styles.numero}`}
-            min={1 - desfase}
+            min={minimo}
             max={total}
             value={texto}
-            placeholder={indiceActual >= 0 ? String(indiceActual + 1 - desfase) : '—'}
+            placeholder={indiceActual >= 0 ? String(numeroAlcanzado(indiceActual)) : '—'}
             aria-label={
-              desfase
+              minimo === 0
                 ? `Ir a la unidad número (0 = previo al estreno, 1 a ${total})`
                 : `Ir a la unidad número (1 a ${total})`
             }

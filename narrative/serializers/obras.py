@@ -18,7 +18,8 @@ GRUPOS_RELEVANCIA = [
 
 def calcular_progreso_pct(orden_absoluto, longitud_total):
     """floor, no round: mostrar 100% con episodios pendientes daría una falsa sensación
-    de estar al día. Solo el progreso completo exacto llega a 100."""
+    de estar al día. Solo el progreso completo exacto llega a 100.
+    longitud_total: la de longitudes_principales (sin previos ni películas intercaladas)."""
     if not longitud_total:
         return None
     ratio = orden_absoluto / longitud_total
@@ -59,7 +60,8 @@ class ObraResumenSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
         progreso_por_obra = self.context.get('progreso_por_obra') or {}
         if obj.id not in progreso_por_obra:
             return None
-        return calcular_progreso_pct(progreso_por_obra[obj.id], getattr(obj, 'longitud_total', None))
+        longitudes = self.context.get('longitudes') or {}
+        return calcular_progreso_pct(progreso_por_obra[obj.id], longitudes.get(obj.id))
 
 
 class ObraLandingSerializer(ObraSuscripcionMixin, serializers.ModelSerializer):
