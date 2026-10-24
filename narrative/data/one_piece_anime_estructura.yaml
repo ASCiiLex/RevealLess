@@ -3,6 +3,7 @@
 # No crea hojas nuevas — solo nodos intermedios + vinculación por rango de episodio.
 #
 # obra_external_id.external_id: MAL ID 21 (One Piece, TV) — verificar antes de usar.
+# Los rangos deben cubrir todos los episodios: el relleno entre arcos va en el arco anterior.
 obra_external_id: {source: jikan, external_id: 21}
 tipo_unidad_raiz: parte
 sinopsis_en: [parte, saga, arco]   # nunca en episodio suelto
@@ -58,14 +59,14 @@ nodos:
         nombre: "Saga de Thriller Bark"
         orden_local: 5
         hijos:
-          - {tipo: arco, nombre: "Arco de Lovely Land", orden_local: 1, vincular_episodios: [326, 335]}
+          - {tipo: arco, nombre: "Arco de Lovely Land", orden_local: 1, vincular_episodios: [326, 336]}
           - {tipo: arco, nombre: "Arco de Thriller Bark", orden_local: 2, vincular_episodios: [337, 381]}
           - {tipo: arco, nombre: "Arco de Spa Island", orden_local: 3, vincular_episodios: [382, 384]}
       - tipo: saga
         nombre: "Saga de la Guerra en la Cumbre"
         orden_local: 6
         hijos:
-          - {tipo: arco, nombre: "Arco del Archipiélago Sabaody", orden_local: 1, vincular_episodios: [385, 405]}
+          - {tipo: arco, nombre: "Arco del Archipiélago Sabaody", orden_local: 1, vincular_episodios: [385, 407]}
           - {tipo: arco, nombre: "Arco de Amazon Lily", orden_local: 2, vincular_episodios: [408, 421]}
           - {tipo: arco, nombre: "Arco de Impel Down", orden_local: 3, vincular_episodios: [422, 425]}
           - {tipo: arco, nombre: "Arco del Little East Blue", orden_local: 4, vincular_episodios: [426, 429]}
