@@ -13,7 +13,7 @@ from subscriptions.services import (
     q_posts_de_personaje,
     q_posts_de_unidad,
 )
-from ..models import TemaTransversal, UnidadNarrativa
+from ..models import Obra, TemaTransversal, UnidadNarrativa
 from ..serializers import PostSerializer
 from ..services.personajes import ids_con_identidades
 from .comun import entero_o_none, ids_familia
@@ -53,6 +53,19 @@ class FeedAPIView(generics.ListAPIView):
 
     def get_serializer_context(self):
         return {'request': self.request}
+
+    def list(self, request, *args, **kwargs):
+        respuesta = super().list(request, *args, **kwargs)
+        respuesta.data['obra_filtro'] = self._obra_filtro(request.query_params)
+        return respuesta
+
+    def _obra_filtro(self, params):
+        """Título y slug de la obra filtrada para la cabecera: el primer post no sirve
+        (sin posts no hay título y en una comparativa puede ser la otra obra)."""
+        obra_id = entero_o_none(params.get('obra'), 'obra')
+        if obra_id is None:
+            return None
+        return Obra.objects.filter(id=obra_id).values('titulo', 'slug').first()
 
     def _vista(self, params):
         vista = params.get('vista') or VISTA_BIBLIOTECA

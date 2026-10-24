@@ -82,6 +82,8 @@ export interface PaginaFeed {
   next: string | null
   previous: string | null
   results: FeedPost[]
+  // Solo con ?obra=: título y slug para la cabecera, haya o no posts.
+  obra_filtro?: { titulo: string; slug: string } | null
 }
 
 export interface FetchFeedOptions {

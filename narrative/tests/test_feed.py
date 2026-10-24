@@ -132,6 +132,24 @@ class FeedAPIViewTests(TestCase):
         ids = [p['id'] for p in response.data['results']]
         self.assertNotIn(post_otra_obra.id, ids)
 
+    def test_respuesta_incluye_la_obra_filtrada(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'), {'obra': self.obra.id})
+        self.assertEqual(response.data['obra_filtro'], {'titulo': 'Serie API', 'slug': 'serie-api'})
+
+    def test_obra_filtrada_sin_publicaciones_conserva_el_titulo(self):
+        """Antes el título salía del primer post: sin posts, la cabecera decía «Obra»."""
+        vacia = Obra.objects.create(titulo='Obra vacía', slug='obra-vacia-feed')
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'), {'obra': vacia.id})
+        self.assertEqual(response.data['results'], [])
+        self.assertEqual(response.data['obra_filtro'], {'titulo': 'Obra vacía', 'slug': 'obra-vacia-feed'})
+
+    def test_sin_filtro_de_obra_no_hay_obra_filtrada(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get(reverse('narrative_api_feed'))
+        self.assertIsNone(response.data['obra_filtro'])
+
     def test_sin_query_param_obra_devuelve_feed_completo(self):
         self.client.force_authenticate(user=self.usuario)
         response = self.client.get(reverse('narrative_api_feed'))

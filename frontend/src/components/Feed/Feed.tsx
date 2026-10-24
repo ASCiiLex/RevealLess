@@ -39,7 +39,7 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
   const [siguiente, setSiguiente] = useState<string | null>(null)
   const [cargandoMas, setCargandoMas] = useState(false)
   const [errorMas, setErrorMas] = useState(false)
-  // Título y enlace que hay que pedir aparte (tema, personaje o arco).
+  // Título y enlace de la cabecera que no salen del propio filtro (obra, tema, personaje o arco).
   const [tituloRemoto, setTituloRemoto] = useState<string | null>(null)
   const [enlaceRemoto, setEnlaceRemoto] = useState<string | null>(null)
   // Cada carga inicial invalida las respuestas pendientes de la anterior.
@@ -117,7 +117,16 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
     }
 
     const obraId = filtroExterno?.tipo === 'obra' ? Number(filtroExterno.valor) : obraFiltro
-    fetchFeed({ obraId, vista }).then(aplicar).catch(vaciar)
+    fetchFeed({ obraId, vista })
+      .then((pagina) => {
+        aplicar(pagina)
+        // La obra de la cabecera la da el backend: el primer post puede no existir o ser de la otra obra.
+        if (filtroExterno?.tipo === 'obra') {
+          const obra = pagina.obra_filtro
+          titulo(obra?.titulo ?? 'Obra', obra ? `/narrative/obra/${obra.slug}/` : null)
+        }
+      })
+      .catch(vaciar)
   }, [obraFiltro, temaFiltro, personajeFiltro, filtroExterno, version, vista])
 
   const cargarMas = useCallback(() => {
@@ -171,16 +180,9 @@ export default function Feed({ filtroExterno, version = 0 }: Props) {
       : MENSAJE_VACIO[vista]
 
   const tituloFiltro =
-    filtroExterno?.tipo === 'hashtag'
-      ? `#${filtroExterno.valor}`
-      : filtroExterno?.tipo === 'obra'
-        ? posts[0]?.obra_titulo ?? 'Obra'
-        : tituloRemoto ?? ''
+    filtroExterno?.tipo === 'hashtag' ? `#${filtroExterno.valor}` : tituloRemoto ?? ''
 
-  const linkHrefFiltro =
-    filtroExterno?.tipo === 'obra'
-      ? posts[0] ? `/narrative/obra/${posts[0].obra_slug}/` : undefined
-      : enlaceRemoto ?? undefined
+  const linkHrefFiltro = enlaceRemoto ?? undefined
 
   return (
     <div className={styles.feed}>
