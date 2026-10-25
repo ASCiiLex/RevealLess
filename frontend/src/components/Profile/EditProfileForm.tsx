@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import styles from './EditProfileForm.module.css'
 import botones from '../../styles/botones.module.css'
 import { fetchProfileEditData, updateProfile, type ProfileEditData } from '../../api/profile'
+import CambioPasswordForm from './CambioPasswordForm'
 
 export default function EditProfileForm() {
   const [datos, setDatos] = useState<ProfileEditData | null>(null)
@@ -125,6 +126,8 @@ export default function EditProfileForm() {
           {cargando ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>
+
+      <CambioPasswordForm />
     </div>
   )
 }

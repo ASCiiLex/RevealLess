@@ -13,6 +13,21 @@
   margin: 0 0 20px 0;
 }
 
+/* Bloque aparte bajo el formulario del perfil (cambio de contraseña). */
+.seccion {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in srgb, var(--on-dark-soft) 25%, transparent);
+}
+
+.subtitle {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--paper);
+  margin: 0 0 14px 0;
+}
+
 .avatarPreview {
   display: flex;
   align-items: center;

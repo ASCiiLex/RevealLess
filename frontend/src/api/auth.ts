@@ -17,6 +17,16 @@ export async function logout(): Promise<void> {
   await api.post<void>('/cuentas/logout/')
 }
 
+export interface CambioPasswordData {
+  password_actual: string
+  password: string
+  password2: string
+}
+
+export function cambiarPassword(data: CambioPasswordData): Promise<void> {
+  return api.post<void>('/cuentas/api/password/', data)
+}
+
 export interface RegisterData {
   username: string
   email: string

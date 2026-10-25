@@ -69,3 +69,33 @@ class RegisterSerializer(serializers.Serializer):
             profile.save()
 
         return user
+
+
+class CambioPasswordSerializer(serializers.Serializer):
+    """Exige la contraseña actual; la nueva pasa los mismos validadores que el registro."""
+
+    password_actual = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+
+    def validate_password_actual(self, value):
+        if not self.context['user'].check_password(value):
+            raise serializers.ValidationError('La contraseña actual no es correcta.')
+        return value
+
+    def validate(self, data):
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError({'password2': 'Las contraseñas no coinciden.'})
+
+        try:
+            validate_password(data['password'], user=self.context['user'])
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({'password': list(exc.messages)})
+
+        return data
+
+    def save(self):
+        user = self.context['user']
+        user.set_password(self.validated_data['password'])
+        user.save(update_fields=['password'])
+        return user
